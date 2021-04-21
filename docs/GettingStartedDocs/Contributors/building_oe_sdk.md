@@ -69,7 +69,7 @@ See [Open Enclave samples](/samples/README.md) for details.
 Assuming you install the SDK as below (also described in the [basic install section](WindowsInstallInfo.md#basic-install-on-windows))
 
 ```bash
-cmake .. -G  Ninja -DNUGET_PACKAGE_PATH=C:\oe_prereqs -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave"
+cmake .. -G  Ninja -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave"
 ninja install
 ```
 Open Enclave samples can be found in c:\openenclave\share\openenclave\samples

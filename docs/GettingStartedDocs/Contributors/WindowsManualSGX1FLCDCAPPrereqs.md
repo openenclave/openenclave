@@ -41,7 +41,7 @@ The Azure DCAP client for Windows is necessary if you would like to perform encl
 nuget.exe install Microsoft.Azure.DCAP -ExcludeVersion -OutputDirectory C:\oe_prereqs
 ```
 
-This example assumes you would like to download the package to `C:\oe_prereqs`. Complete the installation by following the instructions in the file `C:\oe_prereqs\Microsoft.Azure.DCAP\README.txt`.
+This example assumes you would like to download the package to the default location `C:\oe_prereqs`. You may choose to install to a location different from the default. If this is the case, it will need to be specified via NUGET_PACKAGE_PATH in subsequent commands. Complete the installation by following the instructions in the file `C:\oe_prereqs\Microsoft.Azure.DCAP\README.txt`.
 
 Verify successful installation of Azure DCAP by ensuring that the file `dcap_quotprov.dll` is on the PATH and located in the `C:\Windows\System32` directory.
 
