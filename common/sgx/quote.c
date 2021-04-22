@@ -482,7 +482,12 @@ oe_result_t oe_verify_sgx_quote(
 
     // Endorsements verification
     OE_CHECK(oe_verify_quote_with_sgx_endorsements(
-        quote, quote_size, &sgx_endorsements, input_validation_time));
+        quote,
+        quote_size,
+        &sgx_endorsements,
+        input_validation_time,
+        NULL,
+        NULL));
 
     result = OE_OK;
 
@@ -497,7 +502,9 @@ oe_result_t oe_verify_quote_with_sgx_endorsements(
     const uint8_t* quote,
     size_t quote_size,
     const oe_sgx_endorsements_t* sgx_endorsements,
-    oe_datetime_t* input_validation_time)
+    oe_datetime_t* input_validation_time,
+    oe_datetime_t* valid_from,
+    oe_datetime_t* valid_until)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_datetime_t validity_from = {0};
@@ -650,7 +657,11 @@ oe_result_t oe_verify_quote_with_sgx_endorsements(
             vtime,
             vuntil);
     }
-
+    if (valid_from && valid_until)
+    {
+        *valid_from = validity_from;
+        *valid_until = validity_until;
+    }
     result = OE_OK;
 
 done:
