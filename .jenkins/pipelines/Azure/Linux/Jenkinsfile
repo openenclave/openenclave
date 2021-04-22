@@ -132,7 +132,7 @@ def ACCPackageTest(String label, String version, List extra_cmake_args = []) {
                              ${extra_cmake_args.join(' ')}                            \
                              -Wdev
                            ninja -v
-                           ninja -v package
+                           cpack -G DEB
                            sudo ninja -v install
                            cp -r /opt/openenclave/share/openenclave/samples ~/
                            cd ~/samples
