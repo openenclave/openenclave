@@ -38,6 +38,10 @@ typedef enum _sgx_evidence_format_type_t
  * format_type has the right value.
  * @param[in] custom_claims_buffer_size The size of the custom_claims buffer.
  * @param[in] sgx_endorsements Pointer to the endorsements buffer.
+ * @param[in] valid_from Pointer to the datetime from which the evidence and
+ * endorsements are valid.
+ * @param[in] valid_until Pointer to the datetime at which the evidence and
+ * endorsements expire.
  * @param[out] claims_out Pointer to the address of a dynamically allocated
  * buffer holding the list of claims (including base and custom claims).
  * @param[out] claims_length_out The length of the claims_out list.
@@ -54,6 +58,8 @@ oe_result_t oe_sgx_extract_claims(
     const uint8_t* custom_claims_buffer,
     size_t custom_claims_buffer_size,
     const struct _oe_sgx_endorsements_t* sgx_endorsements,
+    oe_datetime_t* valid_from,
+    oe_datetime_t* valid_until,
     oe_claim_t** claims_out,
     size_t* claims_length_out);
 

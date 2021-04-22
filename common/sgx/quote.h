@@ -66,12 +66,19 @@ oe_result_t oe_verify_sgx_quote(
  * if the input time is after than the endorsement creation time, then the
  * CRLs might have updated in the period between the input time and the
  * endorsement creation time.
+ * @param[out] valid_from Optional pointer to the endorsement validity period
+ * that can be extraced by verifier and written to OE_CLAIM_VALIDITY_FROM.
+ * @param[out] valid_until Optional pointer to the endorsement validity period
+ * that can be extraced by verifier and written to OE_CLAIM_VALIDITY_UNTIL.
+ *
  */
 oe_result_t oe_verify_quote_with_sgx_endorsements(
     const uint8_t* quote,
     size_t quote_size,
     const oe_sgx_endorsements_t* endorsements,
-    oe_datetime_t* input_validation_time);
+    oe_datetime_t* input_validation_time,
+    oe_datetime_t* valid_from,
+    oe_datetime_t* valid_until);
 
 /*!
  * Find the valid datetime range for the given quote and sgx endorsements.
