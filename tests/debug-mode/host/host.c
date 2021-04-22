@@ -13,14 +13,26 @@
 
 #define SKIP_RETURN_CODE 2
 
-static uint32_t _create_flags(bool debug)
+typedef enum
+{
+    SGX_NON_DEBUG,
+    SGX_DEBUG,
+    SGX_DEBUG_AUTO
+} sgx_debug_t;
+
+static uint32_t _create_flags(sgx_debug_t debug_type)
 {
     uint32_t flags = oe_get_create_flags();
 
-    if (debug)
+    if (debug_type == SGX_DEBUG)
         flags |= (uint32_t)OE_ENCLAVE_FLAG_DEBUG;
-    else
+    else if (debug_type == SGX_NON_DEBUG)
         flags &= ~(uint32_t)OE_ENCLAVE_FLAG_DEBUG;
+    else if (debug_type == SGX_DEBUG_AUTO)
+    {
+        flags &= ~(uint32_t)OE_ENCLAVE_FLAG_DEBUG;
+        flags |= (uint32_t)OE_ENCLAVE_FLAG_DEBUG_AUTO;
+    }
 
     return flags;
 }
@@ -68,37 +80,41 @@ static void _launch_enclave_fail(
 static void _test_debug_signed(const char* path)
 {
     /* Signed debug mode should always pass. */
-    _launch_enclave_success(path, _create_flags(true));
+    _launch_enclave_success(path, _create_flags(SGX_DEBUG));
+    _launch_enclave_success(path, _create_flags(SGX_DEBUG_AUTO));
     if (oe_has_sgx_quote_provider())
     {
         /* Only works with FLC */
-        _launch_enclave_success(path, _create_flags(false));
+        _launch_enclave_success(path, _create_flags(SGX_NON_DEBUG));
     }
 }
 
 static void _test_debug_unsigned(const char* path)
 {
     /* Debug mode should pass. Non-debug should fail. */
-    _launch_enclave_success(path, _create_flags(true));
-    _launch_enclave_fail(path, _create_flags(false), OE_FAILURE);
+    _launch_enclave_success(path, _create_flags(SGX_DEBUG));
+    _launch_enclave_success(path, _create_flags(SGX_DEBUG_AUTO));
+    _launch_enclave_fail(path, _create_flags(SGX_NON_DEBUG), OE_FAILURE);
 }
 
 static void _test_non_debug_signed(const char* path)
 {
     /* Debug mode should fail. Non-debug mode should pass. */
-    _launch_enclave_fail(path, _create_flags(true), OE_DEBUG_DOWNGRADE);
+    _launch_enclave_fail(path, _create_flags(SGX_DEBUG), OE_DEBUG_DOWNGRADE);
     if (oe_has_sgx_quote_provider())
     {
         /* Only works with FLC */
-        _launch_enclave_success(path, _create_flags(false));
+        _launch_enclave_success(path, _create_flags(SGX_NON_DEBUG));
+        _launch_enclave_success(path, _create_flags(SGX_DEBUG_AUTO));
     }
 }
 
 static void _test_non_debug_unsigned(const char* path)
 {
     /* Unsigned non-debug should always fail. */
-    _launch_enclave_fail(path, _create_flags(true), OE_DEBUG_DOWNGRADE);
-    _launch_enclave_fail(path, _create_flags(false), OE_FAILURE);
+    _launch_enclave_fail(path, _create_flags(SGX_DEBUG), OE_DEBUG_DOWNGRADE);
+    _launch_enclave_fail(path, _create_flags(SGX_NON_DEBUG), OE_FAILURE);
+    _launch_enclave_fail(path, _create_flags(SGX_DEBUG_AUTO), OE_FAILURE);
 }
 
 int main(int argc, const char* argv[])

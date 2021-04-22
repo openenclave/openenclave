@@ -62,6 +62,14 @@ OE_EXTERNC_BEGIN
 #define OE_ENCLAVE_FLAG_DEBUG 0x00000001u
 
 /**
+ * Flag passed into oe_create_enclave that allows the host to automatically
+ * decide to run the enclave in debug mode or not based on the Debug value
+ * specified in the enclave configuration file. When both this and
+ * OE_ENCLAVE_FLAG_DEBUG flags are set, OE_ENCLAVE_FLAG_DEBUG takes precedence.
+ */
+#define OE_ENCLAVE_FLAG_DEBUG_AUTO 0x000000010u
+
+/**
  *  Flag passed into oe_create_enclave to run the enclave in simulation mode.
  */
 #define OE_ENCLAVE_FLAG_SIMULATE 0x00000002u
@@ -76,8 +84,9 @@ OE_EXTERNC_BEGIN
  */
 #define OE_ENCLAVE_FLAG_SGX_KSS 0x00000004u
 
-#define OE_ENCLAVE_FLAG_RESERVED \
-    (~(OE_ENCLAVE_FLAG_DEBUG | OE_ENCLAVE_FLAG_SIMULATE))
+#define OE_ENCLAVE_FLAG_RESERVED                            \
+    (~(OE_ENCLAVE_FLAG_DEBUG | OE_ENCLAVE_FLAG_DEBUG_AUTO | \
+       OE_ENCLAVE_FLAG_SIMULATE))
 
 /**
  * @endcond
