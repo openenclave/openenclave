@@ -839,6 +839,11 @@ oe_result_t oe_sgx_build_enclave(
     /* Validate the enclave prop_override structure */
     OE_CHECK(oe_sgx_validate_enclave_properties(&props, NULL));
 
+    /* If the OE_ENCLAVE_FLAG_DEBUG_AUTO is set and the OE_ENCLAVE_FLAG_DEBUG is
+     * cleared, set enclave->debug based on the attributes in the properties. */
+    if (!enclave->debug && oe_sgx_is_debug_auto_load_context(context))
+        enclave->debug = props.config.attributes & OE_SGX_FLAGS_DEBUG;
+
     /* Consolidate enclave-debug-flag with create-debug-flag */
     if (props.config.attributes & OE_SGX_FLAGS_DEBUG)
     {
