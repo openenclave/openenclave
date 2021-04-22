@@ -802,10 +802,12 @@ static oe_result_t _link_elf_image(
             else
             {
                 if ((symbol->st_info >> 4) != STB_WEAK)
-                    OE_RAISE(
+                    OE_RAISE_MSG(
                         OE_UNSUPPORTED_ENCLAVE_IMAGE,
                         "symbol %s not found\n",
                         name);
+                else
+                    OE_TRACE_WARNING("Weak symbol %s is not resolved\n");
             }
         }
         /* Patch non-symbolic relocation records */
