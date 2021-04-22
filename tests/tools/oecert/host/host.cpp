@@ -27,11 +27,18 @@
 #define INPUT_PARAM_OPTION_REPORT "--report"
 #define INPUT_PARAM_OPTION_EVIDENCE "--evidence"
 #define INPUT_PARAM_OPTION_ENDORSEMENTS_FILENAME "--endorsements"
+#define INPUT_PARAM_OPTION_QUOTE_PROC "--quote-proc"
+#define INPUT_PARAM_QUOTE_IN_PROC "in"
+#define INPUT_PARAM_QUOTE_OUT_OF_PROC "out"
 #define INPUT_PARAM_OPTION_VERIFY "--verify"
 #define INPUT_PARAM_OPTION_OUT_FILE "--out"
 #define DEFAULT_LOG_FILE "oecert.log"
 #define INPUT_PARAM_OPTION_LOG_FILE "--log"
 #define INPUT_PARAM_OPTION_VERBOSE "--verbose"
+#define SGX_AESM_ADDR "SGX_AESM_ADDR"
+#if defined(_WIN32)
+#define SGX_AESM_ADDR_MAXSIZE 32
+#endif
 
 // Structure to store input parameters
 //
@@ -42,6 +49,7 @@ typedef struct _input_params
     const char* out_filename;
     const char* log_filename;
     const char* endorsements_filename;
+    const char* quote_proc;
     bool generate_certificate;
     bool generate_report;
     bool generate_evidence;
@@ -177,28 +185,32 @@ done:
 
 static void _display_help(const char* cmd)
 {
-    printf("Usage: %s ENCLAVE_PATH Options\n", cmd);
-    printf("\tOptions:\n");
+    printf("Usage: %s <Options>\n", cmd);
+    printf("Options:\n");
     printf(
         "\t%s <privkey> <pubkey> : generate der remote attestation "
         "certificate.\n",
         INPUT_PARAM_OPTION_CERT);
     printf(
-        "\t%s : generate binary enclave report\n", INPUT_PARAM_OPTION_REPORT);
+        "\t%s <in|out>: use sgx in process or out-of-process quoting.\n",
+        INPUT_PARAM_OPTION_QUOTE_PROC);
     printf(
-        "\t%s : generate binary enclave evidence.\n",
+        "\t%s <output filename> : file for %s, %s, or %s.\n",
+        INPUT_PARAM_OPTION_OUT_FILE,
+        INPUT_PARAM_OPTION_CERT,
+        INPUT_PARAM_OPTION_REPORT,
         INPUT_PARAM_OPTION_EVIDENCE);
-    printf(
-        "\t%s <output filename> : file for certificate, report or evidence.\n",
-        INPUT_PARAM_OPTION_OUT_FILE);
     printf(
         "\t%s : file for endorsements (use with %s or %s).\n",
         INPUT_PARAM_OPTION_ENDORSEMENTS_FILENAME,
         INPUT_PARAM_OPTION_REPORT,
         INPUT_PARAM_OPTION_EVIDENCE);
     printf(
-        "\t%s : verify the generated certificate, report or evidence\n",
-        INPUT_PARAM_OPTION_VERIFY);
+        "\t%s : verify the generated %s, %s, or %s\n",
+        INPUT_PARAM_OPTION_VERIFY,
+        INPUT_PARAM_OPTION_CERT,
+        INPUT_PARAM_OPTION_REPORT,
+        INPUT_PARAM_OPTION_EVIDENCE);
     printf(
         "\t%s <log filename> (default: %s)\n",
         INPUT_PARAM_OPTION_LOG_FILE,
@@ -266,17 +278,19 @@ static int _parse_args(int argc, const char* argv[])
 
     // clear params memory
     memset(&_params, 0, sizeof(_params));
+
+    // save
     _params.generate_report = false;
     _params.generate_certificate = false;
     _params.generate_evidence = false;
-
-    int i = 1; // current index
-    // save
     _params.out_filename = nullptr;
     _params.endorsements_filename = nullptr;
     _params.log_filename = DEFAULT_LOG_FILE;
+    _params.quote_proc = "";
     _params.verify = false;
     _params.verbose = false;
+
+    int i = 1; // current index
 
     while (i < argc)
     {
@@ -299,6 +313,22 @@ static int _parse_args(int argc, const char* argv[])
         {
             _params.generate_evidence = true;
             i++;
+        }
+        else if (strcmp(INPUT_PARAM_OPTION_QUOTE_PROC, argv[i]) == 0)
+        {
+            if (argc < i + 2)
+                break;
+
+            _params.quote_proc = argv[i + 1];
+            if (strcmp(INPUT_PARAM_QUOTE_IN_PROC, _params.quote_proc) != 0 &&
+                strcmp(INPUT_PARAM_QUOTE_OUT_OF_PROC, _params.quote_proc) != 0)
+            {
+                printf(
+                    "Please use 'in' or 'out' with %s.\n",
+                    INPUT_PARAM_OPTION_QUOTE_PROC);
+                return 1;
+            }
+            i += 2;
         }
         else if (strcmp(INPUT_PARAM_OPTION_ENDORSEMENTS_FILENAME, argv[i]) == 0)
         {
@@ -419,6 +449,61 @@ static oe_result_t _process_params(oe_enclave_t* enclave)
 {
     oe_result_t result = OE_FAILURE;
 
+#if defined(__linux__)
+    char* sgx_asem_env = getenv(SGX_AESM_ADDR);
+
+    // For Linux, if "SGX_AESM_ADDR" not set and out-of-proc is required, set
+    // "SGX_AESM_ADDR" to "1" and unset after process finishes
+    if (sgx_asem_env == nullptr)
+    {
+        if (strcmp(INPUT_PARAM_QUOTE_OUT_OF_PROC, _params.quote_proc) == 0 &&
+            setenv(SGX_AESM_ADDR, "1", 1) != 0)
+        {
+            printf("Failed to set environment variable 'SGX_AESM_ADDR'\n");
+            goto done;
+        }
+    }
+    // if "SGX_AESM_ADDR" is set and in-proc is required, unset it during the
+    // process and reset it to its original value after process finishes
+    else if (
+        strcmp(INPUT_PARAM_QUOTE_IN_PROC, _params.quote_proc) == 0 &&
+        unsetenv(SGX_AESM_ADDR) != 0)
+    {
+        printf("Failed to unset environment variable 'SGX_AESM_ADDR'\n");
+        goto done;
+    }
+#elif defined(_WIN32)
+    char sgx_asem_env[SGX_AESM_ADDR_MAXSIZE];
+    int env_size = GetEnvironmentVariableA(
+        SGX_AESM_ADDR, sgx_asem_env, SGX_AESM_ADDR_MAXSIZE);
+
+    if ((env_size == 0 && GetLastError() != ERROR_ENVVAR_NOT_FOUND) ||
+        env_size >= SGX_AESM_ADDR_MAXSIZE)
+    {
+        printf(
+            "Fail to read environment variable 'SGX_AESM_ADDR'\n",
+            INPUT_PARAM_OPTION_QUOTE_PROC);
+        goto done;
+    }
+
+    // For Windows, out-of-proc is not tested as extra dependencies required
+    if (strcmp(INPUT_PARAM_QUOTE_OUT_OF_PROC, _params.quote_proc) == 0)
+    {
+        printf("In-proc quoting is by default on Windows. Please use in-proc "
+               "quoting\n");
+        goto done;
+    }
+    // if "SGX_AESM_ADDR" is set and in-proc is required, unset it during the
+    // process and reset it to its original value after process finishes
+    else if (
+        strcmp(INPUT_PARAM_QUOTE_IN_PROC, _params.quote_proc) == 0 &&
+        env_size != 0 && SetEnvironmentVariableA(SGX_AESM_ADDR, nullptr) == 0)
+    {
+        printf("Failed to unset environment variable 'SGX_AESM_ADDR'\n");
+        goto done;
+    }
+#endif
+
     if (_params.generate_certificate)
     {
         size_t private_key_size;
@@ -427,44 +512,79 @@ static oe_result_t _process_params(oe_enclave_t* enclave)
         uint8_t* public_key;
 
         // read private key (pem format)
-        if (_read_key(
-                _params.private_key_filename,
-                &private_key,
-                &private_key_size) == OE_OK &&
-            _read_key(
-                _params.public_key_filename, &public_key, &public_key_size) ==
-                OE_OK)
-        {
-            result = generate_certificate(
-                enclave,
-                private_key,
-                private_key_size,
-                public_key,
-                public_key_size,
-                _params.out_filename,
-                _params.verify,
-                _params.verbose);
-        }
+        OE_CHECK(_read_key(
+            _params.private_key_filename, &private_key, &private_key_size));
+        OE_CHECK(_read_key(
+            _params.public_key_filename, &public_key, &public_key_size));
+        OE_CHECK(generate_certificate(
+            enclave,
+            private_key,
+            private_key_size,
+            public_key,
+            public_key_size,
+            _params.out_filename,
+            _params.verify,
+            _params.verbose));
     }
     else if (_params.generate_report)
     {
-        result = generate_oe_report(
+        OE_CHECK(generate_oe_report(
             enclave,
             _params.out_filename,
             _params.endorsements_filename,
             _params.verify,
-            _params.verbose);
+            _params.verbose));
     }
     else if (_params.generate_evidence)
     {
-        result = generate_oe_evidence(
+        OE_CHECK(generate_oe_evidence(
             enclave,
             _params.out_filename,
             _params.endorsements_filename,
             _params.verify,
-            _params.verbose);
+            _params.verbose));
     }
 
+    result = OE_OK;
+
+done:
+
+#if defined(__linux__)
+    if (sgx_asem_env == nullptr)
+    {
+        if (strcmp(INPUT_PARAM_QUOTE_OUT_OF_PROC, _params.quote_proc) == 0 &&
+            unsetenv(SGX_AESM_ADDR) != 0)
+        {
+            printf(
+                "Failed to unset environment variable 'SGX_AESM_ADDR', please "
+                "manually unset it\n");
+            result = OE_FAILURE;
+        }
+    }
+    else if (
+        strcmp(INPUT_PARAM_QUOTE_IN_PROC, _params.quote_proc) == 0 &&
+        setenv(SGX_AESM_ADDR, sgx_asem_env, 1) != 0)
+    {
+        printf(
+            "Failed to reset environment variable 'SGX_AESM_ADDR', please "
+            "manually reset it as %s\n",
+            sgx_asem_env);
+        result = OE_FAILURE;
+    }
+#elif defined(_WIN32)
+    if (env_size != 0 &&
+        strcmp(INPUT_PARAM_QUOTE_IN_PROC, _params.quote_proc) == 0)
+    {
+        if (SetEnvironmentVariableA(SGX_AESM_ADDR, sgx_asem_env) == 0)
+        {
+            printf(
+                "Failed to reset environment variable 'SGX_AESM_ADDR', please "
+                "manually reset it as %s\n",
+                sgx_asem_env);
+            result = OE_FAILURE;
+        }
+    }
+#endif
     return result;
 }
 

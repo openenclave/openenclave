@@ -178,6 +178,8 @@ def ACCHostVerificationTest(String version, String build_type) {
                            ../../tools/oecert/oecert --cert keyrsa.pem publicrsa.pem --out sgx_cert_rsa.der --verify
                            ../../tools/oecert/oecert --report --out sgx_report.bin --verify
                            ../../tools/oecert/oecert --evidence --out sgx_evidence.bin --endorsements sgx_endorsements.bin --verify
+                           ../../tools/oecert/oecert --evidence --verify --quote-proc in
+                           ../../tools/oecert/oecert --evidence --verify --quote-proc out
                            popd
                            """
                 oe.ContainerRun("oetools-full-${version}:${DOCKER_TAG}", "clang-8", task, "--cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket")
@@ -273,6 +275,8 @@ def ACCHostVerificationPackageTest(String version, String build_type) {
                            ../../tools/oecert/oecert --cert keyrsa.pem publicrsa.pem --out sgx_cert_rsa.der --verify
                            ../../tools/oecert/oecert --report --out sgx_report.bin --verify
                            ../../tools/oecert/oecert --evidence --out sgx_evidence.bin --endorsements sgx_endorsements.bin --verify
+                           ../../tools/oecert/oecert --evidence --verify --quote-proc in
+                           ../../tools/oecert/oecert --evidence --verify --quote-proc out
                            popd
                            """
                 oe.ContainerRun("oetools-full-${version}:${DOCKER_TAG}", "clang-8", task, "--cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket")
