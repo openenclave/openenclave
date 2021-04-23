@@ -40,7 +40,7 @@ oe_result_t get_evidence(
             0));
         OE_CHECK(oe_attester_shutdown());
 
-        if (evidence_out)   // Caller wants to get evidence buffer
+        if (evidence_out) // Caller wants to get evidence buffer
         {
             if (local_evidence_size > evidence_size)
                 return OE_BUFFER_TOO_SMALL;
@@ -64,17 +64,16 @@ oe_result_t get_evidence(
         size_t claims_length = 0;
 
         OE_CHECK(oe_verifier_initialize());
-        OE_CHECK(
-            oe_verify_evidence(
-                NULL,
-                local_evidence,
-                local_evidence_size,
-                NULL,
-                0,
-                NULL,
-                0,
-                &claims,
-                &claims_length));
+        OE_CHECK(oe_verify_evidence(
+            NULL,
+            local_evidence,
+            local_evidence_size,
+            NULL,
+            0,
+            NULL,
+            0,
+            &claims,
+            &claims_length));
         oe_free_claims(claims, claims_length);
         OE_CHECK(oe_verifier_shutdown());
     }

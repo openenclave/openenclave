@@ -17,6 +17,8 @@
 #endif
 #include "attestation_perf_u.h"
 
+int local_cache_clear();
+
 long get_tick()
 {
     return clock() * 1000 / CLOCKS_PER_SEC;
@@ -32,11 +34,21 @@ int main(int argc, const char* argv[])
     size_t claims_length = 0;
     uint8_t evidence[8096] = {};
     size_t evidence_size = 0;
+    long tick = 0;
 
     if (argc != 2)
     {
-        fprintf(stderr, "Invalid parameter.\nSyntax: %s <enclave_file>\n", argv[0]);
+        fprintf(
+            stderr, "Invalid parameter.\nSyntax: %s <enclave_file>\n", argv[0]);
         return -1;
+    }
+
+    // Clear local cache
+    ret = local_cache_clear();
+    if (ret != 0)
+    {
+        fprintf(stderr, "Failed to clear local collateral cache\n");
+        return -2;
     }
 
     OE_CHECK_MSG(
@@ -50,31 +62,45 @@ int main(int argc, const char* argv[])
         "Failed to create enclave. result=%u (%s)\n",
         oe_result_str(result));
 
-    // TODO - Remove cache
-
-    printf(
-        "1. Verifying evidence with no collateral cache (%ld)\n", get_tick());
+    // Verify evidence with no collateral cache
+    tick = get_tick();
     OE_CHECK_MSG(
         get_evidence(enclave, &result, nullptr, 0, nullptr, true),
         "Failed to create OE evidence. Error: %s\n",
         oe_result_str(result));
-
     printf(
-        "2. Verifying evidence with collateral cache (%ld)\n", get_tick());
+        "1. Verifying evidence with no collateral cache (%ld msec)\n",
+        get_tick() - tick);
+
+    // Verifying evidence with collateral cache
+    tick = get_tick();
     OE_CHECK_MSG(
         get_evidence(enclave, &result, nullptr, 0, nullptr, true),
         "Failed to create OE evidence. Error: %s\n",
         oe_result_str(result));
+    printf(
+        "2. Verifying evidence with collateral cache (%ld msec)\n",
+        get_tick() - tick);
 
-    printf("3. Generating evidence without verifying (%ld)\n", get_tick());
+    // Generating evidence without verifying
+    tick = get_tick();
     OE_CHECK_MSG(
         get_evidence(
-            enclave, &result, evidence, sizeof(evidence), &evidence_size, false),
+            enclave,
+            &result,
+            evidence,
+            sizeof(evidence),
+            &evidence_size,
+            false),
         "Failed to create OE evidence. Error: %s\n",
         oe_result_str(result));
+    printf(
+        "3. Generating evidence without verifying (%ld msec)\n",
+        get_tick() - tick);
 
-    printf("4. Verifying evidence in host (%ld)\n", get_tick());
+    // Verifying evidence in host
     OE_CHECK(oe_verifier_initialize());
+    tick = get_tick();
     OE_CHECK_MSG(
         oe_verify_evidence(
             nullptr,
@@ -88,8 +114,8 @@ int main(int argc, const char* argv[])
             &claims_length),
         "Failed to verify evidence. Error: %s\n",
         oe_result_str(result));
+    printf("4. Verifying evidence in host (%ld msec)\n", get_tick() - tick);
 
-    printf("5. Done verifying evidence in host (%ld)\n", get_tick());
     oe_free_claims(claims, claims_length);
     OE_CHECK(oe_verifier_shutdown());
 
