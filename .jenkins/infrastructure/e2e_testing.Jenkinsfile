@@ -57,7 +57,12 @@ stage("Build Jenkins Agents Images") {
                        string(name: 'IMAGE_ID', value: IMAGE_ID),
                        string(name: 'IMAGE_VERSION', value: IMAGE_VERSION),
                        string(name: 'DOCKER_TAG', value: DOCKER_TAG),
-                       string(name: 'AGENTS_LABEL', value: env.IMAGES_BUILD_LABEL)]
+                       string(name: 'AGENTS_LABEL', value: env.IMAGES_BUILD_LABEL)
+                       boolean(nume: 'UBUNTU_1804', value: env.UBUNTU_1804),
+                       boolean(nume: 'UBUNTU_2004', value: env.UBUNTU_2004),
+                       boolean(nume: 'RHEL_8', value: env.RHEL_8),
+                       boolean(nume: 'WINDOWS_2019_DCAP', value: env.WINDOWS_2019_DCAP),
+                       boolean(nume: 'WINDOWS_2019_NON_SGX', value: env.WINDOWS_2019_NON_SGX)]
 }
 
 stage("Run tests on new Agents") {

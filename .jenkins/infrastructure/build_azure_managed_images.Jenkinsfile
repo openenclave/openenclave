@@ -271,13 +271,31 @@ node(params.AGENTS_LABEL) {
 
         println("IMAGE_VERSION: ${image_version}\nIMAGE_ID: ${image_id}")
     }
+
     stage("Build Agents") {
-        parallel "Build Windows Server 2019 - nonSGX"       : { buildWindowsManagedImage("win2019", "ws2019-nonSGX", "SGX1FLC-NoIntelDrivers", image_id, image_version) },
-                 "Build Windows Server 2019 - SGX1"         : { buildWindowsManagedImage("win2019", "ws2019-SGX", "SGX1", image_id, image_version) },
-                 "Build Windows Server 2019 - SGX1FLC DCAP" : { buildWindowsManagedImage("win2019", "ws2019-SGX-DCAP", "SGX1FLC", image_id, image_version) },
-                 "Build Ubuntu 18.04" :                       { buildLinuxManagedImage("ubuntu", "18.04", image_id, image_version) },
-                 "Build Ubuntu 20.04" :                       { buildLinuxManagedImage("ubuntu", "20.04", image_id, image_version) },
-                 "Build RHEL 8"       :                       { buildLinuxManagedImage("rhel", "8", image_id, image_version) }
+        def build_agents =[]
+
+        if([UBUNTU_1804] == "true") {
+            build_agents += ["Build Ubuntu 18.04" :                       { buildLinuxManagedImage("ubuntu", "18.04", image_id, image_version) }] 
+        }
+
+        if([UBUNTU_2004] == "true") {
+            build_agents += ["Build Ubuntu 20.04" :                       { buildLinuxManagedImage("ubuntu", "20.04", image_id, image_version) }] 
+        }
+
+        if([RHEL_8] == "true") {
+            build_agents += ["Build RHEL 8"       :                       { buildLinuxManagedImage("rhel", "8", image_id, image_version) }]
+        }
+
+        if([WINDOWS_2019_DCAP] == "true") {
+            build_agents += ["Build Windows Server 2019 - SGX1FLC DCAP" : { buildWindowsManagedImage("win2019", "ws2019-SGX-DCAP", "SGX1FLC", image_id, image_version) }]
+        }
+
+        if([WINDOWS_2019_NON_SGX] == "true") {
+            build_agents += ["Build Windows Server 2019 - nonSGX"       : { buildWindowsManagedImage("win2019", "ws2019-nonSGX", "SGX1FLC-NoIntelDrivers", image_id, image_version) }]
+        }
+
+        parallel build_agents
     }
     stage("Clean Workspace") {
         cleanWs()
