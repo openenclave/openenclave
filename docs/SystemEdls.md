@@ -136,6 +136,7 @@ oe_syscall_getnameinfo_ocall | N/A | Used by internal APIs to resolve `addrinfo`
 Ocall | Dependent syscall | Comments |
 :---|:---:|:---|
 oe_syscall_nanosleep_ocall | nanosleep | - |
+oe_syscall_clock_nanosleep_ocall | clock_nanosleep | In Windows, only flag = 0 is supported. |
 
 ### unistd.edl
 Ocall | Dependent syscall | Comments |

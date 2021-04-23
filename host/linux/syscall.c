@@ -1485,3 +1485,26 @@ int oe_syscall_nanosleep_ocall(struct oe_timespec* req, struct oe_timespec* rem)
 
     return nanosleep((struct timespec*)req, (struct timespec*)rem);
 }
+
+/*
+**==============================================================================
+**
+** clock_nanosleep():
+**
+**==============================================================================
+*/
+
+int oe_syscall_clock_nanosleep_ocall(
+    oe_clockid_t clockid,
+    int flag,
+    struct oe_timespec* req,
+    struct oe_timespec* rem)
+{
+    errno = 0;
+
+    return clock_nanosleep(
+        (clockid_t)clockid,
+        (int)flag,
+        (struct timespec*)req,
+        (struct timespec*)rem);
+}

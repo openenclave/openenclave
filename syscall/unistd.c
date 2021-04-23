@@ -145,6 +145,17 @@ int oe_nanosleep(struct oe_timespec* req, struct oe_timespec* rem)
     return ret;
 }
 
+int oe_clock_nanosleep(
+    int clockid,
+    int flag,
+    struct oe_timespec* req,
+    struct oe_timespec* rem)
+{
+    int ret = 0;
+    oe_syscall_clock_nanosleep_ocall(&ret, clockid, flag, req, rem);
+    return ret;
+}
+
 oe_pid_t oe_getpid(void)
 {
     oe_pid_t ret = 0;

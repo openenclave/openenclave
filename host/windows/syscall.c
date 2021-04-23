@@ -43,6 +43,7 @@
 #include <openenclave/internal/syscall/unistd.h>
 #include <openenclave/internal/syscall/sys/stat.h>
 #include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/time.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/corelibc/limits.h>
 #include "../hostthread.h"
@@ -3123,4 +3124,36 @@ int oe_syscall_nanosleep_ocall(struct oe_timespec* req, struct oe_timespec* rem)
 
     _set_errno(0);
     return 0;
+}
+
+/*
+**==============================================================================
+**
+** clock_nanosleep():
+**
+**==============================================================================
+*/
+
+int oe_syscall_clock_nanosleep_ocall(
+    oe_clockid_t clockid,
+    int flag,
+    struct oe_timespec* req,
+    struct oe_timespec* rem)
+{
+    /* Validate input */
+    if (flag != 0 || clockid == CLOCK_THREAD_CPUTIME_ID ||
+        clockid < CLOCK_REALTIME || clockid > CLOCK_BOOTTIME_ALARM)
+    {
+        /*
+         * In Windows, we do not support the feature to mention a future
+         * absolute time on the clock up to which to sleep (i.e., flag
+         * TIMER_ABSTIME is not supported).
+         * clockid = CLOCK_THREAD_CPUTIME_ID is not supported in both
+         * Windows and Linux.
+         */
+        _set_errno(OE_EINVAL);
+        return -1;
+    }
+
+    return oe_syscall_nanosleep_ocall(req, rem);
 }

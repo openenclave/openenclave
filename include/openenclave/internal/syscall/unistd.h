@@ -81,6 +81,11 @@ int oe_getdomainname(char* name, size_t len);
 unsigned int oe_sleep(unsigned int seconds);
 
 int oe_nanosleep(struct oe_timespec* req, struct oe_timespec* rem);
+int oe_clock_nanosleep(
+    oe_clockid_t clockid,
+    int flag,
+    struct oe_timespec* req,
+    struct oe_timespec* rem);
 
 int oe_flock(int fd, int operation);
 

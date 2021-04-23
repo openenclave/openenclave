@@ -180,4 +180,9 @@ typedef struct _oe_datetime
     uint32_t seconds; /* range: 0-59 */
 } oe_datetime_t;
 
+/**
+ * This type defines a system internal clock ID.
+ */
+typedef int oe_clockid_t;
+
 #endif /* _OE_BITS_TYPES_H */
