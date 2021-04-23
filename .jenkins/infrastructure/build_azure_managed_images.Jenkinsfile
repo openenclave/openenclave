@@ -18,33 +18,33 @@ AZURE_IMAGES_MAP = [
         "generation": "V2"
     ]
 ]
+OS_NAME_MAP = [
+    "win2019": "Windows Server 2019",
+    "rhel":    "RHEL",
+    "ubuntu":  "Ubuntu",
+]
 
 def get_image_version() {
     def now = LocalDateTime.now()
     return (now.format(DateTimeFormatter.ofPattern("yyyy")) + "." + \
             now.format(DateTimeFormatter.ofPattern("MM")) + "." + \
-            now.format(DateTimeFormatter.ofPattern("dd")))
+            now.format(DateTimeFormatter.ofPattern("dd")) + env.$BUILD_NUMBER)
 }
 
-def get_image_id() {
-    if (params.IMAGE_ID) {
-        return params.IMAGE_ID
-    }
-    checkout scm
+def get_commit_id() {
     def last_commit_id = sh(script: "git rev-parse --short HEAD", returnStdout: true).tokenize().last()
-    return (get_image_version() + "-" + last_commit_id)
+    return last_commit_id
 }
 
+def buildLinuxManagedImage(String os_type, String version, String image_id, String image_version) {
 
-
-def buildLinuxManagedImage(String os_type, String version) {
-    node(params.AGENTS_LABEL) {
-        def managed_image_name_id = get_image_id()
-        def gallery_image_version = get_image_version()
+    stage("${OS_NAME_MAP[os_type]} ${version} Build") {
+        def managed_image_name_id = image_id
+        def gallery_image_version = image_version
         withEnv(["DOCKER_REGISTRY=${OETOOLS_REPO}",
             "MANAGED_IMAGE_NAME_ID=${managed_image_name_id}",
             "GALLERY_IMAGE_VERSION=${gallery_image_version}"]) {
-            stage("${os_type}-${version}-cleanup") {
+            stage("Clean-up Resources") {
                 def az_cleanup_existing_image_version_script = """
                     az login --service-principal -u \$SERVICE_PRINCIPAL_ID -p \$SERVICE_PRINCIPAL_PASSWORD --tenant \$TENANT_ID
                     az account set -s \$SUBSCRIPTION_ID
@@ -59,8 +59,7 @@ def buildLinuxManagedImage(String os_type, String version) {
                 """
                 oe.azureEnvironment(az_cleanup_existing_image_version_script, params.OE_DEPLOY_IMAGE)
             }
-            stage("${os_type}-${version}-build") {
-                checkout scm
+            stage("Run Packer Job") {
                 timeout(GLOBAL_TIMEOUT_MINUTES) {
                     withCredentials([usernamePassword(credentialsId: OETOOLS_REPO_CREDENTIALS_ID,
                                                     usernameVariable: "DOCKER_USER_NAME",
@@ -81,8 +80,9 @@ def buildLinuxManagedImage(String os_type, String version) {
     }
 }
 
-def buildWindowsManagedImage(String os_series, String img_name_suffix, String launch_configuration) {
-    node(params.AGENTS_LABEL) {
+def buildWindowsManagedImage(String os_series, String img_name_suffix, String launch_configuration, String image_id, String image_version) {
+
+    stage("${launch_configuration} Build") {
         withCredentials([usernamePassword(credentialsId: JENKINS_USER_CREDS_ID,
                                     usernameVariable: "JENKINS_USER_NAME",
                                     passwordVariable: "JENKINS_USER_PASSWORD")]) {
@@ -90,8 +90,8 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                 az login --service-principal -u \$SERVICE_PRINCIPAL_ID -p \$SERVICE_PRINCIPAL_PASSWORD --tenant \$TENANT_ID
                 az account set -s \$SUBSCRIPTION_ID
             """
-            def managed_image_name_id = get_image_id()
-            def gallery_image_version = get_image_version()
+            def managed_image_name_id = image_id
+            def gallery_image_version = image_version
             def vm_rg_name = "build-${managed_image_name_id}-${img_name_suffix}-${BUILD_NUMBER}"
             def vm_name = "${os_series}-vm"
             def jenkins_rg_name = params.JENKINS_RESOURCE_GROUP
@@ -99,17 +99,16 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
             def jenkins_subnet_name = params.JENKINS_SUBNET_NAME
             def azure_image_id = AZURE_IMAGES_MAP[os_series]["image"]
 
-            stage("${img_name_suffix}-prepare") {
+            stage("Prepare Resource Group") {
                 def az_rg_create_script = """
                     ${az_login_script}
                     az group create --name ${vm_rg_name} --location ${REGION}
                 """
-                cleanWs()
                 oe.azureEnvironment(az_rg_create_script, params.OE_DEPLOY_IMAGE)
             }
 
             try {
-                stage("${img_name_suffix}-provisioning") {
+                stage("Provision VM") {
                     def provision_script = """
                         ${az_login_script}
 
@@ -132,7 +131,7 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                     oe.azureEnvironment(provision_script, params.OE_DEPLOY_IMAGE)
                 }
 
-                stage("${img_name_suffix}-deploy") {
+                stage("Deploy VM") {
                     def deploy_script = """
                         ${az_login_script}
 
@@ -144,7 +143,7 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                             --resource-group ${vm_rg_name} \
                             --name ${vm_name} \
                             --command-id EnableRemotePS
-                        
+
                         PRIVATE_IP=\$(echo \$VM_DETAILS | jq -r '.privateIps')
                         rm -f ${WORKSPACE}/scripts/ansible/inventory/hosts
                         echo "[windows-agents]" >> ${WORKSPACE}/scripts/ansible/inventory/hosts
@@ -165,15 +164,13 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                             --command-id RunPowerShellScript \
                             --scripts @${WORKSPACE}/.jenkins/infrastructure/provision/run-sysprep.ps1
                     """
-                    cleanWs()
-                    checkout scm
                     oe.exec_with_retry(10, 30) {
                         oe.azureEnvironment(deploy_script, params.OE_DEPLOY_IMAGE)
                     }
                 }
 
 
-                stage("${img_name_suffix}-generalize") {
+                stage("Generalize VM") {
                     timeout(GLOBAL_TIMEOUT_MINUTES) {
                         def generalize_script = """
                             ${az_login_script}
@@ -181,13 +178,13 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                             az vm deallocate --resource-group ${vm_rg_name} --name ${vm_name}
                             az vm generalize --resource-group ${vm_rg_name} --name ${vm_name}
                         """
-                        oe.exec_with_retry(10, 30) {                           
+                        oe.exec_with_retry(10, 30) {
                             oe.azureEnvironment(generalize_script, params.OE_DEPLOY_IMAGE)
                         }
                     }
                 }
 
-                stage("${img_name_suffix}-capture") {
+                stage("Capture Image") {
                     timeout(GLOBAL_TIMEOUT_MINUTES) {
                         def capture_script = """
                             ${az_login_script}
@@ -214,7 +211,7 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                     }
                 }
 
-                stage("${img_name_suffix}-upload") {
+                stage("Upload Image") {
                     timeout(GLOBAL_TIMEOUT_MINUTES) {
                         def upload_script = """
                             ${az_login_script}
@@ -241,7 +238,7 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                                 --target-regions ${env.REPLICATION_REGIONS.split(',').join(' ')} \
                                 --replica-count 1
                         """
-                        oe.exec_with_retry(10, 30) {                           
+                        oe.exec_with_retry(10, 30) {
                             oe.azureEnvironment(upload_script, params.OE_DEPLOY_IMAGE)
                         }
                     }
@@ -260,9 +257,29 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
     }
 }
 
-parallel "Build Ubuntu 18.04"              : { buildLinuxManagedImage("ubuntu", "18.04") },
-         "Build Ubuntu 20.04"              : { buildLinuxManagedImage("ubuntu", "20.04") },
-         "Build RHEL 8"                    : { buildLinuxManagedImage("rhel", "8") },
-         "Build Windows 2019 nonSGX"       : { buildWindowsManagedImage("win2019", "ws2019-nonSGX", "SGX1FLC-NoIntelDrivers") },
-         "Build Windows 2019 SGX1"         : { buildWindowsManagedImage("win2019", "ws2019-SGX", "SGX1") },
-         "Build Windows 2019 SGX1FLC DCAP" : { buildWindowsManagedImage("win2019", "ws2019-SGX-DCAP", "SGX1FLC") }
+node(params.AGENTS_LABEL) {
+    stage("Initialize Workspace") {
+
+        cleanWs()
+        checkout scm
+
+        commit_id = get_commit_id()
+        version = get_image_version()
+
+        image_version = params.IMAGE_VERSION ?: version
+        image_id = params.IMAGE_ID ?: "${version}-${commit_id}"
+
+        println("IMAGE_VERSION: ${image_version}\nIMAGE_ID: ${image_id}")
+    }
+    stage("Build Agents") {
+        parallel "Build Windows Server 2019 - nonSGX"       : { buildWindowsManagedImage("win2019", "ws2019-nonSGX", "SGX1FLC-NoIntelDrivers", image_id, image_version) },
+                 "Build Windows Server 2019 - SGX1"         : { buildWindowsManagedImage("win2019", "ws2019-SGX", "SGX1", image_id, image_version) },
+                 "Build Windows Server 2019 - SGX1FLC DCAP" : { buildWindowsManagedImage("win2019", "ws2019-SGX-DCAP", "SGX1FLC", image_id, image_version) },
+                 "Build Ubuntu 18.04" :                       { buildLinuxManagedImage("ubuntu", "18.04", image_id, image_version) },
+                 "Build Ubuntu 20.04" :                       { buildLinuxManagedImage("ubuntu", "20.04", image_id, image_version) },
+                 "Build RHEL 8"       :                       { buildLinuxManagedImage("rhel", "8", image_id, image_version) }
+    }
+    stage("Clean Workspace") {
+        cleanWs()
+    }
+}
