@@ -69,20 +69,20 @@ int main(int argc, const char* argv[])
         "Failed to create OE evidence. Error: %s\n",
         oe_result_str(result));
     printf(
-        "1. Verifying evidence with no collateral cache (%ld msec)\n",
+        "1. Verify evidence with no collateral cache (%ld msec) [Expected: 4000 msec]\n",
         get_tick() - tick);
 
-    // Verifying evidence with collateral cache
+    // Verify evidence with collateral cache
     tick = get_tick();
     OE_CHECK_MSG(
         get_evidence(enclave, &result, nullptr, 0, nullptr, true),
         "Failed to create OE evidence. Error: %s\n",
         oe_result_str(result));
     printf(
-        "2. Verifying evidence with collateral cache (%ld msec)\n",
+        "2. Verify evidence with collateral cache (%ld msec) [Expected: 200 msec]\n",
         get_tick() - tick);
 
-    // Generating evidence without verifying
+    // Generating evidence without verify
     tick = get_tick();
     OE_CHECK_MSG(
         get_evidence(
@@ -95,10 +95,10 @@ int main(int argc, const char* argv[])
         "Failed to create OE evidence. Error: %s\n",
         oe_result_str(result));
     printf(
-        "3. Generating evidence without verifying (%ld msec)\n",
+        "3. Generating evidence without verify (%ld msec) [Expected: 40 msec]\n",
         get_tick() - tick);
 
-    // Verifying evidence in host
+    // Verify evidence in host
     OE_CHECK(oe_verifier_initialize());
     tick = get_tick();
     OE_CHECK_MSG(
@@ -114,7 +114,7 @@ int main(int argc, const char* argv[])
             &claims_length),
         "Failed to verify evidence. Error: %s\n",
         oe_result_str(result));
-    printf("4. Verifying evidence in host (%ld msec)\n", get_tick() - tick);
+    printf("4. Verify evidence in host (%ld msec) [Expected: 20 msec]\n", get_tick() - tick);
 
     oe_free_claims(claims, claims_length);
     OE_CHECK(oe_verifier_shutdown());
