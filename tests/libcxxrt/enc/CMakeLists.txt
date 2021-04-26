@@ -14,7 +14,7 @@ add_custom_command(
 add_enclave_library(libcxxrttest-support libcxxrt_t.c)
 enclave_compile_options(libcxxrttest-support PUBLIC -Wno-error)
 enclave_link_libraries(libcxxrttest-support PRIVATE oeenclave oelibc)
-enclave_link_libraries(libcxxrttest-support INTERFACE -Wl,--undefined=test)
+enclave_link_options(libcxxrttest-support INTERFACE -Wl,--undefined=test)
 
 # helper function to create enclave binary
 function (add_libcxxrt_test_enc NAME CXXFILE)
@@ -38,8 +38,8 @@ function (add_libcxxrt_test_enc NAME CXXFILE)
                               -D__TEST__="${CXXFILE}")
   enclave_link_libraries(libcxxrttest-${NAME}_enc libcxxrttest-support)
   if ("${NAME}" STREQUAL "test_foreign_exceptions")
-    enclave_link_libraries(libcxxrttest-${NAME}_enc
-                           -Wl,--wrap,_Unwind_RaiseException)
+    enclave_link_options(libcxxrttest-${NAME}_enc PRIVATE
+                         -Wl,--wrap,_Unwind_RaiseException)
   endif ()
 
   if (WIN32)

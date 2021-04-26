@@ -58,5 +58,7 @@ target_compile_definitions(oesign_test_alt_enc PUBLIC OE_API_VERSION=2)
 target_include_directories(oesign_test_alt_enc
                            PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(oesign_test_alt_enc oeenclave ${oecrypto_lib}
-                      -Wl,--undefined=oesign_test_extra_function)
+target_link_libraries(oesign_test_alt_enc oeenclave ${oecrypto_lib})
+
+target_link_options(oesign_test_alt_enc PRIVATE
+                    -Wl,--undefined=oesign_test_extra_function)

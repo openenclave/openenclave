@@ -65,10 +65,10 @@ function (add_libunwind_test_enc NAME TESTFILE)
     enclave_compile_definitions(libunwindtest-${NAME}_enc PRIVATE CODE_COVERAGE)
   endif ()
   enclave_link_libraries(libunwindtest-${NAME}_enc libunwindtest-support)
-  enclave_link_libraries(libunwindtest-${NAME}_enc
-                         -Wl,--undefined=pthread_mutex_lock)
-  enclave_link_libraries(libunwindtest-${NAME}_enc
-                         -Wl,--undefined=_U_dyn_info_list_addr)
+  enclave_link_options(libunwindtest-${NAME}_enc PRIVATE
+                       -Wl,--undefined=pthread_mutex_lock)
+  enclave_link_options(libunwindtest-${NAME}_enc PRIVATE
+                       -Wl,--undefined=_U_dyn_info_list_addr)
 
   if (WIN32)
     maybe_build_using_clangw(libunwindtest-${NAME}_enc)

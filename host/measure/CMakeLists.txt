@@ -195,5 +195,5 @@ set_property(TARGET oehostmr PROPERTY ARCHIVE_OUTPUT_DIRECTORY
                                       ${OE_LIBDIR}/openenclave/host)
 
 if (UNIX)
-  target_link_libraries(oehostmr INTERFACE -Wl,-z,noexecstack)
+  target_link_options(oehostmr INTERFACE -Wl,-z,noexecstack)
 endif ()

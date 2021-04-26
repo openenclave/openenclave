@@ -312,7 +312,7 @@ endif ()
 
 # Interface link flags for enclaves.
 if (OE_SGX)
-  enclave_link_libraries(
+  enclave_link_options(
     oecore
     INTERFACE
     -nostdlib
@@ -323,7 +323,7 @@ if (OE_SGX)
     -Wl,-z,now
     -Wl,-gc-sections)
 elseif (OE_TRUSTZONE)
-  enclave_link_libraries(
+  enclave_link_options(
     oecore
     INTERFACE
     -nostdlib
