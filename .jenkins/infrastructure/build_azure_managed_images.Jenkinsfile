@@ -28,7 +28,7 @@ def get_image_version() {
     def now = LocalDateTime.now()
     return (now.format(DateTimeFormatter.ofPattern("yyyy")) + "." + \
             now.format(DateTimeFormatter.ofPattern("MM")) + "." + \
-            now.format(DateTimeFormatter.ofPattern("dd")) + env.$BUILD_NUMBER)
+            now.format(DateTimeFormatter.ofPattern("dd")) + "${BUILD_NUMBER}")
 }
 
 def get_commit_id() {
