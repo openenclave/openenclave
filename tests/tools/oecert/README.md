@@ -1,7 +1,7 @@
 oecert
 =====
 
-`oecert` is a utility that generates the following files in binary format, or dump them in readable text, and verify them:
+`oecert` is a debugging utility that generates the following files in binary format, or dump them in readable text, and verify them:
 
  1. Self-signed certificates (in der format) used for remote attestation over TLS.
  2. An OE report.
@@ -9,7 +9,7 @@ oecert
  4. An endorsement for OE report/evidence.
 
 For certificates, the user can pass in the public/private key.
-
+`oecert` is not suitable for production use.
 
 Usage: `oecert Options`
 
