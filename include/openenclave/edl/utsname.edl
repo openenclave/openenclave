@@ -29,7 +29,7 @@ enclave
     untrusted
     {
         int oe_syscall_uname_ocall(
-            [out, count=1] struct oe_utsname* buf)
+            [out] struct oe_utsname* buf)
             propagate_errno;
     };
 };

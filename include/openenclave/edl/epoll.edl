@@ -37,7 +37,7 @@ enclave
             int64_t epfd,
             int op,
             int64_t fd,
-            [in, count=1] struct oe_epoll_event* event)
+            [in] struct oe_epoll_event* event)
             propagate_errno;
 
         int oe_syscall_epoll_close_ocall(
