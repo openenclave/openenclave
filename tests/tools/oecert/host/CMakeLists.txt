@@ -11,12 +11,14 @@ endif ()
 
 add_custom_command(
   OUTPUT oecert_u.h oecert_u.c oecert_args.h
-  DEPENDS ../oecert.edl edger8r oecert_enclave_signed
+  DEPENDS ../oecert.edl edger8r
   COMMAND edger8r --untrusted ${CMAKE_CURRENT_SOURCE_DIR}/../oecert.edl
           --search-path ${PROJECT_SOURCE_DIR}/include ${DEFINE_OE_SGX})
 
 add_executable(oecert host.cpp evidence.cpp
                       ${CMAKE_CURRENT_BINARY_DIR}/oecert_u.c)
+
+add_dependencies(oecert enclave_key_pair)
 
 target_include_directories(oecert PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
                                           -I/usr/include/openssl)
