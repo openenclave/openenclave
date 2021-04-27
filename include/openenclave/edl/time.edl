@@ -14,7 +14,7 @@
 
 enclave
 {
-    // Needed for integral type time_t
+    // Needed for integral type time_t, oe_clockid_t
     include "openenclave/bits/types.h"
 
     struct oe_timespec
@@ -26,6 +26,13 @@ enclave
     untrusted
     {
         int oe_syscall_nanosleep_ocall(
+            [in] struct oe_timespec* req,
+            [in, out] struct oe_timespec* rem)
+            propagate_errno;
+
+        int oe_syscall_clock_nanosleep_ocall(
+            oe_clockid_t clockid,
+            int flag,
             [in] struct oe_timespec* req,
             [in, out] struct oe_timespec* rem)
             propagate_errno;

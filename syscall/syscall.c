@@ -72,15 +72,14 @@ OE_WEAK OE_DEFINE_SYSCALL1(SYS_chdir)
     return oe_chdir(path);
 }
 
-// TODO issue #3933: Implement correctly and add tests
 OE_WEAK OE_DEFINE_SYSCALL4_M(SYS_clock_nanosleep)
 {
-    OE_UNUSED(arg1);
-    OE_UNUSED(arg2);
     oe_errno = 0;
+    oe_clockid_t clockid = (oe_clockid_t)arg1;
+    int flag = (int)arg2;
     struct oe_timespec* req = (struct oe_timespec*)arg3;
     struct oe_timespec* rem = (struct oe_timespec*)arg4;
-    return (long)oe_nanosleep(req, rem);
+    return (long)oe_clock_nanosleep(clockid, flag, req, rem);
 }
 
 OE_WEAK OE_DEFINE_SYSCALL1_M(SYS_close)

@@ -1282,6 +1282,39 @@ oe_result_t _oe_syscall_nanosleep_ocall(
 }
 OE_WEAK_ALIAS(_oe_syscall_nanosleep_ocall, oe_syscall_nanosleep_ocall);
 
+/**
+ * Declare the prototypes of the following functions to avoid the
+ * missing-prototypes warning.
+ */
+oe_result_t _oe_syscall_clock_nanosleep_ocall(
+    int* _retval,
+    oe_clockid_t clockid,
+    int flag,
+    struct oe_timespec* req,
+    struct oe_timespec* rem);
+
+/**
+ * Implement the functions and make them as the weak aliases of
+ * the public ocall wrappers.
+ */
+oe_result_t _oe_syscall_clock_nanosleep_ocall(
+    int* _retval,
+    oe_clockid_t clockid,
+    int flag,
+    struct oe_timespec* req,
+    struct oe_timespec* rem)
+{
+    OE_UNUSED(_retval);
+    OE_UNUSED(clockid);
+    OE_UNUSED(flag);
+    OE_UNUSED(req);
+    OE_UNUSED(rem);
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(
+    _oe_syscall_clock_nanosleep_ocall,
+    oe_syscall_clock_nanosleep_ocall);
+
 /*
 **==============================================================================
 **
