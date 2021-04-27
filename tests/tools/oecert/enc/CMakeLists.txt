@@ -7,18 +7,6 @@ add_custom_command(
   COMMAND edger8r --trusted ${CMAKE_CURRENT_SOURCE_DIR}/../oecert.edl
           --search-path ${PROJECT_SOURCE_DIR}/include ${DEFINE_OE_SGX})
 
-# generate a random key pair for enclave signing and output the public key to header file
-add_custom_command(
-  OUTPUT oecert_enc_private.pem oecert_enc_public.pem oecert_enc_pubkey.h
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../gen_pubkey_header.sh
-  COMMAND openssl genrsa -out oecert_enc_private.pem -3 3072
-  COMMAND openssl rsa -in oecert_enc_private.pem -pubout -out
-          oecert_enc_public.pem
-  COMMAND
-    ${CMAKE_CURRENT_SOURCE_DIR}/../gen_pubkey_header.sh
-    ${CMAKE_CURRENT_BINARY_DIR}/../oecert_enc_pubkey.h
-    ${CMAKE_CURRENT_BINARY_DIR}/oecert_enc_public.pem)
-
 # generate the enclave and sign it with the private key
 add_enclave(
   TARGET
@@ -29,7 +17,9 @@ add_enclave(
   CONFIG
   enc.conf
   KEY
-  ${CMAKE_CURRENT_BINARY_DIR}/oecert_enc_private.pem)
+  ${CMAKE_CURRENT_BINARY_DIR}/../oecert_enc_private.pem)
+
+add_enclave_dependencies(oecert_enc enclave_key_pair)
 
 # Need for the generated file oecert_t.h
 enclave_include_directories(oecert_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
