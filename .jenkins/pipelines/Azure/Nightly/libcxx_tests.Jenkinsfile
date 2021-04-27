@@ -32,7 +32,7 @@ try {
     oe.emailJobStatus('STARTED')
     parallel "Libcxx ACC1804 clang-8 Debug" :          { ACCLibcxxTest(BIONIC_LABEL, 'clang-8', 'Debug') },
              "Libcxx ACC1804 clang-8 Release" :        { ACCLibcxxTest(BIONIC_LABEL, 'clang-8', 'Release') },
-             "Libcxx ACC1804 clang-8 RelWithDebInfo" : { ACCLibcxxTest(BIONIC_LABEL, 'clang-8', 'RelWithDebInfo') },
+             "Libcxx ACC1804 clang-8 RelWithDebInfo" : { ACCLibcxxTest(BIONIC_LABEL, 'clang-8', 'RelWithDebInfo') }
 } catch(Exception e) {
     println "Caught global pipeline exception :" + e
     GLOBAL_ERROR = e
