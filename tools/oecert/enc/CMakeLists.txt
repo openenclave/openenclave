@@ -5,7 +5,7 @@ add_custom_command(
   OUTPUT oecert_t.h oecert_t.c oecert_args.h
   DEPENDS ../oecert.edl edger8r
   COMMAND edger8r --trusted ${CMAKE_CURRENT_SOURCE_DIR}/../oecert.edl
-          --search-path ${PROJECT_SOURCE_DIR}/include ${DEFINE_OE_SGX})
+          --search-path ${PROJECT_SOURCE_DIR}/include -DOE_SGX)
 
 # generate the enclave and sign it with the private key
 add_enclave(
@@ -32,3 +32,6 @@ set_enclave_properties(oecert_enc PROPERTIES RUNTIME_OUTPUT_DIRECTORY
 
 add_custom_target(oecert_enclave_signed DEPENDS oecert_enc.signed
                                                 oecert_enc_pubkey.h)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/../oecert_enc.signed
+        DESTINATION ${CMAKE_INSTALL_BINDIR})

@@ -20,7 +20,7 @@
 
 #include "evidence.h"
 
-#include "../../../../common/sgx/endorsements.h"
+#include "../../../common/sgx/endorsements.h"
 
 #define ENCLAVE_FILENAME_SUFFIX "_enc.signed"
 #define INPUT_PARAM_OPTION_CERT "--cert"
