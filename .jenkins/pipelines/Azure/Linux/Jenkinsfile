@@ -11,11 +11,11 @@ GLOBAL_ERROR = null
 DOCKER_TAG = env.DOCKER_TAG ?: "latest"
 AGENTS_LABELS = [
     "acc-ubuntu-18.04":         env.UBUNTU_1804_CUSTOM_LABEL ?: "ACC-1804",
-    "acc-rhel-8":               env.RHEL_8_CUSTOM_LABEL ?: "ACC-RHEL-8",
+    "acc-rhel-8":               env.RHEL_8_CUSTOM_LABEL ?: "ACC-RHEL-83",
     "ubuntu-nonsgx":            env.UBUNTU_NONSGX_CUSTOM_LABEL ?: "nonSGX",
     "windows-nonsgx":           env.WINDOWS_NONSGX_CUSTOM_LABEL ?: "nonSGX-Windows",
     "acc-ubuntu-18.04-vanilla": env.UBUNTU_VANILLA_1804_CUSTOM_LABEL ?: "vanilla-ubuntu-1804",
-    "acc-rhel-8-vanilla":       env.RHEL_8_VANILLA_CUSTOM_LABEL ?: "vanilla-rhel-8"
+    "acc-rhel-8-vanilla":       env.RHEL_8_VANILLA_CUSTOM_LABEL ?: "vanilla-rhel-83"
 ]
 
 def ACCCodeCoverageTest(String label, String compiler, String build_type) {
