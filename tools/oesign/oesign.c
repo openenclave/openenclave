@@ -490,6 +490,8 @@ void _merge_config_file_options(
 
     if (options->family_id.has_value || options->extended_product_id.has_value)
         properties->config.attributes |= SGX_FLAGS_KSS;
+    else
+        properties->config.attributes &= ~SGX_FLAGS_KSS;
 
     /* If NumHeapPages option is present */
     if (options->num_heap_pages.has_value)
