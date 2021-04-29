@@ -922,17 +922,16 @@ oe_result_t oe_sgx_build_enclave(
         context->attributes.flags |= OE_ENCLAVE_FLAG_SGX_KSS;
     }
 
-    // if config_id data is passed and OE_SGX_FLAGS_KSS were not set in
-    // properties file
-    if (context->use_config_id &&
-        !(context->attributes.flags & OE_ENCLAVE_FLAG_SGX_KSS))
+    // if config_id data is passed and kss is not supported
+    if (context->use_config_id && !_is_kss_supported())
     {
         if (!context->config_data->ignore_if_unsupported)
         {
             OE_RAISE_MSG(
                 OE_UNSUPPORTED,
                 "Enclave image requires config_id/config_svn settings but "
-                "OE_SGX_FLAGS_KSS is not set in properties\n",
+                "Key Sharing and Seperation (KSS) is not supported on "
+                "platform\n",
                 NULL);
         }
         else
@@ -940,7 +939,6 @@ oe_result_t oe_sgx_build_enclave(
             context->use_config_id = false;
         }
     }
-
     /* Perform the ECREATE operation */
     OE_CHECK(oe_sgx_create_enclave(
         context, enclave_size, loaded_enclave_pages_size, &enclave_addr));

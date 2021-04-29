@@ -137,8 +137,8 @@ OE_CHECK_SIZE(sizeof(sgx_attributes_t), 16);
 #define SGX_SIGSTRUCT_MISCMASK_EXINFO 0xfffffffe
 
 /* sgx_sigstruct_t.flags */
-/* Mask all bits except bit 2 for MODE64BIT */
-#define SGX_SIGSTRUCT_ATTRIBUTEMASK_FLAGS 0XfffffffffffffffbULL
+/* Mask all bits except bit 2 for MODE64BIT, bit 8 for kss attribute mask */
+#define SGX_SIGSTRUCT_ATTRIBUTEMASK_FLAGS 0Xffffffffffffff7bULL
 
 /* sgx_sigstruct_t.xfrm */
 /* Mask all bits except for OS-controlled AVX enablement bits:

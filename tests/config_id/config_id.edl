@@ -2,9 +2,10 @@
 // Licensed under the MIT License.
 
 enclave {
-    from "openenclave/edl/logging.edl" import oe_write_ocall;
+    from "openenclave/edl/logging.edl" import *;
     from "openenclave/edl/sgx/platform.edl" import *;
     trusted {
-        public int enclave_test_config_id();
+        public oe_result_t enclave_test_config_id_non_kss();
+        public oe_result_t enclave_test_config_id();
     };
 };

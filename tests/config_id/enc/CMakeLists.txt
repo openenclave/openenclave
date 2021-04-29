@@ -10,14 +10,57 @@ add_custom_command(
     edger8r --trusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
     ${DEFINE_OE_SGX} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
+add_enclave(TARGET config_id_kss_enc_unsigned SOURCES enc.c props_kss.c
+            ${CMAKE_CURRENT_BINARY_DIR}/config_id_t.c)
+
+enclave_include_directories(
+  config_id_kss_enc_unsigned PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_enclave(TARGET config_id_enc_unsigned SOURCES enc.c props.c
+            ${CMAKE_CURRENT_BINARY_DIR}/config_id_t.c)
+
+enclave_include_directories(
+  config_id_enc_unsigned PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_enclave(
+  TARGET
+  config_id_kss_enc
+  CONFIG
+  sign_kss.conf
+  SOURCES
+  enc.c
+  props_kss.c
+  ${CMAKE_CURRENT_BINARY_DIR}/config_id_t.c)
+
+enclave_include_directories(
+  config_id_kss_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR})
+
 add_enclave(
   TARGET
   config_id_enc
-  UUID
-  25419627-14f6-4625-9329-cf5f10a57fea
+  CONFIG
+  sign.conf
   SOURCES
-  enc.cpp
+  enc.c
+  props.c
   ${CMAKE_CURRENT_BINARY_DIR}/config_id_t.c)
 
 enclave_include_directories(config_id_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
                             ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_enclave(
+  TARGET
+  config_id_no_kss_conf_enc
+  CONFIG
+  sign.conf
+  SOURCES
+  enc.c
+  props_kss.c
+  ${CMAKE_CURRENT_BINARY_DIR}/config_id_t.c)
+
+enclave_include_directories(
+  config_id_no_kss_conf_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR})
