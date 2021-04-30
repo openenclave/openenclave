@@ -13,7 +13,7 @@ add_custom_command(
   OUTPUT oecert_u.h oecert_u.c oecert_args.h
   DEPENDS ../oecert.edl edger8r
   COMMAND edger8r --untrusted ${CMAKE_CURRENT_SOURCE_DIR}/../oecert.edl
-          --search-path ${PROJECT_SOURCE_DIR}/include ${DEFINE_OE_SGX})
+          --search-path ${PROJECT_SOURCE_DIR}/include -DOE_SGX)
 
 add_executable(oecert host.cpp evidence.cpp
                       ${CMAKE_CURRENT_BINARY_DIR}/oecert_u.c)
@@ -36,3 +36,8 @@ endif ()
 # Generate the oecert binary in the the same directory with enclave binary
 set_target_properties(oecert PROPERTIES RUNTIME_OUTPUT_DIRECTORY
                                         "${CMAKE_CURRENT_BINARY_DIR}/..")
+
+install(
+  TARGETS oecert
+  EXPORT openenclave-targets
+  DESTINATION ${CMAKE_INSTALL_BINDIR})

@@ -26,10 +26,10 @@
 #include <openssl/applink.c>
 #endif
 
-#include "../../../../common/attest_plugin.h"
-#include "../../../../common/sgx/collateral.h"
-#include "../../../../common/sgx/quote.h"
-#include "../../../../host/sgx/sgxquoteprovider.h"
+#include "../../../common/attest_plugin.h"
+#include "../../../common/sgx/collateral.h"
+#include "../../../common/sgx/quote.h"
+#include "../../../host/sgx/sgxquoteprovider.h"
 
 extern FILE* log_file;
 

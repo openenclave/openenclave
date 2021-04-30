@@ -5,7 +5,7 @@
 #define _SGX_QUOTE
 
 #include <openenclave/host.h>
-#include "../../../../host/sgx/platformquoteprovider.h"
+#include "../../../host/sgx/platformquoteprovider.h"
 #include "../oecert_enc_pubkey.h"
 
 void log(const char* fmt, ...);
