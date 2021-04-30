@@ -10,8 +10,7 @@
 ## Prerequisites
 
 - Use an OE SDK-supported machine or development environment (like Intel SGX).
-- Install the OE SDK package and dependencies for your environment. Install the OE SDK package and dependencies for your environment. The documentation for necessary prerequisites is provided in the [getting started page of the Open Enclave SDK](https://github.com/openenclave/openenclave/blob/master/docs/GettingStartedDocs/README.md).
-
+- Install the OE SDK package and dependencies for your environment. The documentation for necessary prerequisites is provided in the [getting started page of the Open Enclave SDK](https://github.com/openenclave/openenclave/blob/master/docs/GettingStartedDocs/README.md).
 - Read the common [sample information page](../README.md#building-the-samples) to learn how to prepare the sample.
 
 ## About the helloworld sample
@@ -61,13 +60,13 @@ The reverse is also true for functions defined in the untrusted host that the tr
 To generate the functions with the marshaling code the `oeedger8r` is called in both the host and enclave directories.
 To generate the marshaling code the untrusted host uses to call into the trusted enclave, the `--untrusted` argument as shown below. `oeedger8r` needs the search path as an input to figure out where to search for the edl files.
 
-On Linux, if the openenclave package is installed at `/opt/openenclave` and you are looking to build an enclave application targetting SGX, you would need to run the following command:
+On Linux, if the openenclave package is installed at `/opt/openenclave` and you are looking to build an enclave application targeting SGX, you would need to run the following command:
 
 ```bash
 oeedger8r --search-path /opt/openenclave/include --search-path /opt/openenclave/include/openenclave/edl/sgx ../helloworld.edl --untrusted
 ```
 
-On Windows, if the openenclave package is installed at `c:\openenclave` and the developer is looking to build an enclave application targetting SGX, the developer would need to run the following command:
+On Windows, if the openenclave package is installed at `c:\openenclave` and the developer is looking to build an enclave application targeting SGX, the developer would need to run the following command:
 
 ```cmd
 oeedger8r --search-path c:\openenclave\include --search-path c:\openenclave\include\openenclave\edl\sgx ..\helloworld.edl --untrusted
@@ -83,13 +82,13 @@ This command compiles the `helloworld.edl` file and generates the following file
 
 To generate the marshaling code the trusted enclave uses to call into the untrusted host, the `--trusted` argument as shown below. `oeedger8r` needs the search path as an input to figure out where to search for the edl files.
 
-On Linux, if the openenclave package is installed at `/opt/openenclave` and you are looking to build an enclave application targetting SGX, you would need to run the following command:
+On Linux, if the openenclave package is installed at `/opt/openenclave` and you are looking to build an enclave application targeting SGX, you would need to run the following command:
 
 ```bash
 oeedger8r --search-path /opt/openenclave/include --search-path /opt/openenclave/include/openenclave/edl/sgx ../helloworld.edl --trusted
 ```
 
-On Windows, if the openenclave package is installed at `c:\openenclave` and the developer is looking to build an enclave application targetting SGX, the developer would need to run the following command:
+On Windows, if the openenclave package is installed at `c:\openenclave` and the developer is looking to build an enclave application targeting SGX, the developer would need to run the following command:
 
 ```cmd
 oeedger8r --search-path c:\openenclave\include --search-path c:\openenclave\include\openenclave\edl\sgx ..\helloworld.edl --trusted
