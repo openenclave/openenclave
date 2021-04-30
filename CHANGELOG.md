@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The OpenEnclave CMake configuration now explicitly sets CMAKE_SKIP_RPATH to TRUE. This change should not affect fully static-linked enclaves.
 - oe_verify_attestation_certificate_with_evidence() has been deprecated because it has been deemed insufficient for security. Use the new, experimental oe_verify_attestation_certificate_with_evidence_v2() instead to generate a self-signed certificate for use in the TLS handshaking process.
 
+### Security
+- Update MUSL to version 1.2.2. Refer to MUSL release notes between version 1.1.22 to 1.2.2 for the set of issues addressed.
+
 [v0.15.0][v0.15.0_log]
 --------------
 ### Added
