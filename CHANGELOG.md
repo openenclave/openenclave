@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - oe_verify_attestation_certificate_with_evidence() has been deprecated because it has been deemed insufficient for security. Use the new, experimental oe_verify_attestation_certificate_with_evidence_v2() instead to generate a self-signed certificate for use in the TLS handshaking process.
 - In/out parameters in EDL now have the default count equals to one if the `count` attribute is not used.
 
+### Security
+- Update MUSL to version 1.2.2. Refer to MUSL release notes between version 1.1.22 to 1.2.2 for the set of issues addressed.
+
 [v0.15.0][v0.15.0_log]
 --------------
 ### Added
