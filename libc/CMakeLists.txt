@@ -62,6 +62,24 @@ else ()
     optee/trace.c)
 endif ()
 
+if (ENABLE_FUZZING)
+  list(
+    APPEND
+    PLATFORM_SRC
+    ${MUSLSRC}/stat/lstat.c
+    ${MUSLSRC}/passwd/getgr_a.c
+    ${MUSLSRC}/passwd/getgr_r.c
+    ${MUSLSRC}/passwd/getgrent_a.c
+    ${MUSLSRC}/passwd/getgrent.c
+    ${MUSLSRC}/passwd/getgrouplist.c
+    ${MUSLSRC}/passwd/getpw_a.c
+    ${MUSLSRC}/passwd/getpw_r.c
+    ${MUSLSRC}/passwd/getpwent_a.c
+    ${MUSLSRC}/passwd/getpwent.c
+    ${MUSLSRC}/passwd/nscd_query.c
+    ${MUSLSRC}/thread/pthread_cleanup_push.c)
+endif ()
+
 add_enclave_library(
   oelibc
   STATIC

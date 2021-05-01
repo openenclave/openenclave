@@ -513,3 +513,5 @@ install(
           COMPONENT OEHOSTVERIFY)
 
 include(measure/CMakeLists.txt)
+
+host_enable_fuzzing(oehost)

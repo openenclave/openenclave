@@ -261,6 +261,9 @@ include(package_settings)
 # See `cmake/add_enclave.cmake` for enclave creation logic
 include(add_enclave)
 
+# See `cmake/fuzzer_settings.cmake` to build target with fuzzing flags enabled
+include(fuzzer_settings)
+
 # TODO: See #756: Fix this because it is incompatible with
 # multi-configuration generators
 if (uppercase_CMAKE_BUILD_TYPE STREQUAL "DEBUG")
@@ -293,6 +296,7 @@ if (NOT USE_SNMALLOC)
 endif ()
 
 option(BUILD_TESTS "Build OE tests" ON)
+option(ENABLE_FUZZING "Build OE with fuzzing flags enabled" OFF)
 
 # For EEID see https://github.com/openenclave/openenclave/pull/2647
 option(
