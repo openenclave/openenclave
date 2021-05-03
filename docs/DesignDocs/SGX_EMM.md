@@ -90,7 +90,7 @@ typedef struct _sgx_pfinfo
  * @param[in] pfinfo, info reported in the SSA MISC region for page fault
  * @param[in] private_data, private data provided by handler in sgx_mm_alloc call.
  * @return EXCEPTION_CONTINUE_EXECUTION on success handling the exception.
- *    abort if internal corruption detected, Otherwise EXCEPTION_CONTINUE_SEARCH.
+ *    abort if internal corruption detected. Otherwise EXCEPTION_CONTINUE_SEARCH.
  */
 typedef int (*enclave_fault_handler_t)(const sgx_pfinfo* pfinfo, void* private_data);
 
