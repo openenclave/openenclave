@@ -106,8 +106,8 @@ typedef int (*enclave_fault_handler_t)(const sgx_pfinfo* pfinfo, void* private_d
 *                              are done when this function returns.
 *            - EMA_COMMIT_ON_DEMAND: reserves memory range, EPC pages are committed (EACCEPT) on demand upon #PF.
 *        ORed with zero or one of the committing order flags:
-*            - EMA_GROWSDOWN: always commit pages from higher to lower addresses, no gaps in addresses above the last commited
-*            - EMA_GROWSUP:   always commit pages from lower to higher addresses, no gaps in addresses below the last commited.
+*            - EMA_GROWSDOWN: always commit pages from higher to lower addresses, no gaps in addresses above the last committed.
+*            - EMA_GROWSUP:   always commit pages from lower to higher addresses, no gaps in addresses below the last committed.
 *        Optionally ORed with EMA_FIXED to indicate allocation at fixed address. 
 *
 * @param[in] handler, custom handler for page faults in this region, NULL if no custom handling needed
