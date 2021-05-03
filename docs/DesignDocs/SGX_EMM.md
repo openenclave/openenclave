@@ -37,7 +37,7 @@ The EMM clients may call sgx_mm_modify/sgx_mm_modify_ex to request permissions a
 
 ## Notes on Internal Design ##
 
-The enclave memory manager keeps track of memory allocation and layout info inside enclave address range (ELRANGE) using an internal structure called Enclave Memory Area (EMA) List. The EMA and EMA list are considered private data structure of memory manager, and their internals are not exposed in client-facing APIs.
+The enclave memory manager keeps track of memory allocation and layout info inside enclave address range (ELRANGE) using an internal structure called the Enclave Memory Area (EMA) List. The EMA and EMA list are considered private data structure of memory manager, and their internals are not exposed in client-facing APIs.
 - The EMA list tracks all memory regions in use (reserved, committed, commit-on-demand) in ELRANGE.
 - Ranges in ELRANGE not tracked by an EMA are considered free and ready for new allocations
 - The EMM labels certain EMAs reserved for runtime or its internal usage and make them not accessible from public APIs.
