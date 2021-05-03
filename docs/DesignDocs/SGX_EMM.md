@@ -46,7 +46,7 @@ The enclave memory manager keeps track of memory allocation and layout info insi
 **Assumptions:**
 
 - When enclave is loaded, the OS has reserved the whole address range covered by ELRANGE. It is assumed the host app will not remap any part of this reserved range.
-  - In future, when the new feature that allows loading enclave with base address at zero, we may support partial ELRANGE reserved by the OS.  
+  - In the future, when the new feature that allows loading an enclave with base address at zero, we may support partial ELRANGE reserved by the OS.  
 - Memory manager does not check EPC pressure, or proactively trim pages when EPC runs low. The OS can reclaim EPC pages when EPC running low or cgroups threshold reached
 - Memory manager does not maintain and recycle committed then freed pages
   - Whenever a page is freed (via dealloc or uncommit API), it is trimmed from enclave and need be re-allocated and committed before re-use.
