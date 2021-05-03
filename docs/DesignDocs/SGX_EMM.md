@@ -26,7 +26,7 @@ When a page in COMMIT_ON_DEMAND allocations is accessed, a page fault occurs if 
 
 The clients can also call the EMM commit API, sgx_mm_commit, to proactively commit specific sub-regions in a COMMIT_ON_DEMAND allocation to avoid future page fault.
 
-Some EMM clients, <i>e.g.</i>, a dynamic code loader wishing to load code on page fault, can register a custom handler for page fault at the time of allocation request. In the custom page fault handler, it can invoke an API, sgx_mm_commit_data, to commit and load data to newly committed EPC page at the same time as supported by EACCEPTCOPY. 
+Some EMM clients, <i>e.g.</i>, a dynamic code loader wishing to load code on page faults, can register a custom handler for page faults at the time of allocation request. In the custom page fault handler, it can invoke an API, sgx_mm_commit_data, to commit and load data to newly committed EPC page at the same time as supported by EACCEPTCOPY. 
 
 Committed pages will stay committed (regardless how they were committed) until the clients calls the uncommit API, sgx_mm_uncommit, on them or the allocation they belong to is deallocated by sgx_mm_dealloc.    
 
