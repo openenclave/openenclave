@@ -175,6 +175,11 @@ static void* _get_section(const elf64_t* elf, size_t index)
                : (uint8_t*)elf->data + sh->sh_offset;
 }
 
+void* elf_get_section(const elf64_t* elf, size_t index)
+{
+    return _get_section(elf, index);
+}
+
 static void* _get_segment(const elf64_t* elf, size_t index)
 {
     const elf64_phdr_t* ph = _get_phdr(elf, index);
@@ -370,6 +375,11 @@ static size_t _find_shdr(const elf64_t* elf, const char* name)
 
 done:
     return result;
+}
+
+size_t elf_find_shdr(const elf64_t* elf, const char* name)
+{
+    return _find_shdr(elf, name);
 }
 
 static inline bool _is_valid_string_table(const char* table, size_t size)

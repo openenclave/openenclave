@@ -364,6 +364,12 @@ elf64_ehdr_t* elf64_get_header(const elf64_t* elf);
 /* Return the name of the function that contains this address */
 const char* elf64_get_function_name(const elf64_t* elf, elf64_addr_t addr);
 
+/* Get the symbol table section header */
+size_t elf_find_shdr(const elf64_t* elf, const char* name);
+
+/* Get the section data */
+void* elf_get_section(const elf64_t* elf, size_t index);
+
 ELF_EXTERNC_END
 
 #endif /* _OE_ELF_H */

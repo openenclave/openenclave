@@ -88,3 +88,5 @@ if (WITH_EEID)
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include>
     $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/3rdparty/mbedtls>)
 endif ()
+
+enclave_enable_fuzzing(oeenclave)
