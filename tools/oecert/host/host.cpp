@@ -236,6 +236,7 @@ static char* _get_enclave_filename()
     char* enclave_filename = nullptr;
     char path[OE_PATH_MAX];
     size_t path_size = 0;
+    size_t enclave_filename_size = 0;
 
 #if defined(__linux__)
     path_size += (size_t)readlink("/proc/self/exe", path, OE_PATH_MAX);
@@ -250,18 +251,20 @@ static char* _get_enclave_filename()
         goto done;
     }
     path[path_size] = '\0';
-
-    enclave_filename =
-        (char*)malloc(path_size + sizeof(ENCLAVE_FILENAME_SUFFIX));
+    enclave_filename_size = path_size + sizeof(ENCLAVE_FILENAME_SUFFIX);
+    enclave_filename = (char*)malloc(enclave_filename_size);
 
     if (enclave_filename == nullptr)
     {
         printf("Failed to malloc enclave_filename.\n");
         goto done;
     }
-
-    strcpy(enclave_filename, path);
-    strcat(enclave_filename, ENCLAVE_FILENAME_SUFFIX);
+    snprintf(
+        enclave_filename,
+        enclave_filename_size,
+        "%s%s",
+        path,
+        ENCLAVE_FILENAME_SUFFIX);
 
     // Verify enclave file is valid
     FILE* fp;
@@ -490,9 +493,7 @@ static oe_result_t _process_params(oe_enclave_t* enclave)
     if ((env_size == 0 && GetLastError() != ERROR_ENVVAR_NOT_FOUND) ||
         env_size >= SGX_AESM_ADDR_MAXSIZE)
     {
-        printf(
-            "Fail to read environment variable 'SGX_AESM_ADDR'\n",
-            INPUT_PARAM_OPTION_QUOTE_PROC);
+        printf("Fail to read environment variable 'SGX_AESM_ADDR'\n");
         goto done;
     }
 
