@@ -58,6 +58,19 @@ C:\> where ld.lld
 C:\Program Files\LLVM\bin\ld.lld.exe
 ```
 
+### OpenSSL
+
+Download and install the latest build of OpenSSL for Windows from one of the following [locations](https://wiki.openssl.org/index.php/Binaries) or build and install it from source.
+
+Alternatively, you can use the latest version of OpenSSL that the OpenEnclave CI team [publishes](https://oejenkins.blob.core.windows.net/oejenkins/openssl.1.1.1506.73.nupkg) which is distributed under the [dual OpenSSL and SSLeay license](https://www.openssl.org/source/license-openssl-ssleay.txt) without further legal obligations.
+
+After installing OpenSSL, add `openssl` to your `PATH`.
+
+```cmd
+C:\Users\test> where openssl
+C:\oe_prereqs\OpenSSL\x64\release\bin\openssl.exe
+```
+
 ### Prerequisites based on the SGX support level of your system
 
 Check the [SGX support level](./SGXSupportLevel.md) for your system.

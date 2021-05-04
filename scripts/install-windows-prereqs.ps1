@@ -368,6 +368,7 @@ function Install-Git {
 function Install-OpenSSL {
     $installDir = Join-Path $InstallPath "OpenSSL"
     nuget.exe install openssl -Source $PACKAGES_DIRECTORY -OutputDirectory $InstallPath -ExcludeVersion
+    Add-ToSystemPath -Path @("$installDir\bin")
 }
 
 function Install-7Zip {
