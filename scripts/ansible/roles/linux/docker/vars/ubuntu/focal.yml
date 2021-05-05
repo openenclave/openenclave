@@ -12,3 +12,4 @@ ci_apt_packages:
   - "sudo"
   - "libcurl4"
   - "libprotobuf17"
+  - "python"
