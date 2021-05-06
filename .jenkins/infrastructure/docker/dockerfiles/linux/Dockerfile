@@ -5,23 +5,21 @@
 # IMPORTANT- Please update the version number in the next sentence
 # when you create a new docker image.
 #
-# This Dockerfile script builds an image for tag oetools-full-18.04:0.8
+# This Dockerfile script builds an image for tag oetools-18.04/20.04
 
 # To use this Dockerfile, you will need to install docker-ce.
-# Instructions for installing it on Ubuntu 16.04 LTS are at:
-# https://docs.docker.com/install/linux/docker-ce/ubuntu/
 #
 # Once installed, build a docker image from .jenkins folder and
 # it will use this Dockerfile by default:
-#     openenclave$ sudo docker build --no-cache=true --build-arg ubuntu_version=<ubuntu_version> --build-arg devkits_uri=<devkits_uri> -t oetools-full-<ubuntu_version>:<version> -f .jenkins/Dockerfile.full .
+#     openenclave$ sudo docker build --no-cache=true --build-arg ubuntu_version=<ubuntu_version> --build-arg devkits_uri=<devkits_uri> -t oetools-<ubuntu_version>:<version> -f .jenkins/Dockerfile.full .
 #
 # For example, for version 1.x with Ubuntu 18.04 :
 #     openenclave$ sudo docker build \
 #         --no-cache=true \
 #         --build-arg ubuntu_version=18.04 \
 #         --build-arg devkits_uri=https://tcpsbuild.blob.core.windows.net/tcsp-build/OE-CI-devkits-dd4c992d.tar.gz \
-#         -t oetools-full-18.04:1.x \
-#         -f .jenkins/Dockerfile.full \
+#         -t oetools-18.04:1.x \
+#         -f .jenkins/Dockerfile \
 #         .
 #
 # Note that DNS forwarding in a VM can interfere with Docker
@@ -37,8 +35,8 @@
 # Jenkins pulls the images it uses from the private oejenkinscidockerregistry
 # repository on Azure. To upload the image to that repository:
 #     $ sudo docker login oejenkinscidockerregistry.azurecr.io
-#     $ sudo docker tag oetools-full-<ubuntu_version>:<version> oejenkinscidockerregistry.azurecr.io/oetools-full-<ubuntu_version>:<version>
-#     $ sudo docker push oejenkinscidockerregistry.azurecr.io/oetools-full-<ubuntu_version>:<version>
+#     $ sudo docker tag oetools-<ubuntu_version>:<version> oejenkinscidockerregistry.azurecr.io/oetools-<ubuntu_version>:<version>
+#     $ sudo docker push oejenkinscidockerregistry.azurecr.io/oetools-<ubuntu_version>:<version>
 #     $ sudo docker logout
 #
 # You can check that the image has been successfully uploaded by checking
@@ -63,6 +61,25 @@ ARG GID=1000
 ARG devkits_uri
 # Check to make sure devkits_uri is defined as build arg
 RUN test ! -z ${devkits_uri+x}
+
+# Install essential packages
+RUN apt-get update
+RUN apt-get upgrade -y
+RUN apt-get -y install make build-essential git jq vim curl wget netcat apt-transport-https unzip
+
+# Add Microsoft repo
+RUN echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ bionic main" | tee /etc/apt/sources.list.d/azure-cli.list
+RUN wget https://packages.microsoft.com/keys/microsoft.asc
+RUN apt-key add microsoft.asc
+RUN apt-get update
+
+# Install Azure CLI
+RUN apt-get -y install azure-cli
+
+# Install packer
+RUN wget https://releases.hashicorp.com/packer/1.5.5/packer_1.5.5_linux_amd64.zip
+RUN unzip packer_1.5.5_linux_amd64.zip -d /usr/sbin
+RUN rm packer_1.5.5_linux_amd64.zip
 
 # Run Ansible
 COPY ./ /oe

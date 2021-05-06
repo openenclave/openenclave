@@ -10,7 +10,7 @@ OETOOLS_REPO_NAME = "oejenkinscidockerregistry.azurecr.io"
 OETOOLS_REPO_CREDENTIAL_ID = "oejenkinscidockerregistry"
 OETOOLS_DOCKERHUB_REPO_CREDENTIAL_ID = "oeciteamdockerhub"
 
-DOCKER_IMAGES_NAMES = ["oetools-full-18.04", "oetools-full-20.04", "oetools-minimal-18.04", "oetools-deploy"]
+DOCKER_IMAGES_NAMES = ["oetools-18.04", "oetools-20.04"]
 AZURE_IMAGES_MAP = [
     // Mapping between shared gallery image definition name and
     // generated Azure managed image name
@@ -85,7 +85,7 @@ def update_production_azure_gallery_images(String image_name) {
                         --target-regions ${env.REPLICATION_REGIONS.split(',').join(' ')} \
                         --replica-count 1
                 """
-                oe.azureEnvironment(az_update_image_script, "oetools-deploy:${env.DOCKER_TAG}")
+                oe.azureEnvironment(az_update_image_script, "oetools-20.04:${env.DOCKER_TAG}")
             }
         }
     }

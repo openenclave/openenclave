@@ -41,15 +41,16 @@ stage("Build Docker Containers") {
                        string(name: 'BRANCH_NAME', value: env.BRANCH),
                        string(name: 'DOCKER_TAG', value: DOCKER_TAG),
                        string(name: 'AGENTS_LABEL', value: env.IMAGES_BUILD_LABEL),
+                       string(name: 'WINDOWS_AGENTS_LABEL', value: env.WINDOWS_IMAGES_BUILD_LABEL),
                        string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
-                       booleanParam(name: 'TAG_LATEST',value: false)]
+                       booleanParam(name: 'TAG_LATEST', value: false)]
 }
 
 stage("Build Jenkins Agents Images") {
     build job: '/CI-CD_Infrastructure/OpenEnclave-Build-Azure-Managed-Images',
           parameters: [string(name: 'REPOSITORY_NAME', value: env.REPOSITORY),
                        string(name: 'BRANCH_NAME', value: env.BRANCH),
-                       string(name: 'OE_DEPLOY_IMAGE', value: "oetools-deploy:${DOCKER_TAG}"),
+                       string(name: 'OE_DEPLOY_IMAGE', value: "oetools-20.04:${DOCKER_TAG}"),
                        string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
                        string(name: 'RESOURCE_GROUP', value: env.RESOURCE_GROUP),
                        string(name: 'GALLERY_NAME', value: env.E2E_IMAGES_GALLERY_NAME),
