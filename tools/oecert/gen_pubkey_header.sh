@@ -3,9 +3,18 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
+lock="/var/tmp/oecert_lock"
 destfile="$1"
 pubkey_file="$2"
 
+# Check if the lock exists
+if [ -f "$lock" ]; then
+    echo "oecert_enc_pubkey.h is being written"
+    exit 1
+fi
+
+# Create the lock
+touch "$lock"
 cat > "$destfile" << EOF
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
@@ -29,3 +38,6 @@ cat >> "$destfile" << EOF
 
 #endif /* OECERT_ENC_PUBLIC_KEY */
 EOF
+
+# Remove the lock
+rm "$lock"
