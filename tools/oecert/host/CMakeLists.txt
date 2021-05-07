@@ -34,8 +34,7 @@ if (WIN32)
 endif ()
 
 # Generate the oecert binary in the the same directory with enclave binary
-set_target_properties(oecert PROPERTIES RUNTIME_OUTPUT_DIRECTORY
-                                        "${CMAKE_CURRENT_BINARY_DIR}/..")
+set_target_properties(oecert PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${OE_BINDIR})
 
 install(
   TARGETS oecert
