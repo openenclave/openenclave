@@ -28,10 +28,10 @@ enclave_link_libraries(oecert_enc oeenclave oelibc)
 
 # Generate the enclave binary in the the same directory with the oecert binary
 set_enclave_properties(oecert_enc PROPERTIES RUNTIME_OUTPUT_DIRECTORY
-                       "${CMAKE_CURRENT_BINARY_DIR}/..")
+                       ${OE_BINDIR})
 
 add_custom_target(oecert_enclave_signed DEPENDS oecert_enc.signed
                                                 oecert_enc_pubkey.h)
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/../oecert_enc.signed
+install(FILES ${OE_BINDIR}/oecert_enc.signed
         DESTINATION ${CMAKE_INSTALL_BINDIR})
