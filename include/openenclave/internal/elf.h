@@ -137,10 +137,17 @@ ELF_EXTERNC_BEGIN
 #define STT_HIPROC 15
 
 /* elf64_dyn.d_tag */
+#define DT_NULL 0
 #define DT_NEEDED 1
 #define DT_STRTAB 5
+#define DT_SYMTAB 6
+#define DT_RELA 7
+#define DT_RELASZ 8
+#define DT_RELAENT 9
 #define DT_RPATH 15
 #define DT_RUNPATH 29
+#define DT_GNU_HASH 0x6ffffef5
+#define DT_VERSYM 0x6ffffff0
 
 /* elf64_rel.r_info */
 #define R_X86_64_64 1
