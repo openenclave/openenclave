@@ -1,6 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <openenclave/attestation/sgx/evidence.h>
 #include <openenclave/attestation/verifier.h>
 #include <openenclave/corelibc/limits.h>
 #include <openenclave/host.h>
@@ -15,6 +16,7 @@
 #include <unistd.h>
 #elif defined(_WIN32)
 #include <windows.h>
+#define strcasecmp stricmp
 #endif
 #include "oecert_u.h"
 
@@ -22,26 +24,41 @@
 
 #include "../../../common/sgx/endorsements.h"
 
+#define DEFAULT_LOG_FILE "oecert.log"
 #define ENCLAVE_FILENAME_SUFFIX "_enc.signed"
-#define INPUT_PARAM_OPTION_CERT "--cert"
-#define INPUT_PARAM_OPTION_REPORT "--report"
-#define INPUT_PARAM_OPTION_EVIDENCE "--evidence"
+#define INPUT_PARAM_OPTION_FORMAT "--format"
+#define INPUT_PARAM_OPTION_CERT "cert"
 #define INPUT_PARAM_OPTION_ENDORSEMENTS_FILENAME "--endorsements"
 #define INPUT_PARAM_OPTION_QUOTE_PROC "--quote-proc"
 #define INPUT_PARAM_QUOTE_IN_PROC "in"
 #define INPUT_PARAM_QUOTE_OUT_OF_PROC "out"
 #define INPUT_PARAM_OPTION_VERIFY "--verify"
 #define INPUT_PARAM_OPTION_OUT_FILE "--out"
-#define DEFAULT_LOG_FILE "oecert.log"
 #define INPUT_PARAM_OPTION_LOG_FILE "--log"
 #define INPUT_PARAM_OPTION_VERBOSE "--verbose"
+#define INPUT_PARAM_OPTION_LEGACY_REPORT_REMOTE "LEGACY_REPORT_REMOTE"
+#define INPUT_PARAM_OPTION_SGX_ECDSA "SGX_ECDSA"
+#define INPUT_PARAM_OPTION_SGX_EPID_LINKABLE "SGX_EPID_LINKABLE"
+#define INPUT_PARAM_OPTION_SGX_EPID_UNLINKABLE "SGX_EPID_UNLINKABLE"
+#define SHORT_INPUT_PARAM_OPTION_FORMAT "-f"
+#define SHORT_INPUT_PARAM_OPTION_ENDORSEMENTS_FILENAME "-e"
+#define SHORT_INPUT_PARAM_OPTION_QUOTE_PROC "-p"
+#define SHORT_INPUT_PARAM_OPTION_VERIFY "-v"
+#define SHORT_INPUT_PARAM_OPTION_OUT_FILE "-o"
+#define SHORT_INPUT_PARAM_OPTION_LOG_FILE "-l"
 #define SGX_AESM_ADDR "SGX_AESM_ADDR"
 #if defined(_WIN32)
 #define SGX_AESM_ADDR_MAXSIZE 32
 #endif
 
+// Static constants for evidence UUIDs
+static const oe_uuid_t _sgx_ecdsa_uuid = {OE_FORMAT_UUID_SGX_ECDSA};
+static const oe_uuid_t _sgx_epid_linkable_uuid = {
+    OE_FORMAT_UUID_SGX_EPID_LINKABLE};
+static const oe_uuid_t _sgx_epid_unlinkable_uuid = {
+    OE_FORMAT_UUID_SGX_EPID_UNLINKABLE};
+
 // Structure to store input parameters
-//
 typedef struct _input_params
 {
     const char* private_key_filename;
@@ -51,8 +68,10 @@ typedef struct _input_params
     const char* endorsements_filename;
     const char* quote_proc;
     bool generate_certificate;
-    bool generate_report;
-    bool generate_evidence;
+    bool generate_legacy_report_remote;
+    bool generate_sgx_ecdsa;
+    bool generate_sgx_epid_linkable;
+    bool generate_sgx_epid_unlinkable;
     bool verify;
     bool verbose;
 } input_params_t;
@@ -195,37 +214,65 @@ done:
 
 static void _display_help(const char* cmd)
 {
-    printf("Usage: %s <Options>\n", cmd);
+    printf("Usage:\t%s <Options>\n", cmd);
     printf("Options:\n");
     printf(
-        "\t%s <privkey> <pubkey> : generate der remote attestation "
-        "certificate.\n",
+        "\t%s, %s <format_option>: generate evidence, a report, or a "
+        "certificate, where format_option can be one of the following (case "
+        "insensitive):\n",
+        SHORT_INPUT_PARAM_OPTION_FORMAT,
+        INPUT_PARAM_OPTION_FORMAT);
+    printf(
+        "\t\t%s <private_key> <public_key>: a remote attestation certificate "
+        "in DER format.\n",
         INPUT_PARAM_OPTION_CERT);
     printf(
-        "\t%s <in|out>: use sgx in process or out-of-process quoting.\n",
+        "\t\t%s: a report in OE_FORMAT_UUID_LEGACY_REPORT_REMOTE format.\n",
+        INPUT_PARAM_OPTION_LEGACY_REPORT_REMOTE);
+    printf(
+        "\t\t%s: evidence in OE_FORMAT_UUID_SGX_ECDSA format.\n",
+        INPUT_PARAM_OPTION_SGX_ECDSA);
+    printf(
+        "\t\t%s: evidence in OE_FORMAT_UUID_SGX_EPID_LINKABLE format.\n",
+        INPUT_PARAM_OPTION_SGX_EPID_LINKABLE);
+    printf(
+        "\t\t%s: evidence in OE_FORMAT_UUID_SGX_EPID_UNLINKABLE format.\n",
+        INPUT_PARAM_OPTION_SGX_EPID_UNLINKABLE);
+    printf(
+        "\t%s, %s <in|out>: use SGX in-process or out-of-process quoting.\n",
+        SHORT_INPUT_PARAM_OPTION_QUOTE_PROC,
         INPUT_PARAM_OPTION_QUOTE_PROC);
     printf(
-        "\t%s <output filename> : file for %s, %s, or %s.\n",
-        INPUT_PARAM_OPTION_OUT_FILE,
-        INPUT_PARAM_OPTION_CERT,
-        INPUT_PARAM_OPTION_REPORT,
-        INPUT_PARAM_OPTION_EVIDENCE);
+        "\t%s, %s <filename>: generate an output file for a remote attestation "
+        "certificate, a report, or evidence.\n",
+        SHORT_INPUT_PARAM_OPTION_OUT_FILE,
+        INPUT_PARAM_OPTION_OUT_FILE);
     printf(
-        "\t%s : file for endorsements (use with %s or %s).\n",
-        INPUT_PARAM_OPTION_ENDORSEMENTS_FILENAME,
-        INPUT_PARAM_OPTION_REPORT,
-        INPUT_PARAM_OPTION_EVIDENCE);
+        "\t%s, %s <filename>: output a report in LEGACY_REPORT_REMOTE format "
+        "or evidence, and also its "
+        "endorsements binary.\n",
+        SHORT_INPUT_PARAM_OPTION_ENDORSEMENTS_FILENAME,
+        INPUT_PARAM_OPTION_ENDORSEMENTS_FILENAME);
     printf(
-        "\t%s : verify the generated %s, %s, or %s\n",
-        INPUT_PARAM_OPTION_VERIFY,
-        INPUT_PARAM_OPTION_CERT,
-        INPUT_PARAM_OPTION_REPORT,
-        INPUT_PARAM_OPTION_EVIDENCE);
+        "\t%s, %s: verify the generated remote attestation certificate, "
+        "report, "
+        "or evidence.\n",
+        SHORT_INPUT_PARAM_OPTION_VERIFY,
+        INPUT_PARAM_OPTION_VERIFY);
     printf(
-        "\t%s <log filename> (default: %s)\n",
+        "\t%s, %s <filename>: generate a log file (default: %s).\n",
+        SHORT_INPUT_PARAM_OPTION_LOG_FILE,
         INPUT_PARAM_OPTION_LOG_FILE,
         DEFAULT_LOG_FILE);
-    printf("\t%s\n", INPUT_PARAM_OPTION_VERBOSE);
+    printf("\t%s: enable verbose output.\n", INPUT_PARAM_OPTION_VERBOSE);
+    printf("Examples:\n");
+    printf("\t1. Show the verification results of evidence in SGX_ECDSA "
+           "format:\n");
+    printf("\t\toecert -f sgx_ecdsa -v\n");
+    printf("\t2. Generate a certificate:\n");
+    printf("\t\toecert -f cert private.pem public.pem -o mycert.der\n");
+    printf("\t3. Generate a report:\n");
+    printf("\t\toecert --format legacy_report_remote --out report.bin\n");
 }
 
 // Get full path of oecert running executable, then get enclave filename by:
@@ -283,7 +330,7 @@ done:
 
 static int _parse_args(int argc, const char* argv[])
 {
-    if (argc < 2)
+    if (argc < 3)
     {
         _display_help(argv[0]);
         return 1;
@@ -293,9 +340,11 @@ static int _parse_args(int argc, const char* argv[])
     memset(&_params, 0, sizeof(_params));
 
     // save
-    _params.generate_report = false;
     _params.generate_certificate = false;
-    _params.generate_evidence = false;
+    _params.generate_legacy_report_remote = false;
+    _params.generate_sgx_ecdsa = false;
+    _params.generate_sgx_epid_linkable = false;
+    _params.generate_sgx_epid_unlinkable = false;
     _params.out_filename = nullptr;
     _params.endorsements_filename = nullptr;
     _params.log_filename = DEFAULT_LOG_FILE;
@@ -307,34 +356,66 @@ static int _parse_args(int argc, const char* argv[])
 
     while (i < argc)
     {
-        if (strcmp(INPUT_PARAM_OPTION_CERT, argv[i]) == 0)
+        if (strcasecmp(INPUT_PARAM_OPTION_FORMAT, argv[i]) == 0 ||
+            strcasecmp(SHORT_INPUT_PARAM_OPTION_FORMAT, argv[i]) == 0)
         {
-            if (argc < i + 3)
+            if (argc < i + 2)
                 break;
 
-            _params.generate_certificate = true;
-            _params.private_key_filename = argv[i + 1];
-            _params.public_key_filename = argv[i + 2];
-            i += 3;
+            if (strcasecmp(INPUT_PARAM_OPTION_CERT, argv[i + 1]) == 0)
+            {
+                if (argc < i + 4)
+                    break;
+
+                _params.generate_certificate = true;
+                _params.private_key_filename = argv[i + 2];
+                _params.public_key_filename = argv[i + 3];
+                i += 4;
+            }
+            else if (
+                strcasecmp(
+                    INPUT_PARAM_OPTION_LEGACY_REPORT_REMOTE, argv[i + 1]) == 0)
+            {
+                _params.generate_legacy_report_remote = true;
+                i += 2;
+            }
+            else if (strcasecmp(INPUT_PARAM_OPTION_SGX_ECDSA, argv[i + 1]) == 0)
+            {
+                _params.generate_sgx_ecdsa = true;
+                i += 2;
+            }
+            else if (
+                strcasecmp(INPUT_PARAM_OPTION_SGX_EPID_LINKABLE, argv[i + 1]) ==
+                0)
+            {
+                _params.generate_sgx_epid_linkable = true;
+                i += 2;
+            }
+            else if (
+                strcasecmp(
+                    INPUT_PARAM_OPTION_SGX_EPID_UNLINKABLE, argv[i + 1]) == 0)
+            {
+                _params.generate_sgx_epid_unlinkable = true;
+                i += 2;
+            }
+            else
+            {
+                printf("Invalid format: %s\n\n", argv[i + 1]);
+                break;
+            }
         }
-        else if (strcmp(INPUT_PARAM_OPTION_REPORT, argv[i]) == 0)
-        {
-            _params.generate_report = true;
-            i++;
-        }
-        else if (strcmp(INPUT_PARAM_OPTION_EVIDENCE, argv[i]) == 0)
-        {
-            _params.generate_evidence = true;
-            i++;
-        }
-        else if (strcmp(INPUT_PARAM_OPTION_QUOTE_PROC, argv[i]) == 0)
+        else if (
+            strcasecmp(INPUT_PARAM_OPTION_QUOTE_PROC, argv[i]) == 0 ||
+            strcasecmp(SHORT_INPUT_PARAM_OPTION_QUOTE_PROC, argv[i]) == 0)
         {
             if (argc < i + 2)
                 break;
 
             _params.quote_proc = argv[i + 1];
-            if (strcmp(INPUT_PARAM_QUOTE_IN_PROC, _params.quote_proc) != 0 &&
-                strcmp(INPUT_PARAM_QUOTE_OUT_OF_PROC, _params.quote_proc) != 0)
+            if (strcasecmp(INPUT_PARAM_QUOTE_IN_PROC, _params.quote_proc) !=
+                    0 &&
+                strcasecmp(INPUT_PARAM_QUOTE_OUT_OF_PROC, _params.quote_proc) !=
+                    0)
             {
                 printf(
                     "Please use 'in' or 'out' with %s.\n",
@@ -343,7 +424,11 @@ static int _parse_args(int argc, const char* argv[])
             }
             i += 2;
         }
-        else if (strcmp(INPUT_PARAM_OPTION_ENDORSEMENTS_FILENAME, argv[i]) == 0)
+        else if (
+            strcasecmp(INPUT_PARAM_OPTION_ENDORSEMENTS_FILENAME, argv[i]) ==
+                0 ||
+            strcasecmp(
+                SHORT_INPUT_PARAM_OPTION_ENDORSEMENTS_FILENAME, argv[i]) == 0)
         {
             if (argc < i + 2)
                 break;
@@ -351,8 +436,9 @@ static int _parse_args(int argc, const char* argv[])
             _params.endorsements_filename = argv[i + 1];
             i += 2;
         }
-
-        else if (strcmp(INPUT_PARAM_OPTION_OUT_FILE, argv[i]) == 0)
+        else if (
+            strcasecmp(INPUT_PARAM_OPTION_OUT_FILE, argv[i]) == 0 ||
+            strcasecmp(SHORT_INPUT_PARAM_OPTION_OUT_FILE, argv[i]) == 0)
         {
             if (argc < i + 2)
                 break;
@@ -360,14 +446,16 @@ static int _parse_args(int argc, const char* argv[])
             _params.out_filename = argv[i + 1];
             i += 2;
         }
-
-        else if (strcmp(INPUT_PARAM_OPTION_VERIFY, argv[i]) == 0)
+        else if (
+            strcasecmp(INPUT_PARAM_OPTION_VERIFY, argv[i]) == 0 ||
+            strcasecmp(SHORT_INPUT_PARAM_OPTION_VERIFY, argv[i]) == 0)
         {
             _params.verify = true;
             i++;
         }
-
-        else if (strcmp(INPUT_PARAM_OPTION_LOG_FILE, argv[i]) == 0)
+        else if (
+            strcasecmp(INPUT_PARAM_OPTION_LOG_FILE, argv[i]) == 0 ||
+            strcasecmp(SHORT_INPUT_PARAM_OPTION_LOG_FILE, argv[i]) == 0)
         {
             if (argc < i + 2)
                 break;
@@ -375,13 +463,11 @@ static int _parse_args(int argc, const char* argv[])
             _params.log_filename = argv[i + 1];
             i += 2;
         }
-
-        else if (strcmp(INPUT_PARAM_OPTION_VERBOSE, argv[i]) == 0)
+        else if (strcasecmp(INPUT_PARAM_OPTION_VERBOSE, argv[i]) == 0)
         {
             _params.verbose = true;
             i++;
         }
-
         else
         {
             printf("Invalid option: %s\n\n", argv[i]);
@@ -397,11 +483,14 @@ static int _parse_args(int argc, const char* argv[])
         return 1;
     }
 
-    if (_params.generate_certificate && _params.generate_report &&
-        _params.generate_evidence)
+    if (_params.generate_certificate + _params.generate_legacy_report_remote +
+            _params.generate_sgx_ecdsa + _params.generate_sgx_epid_linkable +
+            _params.generate_sgx_epid_unlinkable !=
+        1)
     {
         printf("Please specify to generate a certificate, a report, or "
-               "evidence.\n");
+               "evidence in SGX_ECDSA, SGX_EPID_LINKABLE or "
+               "SGX_EPID_UNLINKABLE format.\n");
         return 1;
     }
 
@@ -469,7 +558,8 @@ static oe_result_t _process_params(oe_enclave_t* enclave)
     // "SGX_AESM_ADDR" to "1" and unset after process finishes
     if (sgx_asem_env == nullptr)
     {
-        if (strcmp(INPUT_PARAM_QUOTE_OUT_OF_PROC, _params.quote_proc) == 0 &&
+        if (strcasecmp(INPUT_PARAM_QUOTE_OUT_OF_PROC, _params.quote_proc) ==
+                0 &&
             setenv(SGX_AESM_ADDR, "1", 1) != 0)
         {
             printf("Failed to set environment variable 'SGX_AESM_ADDR'\n");
@@ -479,7 +569,7 @@ static oe_result_t _process_params(oe_enclave_t* enclave)
     // if "SGX_AESM_ADDR" is set and in-proc is required, unset it during the
     // process and reset it to its original value after process finishes
     else if (
-        strcmp(INPUT_PARAM_QUOTE_IN_PROC, _params.quote_proc) == 0 &&
+        strcasecmp(INPUT_PARAM_QUOTE_IN_PROC, _params.quote_proc) == 0 &&
         unsetenv(SGX_AESM_ADDR) != 0)
     {
         printf("Failed to unset environment variable 'SGX_AESM_ADDR'\n");
@@ -498,7 +588,7 @@ static oe_result_t _process_params(oe_enclave_t* enclave)
     }
 
     // For Windows, out-of-proc is not tested as extra dependencies required
-    if (strcmp(INPUT_PARAM_QUOTE_OUT_OF_PROC, _params.quote_proc) == 0)
+    if (strcasecmp(INPUT_PARAM_QUOTE_OUT_OF_PROC, _params.quote_proc) == 0)
     {
         printf("In-proc quoting is by default on Windows. Please use in-proc "
                "quoting\n");
@@ -507,7 +597,7 @@ static oe_result_t _process_params(oe_enclave_t* enclave)
     // if "SGX_AESM_ADDR" is set and in-proc is required, unset it during the
     // process and reset it to its original value after process finishes
     else if (
-        strcmp(INPUT_PARAM_QUOTE_IN_PROC, _params.quote_proc) == 0 &&
+        strcasecmp(INPUT_PARAM_QUOTE_IN_PROC, _params.quote_proc) == 0 &&
         env_size != 0 && SetEnvironmentVariableA(SGX_AESM_ADDR, nullptr) == 0)
     {
         printf("Failed to unset environment variable 'SGX_AESM_ADDR'\n");
@@ -537,7 +627,7 @@ static oe_result_t _process_params(oe_enclave_t* enclave)
             _params.verify,
             _params.verbose));
     }
-    else if (_params.generate_report)
+    else if (_params.generate_legacy_report_remote)
     {
         OE_CHECK(generate_oe_report(
             enclave,
@@ -546,10 +636,31 @@ static oe_result_t _process_params(oe_enclave_t* enclave)
             _params.verify,
             _params.verbose));
     }
-    else if (_params.generate_evidence)
+    else if (_params.generate_sgx_ecdsa)
     {
         OE_CHECK(generate_oe_evidence(
             enclave,
+            _sgx_ecdsa_uuid,
+            _params.out_filename,
+            _params.endorsements_filename,
+            _params.verify,
+            _params.verbose));
+    }
+    else if (_params.generate_sgx_epid_linkable)
+    {
+        OE_CHECK(generate_oe_evidence(
+            enclave,
+            _sgx_epid_linkable_uuid,
+            _params.out_filename,
+            _params.endorsements_filename,
+            _params.verify,
+            _params.verbose));
+    }
+    else if (_params.generate_sgx_epid_unlinkable)
+    {
+        OE_CHECK(generate_oe_evidence(
+            enclave,
+            _sgx_epid_unlinkable_uuid,
             _params.out_filename,
             _params.endorsements_filename,
             _params.verify,
@@ -563,7 +674,8 @@ done:
 #if defined(__linux__)
     if (sgx_asem_env == nullptr)
     {
-        if (strcmp(INPUT_PARAM_QUOTE_OUT_OF_PROC, _params.quote_proc) == 0 &&
+        if (strcasecmp(INPUT_PARAM_QUOTE_OUT_OF_PROC, _params.quote_proc) ==
+                0 &&
             unsetenv(SGX_AESM_ADDR) != 0)
         {
             printf(
@@ -573,7 +685,7 @@ done:
         }
     }
     else if (
-        strcmp(INPUT_PARAM_QUOTE_IN_PROC, _params.quote_proc) == 0 &&
+        strcasecmp(INPUT_PARAM_QUOTE_IN_PROC, _params.quote_proc) == 0 &&
         setenv(SGX_AESM_ADDR, sgx_asem_env, 1) != 0)
     {
         printf(
@@ -584,7 +696,7 @@ done:
     }
 #elif defined(_WIN32)
     if (env_size != 0 &&
-        strcmp(INPUT_PARAM_QUOTE_IN_PROC, _params.quote_proc) == 0)
+        strcasecmp(INPUT_PARAM_QUOTE_IN_PROC, _params.quote_proc) == 0)
     {
         if (SetEnvironmentVariableA(SGX_AESM_ADDR, sgx_asem_env) == 0)
         {

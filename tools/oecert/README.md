@@ -15,27 +15,32 @@ Usage: `oecert Options`
 
 where `Options` are:
 
-    --cert PRIVKEY PUBKEY : generate der remote attestation certificate.
-    --report              : generate binary OE report.
-    --evidence            : generate binary OE evidence.
-    --quote-proc <in|out> : use sgx in process or out-of-process quoting, default: use original quote process.
-    --out FILENAME        : specify certificate/report/evidence output filename, default: no file output.
-    --endorsements        : specify endorsements output filename, default: no endorsements output.
-    --verify              : verify generated certificate/report/evidence
-    --log LOG_FILENAME    : log file name, default: oecert.log
-    --verbose             : dump verbose info of evidence
+    -f, --format <format_option>: generate evidence, a report, or a certificate, where format_option can be one of the following (case insensitive):
+        cert <private_key> <public_key>: a remote attestation certificate in DER format.
+        LEGACY_REPORT_REMOTE: a report in OE_FORMAT_UUID_LEGACY_REPORT_REMOTE format.
+        SGX_ECDSA: evidence in OE_FORMAT_UUID_SGX_ECDSA format.
+        SGX_EPID_LINKABLE: evidence in OE_FORMAT_UUID_SGX_EPID_LINKABLE format.
+        SGX_EPID_UNLINKABLE: evidence in OE_FORMAT_UUID_SGX_EPID_UNLINKABLE format.
+    -p, --quote-proc <in|out>: use SGX in-process or out-of-process quoting.
+    -o, --out <filename>: generate an output file for a remote attestation certificate, a report, or evidence.
+    -e, --endorsements <filename>: output a report or evidence, and also its endorsements binary.
+    -v, --verify: verify the generated remote attestation certificate, report, or evidence.
+    -l, --log <filename>: generate a log file (default: oecert.log).
+    --verbose: enable verbose output.
+
+Note that parameters are not case-sensitive.
 
 Example 1 Generate, verify and dump a ceritificate. Without "--out", there will be no certificate output file:
 
-    ./oecert --cert keyecec.pem publickeyec.pem --verify --verbose
+    ./oecert --format cert keyecec.pem publickeyec.pem --verify --verbose
 
 Example 2 Generate an OE report and output its endorsements binary to "endorsements.bin", and output OE report to "report.bin":
 
-    ./oecert --report --endorsements endorsements.bin --out report.bin
+    ./oecert --format legacy_report_remote --endorsements endorsements.bin --out report.bin
 
-Example 3 Generate and verify an evidence, and dump evidence buffer and its verified claims, output OE evidence to "evidence.bin":
+Example 3 Generate and verify OE evidence in SGX_ECDSA format, dump evidence buffer and its verified claims, and output OE evidence to "evidence.bin":
 
-    ./oecert --evidence --verify --verbose --out evidence.bin
+    ./oecert --format sgx_ecdsa --verify --verbose --out evidence.bin
 
 
 Creating RSA and EC keys pairs in linux using openssl.

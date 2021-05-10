@@ -116,6 +116,7 @@ done:
 }
 
 oe_result_t get_plugin_evidence(
+    const oe_uuid_t evidence_format,
     uint8_t* evidence,
     size_t evidence_size,
     size_t* evidence_out_size,
@@ -129,12 +130,10 @@ oe_result_t get_plugin_evidence(
     uint8_t* local_endorsements = NULL;
     size_t local_endorsements_size = 0;
 
-    static const oe_uuid_t _ecdsa_uuid = {OE_FORMAT_UUID_SGX_ECDSA};
-
     OE_CHECK(oe_attester_initialize());
 
     OE_CHECK(oe_get_evidence(
-        &_ecdsa_uuid,
+        &evidence_format,
         OE_EVIDENCE_FLAGS_EMBED_FORMAT_ID,
         NULL,
         0,
