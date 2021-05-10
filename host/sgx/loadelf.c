@@ -703,6 +703,7 @@ static oe_result_t _get_dynamic_symbol_rva(
 
     *rva = sym.st_value;
     result = OE_OK;
+
 done:
     return result;
 }
@@ -824,6 +825,31 @@ done:
     return result;
 }
 
+static oe_result_t _append_data_to_buffer(
+    void* buffer,
+    size_t buffer_size,
+    size_t offset,
+    void* data,
+    size_t data_size)
+{
+    oe_result_t result = OE_FAILURE;
+    uint64_t destination;
+    size_t destination_size;
+
+    if (!buffer || !data)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    OE_CHECK(oe_safe_add_u64((uint64_t)buffer, offset, &destination));
+    OE_CHECK(oe_safe_sub_sizet(buffer_size, offset, &destination_size));
+    OE_CHECK(
+        oe_memcpy_s((void*)destination, destination_size, data, data_size));
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
 static oe_result_t _merge_and_pad_relocations(
     oe_enclave_elf_image_t* image,
     oe_enclave_elf_image_t* module_image)
@@ -851,18 +877,12 @@ static oe_result_t _merge_and_pad_relocations(
             reloc_data, reloc_size, image->reloc_data, image->reloc_size));
 
     if (module_image && module_image->reloc_data && module_image->reloc_size)
-    {
-        uint64_t dst;
-        size_t dst_size;
-        OE_CHECK(oe_safe_add_u64(
-            (uint64_t)reloc_data, (uint64_t)image->reloc_size, &dst));
-        OE_CHECK(oe_safe_sub_sizet(reloc_size, image->reloc_size, &dst_size));
-        OE_CHECK(oe_memcpy_s(
-            (void*)dst,
-            dst_size,
+        OE_CHECK(_append_data_to_buffer(
+            reloc_data,
+            reloc_size,
+            image->reloc_size,
             module_image->reloc_data,
             module_image->reloc_size));
-    }
 
     /* Free the original relocation data and point to the padded one */
     if (image->reloc_data)
@@ -1000,6 +1020,130 @@ done:
     return result;
 }
 
+static oe_result_t _get_symbol_rva(
+    oe_enclave_elf_image_t* image,
+    const char* name,
+    uint64_t* rva)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    elf64_sym_t symbol = {0};
+
+    if (!image || !name || !rva)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (elf64_find_symbol_by_name(&image->elf, name, &symbol) != 0)
+        goto done;
+
+    *rva = symbol.st_value;
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+static oe_result_t _add_dynamic_section_relocations(
+    oe_enclave_elf_image_t* image)
+{
+    oe_result_t result = OE_FAILURE;
+    elf64_dyn_t* dynamic = NULL;
+    size_t dynamic_size = 0;
+    uint64_t dynamic_rva = 0;
+    size_t number_of_entries = 0;
+    elf64_rela_t* relocation_records = NULL;
+    size_t relocation_size = 0;
+
+    if (!image)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (elf64_find_section(
+            &image->elf, ".dynamic", (uint8_t**)&dynamic, &dynamic_size) != 0)
+        OE_RAISE_MSG(
+            OE_INVALID_IMAGE,
+            "Failed to locate the .dynamic section in the submodule",
+            NULL);
+    if (!dynamic || !dynamic_size)
+        OE_RAISE(OE_INVALID_IMAGE);
+
+    /* The _DYNAMIC symbol holds the RVA of the dynamic section after loading,
+     * which is different from its offset within the ELF file. */
+    OE_CHECK(_get_symbol_rva(image, "_DYNAMIC", &dynamic_rva));
+
+    /* First loop: count the number of entries that we support now */
+    for (uint64_t i = 0; dynamic[i].d_tag != DT_NULL; i++)
+    {
+        if (dynamic[i].d_tag == DT_STRTAB || dynamic[i].d_tag == DT_SYMTAB ||
+            dynamic[i].d_tag == DT_RELA || dynamic[i].d_tag == DT_GNU_HASH ||
+            dynamic[i].d_tag == DT_VERSYM)
+            number_of_entries++;
+    }
+
+    /* Number of entries should never be zero as some of them (e.g., DT_STRTAB
+     * and DT_SYMTAB) are mandatory. */
+    if (!number_of_entries)
+        OE_RAISE(OE_INVALID_IMAGE);
+
+    OE_CHECK(oe_safe_mul_sizet(
+        number_of_entries, sizeof(elf64_rela_t), &relocation_size));
+    relocation_records = (elf64_rela_t*)malloc(relocation_size);
+    if (!relocation_records)
+        OE_RAISE(OE_OUT_OF_MEMORY);
+
+    /* Second loop: create a relocation record for each of supported entries
+     * Each record has the type of R_X86_64_RELATIVE and will be handled as part
+     * of the in-enclave relocation. */
+    for (uint64_t i = 0, j = 0; dynamic[i].d_tag != DT_NULL; i++)
+    {
+        if (dynamic[i].d_tag == DT_STRTAB || dynamic[i].d_tag == DT_SYMTAB ||
+            dynamic[i].d_tag == DT_RELA || dynamic[i].d_tag == DT_GNU_HASH ||
+            dynamic[i].d_tag == DT_VERSYM)
+        {
+            uint64_t offset;
+            uint64_t append;
+            relocation_records[j].r_info = R_X86_64_RELATIVE;
+            OE_CHECK(oe_safe_sub_u64(
+                (uint64_t)&dynamic[i].d_un, (uint64_t)dynamic, &offset));
+            OE_CHECK(oe_safe_add_u64(offset, dynamic_rva, &offset));
+            OE_CHECK(oe_safe_add_u64(offset, image->image_rva, &offset));
+            relocation_records[j].r_offset = offset;
+            OE_CHECK(oe_safe_add_u64(
+                (uint64_t)dynamic[i].d_un.d_ptr, image->image_rva, &append));
+            relocation_records[j].r_addend = (elf64_sxword_t)append;
+            j++;
+        }
+    }
+
+    void* new_relocation_data = NULL;
+    size_t new_relocation_size;
+    OE_CHECK(oe_safe_add_sizet(
+        image->reloc_size, relocation_size, &new_relocation_size));
+    /* Cannot use realloc here as the image->reloc_data is allocated via
+     * oe_memalign */
+    new_relocation_data = oe_memalign(OE_PAGE_SIZE, new_relocation_size);
+    if (!new_relocation_data)
+        OE_RAISE(OE_OUT_OF_MEMORY);
+    OE_CHECK(oe_memcpy_s(
+        new_relocation_data,
+        new_relocation_size,
+        image->reloc_data,
+        image->reloc_size));
+    oe_memalign_free(image->reloc_data);
+    OE_CHECK(_append_data_to_buffer(
+        new_relocation_data,
+        new_relocation_size,
+        image->reloc_size,
+        (void*)relocation_records,
+        relocation_size));
+    image->reloc_data = new_relocation_data;
+    image->reloc_size = new_relocation_size;
+
+    result = OE_OK;
+
+done:
+    free(relocation_records);
+
+    return result;
+}
+
 static oe_result_t _patch_relocations(oe_enclave_image_t* image)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -1008,6 +1152,9 @@ static oe_result_t _patch_relocations(oe_enclave_image_t* image)
     {
         OE_CHECK(_link_elf_image(&image->elf, image->submodule));
         OE_CHECK(_link_elf_image(image->submodule, &image->elf));
+        /* Add relocation records for the dynamic section to conform
+         * the behavior of ld.so */
+        OE_CHECK(_add_dynamic_section_relocations(image->submodule));
     }
     /* Merge the relocation data from both base and module (if any) images and
      * apply zero-paddings (to the next page size) */
