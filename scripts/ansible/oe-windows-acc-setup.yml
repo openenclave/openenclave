@@ -72,8 +72,6 @@
           - SecurityUpdates
           - CriticalUpdates
           - UpdateRollups
-        reboot: yes
-        reboot_timeout: 3600
 
     - name: OE setup | Reboot the node
       win_reboot:
