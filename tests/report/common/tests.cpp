@@ -298,6 +298,7 @@ static oe_result_t oe_get_quote_validity_with_collaterals(
             header->report,
             header->report_size,
             &sgx_endorsements,
+            nullptr,
             valid_from,
             valid_until));
     }

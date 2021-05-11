@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 --------------
 ### Added
 - Add the support for SGX quote verification collateral version 3 with the CRL in DER format by default. Refer to [Get Quote Verification Collateral](https://download.01.org/intel-sgx/sgx-dcap/1.10/linux/docs/Intel_SGX_ECDSA_QuoteLibReference_DCAP_API.pdf) section 3.3.1.5.
+- Add the following attestation claims from oe_verify_evidence():
+  - OE_CLAIM_TCB_STATUS
+  - OE_CLAIM_TCB_DATE
 
 [v0.16.0][v0.16.0_log]
 --------------

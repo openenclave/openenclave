@@ -10,6 +10,7 @@
 #include <openenclave/internal/crypto/cert.h>
 #include <openenclave/internal/report.h>
 #include "endorsements.h"
+#include "tcbinfo.h"
 
 OE_EXTERNC_BEGIN
 
@@ -24,12 +25,14 @@ OE_EXTERNC_BEGIN
  *
  * @param[in] pck_cert The PCK certificate.
  * @param[in] sgx_endorsements The SGX endorsements.
+ * @param[out] platform_tcb_level Optional pointer to the platform tcb level.
  * @param[out] validity_from The date from which the revocation info is valid.
  * @param[out] validity_until The date which the revocation info expires.
  */
 oe_result_t oe_validate_revocation_list(
     oe_cert_t* pck_cert,
     const oe_sgx_endorsements_t* sgx_endorsements,
+    oe_tcb_info_tcb_level_t* platform_tcb_level,
     oe_datetime_t* validity_from,
     oe_datetime_t* validity_until);
 

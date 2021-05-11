@@ -20,7 +20,6 @@
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include "../common.h"
-#include "tcbinfo.h"
 
 // Defaults to Intel SGX 1.8 Release Date.
 oe_datetime_t _sgx_minimim_crl_tcb_issue_date = {2017, 3, 17};
@@ -234,17 +233,19 @@ done:
 oe_result_t oe_validate_revocation_list(
     oe_cert_t* pck_cert,
     const oe_sgx_endorsements_t* sgx_endorsements,
+    oe_tcb_info_tcb_level_t* platform_tcb_level,
     oe_datetime_t* validity_from,
     oe_datetime_t* validity_until)
 {
     oe_result_t result = OE_UNEXPECTED;
+    oe_result_t parse_tcb_info_json_result = OE_UNEXPECTED;
 
     ParsedExtensionInfo parsed_extension_info = {{0}};
+    oe_tcb_info_tcb_level_t local_platform_tcb_level = {{0}};
     oe_cert_chain_t tcb_issuer_chain = {0};
     oe_cert_chain_t crl_issuer_chain = {0};
     oe_cert_t tcb_cert = {0};
     oe_parsed_tcb_info_t parsed_tcb_info = {0};
-    oe_tcb_info_tcb_level_t platform_tcb_level = {{0}};
 
     uint32_t version = 0;
     oe_crl_t crls[2] = {{{0}}};
@@ -366,22 +367,26 @@ oe_result_t oe_validate_revocation_list(
         "Failed to verify leaf certificate. %s",
         oe_result_str(result));
 
-    for (uint32_t i = 0; i < OE_COUNTOF(platform_tcb_level.sgx_tcb_comp_svn);
+    for (uint32_t i = 0;
+         i < OE_COUNTOF(local_platform_tcb_level.sgx_tcb_comp_svn);
          ++i)
     {
-        platform_tcb_level.sgx_tcb_comp_svn[i] =
+        local_platform_tcb_level.sgx_tcb_comp_svn[i] =
             parsed_extension_info.comp_svn[i];
     }
-    platform_tcb_level.pce_svn = parsed_extension_info.pce_svn;
-    platform_tcb_level.status.AsUINT32 = OE_TCB_LEVEL_STATUS_UNKNOWN;
+    local_platform_tcb_level.pce_svn = parsed_extension_info.pce_svn;
+    local_platform_tcb_level.status.AsUINT32 = OE_TCB_LEVEL_STATUS_UNKNOWN;
 
-    OE_CHECK_MSG(
+    // An invalid TCB level will not terminate OE attestation verification.
+    // The invalid TCB status will be returned to user as a claim.
+    OE_CHECK_NO_TCB_LEVEL_MSG(
+        parse_tcb_info_json_result,
         oe_parse_tcb_info_json(
             sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_TCB_INFO].data,
             sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_TCB_INFO].size,
-            &platform_tcb_level,
+            &local_platform_tcb_level,
             &parsed_tcb_info),
-        "Failed to parse TCB info or Platform TCB is not up-to-date. %s",
+        "Failed to parse TCB info. %s",
         oe_result_str(result));
 
     if (memcmp(
@@ -474,7 +479,12 @@ oe_result_t oe_validate_revocation_list(
 
     *validity_from = latest_from;
     *validity_until = earliest_until;
-    result = OE_OK;
+
+    if (platform_tcb_level)
+    {
+        *platform_tcb_level = local_platform_tcb_level;
+    }
+    result = parse_tcb_info_json_result;
 
 done:
     for (int32_t i = (int32_t)OE_SGX_ENDORSEMENTS_CRL_COUNT - 1; i >= 0; --i)

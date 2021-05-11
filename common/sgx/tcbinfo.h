@@ -4,6 +4,7 @@
 #ifndef _OE_COMMON_TCBINFO_H
 #define _OE_COMMON_TCBINFO_H
 
+#include <openenclave/attestation/sgx/evidence.h>
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
@@ -85,6 +86,25 @@ typedef struct _oe_parsed_tcb_info
     size_t tcb_info_size;
 
 } oe_parsed_tcb_info_t;
+
+/*!
+ * Parse an oe_tcb_info_tcb_level_t struct to an oe_sgx_tcb_status_t type.
+ *
+ * @param[in] tcb_level_status The tcb_status to parse.
+ */
+oe_sgx_tcb_status_t oe_tcb_level_status_to_sgx_tcb_status(
+    const oe_tcb_level_status_t* tcb_level_status);
+
+/*!
+ * Retrieve a string description for an oe_sgx_tcb_status_t code.
+ *
+ * @param[in] sgx_tcb_status Retrieve string description for this SGX TCB status
+ * code.
+ *
+ * @returns Returns a pointer to a static string description.
+ *
+ */
+const char* oe_sgx_tcb_status_str(const oe_sgx_tcb_status_t sgx_tcb_status);
 
 /**
  * oe_parse_tcb_info_json parses the given tcb info json string

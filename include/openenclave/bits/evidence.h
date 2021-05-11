@@ -60,7 +60,7 @@ typedef struct _oe_claim
  */
 
 /**
- * Claims version.
+ * Version of the structure to represent the identity of an enclave.
  */
 #define OE_CLAIM_ID_VERSION "id_version"
 
@@ -114,6 +114,18 @@ extern const char* OE_REQUIRED_CLAIMS[OE_REQUIRED_CLAIMS_COUNT];
  */
 
 /**
+ * The status of the evidence's TCB level (::oe_sgx_tcb_status_t for SGX).
+ * This status comes from the endorsement.
+ */
+#define OE_CLAIM_TCB_STATUS "tcb_status"
+
+/**
+ * The date and time when the evidence's TCB level was certified. This time
+ * comes from the endorsement.
+ */
+#define OE_CLAIM_TCB_DATE "tcb_date"
+
+/**
  * Overall datetime from which the evidence and endorsements are valid.
  */
 #define OE_CLAIM_VALIDITY_FROM "validity_from"
@@ -128,7 +140,7 @@ extern const char* OE_REQUIRED_CLAIMS[OE_REQUIRED_CLAIMS_COUNT];
  *
  */
 
-#define OE_OPTIONAL_CLAIMS_COUNT 2
+#define OE_OPTIONAL_CLAIMS_COUNT 4
 // This array is needed for tests
 extern const char* OE_OPTIONAL_CLAIMS[OE_OPTIONAL_CLAIMS_COUNT];
 

@@ -42,6 +42,8 @@ const char* OE_REQUIRED_CLAIMS[OE_REQUIRED_CLAIMS_COUNT] = {
     OE_CLAIM_FORMAT_UUID};
 
 const char* OE_OPTIONAL_CLAIMS[OE_OPTIONAL_CLAIMS_COUNT] = {
+    OE_CLAIM_TCB_STATUS,
+    OE_CLAIM_TCB_DATE,
     OE_CLAIM_VALIDITY_FROM,
     OE_CLAIM_VALIDITY_UNTIL};
 
@@ -270,7 +272,10 @@ static bool _check_claims(const oe_claim_t* claims, size_t claims_length)
         }
 
         if (!found)
+        {
+            OE_TRACE_ERROR("Missing required claim: %s", OE_REQUIRED_CLAIMS[i]);
             return false;
+        }
     }
     return true;
 }
@@ -287,6 +292,7 @@ oe_result_t oe_verify_evidence(
     size_t* claims_length)
 {
     oe_result_t result = OE_UNEXPECTED;
+    oe_result_t _verify_evidence_result = OE_UNEXPECTED;
     oe_plugin_list_node_t* plugin_node;
     oe_verifier_t* verifier;
     const uint8_t* plugin_evidence = NULL;
@@ -387,16 +393,18 @@ oe_result_t oe_verify_evidence(
         OE_RAISE(OE_NOT_FOUND);
 
     verifier = (oe_verifier_t*)plugin_node->plugin;
-    OE_CHECK(verifier->verify_evidence(
-        verifier,
-        plugin_evidence,
-        plugin_evidence_size,
-        plugin_endorsements,
-        plugin_endorsements_size,
-        policies,
-        policies_size,
-        claims,
-        claims_length));
+    OE_CHECK_NO_TCB_LEVEL(
+        _verify_evidence_result,
+        verifier->verify_evidence(
+            verifier,
+            plugin_evidence,
+            plugin_evidence_size,
+            plugin_endorsements,
+            plugin_endorsements_size,
+            policies,
+            policies_size,
+            claims,
+            claims_length));
 
     if (claims && claims_length && !_check_claims(*claims, *claims_length))
     {
@@ -406,7 +414,7 @@ oe_result_t oe_verify_evidence(
         OE_RAISE(OE_CONSTRAINT_FAILED);
     }
 
-    result = OE_OK;
+    result = _verify_evidence_result;
 
 done:
     return result;
