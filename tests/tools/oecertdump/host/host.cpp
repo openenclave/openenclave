@@ -131,7 +131,9 @@ oe_result_t generate_certificate(oe_enclave_t* enclave, bool verbose)
         if (verbose)
         {
             printf("\n");
+#ifdef TEXT_CERT
             output_certificate(certificate, certificate_size);
+#endif
 
             if (get_sgx_report_from_certificate(
                     certificate, certificate_size, &report, &report_size) ==
