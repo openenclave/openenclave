@@ -148,9 +148,9 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                             --command-id EnableRemotePS
 
                         PRIVATE_IP=\$(echo \$VM_DETAILS | jq -r '.privateIps')
-                        rm -f ${WORKSPACE}/scripts/ansible/inventory/hosts
-                        echo "[windows-agents]" >> ${WORKSPACE}/scripts/ansible/inventory/hosts
-                        echo "\$PRIVATE_IP" >> ${WORKSPACE}/scripts/ansible/inventory/hosts
+                        rm -f ${WORKSPACE}/scripts/ansible/inventory/hosts-${launch_configuration}
+                        echo "[windows-agents]" >> ${WORKSPACE}/scripts/ansible/inventory/hosts-${launch_configuration}
+                        echo "\$PRIVATE_IP" >> ${WORKSPACE}/scripts/ansible/inventory/hosts-${launch_configuration}
                         echo "ansible_user: ${JENKINS_USER_NAME}" >> ${WORKSPACE}/scripts/ansible/inventory/host_vars/\$PRIVATE_IP
                         echo "ansible_password: ${JENKINS_USER_PASSWORD}" >> ${WORKSPACE}/scripts/ansible/inventory/host_vars/\$PRIVATE_IP
                         echo "ansible_winrm_transport: ntlm" >> ${WORKSPACE}/scripts/ansible/inventory/host_vars/\$PRIVATE_IP
@@ -158,8 +158,7 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
 
                         cd ${WORKSPACE}/scripts/ansible
                         source ${WORKSPACE}/.jenkins/infrastructure/provision/utils.sh
-                        ansible-playbook oe-windows-acc-setup.yml
-                        ansible-playbook jenkins-packer.yml
+                        ansible-playbook -i ${WORKSPACE}/scripts/ansible/inventory/hosts-${launch_configuration} oe-windows-acc-setup.yml jenkins-packer.yml
 
                         az vm run-command invoke \
                             --resource-group ${vm_rg_name} \
