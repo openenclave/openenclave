@@ -73,6 +73,7 @@ void output_certificate(const uint8_t* data, size_t data_len)
 
 void decode_certificate_pem(FILE* file, const uint8_t* data, size_t data_len)
 {
+#ifdef TEXT_CERT
     X509* x509;
     BIO* input = BIO_new_mem_buf(data, (int)data_len);
     x509 = PEM_read_bio_X509(input, NULL, 0, NULL);
@@ -83,16 +84,23 @@ void decode_certificate_pem(FILE* file, const uint8_t* data, size_t data_len)
             XN_FLAG_COMPAT,
             XN_FLAG_SEP_CPLUS_SPC | XN_FLAG_DUMP_UNKNOWN_FIELDS);
     BIO_free_all(input);
+#else
+    fprintf(file, "%.*s\n", (int)data_len, data);
+#endif
 }
 
 void decode_crl_pem(const uint8_t* data, size_t data_len)
 {
+#ifdef TEXT_CERT
     X509_CRL* x509;
     BIO* input = BIO_new_mem_buf(data, (int)data_len);
     x509 = PEM_read_bio_X509_CRL(input, NULL, NULL, NULL);
     if (x509)
         X509_CRL_print_fp(log_file, x509);
     BIO_free_all(input);
+#else
+    log("%.*s\n", (int)data_len, data);
+#endif
 }
 
 void parse_certificate_extension(const uint8_t* data, size_t data_len)
@@ -566,7 +574,7 @@ oe_result_t get_sgx_report_from_certificate(
     // find the extension
     result = oe_cert_find_extension(
         &certificate,
-        X509_OID_FOR_QUOTE_STRING,
+        X509_OID_FOR_NEW_QUOTE_STRING,
         report_buffer,
         &report_buffer_size);
 
