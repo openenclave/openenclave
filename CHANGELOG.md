@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Unreleased][Unreleased_log]
 --------------
 
+[v0.16.0][v0.16.0_log]
+--------------
 ### Added
 - Add the initial support of cryptographic module loading in SGX enclaves. Refer to the [design document](docs/DesignDocs/CryptoModuleLoadingSupport.md) for more detail.
 - Add the support of getrandom libc API and syscall in enclaves.
@@ -613,7 +615,9 @@ as listed below.
 
 Initial private preview release, no longer supported.
 
-[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.15.0...HEAD
+[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.16.0...HEAD
+
+[v0.16.0_log]:https://github.com/openenclave/openenclave/compare/v0.15.0...v0.16.0
 
 [v0.15.0_log]:https://github.com/openenclave/openenclave/compare/v0.14.0...v0.15.0
 
