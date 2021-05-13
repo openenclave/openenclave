@@ -4,4 +4,5 @@
 if (OE_SGX)
   add_subdirectory(oecertdump)
   add_subdirectory(oesign)
+  add_subdirectory(secure_verify)
 endif ()
