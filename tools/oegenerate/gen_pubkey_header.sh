@@ -3,13 +3,13 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-lock="/var/tmp/oecert_lock"
+lock="/var/tmp/oegenerate_lock"
 destfile="$1"
 pubkey_file="$2"
 
 # Check if the lock exists
 if [ -f "$lock" ]; then
-    echo "oecert_enc_pubkey.h is being written"
+    echo "oegenerate_enc_pubkey.h is being written"
     exit 1
 fi
 
@@ -19,12 +19,12 @@ cat > "$destfile" << EOF
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#ifndef OECERT_PUBKEY_H
-#define OECERT_PUBKEY_H
+#ifndef OEGENERATE_PUBKEY_H
+#define OEGENERATE_PUBKEY_H
 
 EOF
 
-printf 'static const char OECERT_ENC_PUBLIC_KEY[] =' >> "$destfile"
+printf 'static const char OEGENERATE_ENC_PUBLIC_KEY[] =' >> "$destfile"
 while IFS="" read -r p || [ -n "$p" ]
 do
     # Sometimes openssl can insert carriage returns into the PEM files. Let's remove those!
@@ -36,7 +36,7 @@ printf ';\n' >> "$destfile"
 
 cat >> "$destfile" << EOF
 
-#endif /* OECERT_ENC_PUBLIC_KEY */
+#endif /* OEGENERATE_ENC_PUBLIC_KEY */
 EOF
 
 # Remove the lock

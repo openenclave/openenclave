@@ -18,13 +18,13 @@
 #include <windows.h>
 #define strcasecmp stricmp
 #endif
-#include "oecert_u.h"
+#include "oegenerate_u.h"
 
 #include "evidence.h"
 
 #include "../../../common/sgx/endorsements.h"
 
-#define DEFAULT_LOG_FILE "oecert.log"
+#define DEFAULT_LOG_FILE "oegenerate.log"
 #define ENCLAVE_FILENAME_SUFFIX "_enc.signed"
 #define INPUT_PARAM_OPTION_FORMAT "--format"
 #define INPUT_PARAM_OPTION_CERT "cert"
@@ -114,8 +114,8 @@ oe_result_t enclave_identity_verifier(oe_identity_t* identity, void* arg)
     // verify signer id
     OE_CHECK_MSG(
         verify_signer_id(
-            (char*)OECERT_ENC_PUBLIC_KEY,
-            sizeof(OECERT_ENC_PUBLIC_KEY),
+            (char*)OEGENERATE_ENC_PUBLIC_KEY,
+            sizeof(OEGENERATE_ENC_PUBLIC_KEY),
             identity->signer_id,
             sizeof(identity->signer_id)),
         "Failed to verify signer id. Error: (%s)\n",
@@ -268,16 +268,17 @@ static void _display_help(const char* cmd)
     printf("Examples:\n");
     printf("\t1. Show the verification results of evidence in SGX_ECDSA "
            "format:\n");
-    printf("\t\toecert -f sgx_ecdsa -v\n");
+    printf("\t\toegenerate -f sgx_ecdsa -v\n");
     printf("\t2. Generate a certificate:\n");
-    printf("\t\toecert -f cert private.pem public.pem -o mycert.der\n");
+    printf("\t\toegenerate -f cert private.pem public.pem -o mycert.der\n");
     printf("\t3. Generate a report:\n");
-    printf("\t\toecert --format legacy_report_remote --out report.bin\n");
+    printf("\t\toegenerate --format legacy_report_remote --out report.bin\n");
 }
 
-// Get full path of oecert running executable, then get enclave filename by:
-// In linux, replace "<path>/oecert" with "<path>/oecert_enc.signed"
-// In windows, replace "<path>/oecert.exe" with "<path>/oecert_enc.signed"
+// Get full path of oegenerate running executable, then get enclave filename by:
+// In linux, replace "<path>/oegenerate" with "<path>/oegenerate_enc.signed"
+// In windows, replace "<path>/oegenerate.exe" with
+// "<path>/oegenerate_enc.signed"
 static char* _get_enclave_filename()
 {
     char* enclave_filename = nullptr;
@@ -552,11 +553,11 @@ static oe_result_t _process_params(oe_enclave_t* enclave)
     oe_result_t result = OE_FAILURE;
 
 #if defined(__linux__)
-    char* sgx_asem_env = getenv(SGX_AESM_ADDR);
+    char* sgx_aesm_env = getenv(SGX_AESM_ADDR);
 
     // For Linux, if "SGX_AESM_ADDR" not set and out-of-proc is required, set
     // "SGX_AESM_ADDR" to "1" and unset after process finishes
-    if (sgx_asem_env == nullptr)
+    if (sgx_aesm_env == nullptr)
     {
         if (strcasecmp(INPUT_PARAM_QUOTE_OUT_OF_PROC, _params.quote_proc) ==
                 0 &&
@@ -576,9 +577,9 @@ static oe_result_t _process_params(oe_enclave_t* enclave)
         goto done;
     }
 #elif defined(_WIN32)
-    char sgx_asem_env[SGX_AESM_ADDR_MAXSIZE];
+    char sgx_aesm_env[SGX_AESM_ADDR_MAXSIZE];
     int env_size = GetEnvironmentVariableA(
-        SGX_AESM_ADDR, sgx_asem_env, SGX_AESM_ADDR_MAXSIZE);
+        SGX_AESM_ADDR, sgx_aesm_env, SGX_AESM_ADDR_MAXSIZE);
 
     if ((env_size == 0 && GetLastError() != ERROR_ENVVAR_NOT_FOUND) ||
         env_size >= SGX_AESM_ADDR_MAXSIZE)
@@ -672,7 +673,7 @@ static oe_result_t _process_params(oe_enclave_t* enclave)
 done:
 
 #if defined(__linux__)
-    if (sgx_asem_env == nullptr)
+    if (sgx_aesm_env == nullptr)
     {
         if (strcasecmp(INPUT_PARAM_QUOTE_OUT_OF_PROC, _params.quote_proc) ==
                 0 &&
@@ -686,24 +687,24 @@ done:
     }
     else if (
         strcasecmp(INPUT_PARAM_QUOTE_IN_PROC, _params.quote_proc) == 0 &&
-        setenv(SGX_AESM_ADDR, sgx_asem_env, 1) != 0)
+        setenv(SGX_AESM_ADDR, sgx_aesm_env, 1) != 0)
     {
         printf(
             "Failed to reset environment variable 'SGX_AESM_ADDR', please "
             "manually reset it as %s\n",
-            sgx_asem_env);
+            sgx_aesm_env);
         result = OE_FAILURE;
     }
 #elif defined(_WIN32)
     if (env_size != 0 &&
         strcasecmp(INPUT_PARAM_QUOTE_IN_PROC, _params.quote_proc) == 0)
     {
-        if (SetEnvironmentVariableA(SGX_AESM_ADDR, sgx_asem_env) == 0)
+        if (SetEnvironmentVariableA(SGX_AESM_ADDR, sgx_aesm_env) == 0)
         {
             printf(
                 "Failed to reset environment variable 'SGX_AESM_ADDR', please "
                 "manually reset it as %s\n",
-                sgx_asem_env);
+                sgx_aesm_env);
             result = OE_FAILURE;
         }
     }
@@ -714,8 +715,9 @@ done:
 int main(int argc, const char* argv[])
 {
     int ret = 0;
-    printf("NOTICE: oecert is purely a debugging utility and not suitable for "
-           "production use.\n\n");
+    printf(
+        "NOTICE: oegenerate is purely a debugging utility and not suitable for "
+        "production use.\n\n");
     if (!oe_has_sgx_quote_provider())
     {
         fprintf(
@@ -730,7 +732,7 @@ int main(int argc, const char* argv[])
     const uint32_t flags = oe_get_create_flags();
     if ((flags & OE_ENCLAVE_FLAG_SIMULATE) != 0)
     {
-        printf("oecert not supported in simulation mode.\n");
+        printf("oegenerate not supported in simulation mode.\n");
         goto done;
     }
 
@@ -745,7 +747,7 @@ int main(int argc, const char* argv[])
     if (ret != 0)
         goto done;
 
-    if ((result = oe_create_oecert_enclave(
+    if ((result = oe_create_oegenerate_enclave(
              enclave_filename,
              OE_ENCLAVE_TYPE_AUTO,
              OE_ENCLAVE_FLAG_DEBUG,

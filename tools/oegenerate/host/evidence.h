@@ -7,10 +7,12 @@
 #include <openenclave/attestation/sgx/evidence.h>
 #include <openenclave/host.h>
 #include "../../../host/sgx/platformquoteprovider.h"
-#include "../oecert_enc_pubkey.h"
+#include "../oegenerate_enc_pubkey.h"
 
 void log(const char* fmt, ...);
-void oecert_quote_provider_log(sgx_ql_log_level_t level, const char* message);
+void oegenerate_quote_provider_log(
+    sgx_ql_log_level_t level,
+    const char* message);
 void set_log_callback();
 
 void dump_certificate(const uint8_t* data, size_t data_len);

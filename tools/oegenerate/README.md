@@ -1,7 +1,7 @@
-oecert
+oegenerate
 =====
 
-`oecert` is a debugging utility that generates the following files in binary format, or dump them in readable text, and verify them:
+`oegenerate` is a debugging utility that generates the following files in binary format, or dump them in readable text, and verify them:
 
  1. Self-signed certificates (in der format) used for remote attestation over TLS.
  2. An OE report.
@@ -9,9 +9,9 @@ oecert
  4. An endorsement for OE report/evidence.
 
 For certificates, the user can pass in the public/private key.
-`oecert` is not suitable for production use.
+`oegenerate` is not suitable for production use.
 
-Usage: `oecert Options`
+Usage: `oegenerate Options`
 
 where `Options` are:
 
@@ -25,22 +25,22 @@ where `Options` are:
     -o, --out <filename>: generate an output file for a remote attestation certificate, a report, or evidence.
     -e, --endorsements <filename>: output a report or evidence, and also its endorsements binary.
     -v, --verify: verify the generated remote attestation certificate, report, or evidence.
-    -l, --log <filename>: generate a log file (default: oecert.log).
+    -l, --log <filename>: generate a log file (default: oegenerate.log).
     --verbose: enable verbose output.
 
 Note that parameters are not case-sensitive.
 
 Example 1 Generate, verify and dump a ceritificate. Without "--out", there will be no certificate output file:
 
-    ./oecert --format cert keyecec.pem publickeyec.pem --verify --verbose
+    ./oegenerate --format cert keyecec.pem publickeyec.pem --verify --verbose
 
 Example 2 Generate an OE report and output its endorsements binary to "endorsements.bin", and output OE report to "report.bin":
 
-    ./oecert --format legacy_report_remote --endorsements endorsements.bin --out report.bin
+    ./oegenerate --format legacy_report_remote --endorsements endorsements.bin --out report.bin
 
 Example 3 Generate and verify OE evidence in SGX_ECDSA format, dump evidence buffer and its verified claims, and output OE evidence to "evidence.bin":
 
-    ./oecert --format sgx_ecdsa --verify --verbose --out evidence.bin
+    ./oegenerate --format sgx_ecdsa --verify --verbose --out evidence.bin
 
 
 Creating RSA and EC keys pairs in linux using openssl.

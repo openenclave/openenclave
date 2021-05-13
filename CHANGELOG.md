@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add the support of getrandom libc API and syscall in enclaves.
 - Add `libsgx-quote-ex`, `sgx-aesm-service` and several SGX AESM plugins to Ansible scripts so that users will be able to select in-process or out-of-process call path for quote generation. Refer to the [attestation sample](samples/attestation/README.md#determining-call-path-for-sgx-quote-generation) for more information.
 - Add the support of the OE_ENCLAVE_FLAG_DEBUG_AUTO flag to the oe_create_enclave API. When the flag is set and the OE_ENCLAVE_FLAG_DEBUG flag is cleared, the debug mode is automatically turned on/off based on the value of Debug specified in the enclave config file.
+- Publish a debugging tool, `oegenerate`.
+  - The tool, currently under the `tools` directory, was originally named `oecert` under the `tests/tools` directory.
+  - The tool can be used to generate certificates, reports, and evidence in various formats.
+  - The tool is for debugging purposes and is not suitable for production use.
 
 ### Changed
 - The OpenEnclave CMake configuration now explicitly sets CMAKE_SKIP_RPATH to TRUE. This change should not affect fully static-linked enclaves.
