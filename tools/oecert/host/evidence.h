@@ -4,6 +4,7 @@
 #ifndef _SGX_QUOTE
 #define _SGX_QUOTE
 
+#include <openenclave/attestation/sgx/evidence.h>
 #include <openenclave/host.h>
 #include "../../../host/sgx/platformquoteprovider.h"
 #include "../oecert_enc_pubkey.h"
@@ -42,6 +43,7 @@ oe_result_t generate_oe_report(
 
 oe_result_t generate_oe_evidence(
     oe_enclave_t* enclave,
+    oe_uuid_t evidence_format,
     const char* evidence_filename,
     const char* endorsements_filename,
     bool verify,

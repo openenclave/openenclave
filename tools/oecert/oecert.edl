@@ -21,12 +21,13 @@ enclave {
             [out] size_t *data_size);
 
         public oe_result_t get_plugin_evidence(
-          [out, size=evidence_size] uint8_t* evidence_out,
-          size_t evidence_size,
-          [out] size_t* evidence_out_size,
-          [out, size=endorsements_size] uint8_t* endorsements,
-          size_t endorsements_size,
-          [out] size_t* endorsements_out_size
+            oe_uuid_t evidence_format,
+            [out, size=evidence_size] uint8_t* evidence_out,
+            size_t evidence_size,
+            [out] size_t* evidence_out_size,
+            [out, size=endorsements_size] uint8_t* endorsements,
+            size_t endorsements_size,
+            [out] size_t* endorsements_out_size
         );
     };
 };

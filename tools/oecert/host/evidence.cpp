@@ -4,6 +4,7 @@
 #include "evidence.h"
 
 #include <ctype.h>
+#include <openenclave/attestation/sgx/evidence.h>
 #include <openenclave/attestation/sgx/report.h>
 #include <openenclave/attestation/verifier.h>
 #include <openenclave/host.h>
@@ -768,6 +769,7 @@ done:
 
 oe_result_t generate_oe_evidence(
     oe_enclave_t* enclave,
+    const oe_uuid_t evidence_format,
     const char* evidence_filename,
     const char* endorsements_filename,
     bool verify,
@@ -792,6 +794,7 @@ oe_result_t generate_oe_evidence(
         get_plugin_evidence(
             enclave,
             &result,
+            evidence_format,
             evidence,
             sizeof(evidence),
             &evidence_size,
@@ -808,6 +811,7 @@ oe_result_t generate_oe_evidence(
         get_plugin_evidence(
             enclave,
             &result,
+            evidence_format,
             evidence,
             sizeof(evidence),
             &evidence_size,
