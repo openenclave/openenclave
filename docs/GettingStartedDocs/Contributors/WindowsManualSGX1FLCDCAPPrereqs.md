@@ -1,6 +1,6 @@
 # SGX1 with Flexible Launch Control (FLC) Prerequisites on Windows
 
-## [Intel Platform Software for Windows (PSW) v2.12]https://registrationcenter-download.intel.com/akdlm/irc_nas/17361/Intel%20SGX%20PSW%20for%20Windows%20v2.12.100.4.exe)
+## [Intel Platform Software for Windows (PSW) v2.12](https://registrationcenter-download.intel.com/akdlm/irc_nas/17361/Intel%20SGX%20PSW%20for%20Windows%20v2.12.100.4.exe)
 
 The PSW only needs to be manually installed if you are running a version of Windows client lower than 1709. It should be installed automatically with Windows Update on newer versions of Windows client and Windows Server 2019.
 You can check your version of Windows by running `winver` on the command line.
