@@ -297,6 +297,7 @@ endif ()
 
 option(BUILD_TESTS "Build OE tests" ON)
 option(ENABLE_FUZZING "Build OE with fuzzing flags enabled" OFF)
+option(BUILD_OECERT_TOOL "Build oecert tool" ON)
 
 # For EEID see https://github.com/openenclave/openenclave/pull/2647
 option(
