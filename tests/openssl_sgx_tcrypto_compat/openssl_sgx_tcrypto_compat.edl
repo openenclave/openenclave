@@ -1,0 +1,19 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave {
+    from "openenclave/edl/fcntl.edl" import *;
+#ifdef OE_SGX
+    from "openenclave/edl/sgx/platform.edl" import *;
+#else
+    from "openenclave/edl/optee/platform.edl" import *;
+#endif
+    include "openssl_schema.h"
+    trusted {
+        public int ecall_schema_run_digest_tests([user_check]struct openssl_api_param* parameter);
+    };
+
+    untrusted {
+
+    };
+};
