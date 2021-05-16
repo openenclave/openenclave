@@ -161,14 +161,35 @@ More advanced flows can be implemented as combinations of the basic flows. Here 
 
 ### Dynamic code loading
 
-An enclave can load trusted code to a new EPC page with execution permission using EACCEPT_COPY with following steps:
-1. Enclave calls mmap for a region in enclave ELRANGE for EAUG
-2. Enclave issues EACCEPT_COPY to copy trusted code from an existing EPC page to an unavailable page at an address inside that region
-   - Mechanism for enclave to establish trustworthiness of the new code is out-of-scope here.
-   - This results a #PF
-3. Kernel EAUG the page on #PF, set RW permissions in both EPCM and PTE
-4. The fault handler returns,  EACCEPT_COPY instruction retried, which sets RX permissions in EPCM specified in PageInfo operand.
-5. Enclave makes ocall which invokes mprotect syscall to change PTE permissions from RW to RX 
+To load dynamic code after EINIT, the enclave has to have verify the code to be trustworthy. The mechanism
+for an enclave to establish trustworthiness of the new code is out-of-scope of this document.
+
+Assuming a new code page is verified to be trusted and stored at an existing enclave page, then there could
+be many ways for an enclave to load the trusted code to a new executable page. For example, in SGX1 environment
+without EDMM support, the enclave can reserve RWX regions and load trusted code directly into those regions.
+It is straightforward but not flexible or efficient use of EPC. Additionally the requirement of a RWX region
+goes against security policies of not running code in writable pages. With EDMM, the EACCEPTCOPY instruction
+allows an enclave copy code to a pending page and reset EPCM permissions to RX at the same time, thus provides
+a more robust and flexible way to load trusted code without those pitfalls.
+
+Following are two example sequences in which a dynamic code page is loaded using EACCEPTCOPY on demand when
+the code page is read for execution at the first time.
+ 
+**Dynamic loading with direct allocation**
+
+![SGX2 EACCEPTPY flow-direct EAUG](images/SGX2-eaccept2.svg)
+
+**Dynamic loading with #PF based allocation**
+
+![SGX2 EACCEPTPY flow](images/SGX2-eaccept.svg)
+
+In the sequences above it is assumed that the enclave would load a code page only if it is being executed the
+first time. This is to minimize the EPC usage.  An enclave could also choose to EACCEPTCOPY to preload the
+code ahead of time. In that case, the sequence would be as follows in case of direct allocation.
+1. Enclave calls mmap to configure a region in enclave ELRANGE for EAUG
+2. Kernel EAUG all pages requested.
+3. Enclave EACCEPTCOPYs trusted code from an existing EPC page to the target page, which sets RX permissions in EPCM specified in PageInfo operand.
+4. Enclave makes ocall which invokes mprotect syscall to change PTE permissions from RW to RX 
 
 ### Lazy dynamic stack expansion
 An enclave can lazily expand its stacks as follows.
