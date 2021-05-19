@@ -342,6 +342,21 @@ list(
   strings.c
   traceh_enclave.c)
 
+# Add MSVC compile flag /Z7 to enable debugging into OE SDK source from
+# applications that use release builds.
+if (OE_SGX AND WIN32)
+  foreach (file ${PLATFORM_HOST_ONLY_SRC})
+    if (${file} MATCHES "\.c$")
+      set_source_files_properties(${file} PROPERTIES COMPILE_FLAGS "/Z7")
+    endif ()
+  endforeach ()
+  foreach (file ${PLATFORM_SDK_ONLY_SRC})
+    if (${file} MATCHES "\.c$")
+      set_source_files_properties(${file} PROPERTIES COMPILE_FLAGS "/Z7")
+    endif ()
+  endforeach ()
+endif ()
+
 # Combine the following common code along with the platform specific code and
 # host verification code to get the full oehost target provided by the OE SDK.
 add_library(oehost STATIC ${PLATFORM_HOST_ONLY_SRC} ${PLATFORM_SDK_ONLY_SRC})
