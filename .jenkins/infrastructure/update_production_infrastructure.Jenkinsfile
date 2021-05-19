@@ -21,11 +21,11 @@ AZURE_IMAGES_MAP = [
     "ws2019-SGX":      "${env.IMAGE_ID}-ws2019-SGX",
     "ws2019-SGX-DCAP": "${env.IMAGE_ID}-ws2019-SGX-DCAP"
 ]
-IMAGES_BUILD_LABEL = env.IMAGES_BUILD_LABEL ?: "nonSGX"
+IMAGES_BUILD_LABEL = env.IMAGES_BUILD_LABEL ?: "nonSGX-ubuntu-2004"
 
 
 def update_production_docker_images() {
-    node("nonSGX") {
+    node("nonSGX-ubuntu-2004") {
         timeout(GLOBAL_TIMEOUT_MINUTES) {
             stage("Backup current production Docker images") {
                 docker.withRegistry("https://${OETOOLS_REPO_NAME}", OETOOLS_REPO_CREDENTIAL_ID) {
