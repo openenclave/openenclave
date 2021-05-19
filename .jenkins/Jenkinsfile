@@ -16,7 +16,7 @@ FULL_TEST_SUITE = env.FULL_TEST_SUITE ?: false
 AGENTS_LABELS = [
     "acc-ubuntu-20.04": env.UBUNTU_2004_CUSTOM_LABEL ?: "ACC-2004",
     "acc-ubuntu-18.04": env.UBUNTU_1804_CUSTOM_LABEL ?: "ACC-1804",
-    "ubuntu-nonsgx":    env.UBUNTU_NONSGX_CUSTOM_LABEL ?: "nonSGX",
+    "ubuntu-nonsgx":    env.UBUNTU_NONSGX_CUSTOM_LABEL ?: "nonSGX-ubuntu-2004",
     "acc-rhel-8":       env.RHEL_8_CUSTOM_LABEL ?: "ACC-RHEL-83",
     "acc-win2019":      env.WINDOWS_2019_CUSTOM_LABEL ?: "SGX-Windows-2019",
     "acc-win2019-dcap": env.WINDOWS_2019_DCAP_CUSTOM_LABEL ?: "SGXFLC-Windows-2019-DCAP",

@@ -4,7 +4,7 @@
 GLOBAL_ERROR = null
 
 AGENTS_LABELS = [
-    "ubuntu-nonsgx":            env.UBUNTU_NONSGX_CUSTOM_LABEL ?: "nonSGX",
+    "ubuntu-nonsgx":            env.UBUNTU_NONSGX_CUSTOM_LABEL ?: "nonSGX-ubuntu-2004",
 ]
 
 // This job uses a backend API to call and trigger jobs behind Intel's firewall through a webpoller, 
@@ -13,7 +13,7 @@ AGENTS_LABELS = [
 // Jenkinsfiles and actual testing logic located <TBD>
 def TriggerIntelJob(String jobname) {
     stage("${jobname}") {
-        node("nonSGX") {
+        node(AGENTS_LABELS["ubuntu-nonsgx"]) {
             withCredentials([
                     usernamePassword(credentialsId: 'intel-jenkins-builder', passwordVariable: 'INTEL_TOKEN', usernameVariable: 'JENKINS_USER'),
                     string(credentialsId: 'intel-jenkins-url', variable: 'INTEL_URL')]) {
