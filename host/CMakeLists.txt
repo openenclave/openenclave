@@ -455,11 +455,6 @@ target_compile_definitions(
   PRIVATE OE_BUILD_UNTRUSTED OE_REPO_BRANCH_NAME="${GIT_BRANCH}"
           OE_REPO_LAST_COMMIT="${GIT_COMMIT}")
 
-if (USE_DEBUG_MALLOC)
-  target_compile_definitions(oehost PRIVATE OE_USE_DEBUG_MALLOC)
-  target_compile_definitions(oehostverify PRIVATE OE_USE_DEBUG_MALLOC)
-endif ()
-
 if (WITH_EEID)
   target_compile_definitions(oehost PRIVATE OE_WITH_EXPERIMENTAL_EEID)
   target_compile_definitions(oehostverify PRIVATE OE_WITH_EXPERIMENTAL_EEID)
