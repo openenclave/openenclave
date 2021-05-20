@@ -14,16 +14,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add the initial support of cryptographic module loading in SGX enclaves. Refer to the [design document](docs/DesignDocs/CryptoModuleLoadingSupport.md) for more detail.
 - Add the support of getrandom libc API and syscall in enclaves.
 - Add `libsgx-quote-ex`, `sgx-aesm-service` and several SGX AESM plugins to Ansible scripts so that users will be able to select in-process or out-of-process call path for quote generation. Refer to the [attestation sample](samples/attestation/README.md#determining-call-path-for-sgx-quote-generation) for more information.
+- Open Enclave SDK installation on Linux sets the environment variable "SGX_AESM_ADDR" to 1 to enable attestation quote generation to occur out of the application process.
 - Add the support of the OE_ENCLAVE_FLAG_DEBUG_AUTO flag to the oe_create_enclave API. When the flag is set and the OE_ENCLAVE_FLAG_DEBUG flag is cleared, the debug mode is automatically turned on/off based on the value of Debug specified in the enclave config file.
-- Publish a debugging tool, `oegenerate`.
-  - The tool, currently under the `tools` directory, was originally named `oecert` under the `tests/tools` directory.
+- Publish test tool `oecert`.
+  - The tool, currently under the `tools` directory, was originally under the `tests/tools` directory.
   - The tool can be used to generate certificates, reports, and evidence in various formats.
   - The tool is for debugging purposes and is not suitable for production use.
+- Full support for SGX KSS (Key Separation and Sharing) including
+  - FamilyID and ExtendedProductionID in enclave configuration file. Refer to [Build and Sign an Enclave](docs/GettingStartedDocs/buildandsign.md) for more information.
+  - config_id and config_svn at enclave loading time. Refer to [Open Enclave Init-time Configuration Interface](docs/DesignDocs/InitTimeConfigurationInterface.md) for more information.
+- Add the support for SGX quote verification collateral version 3. Refer to [Get Quote Verification Collateral](https://download.01.org/intel-sgx/sgx-dcap/1.10/linux/docs/Intel_SGX_ECDSA_QuoteLibReference_DCAP_API.pdf) section 3.3.1.5.
+- Add the following attestation claims from oe_verify_evidence():
+  - OE_CLAIM_TCB_STATUS
+  - OE_CLAIM_TCB_DATE
 
 ### Changed
 - The OpenEnclave CMake configuration now explicitly sets CMAKE_SKIP_RPATH to TRUE. This change should not affect fully static-linked enclaves.
 - oe_verify_attestation_certificate_with_evidence() has been deprecated because it has been deemed insufficient for security. Use the new, experimental oe_verify_attestation_certificate_with_evidence_v2() instead to generate a self-signed certificate for use in the TLS handshaking process.
 - In/out parameters in EDL now have the default count equals to one if the `count` attribute is not used.
+- Improved attestation evidence verification performance.
 
 ### Security
 - Update MUSL to version 1.2.2. Refer to MUSL release notes between version 1.1.22 to 1.2.2 for the set of issues addressed.
