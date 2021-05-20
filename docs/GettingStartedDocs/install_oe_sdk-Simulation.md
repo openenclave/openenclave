@@ -1,7 +1,7 @@
-# Install the Open Enclave SDK (non-SGX Ubuntu 18.04)
+# Install the Open Enclave SDK (non-SGX Ubuntu 18.04 or Ubuntu 20.04)
 
 ## Considerations
-The Open Enclave SDK can be installed on non-SGX Ubuntu 18.04 system. Ensure your machine has an Intel processor. It can also be used in simulation mode, although some features may not work. Specifically these features are not supported when running in simulation mode:
+The Open Enclave SDK can be installed on non-SGX Ubuntu 18.04 or Ubuntu 20.04 systems. Ensure your machine has an Intel processor. It can also be used in simulation mode, although some features may not work. Specifically these features are not supported when running in simulation mode:
 - Enclave signing and measurement
 - Data Sealing
 - Attestation (both remote and local)
@@ -18,8 +18,9 @@ Also note that simulation mode is subject to being fundamentally changed or remo
 
 ## How to install and use the SDK for Simulation mode
 
-Follow the doc below for your platform, _and skip the driver installation step (step #2)_:
+Follow one of the docs below for your platform, _and skip the driver installation step (step #2)_:
 - [Ubuntu 18.04](install_oe_sdk-Ubuntu_18.04.md)
+- [Ubuntu 20.04](install_oe_sdk-Ubuntu_20.04.md)
 
 To run an enclave in simulation mode, the enclave must be created with the `OE_ENCLAVE_FLAG_SIMULATE` flag set.
 For example, when calling `oe_create_***_enclave`, the `flags` parameter should have `OE_ENCLAVE_FLAG_SIMULATE`, like this:
