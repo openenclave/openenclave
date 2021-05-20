@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The OpenEnclave CMake configuration now explicitly sets CMAKE_SKIP_RPATH to TRUE. This change should not affect fully static-linked enclaves.
 - oe_verify_attestation_certificate_with_evidence() has been deprecated because it has been deemed insufficient for security. Use the new, experimental oe_verify_attestation_certificate_with_evidence_v2() instead to generate a self-signed certificate for use in the TLS handshaking process.
 - In/out parameters in EDL now have the default count equals to one if the `count` attribute is not used.
+- Open Enclave SDK will be built with clang-10 starting v0.17.0 release. We had originally planned to an upgrade for clang-10 in the v0.16.0 release, but ran into some issues. We recommend that developers move to clang-10 starting v0.17.0 release.
 
 ### Security
 - Update MUSL to version 1.2.2. Refer to MUSL release notes between version 1.1.22 to 1.2.2 for the set of issues addressed.
