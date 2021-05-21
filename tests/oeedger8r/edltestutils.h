@@ -15,12 +15,12 @@ void check_type(Args&...)
 {
 }
 
-// Check the type of retval field of a given args type.
+// Check the type of oe_retval field of a given args type.
 template <typename args_type, typename R>
 void check_return_type()
 {
     args_type args;
-    check_type<R>(args.retval);
+    check_type<R>(args.oe_retval);
 }
 
 template <std::size_t N>
