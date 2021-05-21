@@ -325,14 +325,21 @@ oe_result_t oe_validate_revocation_list(
                 "Failed to read CRL. %s",
                 oe_result_str(result));
         }
-        // Otherwise, CRL should have v3 structure which is Der encoded
+        // Otherwise, CRL should have v3 structure which is DER encoded
         else
         {
+            size_t der_data_size = sgx_endorsements->items[i].size;
+            if (der_data_size == 0)
+                OE_RAISE(OE_INVALID_PARAMETER);
+
+            // If DER CRL buffer has null terminator, need to remove it before
+            // send the DER data to crypto API for reading.
+            if (sgx_endorsements->items[i].data[der_data_size - 1] == 0)
+                der_data_size -= 1;
+
             OE_CHECK_MSG(
                 oe_crl_read_der(
-                    &crls[j],
-                    sgx_endorsements->items[i].data,
-                    sgx_endorsements->items[i].size),
+                    &crls[j], sgx_endorsements->items[i].data, der_data_size),
                 "Failed to read CRL. %s",
                 oe_result_str(result));
         }
