@@ -99,7 +99,7 @@ oe_result_t ecall_string_no_null_terminator_modified(
     OE_ADD_SIZE(_output_buffer_offset, sizeof(*_pargs_out));
 
     /* Check if the call succeeded */
-    if ((_result = _pargs_out->result) != OE_OK)
+    if ((_result = _pargs_out->oe_result) != OE_OK)
         goto done;
 
     /* Currently exactly _output_buffer_size bytes must be written */
@@ -209,7 +209,7 @@ oe_result_t ecall_wstring_no_null_terminator_modified(
     OE_ADD_SIZE(_output_buffer_offset, sizeof(*_pargs_out));
 
     /* Check if the call succeeded */
-    if ((_result = _pargs_out->result) != OE_OK)
+    if ((_result = _pargs_out->oe_result) != OE_OK)
         goto done;
 
     /* Currently exactly _output_buffer_size bytes must be written */
