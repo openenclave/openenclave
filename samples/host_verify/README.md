@@ -17,7 +17,7 @@ The sample does remote host-side enclave attestation by taking either of the two
 
 The sample also accepts an endorsement file as input. See the end of the file for usage.
 
-A user can generate a report, an endorsement file or a certificate with `oegenerate`. See [here](https://github.com/openenclave/openenclave/blob/master/tests/tools/oegenerate/README.md) for more details.
+A user can generate a report, an endorsement file or a certificate with `oecert`. See [here](https://github.com/openenclave/openenclave/blob/master/tests/tools/oecert/README.md) for more details.
 
 In the main function, if it sees the attribute `-r`, then it will continue to read the next argument to get the report and call `verify_report()` to verify the report.
 Likewise, if it sees the attribute `-c`, then it will continue to read the next argument to get the certificate and call `verify_cert()` to verify the certificate.

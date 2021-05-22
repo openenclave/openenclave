@@ -176,12 +176,12 @@ def ACCHostVerificationTest(String version, String build_type) {
                            openssl ec -in keyec.pem -pubout -out publicec.pem
                            openssl genrsa -out keyrsa.pem 2048
                            openssl rsa -in keyrsa.pem -outform PEM -pubout -out publicrsa.pem
-                           ../../../output/bin/oegenerate --format cert keyec.pem publicec.pem --out sgx_cert_ec.der --verify
-                           ../../../output/bin/oegenerate --format cert keyrsa.pem publicrsa.pem --out sgx_cert_rsa.der --verify
-                           ../../../output/bin/oegenerate --format legacy_report_remote --out sgx_report.bin --verify
-                           ../../../output/bin/oegenerate --format sgx_ecdsa --out sgx_evidence.bin --endorsements sgx_endorsements.bin --verify
-                           ../../../output/bin/oegenerate --format sgx_ecdsa --quote-proc in --verify
-                           ../../../output/bin/oegenerate --format sgx_ecdsa --quote-proc out --verify
+                           ../../../output/bin/oecert --format cert keyec.pem publicec.pem --out sgx_cert_ec.der --verify
+                           ../../../output/bin/oecert --format cert keyrsa.pem publicrsa.pem --out sgx_cert_rsa.der --verify
+                           ../../../output/bin/oecert --format legacy_report_remote --out sgx_report.bin --verify
+                           ../../../output/bin/oecert --format sgx_ecdsa --out sgx_evidence.bin --endorsements sgx_endorsements.bin --verify
+                           ../../../output/bin/oecert --format sgx_ecdsa --quote-proc in --verify
+                           ../../../output/bin/oecert --format sgx_ecdsa --quote-proc out --verify
                            popd
                            """
                 oe.ContainerRun("oetools-${version}:${DOCKER_TAG}", "clang-8", task, "--cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket")
@@ -273,12 +273,12 @@ def ACCHostVerificationPackageTest(String version, String build_type) {
                            openssl ec -in keyec.pem -pubout -out publicec.pem
                            openssl genrsa -out keyrsa.pem 2048
                            openssl rsa -in keyrsa.pem -outform PEM -pubout -out publicrsa.pem
-                           ../../../output/bin/oegenerate --format cert keyec.pem publicec.pem --out sgx_cert_ec.der --verify
-                           ../../../output/bin/oegenerate --format cert keyrsa.pem publicrsa.pem --out sgx_cert_rsa.der --verify
-                           ../../../output/bin/oegenerate --format legacy_report_remote --out sgx_report.bin --verify
-                           ../../../output/bin/oegenerate --format sgx_ecdsa --out sgx_evidence.bin --endorsements sgx_endorsements.bin --verify
-                           ../../../output/bin/oegenerate --format sgx_ecdsa --quote-proc in --verify
-                           ../../../output/bin/oegenerate --format sgx_ecdsa --quote-proc out --verify
+                           ../../../output/bin/oecert --format cert keyec.pem publicec.pem --out sgx_cert_ec.der --verify
+                           ../../../output/bin/oecert --format cert keyrsa.pem publicrsa.pem --out sgx_cert_rsa.der --verify
+                           ../../../output/bin/oecert --format legacy_report_remote --out sgx_report.bin --verify
+                           ../../../output/bin/oecert --format sgx_ecdsa --out sgx_evidence.bin --endorsements sgx_endorsements.bin --verify
+                           ../../../output/bin/oecert --format sgx_ecdsa --quote-proc in --verify
+                           ../../../output/bin/oecert --format sgx_ecdsa --quote-proc out --verify
                            popd
                            """
                 oe.ContainerRun("oetools-${version}:${DOCKER_TAG}", "clang-8", task, "--cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket")

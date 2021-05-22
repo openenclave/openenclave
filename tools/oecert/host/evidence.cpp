@@ -19,7 +19,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "oegenerate_u.h"
+#include "oecert_u.h"
 
 #if defined(__linux__)
 #include <dlfcn.h>
@@ -262,9 +262,7 @@ void dump_claims(const oe_claim_t* claims, size_t claims_length)
 }
 
 // DCAP client (libdcap_quoteprov) log callback to this function.
-void oegenerate_quote_provider_log(
-    sgx_ql_log_level_t level,
-    const char* message)
+void oecert_quote_provider_log(sgx_ql_log_level_t level, const char* message)
 {
     const char* level_string = level == 0 ? "ERROR" : "INFO";
 
@@ -285,7 +283,7 @@ void set_log_callback()
             provider.handle, "sgx_ql_set_logging_function");
     if (set_log_fcn != nullptr)
     {
-        set_log_fcn(oegenerate_quote_provider_log);
+        set_log_fcn(oecert_quote_provider_log);
     }
 #endif
 }
@@ -749,8 +747,8 @@ oe_result_t generate_oe_report(
         // verify signer id
         OE_CHECK_MSG(
             verify_signer_id(
-                (char*)OEGENERATE_ENC_PUBLIC_KEY,
-                sizeof(OEGENERATE_ENC_PUBLIC_KEY),
+                (char*)OECERT_ENC_PUBLIC_KEY,
+                sizeof(OECERT_ENC_PUBLIC_KEY),
                 parsed_report.identity.signer_id,
                 sizeof(parsed_report.identity.signer_id)),
             "Failed to verify signer id. Error: (%s)\n",
@@ -920,8 +918,8 @@ oe_result_t generate_oe_evidence(
         }
         OE_CHECK_MSG(
             verify_signer_id(
-                (char*)OEGENERATE_ENC_PUBLIC_KEY,
-                sizeof(OEGENERATE_ENC_PUBLIC_KEY),
+                (char*)OECERT_ENC_PUBLIC_KEY,
+                sizeof(OECERT_ENC_PUBLIC_KEY),
                 claim->value,
                 claim->value_size),
             "Failed to verify signer id. Error: (%s)\n",

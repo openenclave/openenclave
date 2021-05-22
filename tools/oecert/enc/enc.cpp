@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "oegenerate_t.h"
+#include "oecert_t.h"
 
 // This is the identity validation callback. A TLS connecting party (client or
 // server) can verify the passed in identity information to decide whether to
