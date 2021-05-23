@@ -17,7 +17,7 @@
   </WizardExtension>
   <WizardData>
     <packages repository="extension" repositoryId="OpenEnclaveVisualStudioExtension-1">
-      <package id="open-enclave-cross" version="0.15.0" />
+      <package id="open-enclave-cross" version="0.16.2" />
     </packages>
   </WizardData>
 </VSTemplate>
