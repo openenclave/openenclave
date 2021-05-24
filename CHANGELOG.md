@@ -9,8 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased][Unreleased_log]
 --------------
-### Added
-- Add the support for SGX quote verification collateral version 3 with the CRL in DER format by default. Refer to [Get Quote Verification Collateral](https://download.01.org/intel-sgx/sgx-dcap/1.10/linux/docs/Intel_SGX_ECDSA_QuoteLibReference_DCAP_API.pdf) section 3.3.1.5.
 
 [v0.16.0][v0.16.0_log]
 --------------
@@ -27,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Full support for SGX KSS (Key Separation and Sharing) including
   - FamilyID and ExtendedProductionID in enclave configuration file. Refer to [Build and Sign an Enclave](docs/GettingStartedDocs/buildandsign.md) for more information.
   - config_id and config_svn at enclave loading time. Refer to [Open Enclave Init-time Configuration Interface](docs/DesignDocs/InitTimeConfigurationInterface.md) for more information.
+- Add the support for SGX quote verification collateral version 3 with the CRL in DER format by default. Refer to [Get Quote Verification Collateral](https://download.01.org/intel-sgx/sgx-dcap/1.10/linux/docs/Intel_SGX_ECDSA_QuoteLibReference_DCAP_API.pdf) section 3.3.1.5.
 
 ### Changed
 - The OpenEnclave CMake configuration now explicitly sets CMAKE_SKIP_RPATH to TRUE. This change should not affect fully static-linked enclaves.
