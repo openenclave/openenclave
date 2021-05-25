@@ -4,7 +4,8 @@
 /**
  * @file attestation/sgx/evidence.h
  *
- * This file defines macros for SGX evidence format IDs and claims.
+ * This file defines macros and structures for SGX evidence format IDs and
+ * claims.
  *
  * A number of SGX specific format IDs are defined for evidence generation
  * and verification.
@@ -151,6 +152,60 @@ OE_EXTERNC_BEGIN
 // Additional SGX specific claim: for the report data embedded in the SGX quote.
 
 #define OE_CLAIM_SGX_REPORT_DATA "sgx_report_data"
+
+/**
+ * TCB level status of SGX platform. This enumeration type defines return codes
+ * for SGX TCB status, which is the claim value for ::OE_CLAIM_TCB_STATUS.
+ */
+typedef enum _oe_sgx_tcb_status
+{
+    /**
+     * TCB level of SGX platform is up-to-date.
+     */
+    OE_SGX_TCB_STATUS_UP_TO_DATE = 0,
+
+    /**
+     * TCB level of SGX platform is outdated.
+     */
+    OE_SGX_TCB_STATUS_OUT_OF_DATE = 1,
+
+    /**
+     * TCB level of SGX platform is revoked. The platform is not trustworthy.
+     */
+    OE_SGX_TCB_STATUS_REVOKED = 2,
+
+    /**
+     * TCB level of the SGX platform is up-to-date but additional configuration
+     * of SGX platform may be needed.
+     */
+    OE_SGX_TCB_STATUS_CONFIGURATION_NEEDED = 3,
+
+    /**
+     * TCB level of SGX platform is outdated and additional configuration of SGX
+     * platform may be needed.
+     */
+    OE_SGX_TCB_STATUS_OUT_OF_DATE_CONFIGURATION_NEEDED = 4,
+
+    /**
+     * TCB level of the SGX platform is up-to-date but due to certain issues
+     * affecting the platform, additional Software Hardening in the attesting
+     * SGX enclaves may be needed.
+     */
+    OE_SGX_TCB_STATUS_SW_HARDENING_NEEDED = 5,
+
+    /**
+     * TCB level of the SGX platform is up-to-date but additional configuration
+     * for the platform and Software Hardening in the attesting SGX enclaves may
+     * be needed.
+     */
+    OE_SGX_TCB_STATUS_CONFIGURATION_AND_SW_HARDENING_NEEDED = 6,
+
+    /**
+     * TCB level is not valid.
+     */
+    OE_SGX_TCB_STATUS_INVALID = OE_ENUM_MAX,
+
+} oe_sgx_tcb_status_t;
 
 OE_EXTERNC_END
 

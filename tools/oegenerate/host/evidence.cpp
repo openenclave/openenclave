@@ -230,10 +230,12 @@ void dump_claims(const oe_claim_t* claims, size_t claims_length)
 {
     printf("\n%zu OE claims retrieved:\n\n", claims_length);
     size_t i = 0;
+    // id version, security version, attributes(bit flags)
     for (; i < 3; i++)
     {
         printf("claims[%zu]: %s\n%u\n\n", i, claims[i].name, *claims[i].value);
     }
+    // unique id, signer id, product id, format uuid, TEE-specific claims
     for (; i < 16; i++)
     {
         printf(
@@ -245,8 +247,11 @@ void dump_claims(const oe_claim_t* claims, size_t claims_length)
             printf("%02x", claims[i].value[j]);
         printf("\n\n");
     }
-    // validity
-    for (; i < 18; i++)
+    // tcb status
+    printf("claims[%zu]: %s\n%u\n\n", i, claims[i].name, *claims[i].value);
+    i++;
+    // tcb date, validity
+    for (; i < 20; i++)
     {
         printf("claims[%zu]: %s\n", i, claims[i].name);
         uint32_t* date = (uint32_t*)claims[i].value;
@@ -893,10 +898,12 @@ oe_result_t generate_oe_evidence(
         oe_claim_t* claims = NULL;
         size_t claims_length = 0;
         const oe_claim_t* claim;
+        oe_result_t _verify_evidence_result;
 
         OE_CHECK(oe_verifier_initialize());
 
-        OE_CHECK_MSG(
+        OE_CHECK_NO_TCB_LEVEL_MSG(
+            _verify_evidence_result,
             oe_verify_evidence(
                 NULL,
                 evidence,
@@ -907,8 +914,7 @@ oe_result_t generate_oe_evidence(
                 0,
                 &claims,
                 &claims_length),
-            "Failed to verify evidence. result=%u (%s)\n",
-            result,
+            "Failed to verify evidence. Error: (%s)\n",
             oe_result_str(result));
 
         // verify signer id
@@ -934,10 +940,14 @@ oe_result_t generate_oe_evidence(
 
         OE_CHECK(oe_free_claims(claims, claims_length));
         OE_CHECK(oe_verifier_shutdown());
+
+        result = _verify_evidence_result;
+    }
+    else
+    {
+        result = OE_OK;
     }
     printf("generate_oe_evidence succeeded, more info in log file.\n");
-
-    result = OE_OK;
 
 done:
     return result;

@@ -10,6 +10,7 @@
 #include <openenclave/internal/crypto/cert.h>
 #include <openenclave/internal/datetime.h>
 #include "endorsements.h"
+#include "tcbinfo.h"
 
 OE_EXTERNC_BEGIN
 
@@ -66,6 +67,9 @@ oe_result_t oe_verify_sgx_quote(
  * if the input time is after than the endorsement creation time, then the
  * CRLs might have updated in the period between the input time and the
  * endorsement creation time.
+ * @param[out] platform_tcb_level Optional pointer to the platform tcb level
+ * from which verifier can extract tcb status, tcb date and advisory IDs and
+ * write to custom claims.
  * @param[out] valid_from Optional pointer to the endorsement validity period
  * that can be extraced by verifier and written to OE_CLAIM_VALIDITY_FROM.
  * @param[out] valid_until Optional pointer to the endorsement validity period
@@ -77,6 +81,7 @@ oe_result_t oe_verify_quote_with_sgx_endorsements(
     size_t quote_size,
     const oe_sgx_endorsements_t* endorsements,
     oe_datetime_t* input_validation_time,
+    oe_tcb_info_tcb_level_t* platform_tcb_level,
     oe_datetime_t* valid_from,
     oe_datetime_t* valid_until);
 
@@ -101,13 +106,15 @@ oe_result_t oe_verify_quote_with_sgx_endorsements(
  * @param[in] quote Input quote.
  * @param[in] quote_size The size of the quote.
  * @param[in] sgx_endorsements SGX endorsements related to the quote.
+ * @param[out] platform_tcb_level Optional pointer to the platform tcb level.
  * @param[out] valid_from validity_from The date from which the quote is valid.
  * @param[out] valid_until validity_until The date which the quote expires.
  */
 oe_result_t oe_get_sgx_quote_validity(
     const uint8_t* quote,
     const size_t quote_size,
-    const oe_sgx_endorsements_t* sgx_endorsements,
+    const oe_sgx_endorsements_t* endorsements,
+    oe_tcb_info_tcb_level_t* platform_tcb_level,
     oe_datetime_t* valid_from,
     oe_datetime_t* valid_until);
 

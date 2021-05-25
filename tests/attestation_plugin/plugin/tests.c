@@ -407,6 +407,7 @@ static void _test_claims(
     size_t claims_size,
     sgx_evidence_format_type_t format_type,
     bool is_local,
+    bool tcb_level_valid,
     const uint8_t* report_body,
     const oe_uuid_t* format_id,
     const oe_sgx_endorsements_t* sgx_endorsements,
@@ -528,6 +529,23 @@ static void _test_claims(
                              sgx_report_body->isvfamilyid,
                              sizeof(sgx_report_body->isvfamilyid)) == 0);
 
+    // Check tcb status. If it is OE_SGX_TCB_STATUS_UP_TO_DATE or
+    // OE_SGX_TCB_STATUS_SW_HARDENING_NEEDED, then oe_verify_evidence should
+    // return OE_OK (tcb_level_valid is true), otherwise it should return
+    // OE_TCB_LEVEL_INVALID
+    value = _find_claim(claims, claims_size, OE_CLAIM_TCB_STATUS);
+    OE_TEST(
+        is_local ||
+        (value != NULL &&
+         (tcb_level_valid ==
+          (*((oe_sgx_tcb_status_t*)value) == OE_SGX_TCB_STATUS_UP_TO_DATE ||
+           *((oe_sgx_tcb_status_t*)value) ==
+               OE_SGX_TCB_STATUS_SW_HARDENING_NEEDED))));
+
+    // Check tcb date
+    value = _find_claim(claims, claims_size, OE_CLAIM_TCB_DATE);
+    OE_TEST(is_local || value != NULL);
+
     // Check date time. Date time testing will be performed in _test_time() and
     // _test_time_policy()
     value = _find_claim(claims, claims_size, OE_CLAIM_VALIDITY_FROM);
@@ -603,21 +621,16 @@ static void _test_time(
     oe_datetime_t* from,
     oe_datetime_t* until)
 {
+    oe_result_t result;
     oe_datetime_t tmp;
 
-    OE_TEST_CODE(
-        oe_verify_sgx_quote(
-            report_body, report_body_size, collaterals, collaterals_size, from),
-        OE_OK);
+    result = oe_verify_sgx_quote(
+        report_body, report_body_size, collaterals, collaterals_size, from);
+    OE_TEST(result == OE_OK || result == OE_TCB_LEVEL_INVALID);
 
-    OE_TEST_CODE(
-        oe_verify_sgx_quote(
-            report_body,
-            report_body_size,
-            collaterals,
-            collaterals_size,
-            until),
-        OE_OK);
+    result = oe_verify_sgx_quote(
+        report_body, report_body_size, collaterals, collaterals_size, until);
+    OE_TEST(result == OE_OK || result == OE_TCB_LEVEL_INVALID);
 
     tmp = *from;
     tmp.year--;
@@ -644,6 +657,7 @@ static void _test_time_policy(
     oe_datetime_t* from,
     oe_datetime_t* until)
 {
+    oe_result_t result;
     oe_policy_t policy;
     oe_datetime_t dt;
     oe_claim_t* claims;
@@ -654,33 +668,31 @@ static void _test_time_policy(
     policy.policy_size = sizeof(dt);
 
     dt = *from;
-    OE_TEST_CODE(
-        oe_verify_evidence(
-            wrapped_with_header ? NULL : format_id,
-            evidence,
-            evidence_size,
-            endorsements,
-            endorsements_size,
-            &policy,
-            1,
-            &claims,
-            &claims_size),
-        OE_OK);
+    result = oe_verify_evidence(
+        wrapped_with_header ? NULL : format_id,
+        evidence,
+        evidence_size,
+        endorsements,
+        endorsements_size,
+        &policy,
+        1,
+        &claims,
+        &claims_size);
+    OE_TEST(result == OE_OK || result == OE_TCB_LEVEL_INVALID);
     OE_TEST_CODE(oe_free_claims(claims, claims_size), OE_OK);
 
     dt = *until;
-    OE_TEST_CODE(
-        oe_verify_evidence(
-            wrapped_with_header ? NULL : format_id,
-            evidence,
-            evidence_size,
-            endorsements,
-            endorsements_size,
-            &policy,
-            1,
-            &claims,
-            &claims_size),
-        OE_OK);
+    result = oe_verify_evidence(
+        wrapped_with_header ? NULL : format_id,
+        evidence,
+        evidence_size,
+        endorsements,
+        endorsements_size,
+        &policy,
+        1,
+        &claims,
+        &claims_size);
+    OE_TEST(result == OE_OK || result == OE_TCB_LEVEL_INVALID);
     OE_TEST_CODE(oe_free_claims(claims, claims_size), OE_OK);
 
     dt = *from;
@@ -734,6 +746,7 @@ void verify_sgx_evidence(
 {
     printf("running verify_sgx_evidence\n");
 
+    oe_result_t result;
     oe_attestation_header_t* evidence_header =
         (oe_attestation_header_t*)evidence;
     oe_claim_t* claims = NULL;
@@ -742,6 +755,7 @@ void verify_sgx_evidence(
     void* from;
     void* until;
     bool is_local;
+    bool tcb_level_valid;
 
     sgx_evidence_format_type_t format_type = SGX_FORMAT_TYPE_UNKNOWN;
     const uint8_t* report_body = NULL;
@@ -843,18 +857,18 @@ void verify_sgx_evidence(
         &endorsements_body_size);
 
     // Try with no output claims.
-    OE_TEST_CODE(
-        oe_verify_evidence(
-            wrapped_with_header ? NULL : format_id,
-            evidence,
-            evidence_size,
-            endorsements,
-            endorsements_size,
-            NULL,
-            0,
-            NULL,
-            NULL),
-        OE_OK);
+    result = oe_verify_evidence(
+        wrapped_with_header ? NULL : format_id,
+        evidence,
+        evidence_size,
+        endorsements,
+        endorsements_size,
+        NULL,
+        0,
+        NULL,
+        NULL);
+    OE_TEST(result == OE_OK || result == OE_TCB_LEVEL_INVALID);
+
     OE_TEST_CODE(
         oe_verify_evidence(
             wrapped_with_header ? NULL : format_id,
@@ -881,24 +895,34 @@ void verify_sgx_evidence(
         OE_INVALID_PARAMETER);
 
     // Try with no policies.
-    OE_TEST_CODE(
-        oe_verify_evidence(
-            wrapped_with_header ? NULL : format_id,
-            evidence,
-            evidence_size,
-            endorsements,
-            endorsements_size,
-            NULL,
-            0,
-            &claims,
-            &claims_size),
-        OE_OK);
+    result = oe_verify_evidence(
+        wrapped_with_header ? NULL : format_id,
+        evidence,
+        evidence_size,
+        endorsements,
+        endorsements_size,
+        NULL,
+        0,
+        &claims,
+        &claims_size);
+    OE_TEST(result == OE_OK || result == OE_TCB_LEVEL_INVALID);
+    tcb_level_valid = (result == OE_OK);
+    // Invalid tcb level does not terminate OE attestation verification. The tcb
+    // level status is retrieved in OE_CLAIM_TCB_STATUS.
+    if (!tcb_level_valid)
+    {
+        OE_TRACE_ERROR(
+            "oe_verify_evidence result: %s. TCB Status: %s\n",
+            oe_result_str(result),
+            _find_claim(claims, claims_size, OE_CLAIM_TCB_STATUS));
+    }
 
     _test_claims(
         claims,
         claims_size,
         format_type,
         is_local,
+        tcb_level_valid,
         report_body,
         format_id,
         expected_endorsements ? &sgx_endorsements : NULL,
@@ -997,7 +1021,6 @@ void verify_sgx_evidence(
     if (wrapped_with_header &&
         !memcmp(format_id, &_ecdsa_uuid, sizeof(oe_uuid_t)))
     {
-        oe_result_t result;
         oe_attestation_header_t* evidence_header =
             (oe_attestation_header_t*)evidence;
         const sgx_quote_t* quote = (sgx_quote_t*)evidence_header->data;
@@ -1025,24 +1048,25 @@ void verify_sgx_evidence(
             memcpy(report_header->report, quote, quote_size);
         }
 
-        OE_TEST_CODE(
-            oe_verify_evidence(
-                &_ecdsa_report_uuid,
-                report_buffer,
-                report_buffer_size,
-                NULL,
-                0,
-                NULL,
-                0,
-                &claims,
-                &claims_size),
-            OE_OK);
+        result = oe_verify_evidence(
+            &_ecdsa_report_uuid,
+            report_buffer,
+            report_buffer_size,
+            NULL,
+            0,
+            NULL,
+            0,
+            &claims,
+            &claims_size);
+        OE_TEST(result == OE_OK || result == OE_TCB_LEVEL_INVALID);
+        tcb_level_valid = (result == OE_OK);
 
         _test_claims(
             claims,
             claims_size,
             SGX_FORMAT_TYPE_LEGACY_REPORT,
             is_local,
+            tcb_level_valid,
             report_body,
             &_ecdsa_report_uuid,
             expected_endorsements ? &sgx_endorsements : NULL,
@@ -1054,18 +1078,18 @@ void verify_sgx_evidence(
         claims_size = 0;
 
         // Plugin should be able to handle legacy oe_report with NULL format id
-        OE_TEST_CODE(
-            oe_verify_evidence(
-                NULL,
-                report_buffer,
-                report_buffer_size,
-                NULL,
-                0,
-                NULL,
-                0,
-                &claims,
-                &claims_size),
-            OE_OK);
+        result = oe_verify_evidence(
+            NULL,
+            report_buffer,
+            report_buffer_size,
+            NULL,
+            0,
+            NULL,
+            0,
+            &claims,
+            &claims_size);
+        OE_TEST(result == OE_OK || result == OE_TCB_LEVEL_INVALID);
+        tcb_level_valid = (result == OE_OK);
 
         oe_free(report_buffer);
         report_buffer = NULL;
@@ -1075,6 +1099,7 @@ void verify_sgx_evidence(
             claims_size,
             SGX_FORMAT_TYPE_LEGACY_REPORT,
             is_local,
+            tcb_level_valid,
             report_body,
             &_ecdsa_report_uuid,
             expected_endorsements ? &sgx_endorsements : NULL,
@@ -1085,24 +1110,25 @@ void verify_sgx_evidence(
         claims = NULL;
         claims_size = 0;
 
-        OE_TEST_CODE(
-            oe_verify_evidence(
-                &_ecdsa_quote_uuid,
-                (const uint8_t*)quote,
-                quote_size,
-                NULL,
-                0,
-                NULL,
-                0,
-                &claims,
-                &claims_size),
-            OE_OK);
+        result = oe_verify_evidence(
+            &_ecdsa_quote_uuid,
+            (const uint8_t*)quote,
+            quote_size,
+            NULL,
+            0,
+            NULL,
+            0,
+            &claims,
+            &claims_size);
+        OE_TEST(result == OE_OK || result == OE_TCB_LEVEL_INVALID);
+        tcb_level_valid = (result == OE_OK);
 
         _test_claims(
             claims,
             claims_size,
             SGX_FORMAT_TYPE_RAW_QUOTE,
             is_local,
+            tcb_level_valid,
             report_body,
             &_ecdsa_quote_uuid,
             expected_endorsements ? &sgx_endorsements : NULL,

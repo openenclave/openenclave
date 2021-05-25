@@ -155,6 +155,9 @@ oe_result_t oe_verifier_free_format_settings(uint8_t* settings);
  * custom).
  * @param[out] claims_length If not NULL, the length of the claims list.
  * @retval OE_OK The function succeeded.
+ * @retval OE_TCB_LEVEL_INVALID The function succeeded. The TCB is not
+ * considered up-to-date, and the claims OE_CLAIM_TCB_STATUS and OE_TCB_DATE
+ * contain more information.
  * @retval OE_INVALID_PARAMETER At least one of the parameters is invalid.
  * @retval other appropriate error code.
  */
