@@ -19,7 +19,6 @@
  * will have, so we chose a reasonably large size here (64GB). */
 #define OE_EEID_SGX_ELRANGE 0x1000000000
 
-#define OE_SGX_TCS_CONTROL_PAGES 6
 #define OE_SGX_TCS_GUARD_PAGES 2
 
 /** This is the public key corresponding to the private key OE_DEBUG_SIGN_KEY in

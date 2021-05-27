@@ -8,8 +8,8 @@
   tasks:
     - name: OE setup | Set installer URLs from the OE storage account
       set_fact:
-        intel_psw_url:       "https://oejenkins.blob.core.windows.net/oejenkins/Intel%20SGX%20PSW%20for%20Windows%20v2.9.100.2.exe"
-        intel_psw_hash:      "A2F357F3AC1629C2A714A05DCA14CF8C7F25868A0B3352FAE351B14AD121BDFC"
+        intel_psw_url:       "https://oejenkins.blob.core.windows.net/oejenkins/Intel%20SGX%20PSW%20for%20Windows%20v2.10.100.2.exe"
+        intel_psw_hash:      "E054644788C54C1CBAA10CBF743BB1FA14BE793B42875E3E5C0D62FD0CB6EAEB"
         intel_dcap_url:      "https://oejenkins.blob.core.windows.net/oejenkins/Intel%20SGX%20DCAP%20for%20Windows%20v1.8.100.2.exe"
         intel_dcap_hash:     "F45D12351A1839C6F1AF58CC53D64B0810BC12E7DFF0E9DBF80A0031754AA925"
         git_url:             "https://oejenkins.blob.core.windows.net/oejenkins/Git-2.19.1-64-bit.exe"

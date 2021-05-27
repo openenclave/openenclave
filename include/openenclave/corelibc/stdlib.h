@@ -28,9 +28,15 @@ typedef struct _oe_syscall_path
     char buf[OE_PATH_MAX];
 } oe_syscall_path_t;
 
+#ifdef OE_USE_DEBUG_MALLOC
+
+/* Turn debug malloc on/off. Default = true. */
 extern bool oe_use_debug_malloc;
 
+/* Turn memset of allocated memory on/off. Default = true. */
 extern bool oe_use_debug_malloc_memset;
+
+#endif
 
 void* oe_malloc(size_t size);
 

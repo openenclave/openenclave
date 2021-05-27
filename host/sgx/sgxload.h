@@ -8,8 +8,6 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/sgxcreate.h>
 
-#define OE_SGX_NUM_CONTROL_PAGES 4
-
 OE_EXTERNC_BEGIN
 
 OE_INLINE bool oe_sgx_is_simulation_load_context(

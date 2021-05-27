@@ -347,7 +347,13 @@ oe_result_t oe_public_key_write_pem(
         if (*size < mem->length)
         {
             *size = mem->length;
-            OE_RAISE(OE_BUFFER_TOO_SMALL);
+
+            if (data)
+                OE_RAISE(OE_BUFFER_TOO_SMALL);
+            /* If data is null, this call is intented to get the correct
+             * size so no need to trace OE_BUFFER_TOO_SMALL */
+            else
+                OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
         }
 
         /* Copy result to output buffer */
@@ -468,7 +474,13 @@ oe_result_t oe_private_key_sign(
         if (size > *signature_size)
         {
             *signature_size = size;
-            OE_RAISE(OE_BUFFER_TOO_SMALL);
+
+            if (signature)
+                OE_RAISE(OE_BUFFER_TOO_SMALL);
+            /* If buf_out is null, this call is intented to get the correct
+             * signature_size so no need to trace OE_BUFFER_TOO_SMALL */
+            else
+                OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
         }
 
         *signature_size = size;

@@ -617,8 +617,7 @@ static long _syscall(
             void* buf = (void*)arg2;
             size_t len = (size_t)arg3;
             int flags = (int)arg4;
-            const struct oe_sockaddr* dest_add =
-                (const struct oe_sockaddr*)arg5;
+            struct oe_sockaddr* dest_add = (struct oe_sockaddr*)arg5;
             oe_socklen_t* addrlen = (oe_socklen_t*)arg6;
 
             ret = oe_recvfrom(sockfd, buf, len, flags, dest_add, addrlen);

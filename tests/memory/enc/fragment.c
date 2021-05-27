@@ -82,7 +82,9 @@ static int _malloc_free_random_size(int times, unsigned int seed)
 
 void test_malloc_fixed_size_fragment(void)
 {
+#ifdef OE_USE_DEBUG_MALLOC
     oe_use_debug_malloc_memset = false;
+#endif
 
     // get heap size before tests
     size_t heap_size_before_test = _get_heap_size();
@@ -99,12 +101,16 @@ void test_malloc_fixed_size_fragment(void)
         heap_size_after_test);
     OE_TEST(heap_size_before_test == heap_size_after_test);
 
+#ifdef OE_USE_DEBUG_MALLOC
     oe_use_debug_malloc_memset = true;
+#endif
 }
 
 void test_malloc_random_size_fragment(unsigned int seed)
 {
+#ifdef OE_USE_DEBUG_MALLOC
     oe_use_debug_malloc = false;
+#endif
 
     // get heap size before tests
     size_t heap_size_before_test = _get_heap_size();
@@ -120,5 +126,7 @@ void test_malloc_random_size_fragment(unsigned int seed)
         heap_size_after_test);
     OE_TEST(heap_size_before_test == heap_size_after_test);
 
+#ifdef OE_USE_DEBUG_MALLOC
     oe_use_debug_malloc = true;
+#endif
 }

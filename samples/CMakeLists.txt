@@ -29,8 +29,8 @@ if (BUILD_ENCLAVES)
         WORLD_EXECUTE
         WORLD_READ)
 
-  install(DIRECTORY data-sealing file-encryptor helloworld log_callback
-                    switchless
+  install(DIRECTORY data-sealing debugmalloc file-encryptor helloworld
+                    log_callback switchless
           DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
 
   if (COMPILER_SUPPORTS_SNMALLOC)
@@ -39,26 +39,20 @@ if (BUILD_ENCLAVES)
   endif ()
 endif ()
 
-if (OE_SGX)
-  set(BUILD_HOSTVERIFY_INLINE ON)
-  add_subdirectory(host_verify)
-endif ()
-
 install(
   DIRECTORY host_verify
   DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
   COMPONENT OEHOSTVERIFY)
 
-install(
-  FILES README.md BuildSamplesWindows.md BuildSamplesLinux.md
-  DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
+install(FILES README.md BuildSamplesWindows.md BuildSamplesLinux.md
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
 
-if(UNIX)
+if (UNIX)
   install(
     FILES config.mk
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
     COMPONENT OEHOSTVERIFY)
-endif()
+endif ()
 
 if (WIN32)
   add_test(

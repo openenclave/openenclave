@@ -953,7 +953,13 @@ oe_result_t oe_cert_find_extension(
             if ((size_t)str->length > *size)
             {
                 *size = (size_t)str->length;
-                OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
+
+                if (data)
+                    OE_RAISE(OE_BUFFER_TOO_SMALL);
+                /* If data is null, this call is intented to get the correct
+                 * size so no need to trace OE_BUFFER_TOO_SMALL */
+                else
+                    OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
             }
 
             if (data)

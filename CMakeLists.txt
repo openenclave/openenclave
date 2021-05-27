@@ -239,9 +239,9 @@ include(add_enclave)
 # TODO: See #756: Fix this because it is incompatible with
 # multi-configuration generators
 if (uppercase_CMAKE_BUILD_TYPE STREQUAL "DEBUG")
-  # In debug builds, debug_malloc is on by default
+  # In debug builds, enclaves are linked with liboedebugmalloc.a by default.
   option(USE_DEBUG_MALLOC
-         "Build oeenclave with memory leak detection capability." ON)
+         "Build enclaves with memory leak detection capability." ON)
 endif ()
 
 option(ADD_WINDOWS_ENCLAVE_TESTS "Build Windows enclave tests" OFF)

@@ -544,6 +544,7 @@ int arg_handler(int argc, const char* argv[])
     return ret;
 }
 
+OE_WEAK
 int main(int argc, const char* argv[])
 {
     oe_set_err_program_name(argv[0]);
