@@ -24,6 +24,7 @@
 #define OE_DEFAULT_SSA_FRAME_SIZE 0x1
 #define OE_SGX_GPR_BYTE_SIZE 0xb8
 #define OE_SGX_TCS_HEADER_BYTE_SIZE 0x48
+#define OE_SGX_MISC_BYTE_SIZE 0x10
 
 //
 // SGX control pages, excluding thread data and local storage:

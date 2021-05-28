@@ -162,6 +162,10 @@ static sgx_secs_t* _new_secs(
         secs->config_svn = context->config_data->config_svn;
     }
 
+    /* Set the EXINFO bit if CapturePFGPExceptions=1 */
+    if (context->capture_pf_gp_exceptions_enabled)
+        secs->misc_select |= SGX_SECS_MISCSELECT_EXINFO;
+
     return secs;
 }
 
@@ -262,6 +266,7 @@ static oe_result_t _get_sig_struct(
             properties->config.attributes,
             properties->config.product_id,
             properties->config.security_version,
+            &properties->config.flags,
             OE_DEBUG_SIGN_KEY,
             OE_DEBUG_SIGN_KEY_SIZE,
             properties->config.family_id,

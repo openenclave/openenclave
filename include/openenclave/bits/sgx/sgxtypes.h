@@ -47,6 +47,8 @@ OE_EXTERNC_BEGIN
 #define SGX_SECINFO_TCS 0x0000000000000000100
 #define SGX_SECINFO_REG 0x0000000000000000200
 
+#define SGX_SECS_MISCSELECT_EXINFO 0x0000000000000001UL
+
 #define SGX_SE_EPID_SIG_RL_VERSION 0x200
 #define SGX_SE_EPID_SIG_RL_ID 0xE00
 
@@ -132,6 +134,7 @@ OE_CHECK_SIZE(sizeof(sgx_attributes_t), 16);
 
 /* sgx_sigstruct_t.miscmask */
 #define SGX_SIGSTRUCT_MISCMASK 0xffffffff
+#define SGX_SIGSTRUCT_MISCMASK_EXINFO 0xfffffffe
 
 /* sgx_sigstruct_t.flags */
 /* Mask all bits except bit 2 for MODE64BIT */
@@ -367,6 +370,17 @@ typedef struct sgx_ssa_gpr_t
     uint64_t fs_base;
     uint64_t gs_base;
 } sgx_ssa_gpr_t, *PSGX_SsaGpr;
+
+typedef struct _sgx_exinfo_t
+{
+    /*
+     * The naming and size of the members follows the Table 37-13 in the Intel
+     * Software Developer's Manual Volume 3.
+     */
+    uint64_t maddr;
+    uint32_t errcd;
+    uint8_t reserved[4];
+} sgx_exinfo_t;
 
 /*
 **==============================================================================
@@ -1052,7 +1066,7 @@ typedef struct _sgx_key
 
 /* Enclave MISCSELECT Flags Bit Masks, additional information to an SSA frame */
 /* If set, then the enclave page fault and general protection exception are
- * reported*/
+ * reported */
 #define SGX_MISC_FLAGS_PF_GP_EXIT_INFO 0x0000000000000001ULL
 
 /* Enclave Flags Bit Masks */

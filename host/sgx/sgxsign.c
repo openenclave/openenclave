@@ -571,6 +571,7 @@ static oe_result_t _init_sigstruct(
     uint64_t attributes,
     uint16_t product_id,
     uint16_t security_version,
+    const oe_sgx_enclave_flags_t* flags,
     const uint8_t* family_id,
     const uint8_t* extended_product_id,
     sgx_sigstruct_t* sigstruct)
@@ -620,7 +621,10 @@ static oe_result_t _init_sigstruct(
     sigstruct->miscselect = SGX_SIGSTRUCT_MISCSELECT;
 
     /* sgx_sigstruct_t.miscmask */
-    sigstruct->miscmask = SGX_SIGSTRUCT_MISCMASK;
+    if (flags && flags->capture_pf_gp_exceptions)
+        sigstruct->miscmask = SGX_SIGSTRUCT_MISCMASK_EXINFO;
+    else
+        sigstruct->miscmask = SGX_SIGSTRUCT_MISCMASK;
 
     /* sgx_sigstruct_t.attributes */
     sigstruct->attributes.flags = attributes;
@@ -681,6 +685,7 @@ oe_result_t oe_sgx_sign_enclave_from_engine(
     uint64_t attributes,
     uint16_t product_id,
     uint16_t security_version,
+    const oe_sgx_enclave_flags_t* flags,
     const char* engine_id,
     const char* engine_load_path,
     const char* key_id,
@@ -709,6 +714,7 @@ oe_result_t oe_sgx_sign_enclave_from_engine(
         attributes,
         product_id,
         security_version,
+        flags,
         family_id,
         extended_product_id,
         sigstruct));
@@ -728,6 +734,7 @@ oe_result_t oe_sgx_sign_enclave(
     uint64_t attributes,
     uint16_t product_id,
     uint16_t security_version,
+    const oe_sgx_enclave_flags_t* flags,
     const uint8_t* pem_data,
     size_t pem_size,
     const uint8_t* family_id,
@@ -755,6 +762,7 @@ oe_result_t oe_sgx_sign_enclave(
         attributes,
         product_id,
         security_version,
+        flags,
         family_id,
         extended_product_id,
         sigstruct));
@@ -774,6 +782,7 @@ oe_result_t oe_sgx_get_sigstruct_digest(
     uint64_t attributes,
     uint16_t product_id,
     uint16_t security_version,
+    const oe_sgx_enclave_flags_t* flags,
     const uint8_t* family_id,
     const uint8_t* extended_product_id,
     OE_SHA256* digest)
@@ -794,6 +803,7 @@ oe_result_t oe_sgx_get_sigstruct_digest(
         attributes,
         product_id,
         security_version,
+        flags,
         family_id,
         extended_product_id,
         &sigstruct));
@@ -810,6 +820,7 @@ oe_result_t oe_sgx_digest_sign_enclave(
     uint64_t attributes,
     uint16_t product_id,
     uint16_t security_version,
+    const oe_sgx_enclave_flags_t* flags,
     const uint8_t* cert_pem_data,
     size_t cert_pem_size,
     const uint8_t* digest_signature,
@@ -845,6 +856,7 @@ oe_result_t oe_sgx_digest_sign_enclave(
         attributes,
         product_id,
         security_version,
+        flags,
         family_id,
         extended_product_id,
         sigstruct));

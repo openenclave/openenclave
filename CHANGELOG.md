@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Unreleased][Unreleased_log]
 --------------
 
+### Added
+- Add the CapturePFGPExceptions preference for the SGX2 feature of capturing #PF and #GP exceptions inside an enclave.
+  - Developers can specify the CapturePFGPExceptions with a binary value in the enclave config file or set the value via the newly added OE_SET_ENCLAVE_SGX2 macro, which is used to set SGX2-specific properties.
+  - When setting CapturePFGPExceptions=1, the OE loader will enable the feature when running on an SGX2-capable CPU.
+  - Once enabled, the in-enclave exception handler can capture the #PF (with the OE_EXCEPTION_PAGE_FAULT code) and #GP (with the code OE_EXCEPTION_ACCESS_VIOLATION code) exceptions.
+  - More information about the exceptions can be found in the `faulting_address` and `error_code` members of the `oe_exception_record_t` structure passed into the handler.
+
 [v0.16.1][v0.16.1_log]
 --------------
 ### Added

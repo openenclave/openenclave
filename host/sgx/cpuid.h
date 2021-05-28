@@ -13,6 +13,10 @@
 #error "oe_get_cpuid(): no cpuid intrinsic mapping for this compiler"
 #endif
 
+#define CPUID_SGX_LEAF 0x12
+#define CPUID_SGX_KSS_MASK 0x80
+#define CPUID_SGX_MISC_EXINFO_MASK 0x01
+
 /* Same as __get_cpuid, but sub-leaf can be specified.
    Need this function as cpuid level 4 needs the sub-leaf to be specified in ECX
 */
