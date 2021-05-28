@@ -294,15 +294,6 @@ endif ()
 if (OE_SGX AND WIN32)
   # oedebugrt is accessed via a bridge on Win32 and need not be linked.
   list(APPEND PLATFORM_SDK_ONLY_SRC sgx/windows/debugrtbridge.c)
-
-  # __oe_dispatch_ocall function must have debug symbols for debuggers to
-  # stitch the ocall stack. Use /Z7 flag to embed the debugging information
-  # in the object file. When a host application is built, the linker will
-  # extract this debugging information and put it in the pdb for the host
-  # application. Using /Z7 avoids having to distribut oehost.pdb.
-  # Note: This is a temporary fix and debuggers will not have this requirement
-  # when ocall stack stitching is also done via the debugger contract.
-  set_source_files_properties(sgx/calls.c PROPERTIES COMPILE_FLAGS "/Z7")
 endif ()
 
 # Common host verification files that work on any OS/architecture.
@@ -500,6 +491,20 @@ install(
   TARGETS oehost
   EXPORT openenclave-targets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host)
+if (WIN32)
+  # Install .pdb files to enable stepping into oehost srcs for Debug
+  # and RelWithDebInfo builds.
+  # Note: PDB_OUTPUT_DIRECTORY is defined only for shared library and
+  # executable targets.
+  string(FIND "${CMAKE_BUILD_TYPE}" "Deb" BUILD_TYPE_DEBUG)
+  if (${BUILD_TYPE_DEBUG} GREATER_EQUAL 0)
+    install(
+      FILES
+        ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/oehost.dir/oehost.pdb
+        ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/oehostverify.dir/oehostverify.pdb
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host)
+  endif ()
+endif ()
 
 install(
   TARGETS oehostverify
