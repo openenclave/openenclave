@@ -127,7 +127,13 @@ int main(int argc, const char* argv[])
             argv[0]);
         exit(1);
     }
-
+    if (!oe_has_sgx_quote_provider())
+    {
+        // this test should not run on any platforms where FLC is not supported
+        printf("=== Skipped - unsupported test by non-FLC platform "
+               "(debug)\n");
+        return SKIP_RETURN_CODE;
+    }
     const uint32_t flags = oe_get_create_flags();
     if ((flags & OE_ENCLAVE_FLAG_SIMULATE) != 0)
     {
