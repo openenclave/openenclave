@@ -914,7 +914,8 @@ void verify_sgx_evidence(
         OE_TRACE_ERROR(
             "oe_verify_evidence result: %s. TCB Status: %s\n",
             oe_result_str(result),
-            _find_claim(claims, claims_size, OE_CLAIM_TCB_STATUS));
+            oe_sgx_tcb_status_str(*(oe_sgx_tcb_status_t*)_find_claim(
+                claims, claims_size, OE_CLAIM_TCB_STATUS)));
     }
 
     _test_claims(

@@ -255,7 +255,7 @@ static oe_tcb_level_status_t _parse_tcb_status(
                  length,
                  SGX_TCB_STATUS_OUT_OF_DATE_CONFIGURATION_NEEDED))
     {
-        status.fields.qe_identity_out_of_date = 1;
+        status.fields.outofdate = 1;
         status.fields.configuration_needed = 1;
     }
     // Due to sgx LVI update, UpToDate tcb would be marked as SWHardeningNeeded,

@@ -18,14 +18,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - When setting CapturePFGPExceptions=1, the OE loader will enable the feature when running on an SGX2-capable CPU.
   - Once enabled, the in-enclave exception handler can capture the #PF (with the OE_EXCEPTION_PAGE_FAULT code) and #GP (with the code OE_EXCEPTION_ACCESS_VIOLATION code) exceptions.
   - More information about the exceptions can be found in the `faulting_address` and `error_code` members of the `oe_exception_record_t` structure passed into the handler.
+- Add the following attestation claims from oe_verify_evidence():
+  - OE_CLAIM_TCB_STATUS
+  - OE_CLAIM_TCB_DATE
 
 [v0.16.1][v0.16.1_log]
 --------------
 ### Added
 - Add the support for SGX quote verification collateral version 3 with the CRL in DER format by default. Refer to [Get Quote Verification Collateral](https://download.01.org/intel-sgx/sgx-dcap/1.10/linux/docs/Intel_SGX_ECDSA_QuoteLibReference_DCAP_API.pdf) section 3.3.1.5.
-- Add the following attestation claims from oe_verify_evidence():
-  - OE_CLAIM_TCB_STATUS
-  - OE_CLAIM_TCB_DATE
 
 [v0.16.0][v0.16.0_log]
 --------------
