@@ -64,6 +64,25 @@ OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, tcs_count) == 64);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, flags) == 72);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, modules) == 80);
 
+#define OE_DEBUG_IMAGE_MAGIC 0xecd538d85d491d0b
+
+typedef struct _debug_image_t
+{
+    uint64_t magic;
+    uint64_t version;
+    char* path;
+    uint64_t path_length;
+    uint64_t base_address;
+    uint64_t size;
+} oe_debug_image_t;
+
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_image_t, magic) == 0);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_image_t, version) == 8);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_image_t, path) == 16);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_image_t, path_length) == 24);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_image_t, base_address) == 32);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_image_t, size) == 40);
+
 #define OE_DEBUG_THREAD_BINDING_MAGIC 0x24cb0317d077d636
 
 typedef struct _debug_thread_binding_t
@@ -200,6 +219,18 @@ oe_debug_push_thread_binding(oe_debug_enclave_t* enclave, struct _sgx_tcs* tcs);
  * Pop the last binding for the current thread.
  */
 OE_DEBUGRT_EXPORT oe_result_t oe_debug_pop_thread_binding(void);
+
+/**
+ * Notify that an image has been loaded within enclave address space.
+ */
+OE_DEBUGRT_EXPORT
+oe_result_t oe_debug_notify_image_loaded(oe_debug_image_t* image);
+
+/**
+ * Notify that an image is about to be unloaded within enclave address space.
+ */
+OE_DEBUGRT_EXPORT
+oe_result_t oe_debug_notify_image_unloaded(oe_debug_image_t* image);
 
 OE_EXTERNC_END
 

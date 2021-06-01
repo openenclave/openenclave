@@ -6,6 +6,14 @@
 #include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/sgx/td.h>
 #include <openenclave/internal/thread.h>
+#include <openenclave/internal/calls.h>
+#include <openenclave/internal/constants_x64.h>
+#include <openenclave/internal/fault.h>
+#include <openenclave/internal/globals.h>
+#include <openenclave/internal/jump.h>
+#include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/trace.h>
+#include "asmdefs.h"
 #include "context.h"
 #include "cpuid.h"
 #include "init.h"
@@ -199,6 +207,61 @@ static struct
     {19, OE_EXCEPTION_SIMD_FLOAT_POINT},
 };
 
+static int _emulate_wrfsbase(sgx_ssa_gpr_t* ssa_gpr)
+{
+    // Emulate wrfsbase
+    const uint32_t OE_WRFSBASE_PREFIX_1 = 0xae0f48f3;
+    if (*((uint32_t*)ssa_gpr->rip) == OE_WRFSBASE_PREFIX_1)
+    {
+        uint64_t regs[] = {
+            ssa_gpr->rax, // d0
+            ssa_gpr->rcx, // d1
+            ssa_gpr->rdx, // d2
+            ssa_gpr->rbx, // d3
+            ssa_gpr->rsp, // d4
+            ssa_gpr->rbp, // d5
+            ssa_gpr->rsi, // d6
+            ssa_gpr->rdi, // d7
+        };
+
+        uint8_t last_byte = ((uint8_t*)ssa_gpr->rip)[4];
+        uint8_t idx = (uint8_t)(last_byte - 0xd0);
+        if (idx >= sizeof(regs) / sizeof(regs[0]))
+            return -1;
+
+        ssa_gpr->fs_base = regs[idx];
+        ssa_gpr->rip += 5;
+        return 0;
+    }
+
+    // Emulate wrfsbase
+    const uint32_t OE_WRFSBASE_PREFIX_2 = 0xae0f49f3;
+    if (*((uint32_t*)ssa_gpr->rip) == OE_WRFSBASE_PREFIX_2)
+    {
+        uint64_t regs[] = {
+            ssa_gpr->r8,  // d0
+            ssa_gpr->r9,  // d1
+            ssa_gpr->r10, // d2
+            ssa_gpr->r11, // d3
+            ssa_gpr->r12, // d4
+            ssa_gpr->r13, // d5
+            ssa_gpr->r14, // d6
+            ssa_gpr->r15, // d7
+        };
+
+        uint8_t last_byte = ((uint8_t*)ssa_gpr->rip)[4];
+        uint8_t idx = (uint8_t)(last_byte - 0xd0);
+        if (idx >= sizeof(regs) / sizeof(regs[0]))
+            return -1;
+
+        ssa_gpr->fs_base = regs[idx];
+        ssa_gpr->rip += 5;
+        return 0;
+    }
+
+    return -1;
+}
+
 /*
 **==============================================================================
 **
@@ -214,9 +277,15 @@ int _emulate_illegal_instruction(sgx_ssa_gpr_t* ssa_gpr)
     // Emulate CPUID
     if (*((uint16_t*)ssa_gpr->rip) == OE_CPUID_OPCODE)
     {
-        return oe_emulate_cpuid(
+        int ret = oe_emulate_cpuid(
             &ssa_gpr->rax, &ssa_gpr->rbx, &ssa_gpr->rcx, &ssa_gpr->rdx);
+        if (ret == 0)
+            ssa_gpr->rip += 2;
+        return ret;
     }
+
+    if (_emulate_wrfsbase(ssa_gpr) == 0)
+        return 0;
 
     return -1;
 }
@@ -308,7 +377,7 @@ void oe_virtual_exception_dispatcher(
     uint64_t* arg_out)
 {
     SSA_Info ssa_info = {0};
-    OE_UNUSED(arg_in);
+    oe_exception_record_t* oe_exception_record = (oe_exception_record_t*)arg_in;
 
     // Verify if the first SSA has valid exception info.
     if (_get_enclave_thread_first_ssa_info(td, &ssa_info) != 0)
@@ -316,39 +385,55 @@ void oe_virtual_exception_dispatcher(
         *arg_out = OE_EXCEPTION_CONTINUE_SEARCH;
         return;
     }
-
     sgx_ssa_gpr_t* ssa_gpr =
         (sgx_ssa_gpr_t*)(((uint8_t*)ssa_info.base_address) + ssa_info.frame_byte_size - OE_SGX_GPR_BYTE_SIZE);
+
     if (!ssa_gpr->exit_info.as_fields.valid)
     {
-        // Not a valid/expected enclave exception;
-        *arg_out = OE_EXCEPTION_CONTINUE_SEARCH;
-        return;
-    }
-
-    // Get the exception address, code, and flags.
-    td->exception_address = ssa_gpr->rip;
-    td->exception_code = OE_EXCEPTION_UNKNOWN;
-    for (uint32_t i = 0; i < OE_COUNTOF(g_vector_to_exception_code_mapping);
-         i++)
-    {
-        if (g_vector_to_exception_code_mapping[i].sgx_vector ==
-            ssa_gpr->exit_info.as_fields.vector)
+        // Consider manually provided exception information for SGX1
+        if (oe_exception_record)
         {
-            td->exception_code =
-                g_vector_to_exception_code_mapping[i].exception_code;
-            break;
+            td->exception_address = ssa_gpr->rip;
+
+            /* TODO PRP: We need to read the exception information from
+             * oe_exception_record instead */
+            td->exception_code = OE_EXCEPTION_PAGE_FAULT;
+            td->exception_flags |= OE_EXCEPTION_FLAGS_HARDWARE;
+        }
+        else
+        {
+            // Not a valid/expected enclave exception;
+            *arg_out = OE_EXCEPTION_CONTINUE_SEARCH;
+            return;
         }
     }
+    else
+    {
+        // Get the exception address, code, and flags.
+        td->exception_address = ssa_gpr->rip;
+        td->exception_code = OE_EXCEPTION_UNKNOWN;
+        for (uint32_t i = 0; i < OE_COUNTOF(g_vector_to_exception_code_mapping);
+             i++)
+        {
+            if (g_vector_to_exception_code_mapping[i].sgx_vector ==
+                ssa_gpr->exit_info.as_fields.vector)
+            {
+                td->exception_code =
+                    g_vector_to_exception_code_mapping[i].exception_code;
+                break;
+            }
+        }
 
-    td->exception_flags = 0;
-    if (ssa_gpr->exit_info.as_fields.exit_type == SGX_EXIT_TYPE_HARDWARE)
-    {
-        td->exception_flags |= OE_EXCEPTION_FLAGS_HARDWARE;
-    }
-    else if (ssa_gpr->exit_info.as_fields.exit_type == SGX_EXIT_TYPE_SOFTWARE)
-    {
-        td->exception_flags |= OE_EXCEPTION_FLAGS_SOFTWARE;
+        td->exception_flags = 0;
+        if (ssa_gpr->exit_info.as_fields.exit_type == SGX_EXIT_TYPE_HARDWARE)
+        {
+            td->exception_flags |= OE_EXCEPTION_FLAGS_HARDWARE;
+        }
+        else if (
+            ssa_gpr->exit_info.as_fields.exit_type == SGX_EXIT_TYPE_SOFTWARE)
+        {
+            td->exception_flags |= OE_EXCEPTION_FLAGS_SOFTWARE;
+        }
     }
 
     if (td->exception_code == OE_EXCEPTION_ILLEGAL_INSTRUCTION &&
@@ -358,9 +443,6 @@ void oe_virtual_exception_dispatcher(
         td->host_rbp = td->host_previous_rbp;
         td->host_rsp = td->host_previous_rsp;
         td->host_ecall_context = td->host_previous_ecall_context;
-
-        // Advance RIP to the next instruction for continuation
-        ssa_gpr->rip += 2;
     }
     else
     {
@@ -376,5 +458,40 @@ void oe_virtual_exception_dispatcher(
     // Acknowledge this exception is an enclave exception, host should let keep
     // running, and let enclave handle the exception.
     *arg_out = OE_EXCEPTION_CONTINUE_EXECUTION;
+    return;
+}
+
+/*
+**==============================================================================
+**
+** void oe_cleanup_xstates(void)
+**
+**  Cleanup all XSTATE registers that include both legacy registers and extended
+**  registers.
+**
+**==============================================================================
+*/
+
+void oe_cleanup_xstates(void)
+{
+    // Temporary workaround for #144 xrstor64 fault with optimized builds as
+    // reserved guard pages
+    // are incorrectly accessed. Xsave area is increased from 0x240 to 0x1000.
+    // Making these static
+    OE_ALIGNED(XSAVE_ALIGNMENT)
+    static uint8_t
+        xsave_area[MINIMAL_XSTATE_AREA_LENGTH]; //#144 Making this static
+//__builtin_ia32_xrstor64 has different argument types in clang and gcc
+#ifdef __clang__
+    uint64_t restore_mask = ~((uint64_t)0x0);
+#else
+    int64_t restore_mask = ~(0x0);
+#endif
+
+    // The legacy registers(F87, SSE) values will be loaded from the
+    // LEGACY_XSAVE_AREA that at beginning of xsave_area.The extended registers
+    // will be initialized to their default values.
+    __builtin_ia32_xrstor64(xsave_area, restore_mask);
+
     return;
 }
