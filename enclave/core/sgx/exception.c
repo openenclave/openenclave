@@ -478,9 +478,9 @@ void oe_cleanup_xstates(void)
     // reserved guard pages
     // are incorrectly accessed. Xsave area is increased from 0x240 to 0x1000.
     // Making these static
-    OE_ALIGNED(XSAVE_ALIGNMENT)
+    OE_ALIGNED(OE_XSAVE_ALIGNMENT)
     static uint8_t
-        xsave_area[MINIMAL_XSTATE_AREA_LENGTH]; //#144 Making this static
+        xsave_area[OE_MINIMAL_XSTATE_AREA_SIZE]; //#144 Making this static
 //__builtin_ia32_xrstor64 has different argument types in clang and gcc
 #ifdef __clang__
     uint64_t restore_mask = ~((uint64_t)0x0);
