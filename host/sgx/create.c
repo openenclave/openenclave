@@ -97,10 +97,25 @@ static bool _is_kss_supported()
     eax = ebx = ecx = edx = 0;
 
     // Obtain feature information using CPUID
-    oe_get_cpuid(0x12, 0x1, &eax, &ebx, &ecx, &edx);
+    oe_get_cpuid(CPUID_SGX_LEAF, 0x1, &eax, &ebx, &ecx, &edx);
 
     // Check if KSS (bit 7) is supported by the processor
-    if (!(eax & (1 << 7)))
+    if (!(eax & CPUID_SGX_KSS_MASK))
+        return false;
+    else
+        return true;
+}
+
+static bool _is_misc_region_supported()
+{
+    uint32_t eax, ebx, ecx, edx;
+    eax = ebx = ecx = edx = 0;
+
+    // Obtain feature information using CPUID
+    oe_get_cpuid(CPUID_SGX_LEAF, 0x0, &eax, &ebx, &ecx, &edx);
+
+    // Check if EXINFO is supported by the processor
+    if (!(ebx & CPUID_SGX_MISC_EXINFO_MASK))
         return false;
     else
         return true;
@@ -721,6 +736,7 @@ static oe_result_t _eeid_resign(
             properties->config.attributes,
             properties->config.product_id,
             properties->config.security_version,
+            &properties->config.flags,
             OE_DEBUG_SIGN_KEY,
             OE_DEBUG_SIGN_KEY_SIZE,
             properties->config.family_id,
@@ -882,6 +898,14 @@ oe_result_t oe_sgx_build_enclave(
         &props,
         &loaded_enclave_pages_size,
         &enclave_size));
+
+    /* Check if the enclave is configured with CapturePFGPExceptions=1 */
+    if (props.config.flags.capture_pf_gp_exceptions)
+    {
+        /* Only opt into the feature if CPU (SGX2) supports the MISC region. */
+        if (_is_misc_region_supported())
+            context->capture_pf_gp_exceptions_enabled = 1;
+    }
 
     if (props.config.attributes & OE_SGX_FLAGS_KSS)
     {

@@ -49,6 +49,7 @@ typedef struct _config_file_options
     optional_uint16_t security_version;
     optional_oe_uuid_t family_id;
     optional_oe_uuid_t extended_product_id;
+    optional_bool_t capture_pf_gp_exceptions;
 } config_file_options_t;
 
 int uuid_from_string(str_t* str, uint8_t* uuid, size_t expected_size);
@@ -311,6 +312,32 @@ static int _load_config_file(const char* path, config_file_options_t* options)
             memcpy(&options->extended_product_id.value, &id, sizeof(id));
             options->extended_product_id.has_value = true;
         }
+        else if (strcmp(str_ptr(&lhs), "CapturePFGPExceptions") == 0)
+        {
+            uint64_t value;
+
+            if (options->capture_pf_gp_exceptions.has_value)
+            {
+                oe_err(
+                    "%s(%zu): Duplicate 'CapturePFGPExceptions' value provided",
+                    path,
+                    line);
+                goto done;
+            }
+
+            // CapturePFGPExceptions must be 0 or 1
+            if (str_u64(&rhs, &value) != 0 || (value > 1))
+            {
+                oe_err(
+                    "%s(%zu): 'CapturePFGPExceptions' value must be 0 or 1",
+                    path,
+                    line);
+                goto done;
+            }
+
+            options->capture_pf_gp_exceptions.value = (bool)value;
+            options->capture_pf_gp_exceptions.has_value = true;
+        }
         else
         {
             oe_err("%s(%zu): unknown setting: %s", path, line, str_ptr(&rhs));
@@ -477,6 +504,12 @@ void _merge_config_file_options(
     /* If NumTCS option is present */
     if (options->num_tcs.has_value)
         properties->header.size_settings.num_tcs = options->num_tcs.value;
+
+    /* If the CapturePFGPExceptions option is present */
+    if (options->capture_pf_gp_exceptions.has_value)
+        properties->config.flags.capture_pf_gp_exceptions = 1;
+    else
+        properties->config.flags.capture_pf_gp_exceptions = 0;
 }
 
 oe_result_t _initialize_enclave_properties(
@@ -626,6 +659,7 @@ int oesign(
                 properties.config.attributes,
                 properties.config.product_id,
                 properties.config.security_version,
+                &properties.config.flags,
                 engine_id,
                 engine_load_path,
                 key_id,
@@ -660,6 +694,7 @@ int oesign(
             properties.config.attributes,
             properties.config.product_id,
             properties.config.security_version,
+            &properties.config.flags,
             pem_data,
             pem_size,
             signature_data,
@@ -702,6 +737,7 @@ int oesign(
                 properties.config.attributes,
                 properties.config.product_id,
                 properties.config.security_version,
+                &properties.config.flags,
                 pem_data,
                 pem_size,
                 properties.config.family_id,
@@ -751,6 +787,7 @@ int oedigest(const char* enclave, const char* conffile, const char* digest_file)
             properties.config.attributes,
             properties.config.product_id,
             properties.config.security_version,
+            &properties.config.flags,
             properties.config.family_id,
             properties.config.extended_product_id,
             &digest),

@@ -249,6 +249,8 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
     oe_exception_record.code = td->exception_code;
     oe_exception_record.flags = td->exception_flags;
     oe_exception_record.address = td->exception_address;
+    oe_exception_record.faulting_address = td->faulting_address;
+    oe_exception_record.error_code = td->error_code;
     oe_exception_record.context = oe_context;
 
     // Refer to oe_enter in host/sgx/enter.c. The contract we defined for EENTER
@@ -271,6 +273,13 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
             break;
         }
     }
+
+    // Clear information after all the handlers are done
+    td->exception_code = 0;
+    td->exception_flags = 0;
+    td->exception_address = 0;
+    td->faulting_address = 0;
+    td->error_code = 0;
 
     // Jump to the point where oe_context refers to and continue.
     if (handler_ret == OE_EXCEPTION_CONTINUE_EXECUTION)
@@ -317,8 +326,9 @@ void oe_virtual_exception_dispatcher(
         return;
     }
 
-    sgx_ssa_gpr_t* ssa_gpr =
-        (sgx_ssa_gpr_t*)(((uint8_t*)ssa_info.base_address) + ssa_info.frame_byte_size - OE_SGX_GPR_BYTE_SIZE);
+    uint64_t gprsgx_offset = (uint64_t)ssa_info.base_address +
+                             ssa_info.frame_byte_size - OE_SGX_GPR_BYTE_SIZE;
+    sgx_ssa_gpr_t* ssa_gpr = (sgx_ssa_gpr_t*)gprsgx_offset;
     if (!ssa_gpr->exit_info.as_fields.valid)
     {
         // Not a valid/expected enclave exception;
@@ -364,6 +374,16 @@ void oe_virtual_exception_dispatcher(
     }
     else
     {
+        /* The following codes can only be captured with SGX2 and the
+         * MISCSELECT[0] bit is set to 1. */
+        if (td->exception_code == OE_EXCEPTION_PAGE_FAULT ||
+            td->exception_code == OE_EXCEPTION_ACCESS_VIOLATION)
+        {
+            sgx_exinfo_t* exinfo =
+                (sgx_exinfo_t*)(gprsgx_offset - OE_SGX_MISC_BYTE_SIZE);
+            td->faulting_address = exinfo->maddr;
+            td->error_code = exinfo->errcd;
+        }
         // Modify the ssa_gpr so that e_resume will go to second pass exception
         // handler.
         ssa_gpr->rip = (uint64_t)oe_exception_dispatcher;
