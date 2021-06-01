@@ -10,6 +10,8 @@
 
 OE_EXTERNC_BEGIN
 
+typedef void (*oe_set_fsbase_cb)(const void*);
+
 typedef struct _oe_ecall_context
 {
     // Storage for making ocall
@@ -21,6 +23,9 @@ typedef struct _oe_ecall_context
     uint64_t debug_eexit_rip;
     uint64_t debug_eexit_rbp;
     uint64_t debug_eexit_rsp;
+
+    // Simulation mode helpers
+    oe_set_fsbase_cb set_fsbase;
 } oe_ecall_context_t;
 
 /**

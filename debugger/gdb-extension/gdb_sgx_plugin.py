@@ -126,7 +126,6 @@ class oe_debug_enclave_t:
     def is_valid(self):
         return self.magic == self.MAGIC_VALUE
 
-
 # This constant definition must align with sgx_tcs_t
 TCS_GSBASE_OFFSET =  56
 
@@ -307,6 +306,28 @@ class ModuleUnloadedBreakpoint(gdb.Breakpoint):
         print ("oegdb: Unloaded enclave module %s" % debug_module.path)
         return False
 
+class LibraryLoadBreakpoint(gdb.Breakpoint):
+    def __init__(self):
+        gdb.Breakpoint.__init__ (self, spec="oe_notify_debugger_library_load", internal=1)
+
+    def stop(self):
+        module_addr = int(gdb.parse_and_eval("$rdi"))
+        debug_module = oe_debug_module_t(module_addr)
+        load_enclave_symbol(debug_module.path, debug_module.base_address)
+        print ("oegdb: Loaded enclave module %s" % debug_module.path)
+        return False
+
+class LibraryUnloadBreakpoint(gdb.Breakpoint):
+    def __init__(self):
+        gdb.Breakpoint.__init__ (self, spec="oe_notify_debugger_library_unload", internal=1)
+
+    def stop(self):
+        module_addr = int(gdb.parse_and_eval("$rdi"))
+        debug_module = oe_debug_module_t(module_addr)
+        unload_enclave_symbol(debug_module.path, debug_module.base_address)
+        print ("oegdb: Unloaded enclave module %s" % debug_module.path)
+        return False
+
 def new_objfile_handler(event):
     global g_enclave_list_parsed
     if not g_enclave_list_parsed:
@@ -370,6 +391,8 @@ def oe_debugger_init():
     EnclaveTerminationBreakpoint()
     ModuleLoadedBreakpoint()
     ModuleUnloadedBreakpoint()
+    LibraryLoadBreakpoint()
+    LibraryUnloadBreakpoint()
     return
 
 def oe_debugger_cleanup():
