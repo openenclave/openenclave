@@ -3,15 +3,14 @@
 
 ---
 cmake_target_version: "3.13.1"
-clang_target_version: "8.0.0"
+clang_target_version: "10.0.1"
 shellcheck_target_version: "0.4.6"
 cmake_prefix: "/usr/local"
 
-clang_binary_name: "clang-8"
+clang_binary_name: "clang-10"
 
 apt_packages:
   - "curl"
-  - "clang-format-7"
   - "make"
   - "ninja-build"
   - "shellcheck"
@@ -31,8 +30,6 @@ apt_packages:
   - "libcurl4-openssl-dev"
   - "libx11-dev"
   - "libncurses5-dev"
-  - "clang-8"
-  - "clang-format-8"
   - "clang-10"
   - "clang-format-10"
   - "unzip"
@@ -52,7 +49,6 @@ apt_arm_packages:
 
 validation_distribution_binaries:
   - "/usr/bin/shellcheck"
-  - "/usr/bin/clang-8"
   - "/usr/bin/clang-10"
 
 validation_distribution_files:

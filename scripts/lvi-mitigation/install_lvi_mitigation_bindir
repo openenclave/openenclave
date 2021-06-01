@@ -41,8 +41,8 @@ for version in "${clang_versions[@]}"; do
     continue
   fi
   clangcpp="clang++$version"
-  clang_path=$(which "$clang")
-  clangcpp_path=$(which "$clangcpp")
+  clang_path=$(command -v "$clang")
+  clangcpp_path=$(command -v "$clangcpp")
   if [ "$clang_path" ] && [ "$clangcpp_path" ]; then
     ln -sf "$clang_path" "$bin_path"/"$clang"_symlink
     ln -sf "$clangcpp_path" "$bin_path"/"$clangcpp"_symlink
@@ -53,8 +53,8 @@ for version in "${clang_versions[@]}"; do
   fi
 done
 
-gcc_path=$(which gcc)
-gcpp_path=$(which g++)
+gcc_path=$(command -v gcc)
+gcpp_path=$(command -v g++)
 if [ "$gcc_path" ] && [ "$gcpp_path" ]; then
   ln -sf "$gcc_path" "$bin_path"/gcc_symlink
   ln -sf "$gcpp_path" "$bin_path"/g++_symlink

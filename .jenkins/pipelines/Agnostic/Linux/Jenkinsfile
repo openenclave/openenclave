@@ -15,7 +15,7 @@ AGENTS_LABELS = [
 
 
 def simulationContainerTest(String version, String build_type, List extra_cmake_args = []) {
-    stage("Simulation Ubuntu ${version} clang-8 ${build_type}, extra_cmake_args: ${extra_cmake_args}") {
+    stage("Simulation Ubuntu ${version} clang-10 ${build_type}, extra_cmake_args: ${extra_cmake_args}") {
         node(AGENTS_LABELS["ubuntu-nonsgx"]) {
             timeout(GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
@@ -31,7 +31,7 @@ def simulationContainerTest(String version, String build_type, List extra_cmake_
                            ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
                            """
                 withEnv(["OE_SIMULATION=1"]) {
-                    oe.ContainerRun("oetools-${version}:${DOCKER_TAG}", "clang-8", task, "--cap-add=SYS_PTRACE")
+                    oe.ContainerRun("oetools-${version}:${DOCKER_TAG}", "clang-10", task, "--cap-add=SYS_PTRACE")
                 }
             }
         }
@@ -70,7 +70,7 @@ def checkDevFlows(String version) {
                            cmake ${WORKSPACE} -G Ninja -DHAS_QUOTE_PROVIDER=OFF -Wdev --warn-uninitialized -Werror=dev
                            ninja -v
                            """
-                oe.ContainerRun("oetools-${version}:${DOCKER_TAG}", "clang-8", task, "--cap-add=SYS_PTRACE")
+                oe.ContainerRun("oetools-${version}:${DOCKER_TAG}", "clang-10", task, "--cap-add=SYS_PTRACE")
             }
         }
     }
@@ -84,7 +84,7 @@ def checkCI() {
                 checkout scm
                 // At the moment, the check-ci script assumes that it's executed from the
                 // root source code directory.
-                oe.ContainerRun("oetools-18.04:${DOCKER_TAG}", "clang-8", "cd ${WORKSPACE} && ./scripts/check-ci", "--cap-add=SYS_PTRACE")
+                oe.ContainerRun("oetools-18.04:${DOCKER_TAG}", "clang-10", "cd ${WORKSPACE} && ./scripts/check-ci", "--cap-add=SYS_PTRACE")
             }
         }
     }
@@ -110,22 +110,22 @@ try{
     if(FULL_TEST_SUITE == "true") {
         stage("Full Test Suite") {
             testing_stages += [
-                "Sim 1804 clang-8 SGX1 Debug":               { simulationContainerTest('18.04', 'Debug',   ['-DHAS_QUOTE_PROVIDER=OFF', '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
-                "Sim 1804 clang-8 SGX1 Release":             { simulationContainerTest('18.04', 'Release', ['-DHAS_QUOTE_PROVIDER=OFF', '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
-                "Sim 1804 clang-8 SGX1FLC Debug":            { simulationContainerTest('18.04', 'Debug',   ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
-                "Sim 1804 clang-8 SGX1FLC Release":          { simulationContainerTest('18.04', 'Release', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
-                "Sim 1804 clang-8 SGX1FLC Debug snmalloc":   { simulationContainerTest('18.04', 'Debug',   ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) },
-                "Sim 1804 clang-8 SGX1FLC Release snmalloc": { simulationContainerTest('18.04', 'Release', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) },
+                "Sim 1804 clang-10 SGX1 Debug":               { simulationContainerTest('18.04', 'Debug',   ['-DHAS_QUOTE_PROVIDER=OFF', '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
+                "Sim 1804 clang-10 SGX1 Release":             { simulationContainerTest('18.04', 'Release', ['-DHAS_QUOTE_PROVIDER=OFF', '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
+                "Sim 1804 clang-10 SGX1FLC Debug":            { simulationContainerTest('18.04', 'Debug',   ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
+                "Sim 1804 clang-10 SGX1FLC Release":          { simulationContainerTest('18.04', 'Release', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
+                "Sim 1804 clang-10 SGX1FLC Debug snmalloc":   { simulationContainerTest('18.04', 'Debug',   ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) },
+                "Sim 1804 clang-10 SGX1FLC Release snmalloc": { simulationContainerTest('18.04', 'Release', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) },
             ]
             parallel testing_stages
         }
     } else {
         stage("PR Testing") {
             testing_stages += [
-                "Sim 1804 clang-8 SGX1 Release":             { simulationContainerTest('18.04', 'Release', ['-DHAS_QUOTE_PROVIDER=OFF', '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
-                "Sim 1804 clang-8 SGX1FLC Debug":            { simulationContainerTest('18.04', 'Debug',   ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
-                "Sim 1804 clang-8 SGX1FLC Release":          { simulationContainerTest('18.04', 'Release', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
-                "Sim 1804 clang-8 SGX1FLC Release snmalloc": { simulationContainerTest('18.04', 'Release', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON', '-DUSE_SNMALLOC=ON']) },
+                "Sim 1804 clang-10 SGX1 Release":             { simulationContainerTest('18.04', 'Release', ['-DHAS_QUOTE_PROVIDER=OFF', '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
+                "Sim 1804 clang-10 SGX1FLC Debug":            { simulationContainerTest('18.04', 'Debug',   ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
+                "Sim 1804 clang-10 SGX1FLC Release":          { simulationContainerTest('18.04', 'Release', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
+                "Sim 1804 clang-10 SGX1FLC Release snmalloc": { simulationContainerTest('18.04', 'Release', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON', '-DUSE_SNMALLOC=ON']) },
             ]
             parallel testing_stages
         }

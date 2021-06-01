@@ -2,5 +2,4 @@
 # Licensed under the MIT License.
 
 ---
-llvm_apt_repository: "deb http://apt.llvm.org/{{ ansible_distribution_release }} llvm-toolchain-{{ ansible_distribution_release }}-12 main"
-llvm_apt_repository_10: "deb http://apt.llvm.org/{{ ansible_distribution_release }} llvm-toolchain-{{ ansible_distribution_release }}-10 main"
+llvm_apt_repository: "deb http://apt.llvm.org/{{ ansible_distribution_release }} llvm-toolchain-{{ ansible_distribution_release }}-10 main"

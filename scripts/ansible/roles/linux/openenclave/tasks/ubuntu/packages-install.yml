@@ -16,13 +16,6 @@
     apt_key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
     apt_repository: "{{ llvm_apt_repository }}"
 
-- include_role:
-    name: linux/common
-    tasks_from: apt-repo.yml
-  vars:
-    apt_key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-    apt_repository: "{{ llvm_apt_repository_10 }}"
-
 - name: Install all the Open Enclave prerequisites APT packages for development
   apt:
     name: "{{ apt_packages }}"

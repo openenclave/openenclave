@@ -12,8 +12,8 @@ Param(
     # We skip the hash check for the vs_buildtools.exe file because it is regularly updated without a change to the URL, unfortunately.
     [string]$VSBuildToolsURL = 'https://aka.ms/vs/15/release/vs_buildtools.exe',
     [string]$VSBuildToolsHash = '',
-    [string]$ClangURL = 'https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/LLVM-8.0.1-win64.exe',
-    [string]$ClangHash = 'E3AF139C2F93075C13DCBC4091C1311F66FC6E4E8705649FCAF9BEF8B3368F41',
+    [string]$ClangURL = 'https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/LLVM-10.0.0-win64.exe',
+    [string]$ClangHash = '893f8a12506f8ad29ca464d868fb432fdadd782786a10655b86575fc7fc1a562',
     [string]$IntelPSWURL = 'https://registrationcenter-download.intel.com/akdlm/irc_nas/17829/Intel%20SGX%20PSW%20for%20Windows%20v2.12.103.1.exe',
     [string]$IntelPSWHash = 'FD3ED08C70DB35B122F2FDD8E6046E3A97B078F4735705CDC074767F040A5609',
     [string]$ShellCheckURL = 'https://oejenkins.blob.core.windows.net/oejenkins/shellcheck-v0.7.0.zip',

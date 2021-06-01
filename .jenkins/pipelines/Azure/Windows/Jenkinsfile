@@ -84,14 +84,14 @@ try{
     if(FULL_TEST_SUITE == "true") {
         stage("Full Test Suite") {
             testing_stages += [
-                "Win2019 Ubuntu2004 clang-8 Debug Linux-Elf-build":       { windowsLinuxElfBuild('acc-win2019-dcap', '20.04', 'clang-8', 'Debug') },
-                "Win2019 Ubuntu2004 clang-8 Release Linux-Elf-build":     { windowsLinuxElfBuild('acc-win2019-dcap', '20.04', 'clang-8', 'Release') },
-                "Win2019 Ubuntu2004 clang-8 Debug Linux-Elf-build LVI":   { windowsLinuxElfBuild('acc-win2019-dcap', '20.04', 'clang-8', 'Debug', 'ControlFlow') },
-                "Win2019 Ubuntu2004 clang-8 Release Linux-Elf-build LVI": { windowsLinuxElfBuild('acc-win2019-dcap', '20.04', 'clang-8', 'Release', 'ControlFlow') },
-                "Win2019 Ubuntu1804 clang-8 Debug Linux-Elf-build":       { windowsLinuxElfBuild('acc-win2019-dcap', '18.04', 'clang-8', 'Debug') },
-                "Win2019 Ubuntu1804 clang-8 Release Linux-Elf-build":     { windowsLinuxElfBuild('acc-win2019-dcap', '18.04', 'clang-8', 'Release') },
-                "Win2019 Ubuntu1804 clang-8 Debug Linux-Elf-build LVI":   { windowsLinuxElfBuild('acc-win2019-dcap', '18.04', 'clang-8', 'Debug', 'ControlFlow') },
-                "Win2019 Ubuntu1804 clang-8 Release Linux-Elf-build LVI": { windowsLinuxElfBuild('acc-win2019-dcap', '18.04', 'clang-8', 'Release', 'ControlFlow') },
+                "Win2019 Ubuntu2004 clang-10 Debug Linux-Elf-build":       { windowsLinuxElfBuild('acc-win2019-dcap', '20.04', 'clang-10', 'Debug') },
+                "Win2019 Ubuntu2004 clang-10 Release Linux-Elf-build":     { windowsLinuxElfBuild('acc-win2019-dcap', '20.04', 'clang-10', 'Release') },
+                "Win2019 Ubuntu2004 clang-10 Debug Linux-Elf-build LVI":   { windowsLinuxElfBuild('acc-win2019-dcap', '20.04', 'clang-10', 'Debug', 'ControlFlow') },
+                "Win2019 Ubuntu2004 clang-10 Release Linux-Elf-build LVI": { windowsLinuxElfBuild('acc-win2019-dcap', '20.04', 'clang-10', 'Release', 'ControlFlow') },
+                "Win2019 Ubuntu1804 clang-10 Debug Linux-Elf-build":       { windowsLinuxElfBuild('acc-win2019-dcap', '18.04', 'clang-10', 'Debug') },
+                "Win2019 Ubuntu1804 clang-10 Release Linux-Elf-build":     { windowsLinuxElfBuild('acc-win2019-dcap', '18.04', 'clang-10', 'Release') },
+                "Win2019 Ubuntu1804 clang-10 Debug Linux-Elf-build LVI":   { windowsLinuxElfBuild('acc-win2019-dcap', '18.04', 'clang-10', 'Debug', 'ControlFlow') },
+                "Win2019 Ubuntu1804 clang-10 Release Linux-Elf-build LVI": { windowsLinuxElfBuild('acc-win2019-dcap', '18.04', 'clang-10', 'Release', 'ControlFlow') },
                 "Win2019 Sim Debug Cross Compile":                        { windowsCrossCompile('acc-win2019', 'Debug', 'None', '1') },
                 "Win2019 Sim Release Cross Compile":                      { windowsCrossCompile('acc-win2019', 'Release', 'None', '1') },
                 "Win2019 Sim Debug Cross Compile LVI ":                   { windowsCrossCompile('acc-win2019', 'Debug', 'ControlFlow', '1') },
@@ -109,7 +109,7 @@ try{
     } else {
         stage("PR Testing") {
             testing_stages += [
-                "Win2019 Ubuntu1804 clang-8 Release Linux-Elf-build LVI":          { windowsLinuxElfBuild('acc-win2019-dcap', '18.04', 'clang-8', 'Release', 'ControlFlow', 'ON') },
+                "Win2019 Ubuntu1804 clang-10 Release Linux-Elf-build LVI":          { windowsLinuxElfBuild('acc-win2019-dcap', '18.04', 'clang-10', 'Release', 'ControlFlow', 'ON') },
                 "Win2019 Sim Release Cross Compile LVI ":                          { windowsCrossCompile('acc-win2019', 'Release', 'ControlFlow', '1', 'ON') },
                 "Win2019 Debug Cross Compile DCAP LVI":                            { windowsCrossCompile('acc-win2019', 'Debug', 'ControlFlow', '0', 'ON') },
                 "Win2019 Release Cross Compile DCAP LVI FULL Tests":               { windowsCrossCompile('acc-win2019', 'Release', 'ControlFlow') },
