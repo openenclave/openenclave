@@ -1274,17 +1274,15 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
          * Track failures reported by the platform, but do not exit early */
         result = oe_sgx_delete_enclave(enclave);
 
-#if defined(_WIN32)
-
-        /* Release Windows events created during enclave creation */
         for (size_t i = 0; i < enclave->num_bindings; i++)
         {
             oe_thread_binding_t* binding = &enclave->bindings[i];
+#if defined(_WIN32)
+            /* Release Windows events created during enclave creation */
             CloseHandle(binding->event.handle);
+#endif
             free(binding->ocall_buffer);
         }
-
-#endif
 
         /* Free the path name of the enclave image file */
         free(enclave->path);
