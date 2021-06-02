@@ -170,7 +170,8 @@ typedef struct _oe_epoll_ops
 struct _oe_fd
 {
     oe_fd_type_t type;
-    union {
+    union
+    {
         oe_fd_ops_t fd;
         oe_file_ops_t file;
         oe_socket_ops_t socket;

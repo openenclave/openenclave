@@ -16,7 +16,8 @@ typedef int64_t oe_host_fd_t;
 
 typedef uint64_t oe_nfds_t;
 
-typedef union _oe_epoll_data_t {
+typedef union _oe_epoll_data_t
+{
     void* ptr;
     int fd;
     uint32_t u32;

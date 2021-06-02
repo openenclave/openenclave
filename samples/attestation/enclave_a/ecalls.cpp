@@ -21,9 +21,10 @@
 uint8_t g_enclave_secret_data[ENCLAVE_SECRET_DATA_SIZE] =
     {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
 
-enclave_config_data_t config_data = {g_enclave_secret_data,
-                                     OTHER_ENCLAVE_PUBLIC_KEY,
-                                     sizeof(OTHER_ENCLAVE_PUBLIC_KEY)};
+enclave_config_data_t config_data = {
+    g_enclave_secret_data,
+    OTHER_ENCLAVE_PUBLIC_KEY,
+    sizeof(OTHER_ENCLAVE_PUBLIC_KEY)};
 
 // Declare a static dispatcher object for enabling
 // for better organizing enclave-wise global variables

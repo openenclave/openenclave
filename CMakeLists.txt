@@ -53,10 +53,10 @@ if (UNIX)
     # the CMAKE_C_COMPILER cmake variable has been passed to cmake, use the C compiler
     # that has been specified. Otherwise, prefer clang. Same for C++ compiler.
     if (NOT DEFINED ENV{CC} AND NOT DEFINED CMAKE_C_COMPILER)
-      find_program(CMAKE_C_COMPILER clang-8 clang)
+      find_program(CMAKE_C_COMPILER clang-10 clang)
     endif ()
     if (NOT DEFINED ENV{CXX} AND NOT DEFINED CMAKE_CXX_COMPILER)
-      find_program(CMAKE_CXX_COMPILER clang++-8 clang++)
+      find_program(CMAKE_CXX_COMPILER clang++-10 clang++)
     endif ()
   endif ()
 endif ()
@@ -79,8 +79,8 @@ if (IS_DIRECTORY "${PROJECT_SOURCE_DIR}/.git")
   execute_process(
     COMMAND git symbolic-ref HEAD
     OUTPUT_VARIABLE GIT_BRANCH
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} ERROR_QUIET
-                      OUTPUT_STRIP_TRAILING_WHITESPACE)
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
 
   # Install Git pre-commit hook
   file(COPY scripts/pre-commit scripts/commit-msg
@@ -196,8 +196,9 @@ if (WIN32)
   find_program(GIT git)
   get_filename_component(GIT_DIR ${GIT} DIRECTORY)
   find_program(
-    OE_BASH bash PATHS "C:/Program Files/Git/bin" "${GIT_DIR}/../bin"
-                       NO_DEFAULT_PATH) # Do not find WSL bash.
+    OE_BASH bash
+    PATHS "C:/Program Files/Git/bin" "${GIT_DIR}/../bin"
+    NO_DEFAULT_PATH) # Do not find WSL bash.
 
   if (NOT OE_BASH)
     message(FATAL_ERROR "Git Bash not found!")
@@ -206,8 +207,10 @@ if (WIN32)
   # Looking for Perl and Dos2unix if BUILD_OPENSSL is ON.
   if (BUILD_OPENSSL)
     # OpenSSL relies on Perl to generate files (e.g., headers, assembly files, and test cases).
-    find_program(OE_PERL perl PATHS "C:/Program Files/Git/bin"
-                                    "${GIT_DIR}/../usr/bin" NO_DEFAULT_PATH)
+    find_program(
+      OE_PERL perl
+      PATHS "C:/Program Files/Git/bin" "${GIT_DIR}/../usr/bin"
+      NO_DEFAULT_PATH)
     if (NOT OE_PERL)
       message(FATAL_ERROR "Perl not found!")
     endif ()
@@ -215,8 +218,9 @@ if (WIN32)
     # Dos2unix utility is used to convert CRLF to LF, which is required by some
     # OpenSSL tests.
     find_program(
-      OE_DOS2UNIX dos2unix PATHS "C:/Program Files/Git/bin"
-                                 "${GIT_DIR}/../usr/bin" NO_DEFAULT_PATH)
+      OE_DOS2UNIX dos2unix
+      PATHS "C:/Program Files/Git/bin" "${GIT_DIR}/../usr/bin"
+      NO_DEFAULT_PATH)
     if (NOT OE_DOS2UNIX)
       message(FATAL_ERROR "Dos2unix not found!")
     endif ()

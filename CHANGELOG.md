@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased][Unreleased_log]
 --------------
+### Security
+- OE SDK is now built using clang-10. It is required to upgrade the compiler to clang-10 if you are building the SDK from source.
 
 ### Added
 - Add the CapturePFGPExceptions preference for the SGX2 feature of capturing #PF and #GP exceptions inside an enclave.

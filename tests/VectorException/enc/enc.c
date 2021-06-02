@@ -325,6 +325,8 @@ int enc_test_ocall_in_handler()
         "enclave!\n");
 
     // Save callee-saved registers
+    // Memory is used rather than registers for storing these values to ensure
+    // the below asm doesn't clobber a register before it is saved.
     asm volatile(
         "mov %%rbx, %0;"
         "mov %%rbp, %1;"
@@ -332,7 +334,7 @@ int enc_test_ocall_in_handler()
         "mov %%r12, %3;"
         "mov %%r13, %4;"
         "mov %%r14, %5;"
-        : "=r"(rbx), "=r"(rbp), "=r"(rsp), "=r"(r12), "=r"(r13), "=r"(r14));
+        : "=m"(rbx), "=m"(rbp), "=m"(rsp), "=m"(r12), "=m"(r13), "=m"(r14));
 
     call_invalid_instruction();
 

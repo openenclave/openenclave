@@ -23,6 +23,17 @@ add_enclave(
 
 enclave_compile_features(cppException_enc PRIVATE cxx_generalized_initializers)
 
+set(NO_SPECTRE_MITIGATION_FLAGS -mno-speculative-load-hardening)
+check_c_compiler_flag("${NO_SPECTRE_MITIGATION_FLAGS}"
+                      SPECTRE_MITIGATION_C_FLAGS_SUPPORTED)
+check_cxx_compiler_flag("${NO_SPECTRE_MITIGATION_FLAGS}"
+                        SPECTRE_MITIGATION_CXX_FLAGS_SUPPORTED)
+if (SPECTRE_MITIGATION_C_FLAGS_SUPPORTED
+    AND SPECTRE_MITIGATION_CXX_FLAGS_SUPPORTED)
+  enclave_compile_options(cppException_enc PRIVATE
+                          ${NO_SPECTRE_MITIGATION_FLAGS})
+endif ()
+
 enclave_include_directories(
   cppException_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR})

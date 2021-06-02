@@ -1,21 +1,25 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-include (ExternalProject)
-ExternalProject_Add(libcxx_includes
+include(ExternalProject)
+ExternalProject_Add(
+  libcxx_includes
   DOWNLOAD_COMMAND ""
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_CURRENT_LIST_DIR}/libcxx/include ${LIBCXX_INCLUDES}
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_LIST_DIR}/libcxx/include/__config ${LIBCXX_INCLUDES}/__config_original
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_LIST_DIR}/__config ${LIBCXX_INCLUDES}/__config
+                ${CMAKE_CURRENT_LIST_DIR}/libcxx/include ${LIBCXX_INCLUDES}
+  COMMAND
+    ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_LIST_DIR}/libcxx/include/__config
+    ${LIBCXX_INCLUDES}/__config_original
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_LIST_DIR}/__config
+          ${LIBCXX_INCLUDES}/__config
   INSTALL_COMMAND "")
 
-set_property(DIRECTORY PROPERTY ADDITIONAL_MAKE_CLEAN_FILES
-    ${LIBCXX_INCLUDES}
-)
+set_property(DIRECTORY PROPERTY ADDITIONAL_MAKE_CLEAN_FILES ${LIBCXX_INCLUDES})
 
-add_enclave_library(libcxx OBJECT
+add_enclave_library(
+  libcxx
+  OBJECT
   __dso_handle.cpp
   libcxx/src/algorithm.cpp
   libcxx/src/any.cpp
@@ -49,30 +53,40 @@ add_enclave_library(libcxx OBJECT
   libcxx/src/variant.cpp
   libcxx/src/vector.cpp)
 
+# When speculative load hardening is enabled on future.cpp with Clang-10 compiler
+# future and promise constructs of C++ are not working as expected and resulting in
+# SIGBUS errors. Disable speculative load hardening till this issue is addressed
+# in clang-10 compiler codebase.
+
+set(NO_SPECTRE_MITIGATION_FLAGS -mno-speculative-load-hardening)
+check_c_compiler_flag("${NO_SPECTRE_MITIGATION_FLAGS}"
+                      SPECTRE_MITIGATION_C_FLAGS_SUPPORTED)
+check_cxx_compiler_flag("${NO_SPECTRE_MITIGATION_FLAGS}"
+                        SPECTRE_MITIGATION_CXX_FLAGS_SUPPORTED)
+if (SPECTRE_MITIGATION_C_FLAGS_SUPPORTED
+    AND SPECTRE_MITIGATION_CXX_FLAGS_SUPPORTED)
+  set_property(SOURCE libcxx/src/future.cpp
+               PROPERTY COMPILE_FLAGS "${NO_SPECTRE_MITIGATION_FLAGS}")
+endif ()
+
 maybe_build_using_clangw(libcxx)
 
 add_enclave_dependencies(libcxx libcxx_includes)
 
 enclave_compile_options(libcxx PRIVATE -Wno-error)
 
-enclave_compile_definitions(libcxx
-  PRIVATE
-  -DLIBCXXRT
-  -D_LIBCPP_PROVIDES_DEFAULT_RUNE_TABLE
-  -D_LIBCPP_BUILDING_LIBRARY
-  -DOE_LIBC_SUPPRESS_DEPRECATIONS)
+enclave_compile_definitions(
+  libcxx PRIVATE -DLIBCXXRT -D_LIBCPP_PROVIDES_DEFAULT_RUNE_TABLE
+  -D_LIBCPP_BUILDING_LIBRARY -DOE_LIBC_SUPPRESS_DEPRECATIONS)
 
 enclave_link_libraries(libcxx PUBLIC oelibc)
 
 # NOTE: The `PUBLIC` headers for `libcxx` are actually added to
 # `oelibc_includes`, this is necessary to get the ordering correct.
 # See `../musl/CMakeLists.txt` for more details.
-enclave_include_directories(libcxx
-  PRIVATE
-  libcxx/src
-  ../libcxxrt/libcxxrt/src)
+enclave_include_directories(libcxx PRIVATE libcxx/src ../libcxxrt/libcxxrt/src)
 
 install_enclaves(TARGETS libcxx EXPORT openenclave-targets)
 
 install(DIRECTORY ${LIBCXX_INCLUDES}
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty)
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty)

@@ -4,7 +4,8 @@
 struct __OE_SIGACTION
 {
     /* Signal handler.  */
-    union {
+    union
+    {
         oe_sighandler_t oe_sa_handler;
         void (*oe_sa_sigaction)(int, oe_siginfo_t*, void*);
     } __oe_sigaction_handler;

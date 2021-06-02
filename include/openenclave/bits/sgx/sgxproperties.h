@@ -145,8 +145,11 @@ typedef struct _oe_sgx_enclave_properties
         {                                                                 \
             .product_id = PRODUCT_ID,                                     \
             .security_version = SECURITY_VERSION,                         \
-            .flags.capture_pf_gp_exceptions = CAPTURE_PF_GP_EXCEPTIONS,   \
-            .flags.reserved = 0,                                          \
+            .flags =                                                      \
+            {                                                             \
+                .capture_pf_gp_exceptions = CAPTURE_PF_GP_EXCEPTIONS,     \
+                .reserved = 0                                             \
+            },                                                            \
             .family_id = FAMILY_ID,                                       \
             .extended_product_id = EXTENDED_PRODUCT_ID,                   \
             .attributes = OE_MAKE_ATTRIBUTES(ALLOW_DEBUG, REQUIRE_KSS)    \

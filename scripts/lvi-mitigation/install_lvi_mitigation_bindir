@@ -34,7 +34,7 @@ mkdir -p "$bin_path"
 
 cp "$script_path"/invoke_compiler "$bin_path"/invoke_compiler
 
-clang_versions=("" "-8" "-9")
+clang_versions=("" "-8" "-9" "-10")
 for version in "${clang_versions[@]}"; do
   clang="clang$version"
   if ! [ -x "$(command -v "$clang")" ]; then
