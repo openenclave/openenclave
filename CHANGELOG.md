@@ -24,6 +24,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Publish tool `oeutil`.
   - The tool, currently under the tools directory, will [integrate multiple OE utilities](tools/oeutil/README.md) in the future.
   - The tool integrated `oegenerate` in this release.
+- SGX enclaves created using OE SDK can now be debugged using `oelldb`.
+  `oelldb` is a python based extension for LLDB that supports debugging SGX enclaves. lldb-7 or above is required.
+
 
 [v0.16.1][v0.16.1_log]
 --------------

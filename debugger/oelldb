@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+# Get path of the oelldb script
+# See https://mywiki.wooledge.org/BashFAQ/028 for complexities involved
+# in determining location of a bash script. ${BASH_SOURCE}, though not perfect,
+# is an acceptable solution for oelldb.
+# readlink provides additional benefit in getting the absolute path
+# to the script directory for systems where BASH_SOURCE is only relative.
+OE_LLDB_DIR=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
+
+# Get the path to the debugger libraries relative to the oegdb path.
+# Normalize the path by cd-ing and doing a pwd -P.
+OE_LLDB_LIB_DIR=$(cd "$OE_LLDB_DIR/../lib/openenclave/debugger" || exit; pwd -P)
+
+OE_LLDB_PLUGIN_DIR=$OE_LLDB_LIB_DIR/lldb-sgx-plugin
+OE_LLDB_PTRACE_PATH=$OE_LLDB_LIB_DIR/liboe_ptrace.so
+
+export PYTHONPATH=$OE_LLDB_PLUGIN_DIR
+export LD_PRELOAD=$OE_LLDB_PTRACE_PATH
+
+# Use latest version of installed lldb.
+for v in "-12" "-11" "-10" "-9" "-8" "-7" ""; do
+    if [ -n "$(command -v lldb$v)" ]; then
+	lldb$v -o "command script import lldb_sgx_plugin" "$@"
+	exit 0
+    fi
+done
+echo "oelldb requires lldb-7 or above."
+exit 1
