@@ -245,24 +245,25 @@ done:
     return result;
 }
 
-const oe_seal_plugin_definition_t oe_seal_plugin_gcm_aes = {{{0xb3,
-                                                              0x38,
-                                                              0xde,
-                                                              0xea,
-                                                              0x4c,
-                                                              0x9b,
-                                                              0x41,
-                                                              0x88,
-                                                              0x90,
-                                                              0x00,
-                                                              0x50,
-                                                              0x5b,
-                                                              0x8f,
-                                                              0x63,
-                                                              0xf7,
-                                                              0x6f}},
-                                                            _seal,
-                                                            _unseal};
+const oe_seal_plugin_definition_t oe_seal_plugin_gcm_aes = {
+    {{0xb3,
+      0x38,
+      0xde,
+      0xea,
+      0x4c,
+      0x9b,
+      0x41,
+      0x88,
+      0x90,
+      0x00,
+      0x50,
+      0x5b,
+      0x8f,
+      0x63,
+      0xf7,
+      0x6f}},
+    _seal,
+    _unseal};
 
 __attribute__((constructor)) static void _register_seal_plugin(void)
 {

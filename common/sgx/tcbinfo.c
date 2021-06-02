@@ -346,22 +346,23 @@ static oe_result_t _read_tcb_info_tcb_level(
     oe_result_t result = OE_JSON_INFO_PARSE_ERROR;
     uint64_t value = 0;
 
-    static const char* _comp_names[] = {"sgxtcbcomp01svn",
-                                        "sgxtcbcomp02svn",
-                                        "sgxtcbcomp03svn",
-                                        "sgxtcbcomp04svn",
-                                        "sgxtcbcomp05svn",
-                                        "sgxtcbcomp06svn",
-                                        "sgxtcbcomp07svn",
-                                        "sgxtcbcomp08svn",
-                                        "sgxtcbcomp09svn",
-                                        "sgxtcbcomp10svn",
-                                        "sgxtcbcomp11svn",
-                                        "sgxtcbcomp12svn",
-                                        "sgxtcbcomp13svn",
-                                        "sgxtcbcomp14svn",
-                                        "sgxtcbcomp15svn",
-                                        "sgxtcbcomp16svn"};
+    static const char* _comp_names[] = {
+        "sgxtcbcomp01svn",
+        "sgxtcbcomp02svn",
+        "sgxtcbcomp03svn",
+        "sgxtcbcomp04svn",
+        "sgxtcbcomp05svn",
+        "sgxtcbcomp06svn",
+        "sgxtcbcomp07svn",
+        "sgxtcbcomp08svn",
+        "sgxtcbcomp09svn",
+        "sgxtcbcomp10svn",
+        "sgxtcbcomp11svn",
+        "sgxtcbcomp12svn",
+        "sgxtcbcomp13svn",
+        "sgxtcbcomp14svn",
+        "sgxtcbcomp15svn",
+        "sgxtcbcomp16svn"};
     OE_STATIC_ASSERT(
         OE_COUNTOF(_comp_names) == OE_COUNTOF(tcb_level->sgx_tcb_comp_svn));
 

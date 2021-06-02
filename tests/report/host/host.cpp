@@ -328,12 +328,13 @@ int main(int argc, const char* argv[])
                 gmtime_r(&t, &tm);
 
                 // convert std::tm to oe_datetime_t
-                oe_datetime_t now = {(uint32_t)tm.tm_year + 1900,
-                                     (uint32_t)tm.tm_mon + 1,
-                                     (uint32_t)tm.tm_mday,
-                                     (uint32_t)tm.tm_hour,
-                                     (uint32_t)tm.tm_min,
-                                     (uint32_t)tm.tm_sec};
+                oe_datetime_t now = {
+                    (uint32_t)tm.tm_year + 1900,
+                    (uint32_t)tm.tm_mon + 1,
+                    (uint32_t)tm.tm_mday,
+                    (uint32_t)tm.tm_hour,
+                    (uint32_t)tm.tm_min,
+                    (uint32_t)tm.tm_sec};
                 test_minimum_issue_date(enclave, now);
             }
         }

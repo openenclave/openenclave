@@ -156,7 +156,8 @@ typedef struct _oe_enclave_setting
      * The specific setting for the enclave, such as for configuring
      * context-switchless calls.
      */
-    union {
+    union
+    {
         const oe_enclave_setting_context_switchless_t*
             context_switchless_setting;
 #ifdef OE_WITH_EXPERIMENTAL_EEID

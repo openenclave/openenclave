@@ -1022,8 +1022,8 @@ oe_result_t oe_ecdsa_signature_write_der(
 
     /* Encode the ECDSA siganture */
     {
-        CERT_ECC_SIGNATURE ecc_sig = {{(DWORD)max_rs_size, r},
-                                      {(DWORD)max_rs_size, s}};
+        CERT_ECC_SIGNATURE ecc_sig = {
+            {(DWORD)max_rs_size, r}, {(DWORD)max_rs_size, s}};
         BOOL success = CryptEncodeObjectEx(
             X509_ASN_ENCODING,
             X509_ECC_SIGNATURE,

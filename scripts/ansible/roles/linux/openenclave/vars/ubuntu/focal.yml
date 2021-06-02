@@ -3,4 +3,4 @@
 
 ---
 gcc_target_version: "9.3.0"
-clang_target_version: "8.0.1"
+clang_target_version: "10.0.1"

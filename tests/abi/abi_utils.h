@@ -72,22 +72,23 @@ typedef struct _abi_state
 
 OE_ALWAYS_INLINE void set_test_xmm_state(void)
 {
-    static const uint8_t test_xmm[16] = {0xBE,
-                                         0xEF,
-                                         0xCA,
-                                         0xFE,
-                                         0xBE,
-                                         0xEF,
-                                         0xCA,
-                                         0xFE,
-                                         0xBE,
-                                         0xEF,
-                                         0xCA,
-                                         0xFE,
-                                         0xBE,
-                                         0xEF,
-                                         0xCA,
-                                         0xFE};
+    static const uint8_t test_xmm[16] = {
+        0xBE,
+        0xEF,
+        0xCA,
+        0xFE,
+        0xBE,
+        0xEF,
+        0xCA,
+        0xFE,
+        0xBE,
+        0xEF,
+        0xCA,
+        0xFE,
+        0xBE,
+        0xEF,
+        0xCA,
+        0xFE};
 
     if (oe_is_avx_enabled)
         asm("vmovdqu %0, %%xmm6;"

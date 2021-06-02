@@ -18,7 +18,8 @@ OE_EXTERNC_BEGIN
 
 /*! \struct oe_tcb_level_status_t
  */
-typedef union _oe_tcb_level_status {
+typedef union _oe_tcb_level_status
+{
     struct
     {
         uint32_t revoked : 1;              //! "Revoked"

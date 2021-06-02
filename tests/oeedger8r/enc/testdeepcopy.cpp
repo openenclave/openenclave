@@ -11,14 +11,15 @@
 #include <string.h>
 #include "all_t.h"
 
-static uint64_t data[8] = {0x1112131415161718,
-                           0x2122232425262728,
-                           0x3132333435363738,
-                           0x4142434445464748,
-                           0x5152535455565758,
-                           0x6162636465666768,
-                           0x7172737475767778,
-                           0x8182838485868788};
+static uint64_t data[8] = {
+    0x1112131415161718,
+    0x2122232425262728,
+    0x3132333435363738,
+    0x4142434445464748,
+    0x5152535455565758,
+    0x6162636465666768,
+    0x7172737475767778,
+    0x8182838485868788};
 
 // Assert that the struct is copied by value, such that `s.ptr` is the
 // address of `data[]` in the host (also passed via `ptr`).

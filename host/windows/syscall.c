@@ -261,28 +261,30 @@ static struct tab_entry winsock2errno[] = {
 // defines are the same.
 static struct tab_entry musl2bsd_socket_level[] = {{1, SOL_SOCKET}, {0, 0}};
 
-static struct tab_entry musl2bsd_socket_option[] = {{1, SO_DEBUG},
-                                                    {2, SO_REUSEADDR},
-                                                    {3, SO_TYPE},
-                                                    {4, SO_ERROR},
-                                                    {5, SO_DONTROUTE},
-                                                    {6, SO_BROADCAST},
-                                                    {7, SO_SNDBUF},
-                                                    {8, SO_RCVBUF},
-                                                    {9, SO_KEEPALIVE},
-                                                    {10, SO_OOBINLINE},
-                                                    {13, SO_LINGER},
-                                                    {18, SO_RCVLOWAT},
-                                                    {19, SO_SNDLOWAT}};
+static struct tab_entry musl2bsd_socket_option[] = {
+    {1, SO_DEBUG},
+    {2, SO_REUSEADDR},
+    {3, SO_TYPE},
+    {4, SO_ERROR},
+    {5, SO_DONTROUTE},
+    {6, SO_BROADCAST},
+    {7, SO_SNDBUF},
+    {8, SO_RCVBUF},
+    {9, SO_KEEPALIVE},
+    {10, SO_OOBINLINE},
+    {13, SO_LINGER},
+    {18, SO_RCVLOWAT},
+    {19, SO_SNDLOWAT}};
 
-static struct tab_entry wsa2eai[] = {{WSATRY_AGAIN, OE_EAI_AGAIN},
-                                     {WSAEINVAL, OE_EAI_BADFLAGS},
-                                     {WSAEAFNOSUPPORT, OE_EAI_FAMILY},
-                                     {WSA_NOT_ENOUGH_MEMORY, OE_EAI_MEMORY},
-                                     {WSAHOST_NOT_FOUND, OE_EAI_NONAME},
-                                     {WSATYPE_NOT_FOUND, OE_EAI_SERVICE},
-                                     {WSAESOCKTNOSUPPORT, OE_EAI_SOCKTYPE},
-                                     {0, 0}};
+static struct tab_entry wsa2eai[] = {
+    {WSATRY_AGAIN, OE_EAI_AGAIN},
+    {WSAEINVAL, OE_EAI_BADFLAGS},
+    {WSAEAFNOSUPPORT, OE_EAI_FAMILY},
+    {WSA_NOT_ENOUGH_MEMORY, OE_EAI_MEMORY},
+    {WSAHOST_NOT_FOUND, OE_EAI_NONAME},
+    {WSATYPE_NOT_FOUND, OE_EAI_SERVICE},
+    {WSAESOCKTNOSUPPORT, OE_EAI_SOCKTYPE},
+    {0, 0}};
 
 static int _do_lookup(int key, int fallback, struct tab_entry* table)
 {

@@ -81,10 +81,10 @@ Function Copy-Includes([String]$SgxPlatform, [String]$BuildType)
 New-Item -ItemType Directory -Path $PACK_PATH\build\native\win\sgx\default\debug | Out-Null
 New-Item -ItemType Directory -Path $PACK_PATH\build\native\win\sgx\default\release | Out-Null
 
-New-Item -ItemType Directory -Path $PACK_PATH\lib\native\win\sgx\default\debug\enclave\clang-8 | Out-Null
+New-Item -ItemType Directory -Path $PACK_PATH\lib\native\win\sgx\default\debug\enclave\clang-10 | Out-Null
 New-Item -ItemType Directory -Path $PACK_PATH\lib\native\win\sgx\default\debug\host\msvc-14.16.27023 | Out-Null
 
-New-Item -ItemType Directory -Path $PACK_PATH\lib\native\win\sgx\default\release\enclave\clang-8 | Out-Null
+New-Item -ItemType Directory -Path $PACK_PATH\lib\native\win\sgx\default\release\enclave\clang-10 | Out-Null
 New-Item -ItemType Directory -Path $PACK_PATH\lib\native\win\sgx\default\release\host\msvc-14.16.27023 | Out-Null
 
 New-Item -ItemType Directory -Path $PACK_PATH\tools\win\default | Out-Null
@@ -94,7 +94,7 @@ $LibCopyRules | ForEach-Object {
     Push-Location $_.Source
     $EnclaveLibs = Get-EnclaveLibs
     $HostLibs = Get-HostLibs
-    Copy-Item -Path $EnclaveLibs -Destination (Join-Path -Path $_.Destination -ChildPath enclave\clang-8)
+    Copy-Item -Path $EnclaveLibs -Destination (Join-Path -Path $_.Destination -ChildPath enclave\clang-10)
     Copy-Item -Path $HostLibs -Destination (Join-Path -Path $_.Destination -ChildPath host\msvc-14.16.27023)
     Pop-Location
 }

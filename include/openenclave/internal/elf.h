@@ -258,7 +258,8 @@ typedef struct
 typedef struct
 {
     elf64_sxword_t d_tag;
-    union {
+    union
+    {
         elf64_xword_t d_val;
         elf64_addr_t d_ptr;
     } d_un;

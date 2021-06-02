@@ -11,12 +11,13 @@ void _test_custom_claims_seriaize_deserialize()
     oe_claim_t* claims1 = NULL;
     size_t claims_len = 0;
 
-    oe_claim_t custom_claims[2] = {{.name = CLAIM1_NAME,
-                                    .value = (uint8_t*)CLAIM1_VALUE,
-                                    .value_size = sizeof(CLAIM1_VALUE)},
-                                   {.name = CLAIM2_NAME,
-                                    .value = (uint8_t*)CLAIM2_VALUE,
-                                    .value_size = sizeof(CLAIM2_VALUE)}};
+    oe_claim_t custom_claims[2] = {
+        {.name = CLAIM1_NAME,
+         .value = (uint8_t*)CLAIM1_VALUE,
+         .value_size = sizeof(CLAIM1_VALUE)},
+        {.name = CLAIM2_NAME,
+         .value = (uint8_t*)CLAIM2_VALUE,
+         .value_size = sizeof(CLAIM2_VALUE)}};
 
     printf("====== _test_custom_claims_seriaize_deserialize call "
            "oe_claims_serialize\n");

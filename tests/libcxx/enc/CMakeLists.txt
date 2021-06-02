@@ -29,6 +29,20 @@ if (ENABLE_FULL_LIBCXX_TESTS)
   enclave_compile_definitions(libcxxtest-support PRIVATE FULL_LIBCXX_TESTS)
 endif ()
 
+list(
+  APPEND
+  CLANG_10_FAILED_TESTS_WITH_SPECULATIVE_LOAD_HARDENING
+  std_thread_futures_futures.promise_set_lvalue.pass
+  std_thread_futures_futures.promise_set_rvalue.pass
+  std_thread_futures_futures.promise_set_value_const.pass
+  std_utilities_variant_variant.variant_variant.assign_T.pass)
+
+set(NO_SPECTRE_MITIGATION_FLAGS -mno-speculative-load-hardening)
+check_c_compiler_flag("${NO_SPECTRE_MITIGATION_FLAGS}"
+                      SPECTRE_MITIGATION_C_FLAGS_SUPPORTED)
+check_cxx_compiler_flag("${NO_SPECTRE_MITIGATION_FLAGS}"
+                        SPECTRE_MITIGATION_CXX_FLAGS_SUPPORTED)
+
 enclave_link_libraries(libcxxtest-support PRIVATE oelibcxx oeenclave)
 enclave_link_libraries(libcxxtest-support INTERFACE -Wl,--undefined=Test)
 
@@ -82,6 +96,17 @@ function (add_libcxx_test_enc NAME CXXFILE)
   # NOTE: This only matters when `ENABLE_FULL_LIBCXX_TESTS=ON`.
   if (NAME MATCHES "sized_delete")
     enclave_compile_options(libcxxtest-${NAME}_enc PRIVATE -fsized-deallocation)
+  endif ()
+
+  # Test cases listed in CLANG_10_FAILED_TESTS_WITH_SPECULATIVE_LOAD_HARDENING are failing
+  # when speculative load hardening is enabled with Clang 10. Disable speculative load hardening
+  # for those test cases NOTE: This only matters when `ENABLE_FULL_LIBCXX_TESTS=ON`.
+  if (NAME IN_LIST CLANG_10_FAILED_TESTS_WITH_SPECULATIVE_LOAD_HARDENING)
+    if (SPECTRE_MITIGATION_C_FLAGS_SUPPORTED
+        AND SPECTRE_MITIGATION_CXX_FLAGS_SUPPORTED)
+      enclave_compile_options(libcxxtest-${NAME}_enc PRIVATE
+                              ${NO_SPECTRE_MITIGATION_FLAGS})
+    endif ()
   endif ()
 
   enclave_compile_definitions(libcxxtest-${NAME}_enc PRIVATE -DWITH_MAIN

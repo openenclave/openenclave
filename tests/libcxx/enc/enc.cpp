@@ -258,9 +258,10 @@ void enc_enclave_thread(uint64_t enc_key)
 
 int enc_test(char test_name[STRLEN])
 {
-    static oe_pthread_hooks_t _hooks = {.create = _pthread_create_hook,
-                                        .join = _pthread_join_hook,
-                                        .detach = _pthread_detach_hook};
+    static oe_pthread_hooks_t _hooks = {
+        .create = _pthread_create_hook,
+        .join = _pthread_join_hook,
+        .detach = _pthread_detach_hook};
     static const char* argv[] = {
         "test",
         NULL,

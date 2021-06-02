@@ -138,7 +138,7 @@
                 <OEIsWindows>False</OEIsWindows>
                 <OEIsLinux>True</OEIsLinux>
                 <OEOSPathSegment>linux\xenial</OEOSPathSegment>
-                <OECompilerPathSegment>clang-8</OECompilerPathSegment>
+                <OECompilerPathSegment>clang-10</OECompilerPathSegment>
             </PropertyGroup>
         </When>
         <Otherwise>
@@ -156,7 +156,7 @@
                 <OEIncludePath>$(MSBuildThisFileDirectory)$(OEOSPathSegment)\$(OEPlatformPathSegment)\$(OEConfigurationPathSegment)\include</OEIncludePath>
                 <OEPlatformEdlPath>$(OEIncludePath)\openenclave\edl\sgx</OEPlatformEdlPath>
                 <OEHostLibPath>$(OELibPath)$(OEOSPathSegment)\$(OEPlatformPathSegment)\$(OEConfigurationPathSegment)\host\$(OECompilerPathSegment)</OEHostLibPath>
-                <OEEnclaveLibPath>$(OELibPath)$(OEOSPathSegment)\$(OEPlatformPathSegment)\$(OEConfigurationPathSegment)\enclave\clang-8</OEEnclaveLibPath>
+                <OEEnclaveLibPath>$(OELibPath)$(OEOSPathSegment)\$(OEPlatformPathSegment)\$(OEConfigurationPathSegment)\enclave\clang-10</OEEnclaveLibPath>
             </PropertyGroup>
         </When>
     </Choose>

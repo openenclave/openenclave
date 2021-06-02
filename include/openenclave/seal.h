@@ -29,7 +29,8 @@ typedef struct _oe_seal_setting
 {
     int type;      ///< Setting type. See oe_seal_setting_type_t for details.
     uint32_t size; ///< Size of the buffer pointed to by \c value.p
-    union {
+    union
+    {
         uint64_t q; ///< quad-word value. \c size should be set to \c 0.
         uint32_t d; ///< double-word value. \c size should be set to \c 0.
         uint16_t w; ///< word value. \c size should be set to \c 0.

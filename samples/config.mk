@@ -10,7 +10,7 @@ else ifneq ($(shell $(CC) --version | grep clang),)
         # CC is default (cc), and aliases to clang.
 else
         # CC is default (cc), and does not alias to clang.
-        CLANG_VERSION = $(shell for v in "9" "8"; do \
+        CLANG_VERSION = $(shell for v in "10" "9" "8"; do \
                                         if [ -n "$$(command -v clang-$$v)" ]; then \
                                                 echo $$v; \
                                                 break; \

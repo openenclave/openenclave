@@ -33,7 +33,7 @@ RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AF1A6BA067E3641215D
     dpkg --add-architecture arm64 && \
     apt-get update && \
     apt-get install -y azure-iot-sdk-c-dev:arm64 libcurl3:arm64 \
-        libcurl3-dev:arm64 libssl1.0.0:arm64 libssl-dev:arm64 clang-8 \
+        libcurl3-dev:arm64 libssl1.0.0:arm64 libssl-dev:arm64 clang-10 \
         libssl-dev gdb libprotobuf9v5 && \
     rm -rf /var/lib/apt/lists/*
 
