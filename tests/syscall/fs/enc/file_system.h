@@ -151,6 +151,11 @@ class oe_fd_file_system
         return oe_ftruncate(file, length);
     }
 
+    int access(const char* pathname, int mode)
+    {
+        return oe_access(pathname, mode);
+    }
+
   private:
 };
 
@@ -314,6 +319,11 @@ class fd_file_system
     int ftruncate(file_handle file, off_t length)
     {
         return ::ftruncate(file, length);
+    }
+
+    int access(const char* pathname, int mode)
+    {
+        return ::access(pathname, mode);
     }
 
   private:
@@ -597,6 +607,11 @@ class stream_file_system
     int ftruncate(file_handle file, off_t length)
     {
         return ::ftruncate(fileno(file), length);
+    }
+
+    int access(const char* pathname, int mode)
+    {
+        return ::access(pathname, mode);
     }
 
   private:
