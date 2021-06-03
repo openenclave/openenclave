@@ -64,8 +64,6 @@ OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, tcs_count) == 64);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, flags) == 72);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, modules) == 80);
 
-#define OE_DEBUG_IMAGE_MAGIC 0xecd538d85d491d0b
-
 #define OE_DEBUG_THREAD_BINDING_MAGIC 0x24cb0317d077d636
 
 typedef struct _debug_thread_binding_t
