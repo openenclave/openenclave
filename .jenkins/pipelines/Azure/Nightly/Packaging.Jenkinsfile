@@ -50,21 +50,17 @@ def WindowsPackaging(String version, String build_type, String lvi_mitigation = 
 try{
     oe.emailJobStatus('STARTED')
     parallel "2004 SGX1FLC Package Debug" :          { LinuxPackaging('2004', 'Debug') },
-         "2004 SGX1FLC Package Debug LVI" :          { LinuxPackaging('2004', 'Debug', 'ControlFlow') },
-         "2004 SGX1FLC Package Release" :            { LinuxPackaging('2004', 'Release') },
-         "2004 SGX1FLC Package Release LVI" :        { LinuxPackaging('2004', 'Release', 'ControlFlow') },
+         "2004 SGX1FLC Package Debug LVI" :          { LinuxPackaging('2004', 'Debug', 'ControlFlow') },,
          "2004 SGX1FLC Package RelWithDebInfo" :     { LinuxPackaging('2004', 'RelWithDebInfo') },
          "2004 SGX1FLC Package RelWithDebInfo LVI" : { LinuxPackaging('2004', 'RelWithDebInfo', 'ControlFlow') },
          "1804 SGX1FLC Package Debug" :              { LinuxPackaging('1804', 'Debug') },
          "1804 SGX1FLC Package Debug LVI" :          { LinuxPackaging('1804', 'Debug', 'ControlFlow') },
-         "1804 SGX1FLC Package Release" :            { LinuxPackaging('1804', 'Release') },
-         "1804 SGX1FLC Package Release LVI" :        { LinuxPackaging('1804', 'Release', 'ControlFlow') },
          "1804 SGX1FLC Package RelWithDebInfo" :     { LinuxPackaging('1804', 'RelWithDebInfo') },
          "1804 SGX1FLC Package RelWithDebInfo LVI" : { LinuxPackaging('1804', 'RelWithDebInfo', 'ControlFlow') },
          "Windows 2019 Debug" :                      { WindowsPackaging('2019','Debug') },
          "Windows 2019 Debug LVI" :                  { WindowsPackaging('2019','Debug', 'ControlFlow') },
-         "Windows 2019 Release" :                    { WindowsPackaging('2019','Release') },
-         "Windows 2019 Release LVI" :                { WindowsPackaging('2019','Release', 'ControlFlow') }
+         "Windows 2019 RelWithDebInfo" :             { WindowsPackaging('2019','RelWithDebInfo') },
+         "Windows 2019 RelWithDebInfo LVI" :         { WindowsPackaging('2019','RelWithDebInfo', 'ControlFlow') }
 } catch(Exception e) {
     println "Caught global pipeline exception :" + e
     GLOBAL_ERROR = e

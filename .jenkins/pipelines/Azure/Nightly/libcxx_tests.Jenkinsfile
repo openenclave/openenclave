@@ -31,11 +31,9 @@ def ACCLibcxxTest(String label, String compiler, String build_type) {
 
 try {
     oe.emailJobStatus('STARTED')
-    parallel "Libcxx ACC2004 clang-10 Debug" :          { ACCLibcxxTest(FOCAL_LABEL, 'clang-10', 'Debug') },
-             "Libcxx ACC2004 clang-10 Release" :        { ACCLibcxxTest(FOCAL_LABEL, 'clang-10','Release') },
-             "Libcxx ACC2004 clang-10 RelWithDebInfo" : { ACCLibcxxTest(FOCAL_LABEL, 'clang-10', 'RelWithDebInfo') },
+    parallel "Libcxx ACC2004 clang-10 Debug" :          { ACCLibcxxTest(FOCAL_LABEL,  'clang-10', 'Debug') },
+             "Libcxx ACC2004 clang-10 RelWithDebInfo" : { ACCLibcxxTest(FOCAL_LABEL,  'clang-10', 'RelWithDebInfo') },
              "Libcxx ACC1804 clang-10 Debug" :          { ACCLibcxxTest(BIONIC_LABEL, 'clang-10', 'Debug') },
-             "Libcxx ACC1804 clang-10 Release" :        { ACCLibcxxTest(BIONIC_LABEL, 'clang-10', 'Release') },
              "Libcxx ACC1804 clang-10 RelWithDebInfo" : { ACCLibcxxTest(BIONIC_LABEL, 'clang-10', 'RelWithDebInfo') }
 } catch(Exception e) {
     println "Caught global pipeline exception :" + e
