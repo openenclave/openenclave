@@ -1835,7 +1835,8 @@ int oe_syscall_access_ocall(const char* pathname, int mode)
     // Obtain the file ACL
     dwSize = 0;
     if (!GetFileSecurityW(
-            wpathname, DACL_SECURITY_INFORMATION, NULL, 0, &dwSize))
+            wpathname, DACL_SECURITY_INFORMATION, NULL, 0, &dwSize) &&
+        GetLastError() != ERROR_INSUFFICIENT_BUFFER)
     {
         _set_errno(GetLastError());
         goto done;
@@ -1884,10 +1885,6 @@ done:
     if (wpathname)
     {
         free(wpathname);
-    }
-    if (pACL)
-    {
-        LocalFree(pACL);
     }
     if (pSD)
     {

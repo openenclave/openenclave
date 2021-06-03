@@ -96,6 +96,9 @@ static void test_create_file(FILE_SYSTEM& fs, const char* tmp_dir)
 
     mkpath(path, tmp_dir, "alphabet");
 
+    /* File does not exist. */
+    OE_TEST(fs.access(path, F_OK) == -1);
+
     /* Open the file for output. */
     {
         const int flags = OE_O_CREAT | OE_O_TRUNC | OE_O_WRONLY;
@@ -114,6 +117,9 @@ static void test_create_file(FILE_SYSTEM& fs, const char* tmp_dir)
 
     /* Close the file. */
     OE_TEST(fs.close(file) == 0);
+
+    /* File exists. */
+    OE_TEST(fs.access(path, F_OK) == 0);
 }
 
 template <class FILE_SYSTEM>
