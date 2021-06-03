@@ -554,6 +554,7 @@ int arg_handler(int argc, const char* argv[])
     return ret;
 }
 
+/* make main() weak (programs that link oesignlib may override it) */
 OE_WEAK
 int main(int argc, const char* argv[])
 {
