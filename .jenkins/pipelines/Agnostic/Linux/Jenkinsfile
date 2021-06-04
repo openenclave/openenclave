@@ -10,7 +10,7 @@ GLOBAL_ERROR = null
 
 DOCKER_TAG = env.DOCKER_TAG ?: "latest"
 AGENTS_LABELS = [
-    "ubuntu-nonsgx":    env.UBUNTU_NONSGX_CUSTOM_LABEL ?: "nonSGX-ubuntu-2004"
+    "ubuntu-nonsgx": env.UBUNTU_NONSGX_CUSTOM_LABEL ?: "nonSGX-ubuntu-2004"
 ]
 
 
@@ -110,11 +110,11 @@ try{
     if(FULL_TEST_SUITE == "true") {
         stage("Full Test Suite") {
             testing_stages += [
-                "Sim 1804 clang-10 SGX1 Debug":                      { simulationContainerTest('18.04', 'Debug',   ['-DHAS_QUOTE_PROVIDER=OFF', '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
+                "Sim 1804 clang-10 SGX1 Debug":                      { simulationContainerTest('18.04', 'Debug',          ['-DHAS_QUOTE_PROVIDER=OFF', '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
                 "Sim 1804 clang-10 SGX1 RelWithDebInfo":             { simulationContainerTest('18.04', 'RelWithDebInfo', ['-DHAS_QUOTE_PROVIDER=OFF', '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
-                "Sim 1804 clang-10 SGX1FLC Debug":                   { simulationContainerTest('18.04', 'Debug',   ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
+                "Sim 1804 clang-10 SGX1FLC Debug":                   { simulationContainerTest('18.04', 'Debug',          ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
                 "Sim 1804 clang-10 SGX1FLC RelWithDebInfo":          { simulationContainerTest('18.04', 'RelWithDebInfo', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
-                "Sim 1804 clang-10 SGX1FLC Debug snmalloc":          { simulationContainerTest('18.04', 'Debug',   ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) },
+                "Sim 1804 clang-10 SGX1FLC Debug snmalloc":          { simulationContainerTest('18.04', 'Debug',          ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) },
                 "Sim 1804 clang-10 SGX1FLC RelWithDebInfo snmalloc": { simulationContainerTest('18.04', 'RelWithDebInfo', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) },
             ]
             parallel testing_stages
@@ -123,7 +123,7 @@ try{
         stage("PR Testing") {
             testing_stages += [
                 "Sim 1804 clang-10 SGX1 RelWithDebInfo":             { simulationContainerTest('18.04', 'RelWithDebInfo', ['-DHAS_QUOTE_PROVIDER=OFF', '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
-                "Sim 1804 clang-10 SGX1FLC Debug":                   { simulationContainerTest('18.04', 'Debug',   ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
+                "Sim 1804 clang-10 SGX1FLC Debug":                   { simulationContainerTest('18.04', 'Debug',          ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
                 "Sim 1804 clang-10 SGX1FLC RelWithDebInfo":          { simulationContainerTest('18.04', 'RelWithDebInfo', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
                 "Sim 1804 clang-10 SGX1FLC RelWithDebInfo snmalloc": { simulationContainerTest('18.04', 'RelWithDebInfo', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON', '-DUSE_SNMALLOC=ON']) },
             ]
