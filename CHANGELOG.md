@@ -22,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - OE_CLAIM_TCB_STATUS
   - OE_CLAIM_TCB_DATE
 
+### Deprecated
+- The `Release` build type for building the Open Enclave SDK from source is deprecated. The recommendation is using `RelWithDebInfo` instead.
+
 [v0.16.1][v0.16.1_log]
 --------------
 ### Added
