@@ -31,7 +31,7 @@ oe_result_t oe_sgx_qe_get_quote(
     uint8_t* quote);
 
 oe_result_t oe_sgx_get_supported_attester_format_ids(
-    void* format_ids,
+    void** format_ids,
     size_t* format_ids_size);
 
 oe_result_t oe_sgx_get_supplemental_data_size(

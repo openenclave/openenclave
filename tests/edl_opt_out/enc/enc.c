@@ -131,13 +131,8 @@ void enc_edl_opt_out()
         oe_result_t result = OE_OK;
 
         OE_TEST(
-            oe_get_supported_attester_format_ids_ocall(
-                &result, NULL, 0, NULL) == OE_UNSUPPORTED);
-        OE_TEST(result == OE_UNSUPPORTED);
-        result = OE_OK;
-        OE_TEST(
-            oe_get_supported_attester_format_ids_ocall(
-                &result, NULL, 0, NULL) == OE_UNSUPPORTED);
+            oe_get_supported_attester_format_ids_ocall(&result, NULL) ==
+            OE_UNSUPPORTED);
         OE_TEST(result == OE_UNSUPPORTED);
         result = OE_OK;
         OE_TEST(
