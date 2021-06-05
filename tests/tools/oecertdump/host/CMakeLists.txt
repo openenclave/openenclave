@@ -2,7 +2,8 @@
 # Licensed under the MIT License.
 
 if (WIN32)
-  set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};C:\\oe_prereqs\\OpenSSL\\x64\\release")
+  set(CMAKE_PREFIX_PATH
+      "${CMAKE_PREFIX_PATH};C:\\oe_prereqs\\OpenSSL\\x64\\release")
   find_package(OpenSSL REQUIRED)
 else ()
   find_package(OpenSSL REQUIRED)

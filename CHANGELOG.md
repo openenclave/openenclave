@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add the following attestation claims from oe_verify_evidence():
   - OE_CLAIM_TCB_STATUS
   - OE_CLAIM_TCB_DATE
+- Publish tool `oeutil`.
+  - The tool, currently under the tools directory, will [integrate multiple OE utilities](tools/oeutil/README.md) in the future.
+  - The tool integrated `oegenerate` in this release.
 
 [v0.16.1][v0.16.1_log]
 --------------
