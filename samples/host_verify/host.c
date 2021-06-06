@@ -157,6 +157,7 @@ oe_result_t verify_evidence(
     oe_result_t result = OE_FAILURE;
     uint8_t *evidence = NULL, *endorsements = NULL;
     size_t evidence_size = 0, endorsements_size = 0;
+    static const oe_uuid_t _uuid_sgx_ecdsa = {OE_FORMAT_UUID_SGX_ECDSA};
 
     if (read_binary_file(evidence_filename, &evidence, &evidence_size))
     {
@@ -171,7 +172,7 @@ oe_result_t verify_evidence(
         size_t claims_length = 0;
 
         result = oe_verify_evidence(
-            NULL,
+            &_uuid_sgx_ecdsa,
             evidence,
             evidence_size,
             endorsements,
@@ -272,8 +273,8 @@ void print_syntax(const char* program_name)
         program_name);
     fprintf(
         stdout,
-        "Verify the integrity of enclave remote report or attestation "
-        "certificate.\n");
+        "Verify the integrity of enclave remote report, enclave attestation "
+        "evidence in SGX_ECDSA format, or attestation certificate.\n");
     fprintf(
         stdout,
         "WARNING: %s does not have a stable CLI interface. Use with "

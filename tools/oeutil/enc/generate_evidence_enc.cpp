@@ -134,7 +134,7 @@ oe_result_t get_plugin_evidence(
 
     OE_CHECK(oe_get_evidence(
         &evidence_format,
-        OE_EVIDENCE_FLAGS_EMBED_FORMAT_ID,
+        0,
         NULL,
         0,
         NULL,

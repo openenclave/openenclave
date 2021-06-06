@@ -294,7 +294,7 @@ static void _display_help(const char* command)
     printf(
         "\t%s, %s: verify the generated remote attestation certificate, "
         "report, "
-        "or evidence.\n",
+        "or evidence in ECDSA format.\n",
         SHORT_INPUT_PARAM_OPTION_VERIFY,
         INPUT_PARAM_OPTION_VERIFY);
     printf(
@@ -665,25 +665,22 @@ done:
     return result;
 }
 
-oe_result_t dump_oe_evidence(const uint8_t* evidence, size_t evidence_size)
+oe_result_t dump_oe_evidence(
+    const oe_uuid_t& evidence_format,
+    const uint8_t* evidence,
+    size_t evidence_size)
 {
     oe_result_t result = OE_UNEXPECTED;
-    oe_attestation_header_t* header = (oe_attestation_header_t*)evidence;
-    OE_UNUSED(evidence_size);
 
-    printf("\nOE Evidence:\n");
-    printf("oe_attestation_header {\n");
-    printf("    version: %d\n", header->version);
-    printf("    format_id (hex): ");
-    oe_hex_dump(header->format_id.b, OE_COUNTOF(header->format_id.b));
-    printf("    data_size: %zu\n", header->data_size);
+    if (memcmp(&evidence_format, &_sgx_ecdsa_uuid, sizeof(oe_uuid_t)) == 0)
+    {
+        printf("\nOE Evidence:\n");
 
-    OE_CHECK_MSG(
-        dump_sgx_quote(header->data, evidence, evidence_size),
-        "Failed to dump OE evidence. Error: (%s)\n",
-        oe_result_str(result));
-
-    printf("} oe_attestation_header\n");
+        OE_CHECK_MSG(
+            dump_sgx_quote(evidence, evidence, evidence_size),
+            "Failed to dump OE evidence. Error: (%s)\n",
+            oe_result_str(result));
+    }
 
     result = OE_OK;
 
@@ -1187,7 +1184,7 @@ oe_result_t generate_oe_evidence(
     if (verbose)
     {
         OE_CHECK_MSG(
-            dump_oe_evidence(evidence, evidence_size),
+            dump_oe_evidence(evidence_format, evidence, evidence_size),
             "Failed to dump OE evidence. Error: (%s)\n",
             oe_result_str(result));
     }
@@ -1208,9 +1205,7 @@ oe_result_t generate_oe_evidence(
         log("========== Got endorsements, size = %zu\n", endorsements_size);
 
         OE_CHECK_MSG(
-            dump_oe_endorsements(
-                ((oe_attestation_header_t*)endorsements)->data,
-                ((oe_attestation_header_t*)endorsements)->data_size),
+            dump_oe_endorsements(endorsements, endorsements_size),
             "Failed to dump endorsements. Error: (%s)\n",
             oe_result_str(result));
 
@@ -1239,7 +1234,7 @@ oe_result_t generate_oe_evidence(
         OE_CHECK_NO_TCB_LEVEL_MSG(
             _verify_evidence_result,
             oe_verify_evidence(
-                NULL,
+                &evidence_format,
                 evidence,
                 evidence_size,
                 endorsements,
@@ -1624,7 +1619,7 @@ oe_result_t _process_parameters(oe_enclave_t* enclave)
             _sgx_epid_linkable_uuid,
             _parameters.out_filename,
             _parameters.endorsements_filename,
-            _parameters.verify,
+            false,
             _parameters.verbose));
     }
     else if (_parameters.generate_sgx_epid_unlinkable)
@@ -1634,7 +1629,7 @@ oe_result_t _process_parameters(oe_enclave_t* enclave)
             _sgx_epid_unlinkable_uuid,
             _parameters.out_filename,
             _parameters.endorsements_filename,
-            _parameters.verify,
+            false,
             _parameters.verbose));
     }
 
