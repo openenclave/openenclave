@@ -22,7 +22,7 @@ if (UNIX)
   install(PROGRAMS ${PTRACE_LIBRARY}
           DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/debugger)
 
-  add_subdirectory(pythonExtension)
+  add_subdirectory(gdb-extension)
 
   # Copy oegdb to build/output/bin so that it can be used
   # for debugging enclaves built as part of OE SDK.
@@ -30,6 +30,13 @@ if (UNIX)
 
   install(PROGRAMS oegdb DESTINATION ${CMAKE_INSTALL_BINDIR})
 
+  add_subdirectory(lldb-extension)
+
+  # Copy oelldb to build/output/bin so that it can be used
+  # for debugging enclaves built as part of OE SDK.
+  file(COPY oelldb DESTINATION ${OE_BINDIR})
+
+  install(PROGRAMS oelldb DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif ()
 
 # debugrt is built on all SGX platforms
