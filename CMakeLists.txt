@@ -103,6 +103,13 @@ if (NOT uppercase_CMAKE_BUILD_TYPE IN_LIST uppercase_build_type)
   message(FATAL_ERROR "UNKNOWN CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 endif ()
 
+if (uppercase_CMAKE_BUILD_TYPE STREQUAL "RELEASE")
+  message(
+    WARNING "The `Release` build type has been deprecated. "
+            "Build problems may occur. Consider using `RelWithDebInfo` instead."
+  )
+endif ()
+
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 # Get Jenkins build number

@@ -28,6 +28,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `oelldb` is a python based extension for LLDB that supports debugging SGX enclaves. lldb-7 or above is required.
 
 
+### Deprecated
+- The `Release` build type for building the Open Enclave SDK from source is deprecated. The recommendation is using `RelWithDebInfo` instead.
+
 [v0.16.1][v0.16.1_log]
 --------------
 ### Added
