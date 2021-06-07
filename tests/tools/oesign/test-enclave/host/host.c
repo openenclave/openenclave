@@ -4,6 +4,7 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/load.h>
+#include <openenclave/internal/sgx/tests.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include "../host/sgx/cpuid.h"
@@ -93,7 +94,10 @@ int main(int argc, const char* argv[])
         }
     }
 
-    if (_is_kss_supported())
+    /* check_kss_extended_ids currently assumes the quote provider is available.
+     * Skip if there is no quote provider for now.
+     */
+    if (_is_kss_supported() && oe_has_sgx_quote_provider())
     {
         result = check_kss_extended_ids(
             enclave,
