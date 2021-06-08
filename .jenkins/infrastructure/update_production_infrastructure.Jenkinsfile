@@ -16,7 +16,6 @@ AZURE_IMAGES_MAP = [
     // generated Azure managed image name
     "ubuntu-18.04":    "${env.IMAGE_ID}-ubuntu-18.04-SGX",
     "ubuntu-20.04":    "${env.IMAGE_ID}-ubuntu-20.04-SGX",
-    "rhel-8":          "${env.IMAGE_ID}-rhel-8-SGX",
     "ws2019-nonSGX":   "${env.IMAGE_ID}-ws2019-nonSGX",
     "ws2019-SGX":      "${env.IMAGE_ID}-ws2019-SGX",
     "ws2019-SGX-DCAP": "${env.IMAGE_ID}-ws2019-SGX-DCAP"

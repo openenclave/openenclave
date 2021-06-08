@@ -12,12 +12,10 @@ DOCKER_TAG = env.DOCKER_TAG ?: "latest"
 AGENTS_LABELS = [
     "acc-ubuntu-20.04":         env.UBUNTU_2004_CUSTOM_LABEL ?: "ACC-2004",
     "acc-ubuntu-18.04":         env.UBUNTU_1804_CUSTOM_LABEL ?: "ACC-1804",
-    "acc-rhel-8":               env.RHEL_8_CUSTOM_LABEL ?: "ACC-RHEL-83",
     "ubuntu-nonsgx":            env.UBUNTU_NONSGX_CUSTOM_LABEL ?: "nonSGX-ubuntu-2004",
     "windows-nonsgx":           env.WINDOWS_NONSGX_CUSTOM_LABEL ?: "nonSGX-Windows",
     "acc-ubuntu-20.04-vanilla": env.UBUNTU_VANILLA_2004_CUSTOM_LABEL ?: "vanilla-ubuntu-2004",
-    "acc-ubuntu-18.04-vanilla": env.UBUNTU_VANILLA_1804_CUSTOM_LABEL ?: "vanilla-ubuntu-1804",
-    "acc-rhel-8-vanilla":       env.RHEL_8_VANILLA_CUSTOM_LABEL ?: "vanilla-rhel-83"
+    "acc-ubuntu-18.04-vanilla": env.UBUNTU_VANILLA_1804_CUSTOM_LABEL ?: "vanilla-ubuntu-1804"
 ]
 
 def ACCCodeCoverageTest(String label, String compiler, String build_type) {
@@ -413,17 +411,7 @@ try{
 
         "ACC1804 clang-10 RelWithDebInfo EEID Experimental LVI FULL Tests": { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-10', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DWITH_EEID=ON']) },
 
-        "RHEL-8 clang-10 simulation RelWithDebInfo":        { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'clang', 'RelWithDebInfo', [], ['OE_SIMULATION=1']) },
-        "RHEL-8 clang-10 simulation Debug":                 { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'clang', 'Debug',          [], ['OE_SIMULATION=1']) },
-        "RHEL-8 ACC clang-10 SGX1 RelWithDebInfo":          { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'clang', 'RelWithDebInfo', []) },
-        "RHEL-8 ACC clang-10 SGX1 Debug":                   { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'clang', 'Debug',          []) },
-
-        "ACC2004 clang-10 Debug LVI e2e":                   { ACCTest(AGENTS_LABELS["acc-ubuntu-20.04-vanilla"], 'clang-10', 'Debug',   ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON'], [], true) },
-
-        "RHEL-8 clang-10 simulation RelWithDebInfo e2e":    { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'clang', 'RelWithDebInfo', [], ['OE_SIMULATION=1'], true) },
-        "RHEL-8 ACC clang-10 SGX1 RelWithDebInfo e2e":      { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'clang', 'RelWithDebInfo', [], [], true) },
-
-        "RHEL-8 ACC clang-10 SGX1 RelWithDebInfo snmalloc": { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'clang', 'RelWithDebInfo', [], ['-DUSE_SNMALLOC=ON']) }
+        "ACC2004 clang-10 Debug LVI e2e":                   { ACCTest(AGENTS_LABELS["acc-ubuntu-20.04-vanilla"], 'clang-10', 'Debug',   ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON'], [], true) }
     ]
     if(FULL_TEST_SUITE == "true") {
         stage("Full Test Suite") {
@@ -444,15 +432,6 @@ try{
                 "ACC1804 Container RelWithDebInfo":     { ACCContainerTest(AGENTS_LABELS["acc-ubuntu-18.04"], '18.04', ['-DLVI_MITIGATION=None',        '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
                 "ACC1804 Container RelWithDebInfo LVI": { ACCContainerTest(AGENTS_LABELS["acc-ubuntu-18.04"], '18.04', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
 
-                "RHEL-8 ACC clang-10 SGX1FLC RelWithDebInfo":       { ACCTest(AGENTS_LABELS['acc-rhel-8'],               'clang',    'RelWithDebInfo',         []) },
-                "RHEL-8 ACC clang-10 SGX1FLC Debug":                { ACCTest(AGENTS_LABELS['acc-rhel-8'],               'clang',    'Debug',                  []) },
-
-                "RHEL-8 ACC clang-10 SGX1FLC RelWithDebInfo e2e":   { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'],       'clang',    'RelWithDebInfo',         [], [], true) },
-                "RHEL-8 ACC clang-10 SGX1FLC Debug e2e":            { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'],       'clang',    'Debug',                  [], [], true) },
-                "RHEL-8 clang-10 simulation Debug e2e":             { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'],       'clang',    'Debug',                  [], ['OE_SIMULATION=1'], true) },
-                "RHEL-8 ACC clang-10 SGX1 RelWithDebInfo e2e":      { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'],       'clang',    'RelWithDebInfo',         [], [], true) },
-                "RHEL-8 ACC clang-10 SGX1 Debug e2e":               { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'],       'clang',    'Debug',                  [], [], true) },
-
                 "ACC2004 clang-10 Debug":                           { ACCTest(AGENTS_LABELS["acc-ubuntu-20.04"],         'clang-10', 'Debug',                  ['-DLVI_MITIGATION=None',        '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
                 "ACC2004 clang-10 RelWithDebInfo":                  { ACCTest(AGENTS_LABELS["acc-ubuntu-20.04"],         'clang-10', 'RelWithDebInfo',         ['-DLVI_MITIGATION=None',        '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
                 "ACC2004 clang-10 Debug LVI":                       { ACCTest(AGENTS_LABELS["acc-ubuntu-20.04"],         'clang-10', 'Debug',                  ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
@@ -472,7 +451,7 @@ try{
                 "ACC2004 clang-10 RelWithDebInfo LVI e2e snmalloc": { ACCTest(AGENTS_LABELS["acc-ubuntu-20.04-vanilla"], 'clang-10', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON'], [], true) },
                 "ACC1804 clang-10 Debug LVI e2e snmalloc":          { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04-vanilla"], 'clang-10', 'Debug',          ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON'], [], true) },
                 "ACC1804 clang-10 RelWithDebInfo LVI e2e snmalloc": { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04-vanilla"], 'clang-10', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON'], [], true) },
-                "ACC2004 clang-10 RelWithDebInfo LVI snmalloc":     { ACCTest(AGENTS_LABELS["acc-ubuntu-20.04"],         'clang-10', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) },
+                "ACC2004 clang-10 RelWithDebInfo LVI snmalloc":     { ACCTest(AGENTS_LABELS["acc-ubuntu-20.04"],         'clang-10', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) }
             ]
             parallel testing_stages
         }
@@ -497,7 +476,7 @@ try{
                  //"ACC1804 Code Coverage Test" :                     { ACCCodeCoverageTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-10', 'Debug') },
 
                 "ACC2004 clang-10 RelWithDebInfo LVI snmalloc":            { ACCTest(AGENTS_LABELS["acc-ubuntu-20.04"], 'clang-10', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON',  '-DUSE_SNMALLOC=ON']) },
-                "ACC1804 clang-10 RelWithDebInfo LVI FULL Tests snmalloc": { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-10', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) },
+                "ACC1804 clang-10 RelWithDebInfo LVI FULL Tests snmalloc": { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-10', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) }
                 ]
             parallel testing_stages
         }

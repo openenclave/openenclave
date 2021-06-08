@@ -20,7 +20,6 @@ AZURE_IMAGES_MAP = [
 ]
 OS_NAME_MAP = [
     "win2019": "Windows Server 2019",
-    "rhel":    "RHEL",
     "ubuntu":  "Ubuntu",
 ]
 
@@ -278,8 +277,7 @@ node(params.AGENTS_LABEL) {
                  "Build Windows Server 2019 - SGX1"         : { buildWindowsManagedImage("win2019", "ws2019-SGX", "SGX1", image_id, image_version) },
                  "Build Windows Server 2019 - SGX1FLC DCAP" : { buildWindowsManagedImage("win2019", "ws2019-SGX-DCAP", "SGX1FLC", image_id, image_version) },
                  "Build Ubuntu 18.04" :                       { buildLinuxManagedImage("ubuntu", "18.04", image_id, image_version) },
-                 "Build Ubuntu 20.04" :                       { buildLinuxManagedImage("ubuntu", "20.04", image_id, image_version) },
-                 "Build RHEL 8"       :                       { buildLinuxManagedImage("rhel", "8", image_id, image_version) }
+                 "Build Ubuntu 20.04" :                       { buildLinuxManagedImage("ubuntu", "20.04", image_id, image_version) }
     }
     stage("Clean Workspace") {
         cleanWs()
