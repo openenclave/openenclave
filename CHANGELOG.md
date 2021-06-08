@@ -51,7 +51,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - The OpenEnclave CMake configuration now explicitly sets CMAKE_SKIP_RPATH to TRUE. This change should not affect fully static-linked enclaves.
-- oe_verify_attestation_certificate_with_evidence() has been deprecated because it has been deemed insufficient for security. Use the new, experimental oe_verify_attestation_certificate_with_evidence_v2() instead to generate a self-signed certificate for use in the TLS handshaking process.
+- oe_verify_attestation_certificate_with_evidence() has been considered insufficient for security and deprecated, because it does not allow users to pass in optional endorsements and policies. Use the new, experimental oe_verify_attestation_certificate_with_evidence_v2() instead to generate a self-signed certificate for use in the TLS handshaking process.
+  - Refer to the [issue](https://github.com/openenclave/openenclave/issues/3820) and the [proposed attestation API requirements](docs/DesignDocs/AttestationApiRequirements.md) for more details.
 - In/out parameters in EDL now have the default count equals to one if the `count` attribute is not used.
 - Improved attestation evidence verification performance.
 - Open Enclave SDK will be built with clang-10 starting v0.17.0 release. We had originally planned to upgrade to clang-10 in the v0.16.0 release, but ran into some issues. We recommend that developers move to clang-10 starting v0.17.0 release.
@@ -76,7 +77,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Refer to [design document](docs/DesignDocs/DebuggerSupportForMultiModuleEnclaves.md) for details.
 
 ### Changed
-- oe_get_attestation_certificate_with_evidence() has been deprecated because it has been deemed insufficient for security. Use the new, experimental oe_get_attestation_certificate_with_evidence_v2() instead to generate a self-signed certificate for use in the TLS handshaking process.
+- oe_get_attestation_certificate_with_evidence() has been considered insufficient for security and deprecated, because it does not allow users to pass in a provided nonce or additional customized information. Use the new, experimental oe_get_attestation_certificate_with_evidence_v2() instead to generate a self-signed certificate for use in the TLS handshaking process.
+  - Refer to the [issue](https://github.com/openenclave/openenclave/issues/3820) and the [proposed attestation API requirements](docs/DesignDocs/AttestationApiRequirements.md#getevidence-call) for more details.
 - Debugger Contract
   - `path` fields in `oe_debug_enclave_t` and `oe_debug_module_t` are now defined to be in
     UTF-8 encoding. Previously the encoding was undefined. To ensure smooth transition, debuggers
