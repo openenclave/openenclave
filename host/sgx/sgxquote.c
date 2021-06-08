@@ -763,31 +763,35 @@ done:
 }
 
 oe_result_t oe_sgx_get_supported_attester_format_ids(
-    void* format_ids,
+    void** format_ids_data,
     size_t* format_ids_size)
 {
     oe_result_t result = OE_UNEXPECTED;
+    void* data = NULL;
+    size_t size = 0;
 
-    if (!format_ids_size)
+    if (!format_ids_data || !format_ids_size)
         OE_RAISE(OE_INVALID_PARAMETER);
+
+    *format_ids_data = NULL;
+    *format_ids_size = 0;
 
     if (_use_quote_ex_library())
     {
         size_t count = _quote_ex_library.mapped_key_id_count;
         size_t index = 0;
 
-        if (count &&
-            (!format_ids || *format_ids_size < sizeof(oe_uuid_t) * count))
+        size = sizeof(oe_uuid_t) * count;
+        OE_TRACE_INFO("quote_ex got %lu format IDs\n", count);
+        if (!count)
         {
-            *format_ids_size = sizeof(oe_uuid_t) * count;
-
-            if (format_ids)
-                OE_RAISE(OE_BUFFER_TOO_SMALL);
-            /* If format_ids is null, this call is intented to get the correct
-             * format_ids_size so no need to trace OE_BUFFER_TOO_SMALL */
-            else
-                OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
+            result = OE_OK;
+            goto done;
         }
+
+        data = malloc(size);
+        if (!data)
+            OE_RAISE(OE_OUT_OF_MEMORY);
 
         for (size_t i = 0; i < _quote_ex_library.key_id_count; i++)
         {
@@ -796,37 +800,31 @@ oe_result_t oe_sgx_get_supported_attester_format_ids(
                 continue;
 
             memcpy(
-                ((uint8_t*)format_ids) + sizeof(oe_uuid_t) * index,
+                ((uint8_t*)data) + sizeof(oe_uuid_t) * index,
                 _quote_ex_library.uuid + i,
                 sizeof(oe_uuid_t));
             index++;
         }
-
-        *format_ids_size = sizeof(oe_uuid_t) * count;
-
-        OE_TRACE_INFO("quote_ex got %lu format IDs\n", count);
-
-        result = OE_OK;
     }
     else
     {
         // Case when DCAP is used
-        if (!format_ids && *format_ids_size == 0)
-        {
-            *format_ids_size = sizeof(oe_uuid_t);
-            return OE_BUFFER_TOO_SMALL;
-        }
-        else if (!format_ids || *format_ids_size < sizeof(oe_uuid_t))
-        {
-            *format_ids_size = sizeof(oe_uuid_t);
-            OE_RAISE(OE_BUFFER_TOO_SMALL);
-        }
-        memcpy(format_ids, &_ecdsa_p256_uuid, sizeof(oe_uuid_t));
+        size = sizeof(oe_uuid_t);
+        data = malloc(size);
+        if (!data)
+            OE_RAISE(OE_OUT_OF_MEMORY);
+
+        memcpy(data, &_ecdsa_p256_uuid, sizeof(oe_uuid_t));
         *format_ids_size = sizeof(oe_uuid_t);
 
         OE_TRACE_INFO("DCAP only supports ECDSA_P256\n");
-        result = OE_OK;
     }
+
+    *format_ids_data = data;
+    *format_ids_size = size;
+
+    result = OE_OK;
+
 done:
     return result;
 }
