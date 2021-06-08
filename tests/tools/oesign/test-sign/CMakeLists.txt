@@ -22,7 +22,7 @@ set(OESIGN_SIGN_VALID_SHORT_ARGS
 add_test(
   NAME tests/oesign-sign-valid-short-args
   COMMAND
-    python sign-and-verify.py --host-path $<TARGET_FILE:oesign_test_host>
+    ${PYTHON} sign-and-verify.py --host-path $<TARGET_FILE:oesign_test_host>
     --enclave-path $<TARGET_FILE:oesign_test_enc> --oesign-path
     $<TARGET_FILE:oesign> --oesign-args ${OESIGN_SIGN_VALID_SHORT_ARGS})
 
@@ -38,7 +38,7 @@ set(OESIGN_SIGN_VALID_LONG_ARGS
 add_test(
   NAME tests/oesign-sign-valid-long-args
   COMMAND
-    python sign-and-verify.py --host-path $<TARGET_FILE:oesign_test_host>
+    ${PYTHON} sign-and-verify.py --host-path $<TARGET_FILE:oesign_test_host>
     --enclave-path $<TARGET_FILE:oesign_test_enc> --oesign-path
     $<TARGET_FILE:oesign> --oesign-args ${OESIGN_SIGN_VALID_LONG_ARGS})
 
@@ -212,7 +212,7 @@ set(OESIGN_SIGN_VALID_KSS
 add_test(
   NAME tests/oesign-sign-valid-kss
   COMMAND
-    python sign-and-verify.py --host-path $<TARGET_FILE:oesign_test_host>
+    ${PYTHON} sign-and-verify.py --host-path $<TARGET_FILE:oesign_test_host>
     --enclave-path $<TARGET_FILE:oesign_test_enc> --oesign-path
     $<TARGET_FILE:oesign> --oesign-args ${OESIGN_SIGN_VALID_KSS})
 

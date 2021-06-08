@@ -22,63 +22,63 @@ add_custom_command(
 add_custom_command(
   OUTPUT valid.conf
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
-  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
+  COMMAND ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
           --config_file valid.conf)
 
 add_custom_command(
   OUTPUT negative_num_heap_pages.conf
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
-  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
+  COMMAND ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
           --config_file negative_num_heap_pages.conf --num_heap_pages -3)
 
 # Generate variant valid configurations
 add_custom_command(
   OUTPUT non_debug.conf
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
-  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
+  COMMAND ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
           --config_file non_debug.conf --debug 0)
 
 add_custom_command(
   OUTPUT debug_out_of_range.conf
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
-  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
+  COMMAND ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
           --config_file debug_out_of_range.conf --debug 333)
 
 add_custom_command(
   OUTPUT more_num_heap_pages.conf
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
-  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
+  COMMAND ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
           --config_file more_num_heap_pages.conf --num_heap_pages 2048)
 
 add_custom_command(
   OUTPUT more_num_stack_pages.conf
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
-  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
+  COMMAND ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
           --config_file more_num_stack_pages.conf --num_stack_pages 2048)
 
 add_custom_command(
   OUTPUT more_num_tcs.conf
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
-  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
+  COMMAND ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
           --config_file more_num_tcs.conf --num_tcs 4)
 
 add_custom_command(
   OUTPUT new_product_id.conf
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
-  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
+  COMMAND ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
           --config_file new_product_id.conf --product_id 2)
 
 add_custom_command(
   OUTPUT new_security_version.conf
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
-  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
+  COMMAND ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
           --config_file new_security_version.conf --security_version 2)
 
 add_custom_command(
   OUTPUT kss_valid.conf
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
   COMMAND
-    python ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py --config_file
+    ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py --config_file
     kss_valid.conf --extended_product_id 2768c720-1e28-11eb-adc1-0242ac120002
     --family_id 57183823-2574-4bfd-b411-99ed177d3e43)
 
@@ -86,7 +86,7 @@ add_custom_command(
   OUTPUT ext_prod_id_too_long.conf
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
   COMMAND
-    python ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py --config_file
+    ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py --config_file
     ext_prod_id_too_long.conf --extended_product_id
     2768c720-1e28-11eb-adc1-0242ac1200023)
 
@@ -94,7 +94,7 @@ add_custom_command(
   OUTPUT ext_prod_id_too_short.conf
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
   COMMAND
-    python ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py --config_file
+    ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py --config_file
     ext_prod_id_too_short.conf --extended_product_id
     2768c720-1e28-11eb-adc1-0242ac12000)
 
@@ -102,7 +102,7 @@ add_custom_command(
   OUTPUT family_id_too_long.conf
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
   COMMAND
-    python ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py --config_file
+    ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py --config_file
     family_id_too_long.conf --family_id
     57183823-2574-4bfd-b411-99ed177d3e433e433)
 
@@ -110,7 +110,7 @@ add_custom_command(
   OUTPUT family_id_too_short.conf
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
   COMMAND
-    python ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py --config_file
+    ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py --config_file
     family_id_too_short.conf --family_id 57183823-2574-4bfd-b411-99ed177d3e4)
 
 # Generate empty config file
