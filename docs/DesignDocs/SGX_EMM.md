@@ -164,7 +164,7 @@ typedef int (*enclave_fault_handler_t)(const sgx_pfinfo* pfinfo, void* private_d
 *                  then the function will select the starting address.
 * @param[in] length, size of the region in multiples of page size in bytes.
 * @param[in] flags, a bitwise OR of flags describing committing mode, committing
-* order, address preference.
+* order, address preference, page type
 *        Flags should include exactly one of following for committing mode:
 *            - EMA_RESERVE: just reserve an address range, no EPC commited.
 *                           To allocate memory on a reserved range, call this
@@ -185,7 +185,10 @@ typedef int (*enclave_fault_handler_t)(const sgx_pfinfo* pfinfo, void* private_d
 *                           Fail if a suitable region cannot be found,
 *                           The argument n specifies the binary logarithm of
 *                           the desired alignmentand must be at least 12.
-*
+*        Optionally ORed with one of following page types: 
+*             - EMA_PT_SS_FIRST: the first page in shadow stack.
+*             - EMA_PT_SS_REST: the rest page in shadow stack.
+*             - EMA_PT_REG: regular page type.This is the default if not specified.
 *
 * @param[in] handler, custom handler for page faults in this region, NULL if
 *                     no custom handling needed.
@@ -196,7 +199,8 @@ typedef int (*enclave_fault_handler_t)(const sgx_pfinfo* pfinfo, void* private_d
 * @retval 0 on success.
 * @retval EACCES if region is outside enclave address space.
 * @retval EEXIST if any page in range requested is in use and EMA_FIXED is set.
-* @retval EINVAL for invalid alignment bouandary, i.e., n < 12 in EMA_ALIGNED(n).
+* @retval EINVAL for invalid alignment bouandary, i.e., n < 12 in 
+(n).
 * @retval ENOMEM for out of memory, or no free space to satisfy alignment boundary.
 */
 int sgx_mm_alloc(void *addr, size_t length, int flags,
@@ -254,10 +258,8 @@ int sgx_mm_dealloc(void* addr, size_t length);
  *        - PROT_WRITE: Pages may be written.
  *        - PROT_EXECUTE: Pages may be executed.
  *
- * @param[in] type page type, one of following:
- *       - PT_TCS: TCS page
- *       - PT_SS_FIRST: the first page in shadow stack
- *       - PT_SS_REST: the rest page in shadow stack
+ * @param[in] type page type, one of the following
+ *       - EMA_PT_TCS: TCS page
  *       - -1: no page type change, keep the original type
  *
  * @retval 0 on success, o
@@ -265,7 +267,8 @@ int sgx_mm_dealloc(void* addr, size_t length);
  * @retval EINVAL if the memory region was not allocated or outside enclave
                   or other invalid parameters.
  * @retval EPERM if the request permissions are not allowed, e.g., by target page type or
- *               SELinux policy, or target page type is no allowed by this API, e.g., PT_TRIM.
+ *               SELinux policy, or target page type is no allowed by this API, e.g., PT_TRIM, 
+ *               PT_SS_FIRST, PT_SS_REST.
  */
 int sgx_mm_modify_ex(void *addr, size_t length, int prot, int type);
 
