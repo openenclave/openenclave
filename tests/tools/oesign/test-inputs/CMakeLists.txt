@@ -113,6 +113,21 @@ add_custom_command(
     ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py --config_file
     family_id_too_short.conf --family_id 57183823-2574-4bfd-b411-99ed177d3e4)
 
+add_custom_command(
+  OUTPUT create_zero_base_enclave.conf
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
+  COMMAND
+    python ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py --config_file
+    create_zero_base_enclave.conf --create_zero_base_enclave 1)
+
+add_custom_command(
+  OUTPUT create_zero_base_enclave_w_start_address.conf
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
+  COMMAND
+    python ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py --config_file
+    create_zero_base_enclave_w_start_address.conf --create_zero_base_enclave 1
+    --start_address 196608)
+
 # Generate empty config file
 add_custom_command(
   OUTPUT empty.conf COMMAND cmake -E touch
@@ -141,6 +156,8 @@ add_custom_target(
           ext_prod_id_too_short.conf
           family_id_too_long.conf
           family_id_too_short.conf
+          create_zero_base_enclave.conf
+          create_zero_base_enclave_w_start_address.conf
           valid.conf)
 
 # Generate a valid SGX signing key-pair and signing certificate

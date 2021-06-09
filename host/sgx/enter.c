@@ -283,8 +283,10 @@ void oe_enter_sim(
         // restored by Windows. To let the enclave chug along in simulation
         // mode, we prepend a vectored exception handler that resets the FS
         // register to the desired value. See host/sgx/create.c.
-        oe_set_fs_register_base((void*)(enclave->addr + sgx_tcs->fsbase));
-        oe_set_gs_register_base((void*)(enclave->addr + sgx_tcs->gsbase));
+        oe_set_fs_register_base(
+            (void*)(enclave->start_address + sgx_tcs->fsbase));
+        oe_set_gs_register_base(
+            (void*)(enclave->start_address + sgx_tcs->gsbase));
 
         // For parity with oe_enter, see comments there.
         if (oe_is_avx_enabled)

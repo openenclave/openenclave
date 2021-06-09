@@ -141,9 +141,20 @@ oe_eeid_t* oe_eeid = NULL;
 **==============================================================================
 */
 
-const void* __oe_get_enclave_base()
+const void* __oe_get_enclave_start_address()
 {
     return (uint8_t*)&_enclave_rva - _enclave_rva;
+}
+
+const void* __oe_get_enclave_base_address()
+{
+    /*
+     * Currently the base address can be either same as
+     * start_address or 0x0 (0-base enclaves).
+     */
+    return __oe_get_enclave_create_zero_base_flag()
+               ? (const void*)OE_ADDRESS_ZERO
+               : __oe_get_enclave_start_address();
 }
 
 size_t __oe_get_enclave_size()
@@ -153,7 +164,18 @@ size_t __oe_get_enclave_size()
 
 const void* __oe_get_enclave_elf_header(void)
 {
-    return __oe_get_enclave_base();
+    return __oe_get_enclave_start_address();
+}
+
+uint64_t __oe_get_configured_enclave_start_address()
+{
+    return (uint64_t)oe_enclave_properties_sgx.config.start_address;
+}
+
+uint8_t __oe_get_enclave_create_zero_base_flag()
+{
+    return (uint8_t)
+        oe_enclave_properties_sgx.config.flags.create_zero_base_enclave;
 }
 
 /*
@@ -166,9 +188,9 @@ const void* __oe_get_enclave_elf_header(void)
 
 const void* __oe_get_reloc_base()
 {
-    const unsigned char* base = __oe_get_enclave_base();
+    const unsigned char* start = __oe_get_enclave_start_address();
 
-    return base + _reloc_rva;
+    return start + _reloc_rva;
 }
 
 const void* __oe_get_reloc_end()
@@ -206,9 +228,9 @@ const void* __oe_get_eeid()
 
 const void* __oe_get_heap_base()
 {
-    const unsigned char* base = __oe_get_enclave_base();
+    const unsigned char* start = __oe_get_enclave_start_address();
 
-    return base + oe_enclave_properties_sgx.image_info.heap_rva;
+    return start + oe_enclave_properties_sgx.image_info.heap_rva;
 }
 
 size_t __oe_get_heap_size()
@@ -256,8 +278,8 @@ oe_enclave_t* oe_get_enclave(void)
 uint64_t oe_get_base_heap_page(void)
 {
     const uint64_t heap_base = (uint64_t)__oe_get_heap_base();
-    const uint64_t enclave_base = (uint64_t)__oe_get_enclave_base();
-    return (heap_base - enclave_base) / OE_PAGE_SIZE;
+    const uint64_t enclave_start = (uint64_t)__oe_get_enclave_start_address();
+    return (heap_base - enclave_start) / OE_PAGE_SIZE;
 }
 
 uint64_t oe_get_num_heap_pages(void)
