@@ -48,6 +48,33 @@ std::array<T, 2> init_structs()
     return s;
 }
 
+static void set_countparam(
+    CountParamStruct* s,
+    size_t count,
+    size_t size,
+    int pattern,
+    int allocation)
+{
+    s->count = count;
+    s->size = size;
+    if (allocation)
+        s->ptr = (uint64_t*)malloc(count * sizeof(s->ptr[0]));
+    for (size_t i = 0; i < count; i++)
+        s->ptr[i] = (uint64_t)pattern;
+}
+
+static void check_countparam(
+    CountParamStruct* s,
+    size_t count,
+    size_t size,
+    int pattern)
+{
+    OE_TEST(s->count == count);
+    OE_TEST(s->size == size);
+    for (size_t i = 0; i < count; i++)
+        OE_TEST(s->ptr[i] == (uint64_t)pattern);
+}
+
 // Assert that the struct is deep-copied such that `s->ptr` has a copy
 // of `s->count` elements of `data`.
 void ocall_deepcopy_countparam(CountParamStruct* s)
@@ -193,6 +220,14 @@ void ocall_deepcopy_countparamarray_out(CountParamStruct* s)
     s[1].ptr = (uint64_t*)malloc(s[1].count * sizeof(uint64_t));
     for (size_t i = 0; i < s[1].count; ++i)
         s[1].ptr[i] = data[i];
+}
+
+void ocall_deepcopy_countparamarray_n_out(CountParamStruct* s, size_t n)
+{
+    OE_TEST(n == 3);
+    set_countparam(&s[0], 5, 64, 'A', 1);
+    set_countparam(&s[1], 4, 32, 'B', 1);
+    set_countparam(&s[2], 3, 16, 'C', 1);
 }
 
 void ocall_deepcopy_countparamarray_partial_out(CountParamStruct* s)
@@ -401,6 +436,26 @@ void ocall_deepcopy_multiple_nested_partial_out(MultipleNestedStruct* n)
                 m->ptr[k] = j;
         }
     }
+}
+
+void ocall_deepcopy_nested_countparam_inout(CountParamNestedStruct* s)
+{
+    OE_TEST(s->num == 3);
+    check_countparam(&s->array_of_struct[0], 10, 10, 'A');
+    check_countparam(&s->array_of_struct[1], 20, 20, 'B');
+    check_countparam(&s->array_of_struct[2], 30, 30, 'C');
+
+    set_countparam(&s->array_of_struct[0], 10, 10, 'D', 0);
+    set_countparam(&s->array_of_struct[1], 20, 20, 'E', 0);
+    set_countparam(&s->array_of_struct[2], 30, 30, 'F', 0);
+}
+
+void ocall_deepcopy_nested_countparam_in(CountParamNestedStruct* s)
+{
+    OE_TEST(s->num == 3);
+    check_countparam(&s->array_of_struct[0], 10, 10, 'A');
+    check_countparam(&s->array_of_struct[1], 20, 20, 'B');
+    check_countparam(&s->array_of_struct[2], 30, 30, 'C');
 }
 
 static void set_sizeparam(
@@ -694,6 +749,16 @@ void test_deepcopy_edl_ecalls(oe_enclave_t* enclave)
     }
 
     {
+        CountParamStruct s[3];
+        OE_TEST(deepcopy_countparamarray_n_out(enclave, s, 3) == OE_OK);
+        check_countparam(&s[0], 5, 64, 'A');
+        check_countparam(&s[1], 4, 32, 'B');
+        check_countparam(&s[2], 3, 16, 'C');
+        for (int i = 0; i < 3; i++)
+            free(s[i].ptr);
+    }
+
+    {
         CountParamStruct s[2];
         memset(s, 0, sizeof(CountParamStruct) * 2);
         OE_TEST(deepcopy_countparamarray_partial_out(enclave, s) == OE_OK);
@@ -983,6 +1048,37 @@ void test_deepcopy_edl_ecalls(oe_enclave_t* enclave)
         check_sizeparam(&s_out_2, 50, 50, 'F');
         free(s_out.ptr);
         free(s_out_2.ptr);
+    }
+
+    {
+        CountParamNestedStruct s;
+        CountParamStruct ns[3];
+        s.num = 3;
+        s.array_of_struct = ns;
+
+        set_countparam(&ns[0], 10, 10, 'A', 1);
+        set_countparam(&ns[1], 20, 20, 'B', 1);
+        set_countparam(&ns[2], 30, 30, 'C', 1);
+        OE_TEST(deepcopy_nested_countparam_inout(enclave, &s) == OE_OK);
+        check_countparam(&ns[0], 10, 10, 'D');
+        check_countparam(&ns[1], 20, 20, 'E');
+        check_countparam(&ns[2], 30, 30, 'F');
+        for (int i = 0; i < 3; i++)
+            free(ns[i].ptr);
+    }
+
+    {
+        CountParamNestedStruct s;
+        CountParamStruct ns[3];
+        s.num = 3;
+        s.array_of_struct = ns;
+
+        set_countparam(&ns[0], 10, 10, 'A', 1);
+        set_countparam(&ns[1], 20, 20, 'B', 1);
+        set_countparam(&ns[2], 30, 30, 'C', 1);
+        OE_TEST(deepcopy_nested_countparam_in(enclave, &s) == OE_OK);
+        for (int i = 0; i < 3; i++)
+            free(ns[i].ptr);
     }
 
     {

@@ -166,6 +166,7 @@ enclave {
 
     public void deepcopy_countparam_out([out, count=1] CountParamStruct* s) transition_using_threads;
     public void deepcopy_countparamarray_out([out, count=2] CountParamStruct* s) transition_using_threads;
+    public void deepcopy_countparamarray_n_out([out, count=n] CountParamStruct* s, size_t n);
     public void deepcopy_countparamarray_partial_out([out, count=2] CountParamStruct* s) transition_using_threads;
     public void deepcopy_sizeparam_out([out, count=1] SizeParamStruct* s) transition_using_threads;
     public void deepcopy_countsizeparam_out([out, count=1] CountSizeParamStruct* s) transition_using_threads;
@@ -179,6 +180,9 @@ enclave {
                              [out, count=1] SizeParamStruct* s_out,
                              [user_check] SizeParamStruct* s_user_check,
                              [out, count=1] SizeParamStruct* s_out_2) transition_using_threads;
+
+    public void deepcopy_nested_countparam_inout([in, out] CountParamNestedStruct* s);
+    public void deepcopy_nested_countparam_in([in] CountParamNestedStruct* s);
   };
 
   untrusted
@@ -213,6 +217,7 @@ enclave {
 
     void ocall_deepcopy_countparam_out([out, count=1] CountParamStruct* s) transition_using_threads;
     void ocall_deepcopy_countparamarray_out([out, count=2] CountParamStruct* s) transition_using_threads;
+    void ocall_deepcopy_countparamarray_n_out([out, count=n] CountParamStruct* s, size_t n);
     void ocall_deepcopy_countparamarray_partial_out([out, count=2] CountParamStruct* s) transition_using_threads;
     void ocall_deepcopy_sizeparam_out([out, count=1] SizeParamStruct* s) transition_using_threads;
     void ocall_deepcopy_countsizeparam_out([out, count=1] CountSizeParamStruct* s) transition_using_threads;
@@ -226,5 +231,8 @@ enclave {
                             [out, count=1] SizeParamStruct* s_out,
                             [user_check] SizeParamStruct* s_user_check,
                             [out, count=1] SizeParamStruct* s_out_2) transition_using_threads;
+
+    void ocall_deepcopy_nested_countparam_inout([in, out] CountParamNestedStruct* s);
+    void ocall_deepcopy_nested_countparam_in([in] CountParamNestedStruct* s);
   };
 };
