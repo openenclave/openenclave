@@ -1022,6 +1022,8 @@ oe_result_t generate_oe_report(
     }
 
     // Dump report
+    printf("Generate OE report, report_size = %zu\n", report_size);
+
     if (verbose)
     {
         OE_CHECK_MSG(
@@ -1032,7 +1034,6 @@ oe_result_t generate_oe_report(
     else
     {
         // Print basic info to console
-        printf("Generate OE report, report_size = %zu\n", report_size);
         printf("QEID: ");
         oe_hex_dump(quote->user_data, 16);
         printf("CPU_SVN: ");
@@ -1119,10 +1120,6 @@ oe_result_t generate_oe_evidence(
     size_t endorsements_size = 0;
     uint8_t endorsements[MAX_BUFFER_SIZE];
 
-    oe_attestation_header_t* evidence_header = nullptr;
-    oe_report_header_t* report_header = nullptr;
-    sgx_quote_t* quote = nullptr;
-
     log("========== Getting OE evidence\n");
 
     // only retrieve endorsements when need to output endorsements file or
@@ -1176,11 +1173,9 @@ oe_result_t generate_oe_evidence(
             evidence_filename);
     }
 
-    evidence_header = (oe_attestation_header_t*)evidence;
-    report_header = (oe_report_header_t*)evidence_header->data;
-    quote = (sgx_quote_t*)report_header->report;
-
     // Dump evidence
+    printf("Generated OE evidence, evidence_size = %zu\n", evidence_size);
+
     if (verbose)
     {
         OE_CHECK_MSG(
@@ -1188,10 +1183,10 @@ oe_result_t generate_oe_evidence(
             "Failed to dump OE evidence. Error: (%s)\n",
             oe_result_str(result));
     }
-    else
+    else if (memcmp(&evidence_format, &_sgx_ecdsa_uuid, sizeof(oe_uuid_t)) == 0)
     {
         // Print basic info to console
-        printf("Generate OE evidence, evidence_size = %zu\n", evidence_size);
+        sgx_quote_t* quote = (sgx_quote_t*)evidence;
         printf("QEID: ");
         oe_hex_dump(quote->user_data, 16);
         printf("CPU_SVN: ");
