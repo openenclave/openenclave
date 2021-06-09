@@ -21,9 +21,7 @@ typedef struct _evidence_uuid_desc
     XX(SGX_ECDSA)                   \
     XX(LEGACY_REPORT_REMOTE)        \
     XX(RAW_SGX_QUOTE_ECDSA)         \
-    XX(SGX_LOCAL_ATTESTATION)       \
-    XX(SGX_EPID_LINKABLE)           \
-    XX(SGX_EPID_UNLINKABLE)
+    XX(SGX_LOCAL_ATTESTATION)
 
 static char* allowed_evidence_formats =
 #define XX(id) #id " "

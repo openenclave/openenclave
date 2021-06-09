@@ -283,6 +283,7 @@ static int _verify_evidence(
     oe_result_t result = OE_FAILURE;
     oe_claim_t* claims = NULL;
     size_t claims_length = 0;
+    static const oe_uuid_t _uuid_sgx_ecdsa = {OE_FORMAT_UUID_SGX_ECDSA};
 
     OE_TRACE_INFO(
         "\n\nVerifying evidence %s, endorsements: %s\n",
@@ -297,7 +298,7 @@ static int _verify_evidence(
     OE_TEST(oe_verifier_initialize() == OE_OK);
 
     result = oe_verify_evidence(
-        NULL,
+        &_uuid_sgx_ecdsa,
         evidence,
         evidence_size,
         NULL,

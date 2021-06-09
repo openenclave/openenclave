@@ -10,9 +10,10 @@ Prerequisites: you may want to read [Common Sample Information](../README.md#com
 
 When an application is doing host-side enclave verification, it means that a host application is trying to authenticate a remote enclave's hardware and software settings so that the application can determine whether or not to trust the remote enclave.
 
-The sample does remote host-side enclave attestation by taking either of the two arguments:
+The sample does remote host-side enclave attestation by taking one of the following three arguments:
 
 - An SGX report
+- Evidence in SGX_ECDSA format
 - An SGX certificate
 
 The sample also accepts an endorsement file as input. See the end of the file for usage.
@@ -33,7 +34,8 @@ When you see the following message displayed on the screen, it means you have su
 ```bash
 Usage:
   ./host_verify -r <report_file> [-e <endorsement_file>]
+  ./host_verify -v <evidence_file> [-e <endorsement_file>]
   ./host_verify -c <certificate_file>
-Verify the integrity of enclave remote report or attestation certificate.
+Verify the integrity of enclave remote report, enclave attestation evidence in SGX_ECDSA format, or attestation certificate.
 WARNING: host_verify does not have a stable CLI interface. Use with caution.
 ```
