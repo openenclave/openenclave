@@ -308,7 +308,7 @@ oe_result_t oe_thread_local_init(oe_sgx_td_t* td)
         oe_memset_s(tls_start, tls_data_size, 0, tls_data_size);
 
         // Fetch the .tdata template.
-        void* tdata = (uint8_t*)__oe_get_enclave_base() + _tdata_rva;
+        void* tdata = (uint8_t*)__oe_get_enclave_start_address() + _tdata_rva;
 
         // Copy the template
         oe_memcpy_s(tls_start, _tdata_size, tdata, _tdata_size);
@@ -323,7 +323,8 @@ oe_result_t oe_thread_local_init(oe_sgx_td_t* td)
             const elf64_rela_t* relocs =
                 (const elf64_rela_t*)__oe_get_reloc_base();
             size_t nrelocs = __oe_get_reloc_size() / sizeof(elf64_rela_t);
-            const uint8_t* baseaddr = (const uint8_t*)__oe_get_enclave_base();
+            const uint8_t* start_address =
+                (const uint8_t*)__oe_get_enclave_start_address();
 
             for (size_t i = 0; i < nrelocs; i++)
             {
@@ -336,7 +337,7 @@ oe_result_t oe_thread_local_init(oe_sgx_td_t* td)
                 if (ELF64_R_TYPE(p->r_info) == R_X86_64_TPOFF64)
                 {
                     // Compute address of tpoff variable
-                    int64_t* tpoff = (int64_t*)(baseaddr + p->r_offset);
+                    int64_t* tpoff = (int64_t*)(start_address + p->r_offset);
 
                     // Set tpoff to the offset value relative to FS
                     *tpoff = (tls_start + p->r_addend - fs);

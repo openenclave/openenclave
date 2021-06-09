@@ -24,6 +24,17 @@ if (LVI_MITIGATION MATCHES ControlFlow AND LVI_MITIGATION_SKIP_TESTS)
   message("LVI_MITIGATION_SKIP_TESTS set - skip all tests with LVI mitigation")
 endif ()
 
+if (OE_SGX AND UNIX)
+  option(ENABLE_ZERO_BASE_TESTS
+         "Build 0-base enclave tests and include in test list" OFF)
+  if (ENABLE_ZERO_BASE_TESTS)
+    message("ENABLE_ZERO_BASE_TESTS set - building all 0-base enclave tests")
+  else ()
+    message(
+      "ENABLE_ZERO_BASE_TESTS not set - not building 0-base enclave tests")
+  endif ()
+endif ()
+
 # Define the `OE_SGX` macro used by the oeedger8r on the SGX build.
 if (OE_SGX)
   set(DEFINE_OE_SGX "-DOE_SGX")
@@ -181,6 +192,11 @@ if (UNIX)
     # longer be used.
     if (NOT CODE_COVERAGE)
       add_subdirectory(child_process)
+    endif ()
+    if (ENABLE_ZERO_BASE_TESTS)
+      # 0-base enclave creation is currently available only in SGX and UNIX
+      # platforms.
+      add_subdirectory(sgx_zerobase) # Disabled until PSW update
     endif ()
   endif ()
   add_subdirectory(libc)
