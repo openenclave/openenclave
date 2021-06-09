@@ -10,7 +10,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
-#include "oe_gdb_test_t.h"
+#include "db_test_t.h"
 
 bool g_square_called = false;
 

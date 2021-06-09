@@ -1,4 +1,4 @@
-oegdb tests
+oegdb and oelldb tests
 =====================
 
 Test suite locking down supported debugging capabilities in both
@@ -9,4 +9,4 @@ Debug and RelWithDbgInfo builds.
 3. Adjacent breakpoints in successive lines.
 4. Read variable values.
 5. Set variable values.
-6. Call functions with the enclave.
+6. Call functions within the enclave. This works only with oegdb.
