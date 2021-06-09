@@ -372,6 +372,11 @@ typedef enum _oe_result
      */
     OE_QUOTE_LIBRARY_LOAD_ERROR,
 
+    /**
+     * The library API used for SGX quote generation and attestation failed.
+     */
+    OE_SGX_QUOTE_LIBRARY_ERROR,
+
     __OE_RESULT_MAX = OE_ENUM_MAX,
 } oe_result_t;
 /**< typedef enum _oe_result oe_result_t*/
