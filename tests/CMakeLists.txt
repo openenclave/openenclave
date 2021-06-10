@@ -29,6 +29,14 @@ if (OE_SGX)
   set(DEFINE_OE_SGX "-DOE_SGX")
 endif ()
 
+if (UNIX)
+  # On Linux prefer python3 since python may not be available.
+  find_program(PYTHON NAMES python3 python)
+else ()
+  # On Windows and other systems, use the available python executable.
+  set(PYTHON "python")
+endif ()
+
 add_subdirectory(mem)
 add_subdirectory(safecrt)
 add_subdirectory(safemath)
