@@ -24,7 +24,7 @@ int create_listener_socket(int port, int& server_socket)
     const int reuse = 1;
     struct sockaddr_in addr;
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(port);
+    addr.sin_port = htons((uint16_t)port);
     addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
     server_socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -132,9 +132,9 @@ exit:
 int set_up_tls_server(char* server_port, bool keep_server_up)
 {
     int ret = 0;
-    int server_socket_fd;
-    int client_socket_fd;
-    int server_port_number;
+    int server_socket_fd = 0;
+    int client_socket_fd = 0;
+    int server_port_number = 0;
 
     X509* certificate = nullptr;
     EVP_PKEY* pkey = nullptr;
@@ -171,7 +171,7 @@ int set_up_tls_server(char* server_port, bool keep_server_up)
         goto exit;
     }
 
-    server_port_number = (uint16_t)atoi(server_port); // convert to char* to int
+    server_port_number = atoi(server_port); // convert to char* to int
     if (create_listener_socket(server_port_number, server_socket_fd) != 0)
     {
         printf(TLS_SERVER " unable to create listener socket on the server\n ");

@@ -211,7 +211,7 @@ int read_from_session_peer(
     {
         int len = sizeof(buffer) - 1;
         memset(buffer, 0, sizeof(buffer));
-        bytes_read = SSL_read(ssl_session, buffer, (size_t)len);
+        bytes_read = SSL_read(ssl_session, buffer, len);
 
         if (bytes_read <= 0)
         {
@@ -227,8 +227,8 @@ int read_from_session_peer(
         printf(" %d bytes read from session peer\n", bytes_read);
 
         // check to see if received payload is expected
-        if ((bytes_read != payload_length) ||
-            (memcmp(payload, buffer, bytes_read) != 0))
+        if (((size_t)bytes_read != payload_length) ||
+            (memcmp(payload, buffer, (size_t)bytes_read) != 0))
         {
             printf(
                 "ERROR: expected reading %lu bytes but only "
@@ -258,8 +258,8 @@ int write_to_session_peer(
     int bytes_written = 0;
     int ret = 0;
 
-    while ((bytes_written = SSL_write(ssl_session, payload, payload_length)) <=
-           0)
+    while ((bytes_written =
+                SSL_write(ssl_session, payload, (int)payload_length)) <= 0)
     {
         int error = SSL_get_error(ssl_session, bytes_written);
         if (error == SSL_ERROR_WANT_WRITE)
