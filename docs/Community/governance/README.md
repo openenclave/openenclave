@@ -24,6 +24,7 @@ Members
 | Dave Thaler          | Microsoft   | dthaler@microsoft.com         | dthaler        |
 | Mark Shanahan        | Intel       | mark.shanahan@intel.com       | MWShan         |
 | Radhika Jandhyala    | Microsoft   | radhikaj@microsoft.com        | radhikaj       |
+| Felix Schuster       | Edgeless    | fs@edgeless.systems           | flxflx         |
 
 Emeritus Members
 ----------------
