@@ -89,7 +89,7 @@ typedef struct _oe_parsed_tcb_info
  * @param[in] tcb_level_status The tcb_status to parse.
  */
 oe_sgx_tcb_status_t oe_tcb_level_status_to_sgx_tcb_status(
-    const oe_tcb_level_status_t* tcb_level_status);
+    oe_tcb_level_status_t tcb_level_status);
 
 /*!
  * Retrieve a string description for an oe_sgx_tcb_status_t code.

@@ -281,24 +281,24 @@ static oe_tcb_level_status_t _parse_tcb_status(
 }
 
 oe_sgx_tcb_status_t oe_tcb_level_status_to_sgx_tcb_status(
-    const oe_tcb_level_status_t* tcb_level_status)
+    oe_tcb_level_status_t tcb_level_status)
 {
-    if (tcb_level_status->fields.revoked == 1)
+    if (tcb_level_status.fields.revoked == 1)
         return OE_SGX_TCB_STATUS_REVOKED;
-    if (tcb_level_status->fields.up_to_date == 1 &&
-        tcb_level_status->fields.sw_hardening_needed == 1)
+    if (tcb_level_status.fields.up_to_date == 1 &&
+        tcb_level_status.fields.sw_hardening_needed == 1)
         return OE_SGX_TCB_STATUS_SW_HARDENING_NEEDED;
-    if (tcb_level_status->fields.up_to_date == 1)
+    if (tcb_level_status.fields.up_to_date == 1)
         return OE_SGX_TCB_STATUS_UP_TO_DATE;
-    if (tcb_level_status->fields.sw_hardening_needed == 1 &&
-        tcb_level_status->fields.configuration_needed == 1)
+    if (tcb_level_status.fields.sw_hardening_needed == 1 &&
+        tcb_level_status.fields.configuration_needed == 1)
         return OE_SGX_TCB_STATUS_CONFIGURATION_AND_SW_HARDENING_NEEDED;
-    if (tcb_level_status->fields.outofdate == 1 &&
-        tcb_level_status->fields.configuration_needed == 1)
+    if (tcb_level_status.fields.outofdate == 1 &&
+        tcb_level_status.fields.configuration_needed == 1)
         return OE_SGX_TCB_STATUS_OUT_OF_DATE_CONFIGURATION_NEEDED;
-    if (tcb_level_status->fields.configuration_needed == 1)
+    if (tcb_level_status.fields.configuration_needed == 1)
         return OE_SGX_TCB_STATUS_CONFIGURATION_NEEDED;
-    if (tcb_level_status->fields.outofdate == 1)
+    if (tcb_level_status.fields.outofdate == 1)
         return OE_SGX_TCB_STATUS_OUT_OF_DATE;
     return OE_SGX_TCB_STATUS_INVALID;
 }
@@ -805,6 +805,10 @@ oe_result_t oe_parse_tcb_info_json(
 
         if (platform_tcb_level->status.fields.up_to_date != 1)
         {
+            oe_sgx_tcb_status_t sgx_tcb_status =
+                oe_tcb_level_status_to_sgx_tcb_status(
+                    platform_tcb_level->status);
+
             for (uint32_t i = 0;
                  i < OE_COUNTOF(platform_tcb_level->sgx_tcb_comp_svn);
                  ++i)
@@ -812,10 +816,13 @@ oe_result_t oe_parse_tcb_info_json(
                     "sgx_tcb_comp_svn[%d] = 0x%x",
                     i,
                     platform_tcb_level->sgx_tcb_comp_svn[i]);
-            OE_TRACE_VERBOSE("pce_svn = 0x%x", platform_tcb_level->pce_svn);
-            OE_TRACE_WARNING(
-                "Platform TCB (%d) is not up-to-date",
-                platform_tcb_level->status);
+
+            OE_TRACE_ERROR(
+                "Invalid platform TCB level: %s "
+                "(cpu_svn[0] = 0x%x, pce_svn = 0x%x)",
+                oe_sgx_tcb_status_str(sgx_tcb_status),
+                platform_tcb_level->sgx_tcb_comp_svn[0],
+                platform_tcb_level->pce_svn);
             result = OE_TCB_LEVEL_INVALID;
         }
 
