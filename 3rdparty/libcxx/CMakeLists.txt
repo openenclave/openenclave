@@ -57,16 +57,9 @@ add_enclave_library(
 # future and promise constructs of C++ are not working as expected and resulting in
 # SIGBUS errors. Disable speculative load hardening till this issue is addressed
 # in clang-10 compiler codebase.
-
-set(NO_SPECTRE_MITIGATION_FLAGS -mno-speculative-load-hardening)
-check_c_compiler_flag("${NO_SPECTRE_MITIGATION_FLAGS}"
-                      SPECTRE_MITIGATION_C_FLAGS_SUPPORTED)
-check_cxx_compiler_flag("${NO_SPECTRE_MITIGATION_FLAGS}"
-                        SPECTRE_MITIGATION_CXX_FLAGS_SUPPORTED)
-if (SPECTRE_MITIGATION_C_FLAGS_SUPPORTED
-    AND SPECTRE_MITIGATION_CXX_FLAGS_SUPPORTED)
+if (WIN32 OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
   set_property(SOURCE libcxx/src/future.cpp
-               PROPERTY COMPILE_FLAGS "${NO_SPECTRE_MITIGATION_FLAGS}")
+               PROPERTY COMPILE_FLAGS -mno-speculative-load-hardening)
 endif ()
 
 maybe_build_using_clangw(libcxx)

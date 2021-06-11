@@ -23,15 +23,11 @@ add_enclave(
 
 enclave_compile_features(cppException_enc PRIVATE cxx_generalized_initializers)
 
-set(NO_SPECTRE_MITIGATION_FLAGS -mno-speculative-load-hardening)
-check_c_compiler_flag("${NO_SPECTRE_MITIGATION_FLAGS}"
-                      SPECTRE_MITIGATION_C_FLAGS_SUPPORTED)
-check_cxx_compiler_flag("${NO_SPECTRE_MITIGATION_FLAGS}"
-                        SPECTRE_MITIGATION_CXX_FLAGS_SUPPORTED)
-if (SPECTRE_MITIGATION_C_FLAGS_SUPPORTED
-    AND SPECTRE_MITIGATION_CXX_FLAGS_SUPPORTED)
+# disable speculative load hardening if cxx compiler is clang
+# On windows cxx compiler used is always clang
+if (WIN32 OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
   enclave_compile_options(cppException_enc PRIVATE
-                          ${NO_SPECTRE_MITIGATION_FLAGS})
+                          -mno-speculative-load-hardening)
 endif ()
 
 enclave_include_directories(

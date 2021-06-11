@@ -48,8 +48,7 @@ function (maybe_build_using_clangw OE_TARGET)
       -fno-builtin-malloc
       -fno-builtin-calloc
       -fno-builtin
-      -mllvm
-      -x86-speculative-load-hardening)
+      -mspeculative-load-hardening)
   else ()
     target_compile_options(
       ${OE_TARGET}
@@ -64,8 +63,7 @@ function (maybe_build_using_clangw OE_TARGET)
               -fno-builtin-malloc
               -fno-builtin-calloc
               -fno-builtin
-              -mllvm
-              -x86-speculative-load-hardening)
+              -mspeculative-load-hardening)
   endif ()
 
   # Setup static library names variables
