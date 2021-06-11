@@ -233,7 +233,7 @@ static oe_result_t _fill_with_known_claims(
     size_t claims_index = 0;
     bool flag;
     oe_sgx_tcb_status_t tcb_status =
-        oe_tcb_level_status_to_sgx_tcb_status(&platform_tcb_level->status);
+        oe_tcb_level_status_to_sgx_tcb_status(platform_tcb_level->status);
 
     if (claims_length < OE_REQUIRED_CLAIMS_COUNT + OE_SGX_REQUIRED_CLAIMS_COUNT)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -848,7 +848,7 @@ oe_result_t oe_sgx_verify_evidence(
                 "Inconsistent TCB status: verify quote(%s), tcb status(%s)",
                 oe_result_str(result_verify_quote),
                 oe_sgx_tcb_status_str(oe_tcb_level_status_to_sgx_tcb_status(
-                    &platform_tcb_level.status)));
+                    platform_tcb_level.status)));
         }
     }
 

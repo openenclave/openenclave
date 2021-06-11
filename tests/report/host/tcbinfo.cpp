@@ -254,7 +254,7 @@ void TestVerifyTCBInfoV2(oe_enclave_t* enclave, const char* test_filename)
         OE_OK,
         version);
     OE_TEST(
-        oe_tcb_level_status_to_sgx_tcb_status(&platform_tcb_level.status) ==
+        oe_tcb_level_status_to_sgx_tcb_status(platform_tcb_level.status) ==
         OE_SGX_TCB_STATUS_UP_TO_DATE);
     printf("UptoDate TCB Level determination test passed.\n");
 
@@ -270,7 +270,7 @@ void TestVerifyTCBInfoV2(oe_enclave_t* enclave, const char* test_filename)
         OE_OK,
         version);
     OE_TEST(
-        oe_tcb_level_status_to_sgx_tcb_status(&platform_tcb_level.status) ==
+        oe_tcb_level_status_to_sgx_tcb_status(platform_tcb_level.status) ==
         OE_SGX_TCB_STATUS_SW_HARDENING_NEEDED);
     printf("SWHardeningNeeded TCB Level determination test passed.\n");
 
@@ -286,7 +286,7 @@ void TestVerifyTCBInfoV2(oe_enclave_t* enclave, const char* test_filename)
         OE_TCB_LEVEL_INVALID,
         version);
     OE_TEST(
-        oe_tcb_level_status_to_sgx_tcb_status(&platform_tcb_level.status) ==
+        oe_tcb_level_status_to_sgx_tcb_status(platform_tcb_level.status) ==
         OE_SGX_TCB_STATUS_CONFIGURATION_AND_SW_HARDENING_NEEDED);
     printf("ConfigurationAndSWHardeningNeeded TCB Level determination test "
            "passed.\n");
@@ -303,7 +303,7 @@ void TestVerifyTCBInfoV2(oe_enclave_t* enclave, const char* test_filename)
         OE_TCB_LEVEL_INVALID,
         version);
     OE_TEST(
-        oe_tcb_level_status_to_sgx_tcb_status(&platform_tcb_level.status) ==
+        oe_tcb_level_status_to_sgx_tcb_status(platform_tcb_level.status) ==
         OE_SGX_TCB_STATUS_OUT_OF_DATE_CONFIGURATION_NEEDED);
     printf(
         "OutOfDateConfigurationNeeded TCB Level determination test passed.\n");
@@ -320,7 +320,7 @@ void TestVerifyTCBInfoV2(oe_enclave_t* enclave, const char* test_filename)
         OE_TCB_LEVEL_INVALID,
         version);
     OE_TEST(
-        oe_tcb_level_status_to_sgx_tcb_status(&platform_tcb_level.status) ==
+        oe_tcb_level_status_to_sgx_tcb_status(platform_tcb_level.status) ==
         OE_SGX_TCB_STATUS_CONFIGURATION_NEEDED);
     printf("ConfigurationNeeded TCB Level determination test passed.\n");
 
@@ -336,7 +336,7 @@ void TestVerifyTCBInfoV2(oe_enclave_t* enclave, const char* test_filename)
         OE_TCB_LEVEL_INVALID,
         version);
     OE_TEST(
-        oe_tcb_level_status_to_sgx_tcb_status(&platform_tcb_level.status) ==
+        oe_tcb_level_status_to_sgx_tcb_status(platform_tcb_level.status) ==
         OE_SGX_TCB_STATUS_OUT_OF_DATE);
     printf("OutOfDate TCB Level determination test passed.\n");
 
@@ -352,7 +352,7 @@ void TestVerifyTCBInfoV2(oe_enclave_t* enclave, const char* test_filename)
         OE_TCB_LEVEL_INVALID,
         version);
     OE_TEST(
-        oe_tcb_level_status_to_sgx_tcb_status(&platform_tcb_level.status) ==
+        oe_tcb_level_status_to_sgx_tcb_status(platform_tcb_level.status) ==
         OE_SGX_TCB_STATUS_REVOKED);
     printf("Revoked TCB Level determination test passed.\n");
 
@@ -371,7 +371,7 @@ void TestVerifyTCBInfoV2(oe_enclave_t* enclave, const char* test_filename)
             OE_TCB_LEVEL_INVALID,
             version);
         OE_TEST(
-            oe_tcb_level_status_to_sgx_tcb_status(&platform_tcb_level.status) ==
+            oe_tcb_level_status_to_sgx_tcb_status(platform_tcb_level.status) ==
             OE_SGX_TCB_STATUS_INVALID);
         platform_tcb_level.sgx_tcb_comp_svn[i] = 2;
     }
