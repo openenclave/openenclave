@@ -37,12 +37,6 @@ list(
   std_thread_futures_futures.promise_set_value_const.pass
   std_utilities_variant_variant.variant_variant.assign_T.pass)
 
-set(NO_SPECTRE_MITIGATION_FLAGS -mno-speculative-load-hardening)
-check_c_compiler_flag("${NO_SPECTRE_MITIGATION_FLAGS}"
-                      SPECTRE_MITIGATION_C_FLAGS_SUPPORTED)
-check_cxx_compiler_flag("${NO_SPECTRE_MITIGATION_FLAGS}"
-                        SPECTRE_MITIGATION_CXX_FLAGS_SUPPORTED)
-
 enclave_link_libraries(libcxxtest-support PRIVATE oelibcxx oeenclave)
 enclave_link_libraries(libcxxtest-support INTERFACE -Wl,--undefined=Test)
 
@@ -102,10 +96,9 @@ function (add_libcxx_test_enc NAME CXXFILE)
   # when speculative load hardening is enabled with Clang 10. Disable speculative load hardening
   # for those test cases NOTE: This only matters when `ENABLE_FULL_LIBCXX_TESTS=ON`.
   if (NAME IN_LIST CLANG_10_FAILED_TESTS_WITH_SPECULATIVE_LOAD_HARDENING)
-    if (SPECTRE_MITIGATION_C_FLAGS_SUPPORTED
-        AND SPECTRE_MITIGATION_CXX_FLAGS_SUPPORTED)
+    if (WIN32 OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
       enclave_compile_options(libcxxtest-${NAME}_enc PRIVATE
-                              ${NO_SPECTRE_MITIGATION_FLAGS})
+                              -mno-speculative-load-hardening)
     endif ()
   endif ()
 
