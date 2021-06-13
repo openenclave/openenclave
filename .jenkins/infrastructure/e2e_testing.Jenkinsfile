@@ -69,7 +69,6 @@ stage("Run tests on new Agents") {
                        string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
                        string(name: 'UBUNTU_1804_CUSTOM_LABEL', value: env.UBUNTU_1804_LABEL),
                        string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: env.UBUNTU_NONSGX_LABEL),
-                       string(name: 'RHEL_8_CUSTOM_LABEL', value: env.RHEL_8_LABEL),
                        string(name: 'WINDOWS_2019_CUSTOM_LABEL', value: env.WINDOWS_2019_LABEL),
                        string(name: 'WINDOWS_2019_DCAP_CUSTOM_LABEL', value: env.WINDOWS_2019_DCAP_LABEL),
                        string(name: 'WINDOWS_NONSGX_CUSTOM_LABEL', value: env.WINDOWS_NONSGX_LABEL),

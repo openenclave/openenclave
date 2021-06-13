@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "oe_gdb_test_u.h"
+#include "db_test_u.h"
 
 extern void assert_debugger_binary_contract_host_side();
 
@@ -37,7 +37,7 @@ int main(int argc, const char* argv[])
         flags |= OE_ENCLAVE_FLAG_SIMULATE;
     }
 
-    if ((result = oe_create_oe_gdb_test_enclave(
+    if ((result = oe_create_db_test_enclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave1)) != OE_OK)
         oe_put_err("oe_create_enclave(): result=%u", result);
 

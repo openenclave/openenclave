@@ -34,6 +34,7 @@ apt_packages:
   - "clang-format-10"
   - "unzip"
   - "python"
+  - "lldb-10"
 
 apt_arm_packages:
   - "gcc-arm-linux-gnueabi"
