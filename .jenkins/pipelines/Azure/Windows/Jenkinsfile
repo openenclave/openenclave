@@ -45,12 +45,17 @@ def windowsLinuxElfBuild(String label, String version, String compiler, String b
                 unstash "linux-${label}-${compiler}-${build_type}-lvi_mitigation=${lvi_mitigation}-${version}-${BUILD_NUMBER}"
                 bat 'move build linuxbin'
                 dir('build') {
-                  bat """
-                      vcvars64.bat x64 && \
-                      cmake.exe ${WORKSPACE} -G Ninja -DADD_WINDOWS_ENCLAVE_TESTS=ON -DBUILD_ENCLAVES=OFF -DCMAKE_BUILD_TYPE=${build_type} -DLINUX_BIN_DIR=${WORKSPACE}\\linuxbin\\tests -DLVI_MITIGATION=${lvi_mitigation} -DLVI_MITIGATION_SKIP_TESTS=${lvi_mitigation_skip_tests} -DNUGET_PACKAGE_PATH=C:/oe_prereqs -Wdev && \
-                      ninja -v && \
-                      ctest.exe -V -C ${build_type} --timeout ${CTEST_TIMEOUT_SECONDS}
-                      """
+                    bat(
+                        returnStdout: false,
+                        returnStatus: false,
+                        script: """
+                            call vcvars64.bat x64
+                            setlocal EnableDelayedExpansion
+                            cmake.exe ${WORKSPACE} -G Ninja -DADD_WINDOWS_ENCLAVE_TESTS=ON -DBUILD_ENCLAVES=OFF -DCMAKE_BUILD_TYPE=${build_type} -DLINUX_BIN_DIR=${WORKSPACE}\\linuxbin\\tests -DLVI_MITIGATION=${lvi_mitigation} -DLVI_MITIGATION_SKIP_TESTS=${lvi_mitigation_skip_tests} -DNUGET_PACKAGE_PATH=C:/oe_prereqs -Wdev || exit !ERRORLEVEL!
+                            ninja -v || exit !ERRORLEVEL!
+                            ctest.exe -V -C ${build_type} --timeout ${CTEST_TIMEOUT_SECONDS} || exit !ERRORLEVEL!
+                        """
+                    )
                 }
             }
         }
