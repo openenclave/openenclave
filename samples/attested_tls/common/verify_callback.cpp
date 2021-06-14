@@ -105,7 +105,7 @@ oe_result_t enclave_claims_verifier(
     if (claim->value_size != sizeof(uint32_t))
     {
         printf(
-            "security_version size(%lu) checking failed\n", claim->value_size);
+            "security_version size(%zu) checking failed\n", claim->value_size);
         goto done;
     }
     printf(TLS_SERVER "\nsecurity_version = %d\n", *claim->value);
@@ -121,7 +121,7 @@ oe_result_t enclave_claims_verifier(
     if (claim->value_size != OE_UNIQUE_ID_SIZE)
     {
         printf(
-            TLS_CLIENT "unique_id size(%lu) checking failed\n",
+            TLS_CLIENT "unique_id size(%zu) checking failed\n",
             claim->value_size);
         goto done;
     }
@@ -143,7 +143,7 @@ oe_result_t enclave_claims_verifier(
     if (claim->value_size != OE_PRODUCT_ID_SIZE)
     {
         printf(
-            TLS_CLIENT "product_id size(%lu) checking failed\n",
+            TLS_CLIENT "product_id size(%zu) checking failed\n",
             claim->value_size);
         goto done;
     }
@@ -163,7 +163,7 @@ oe_result_t enclave_claims_verifier(
     if (claim->value_size != OE_SIGNER_ID_SIZE)
     {
         printf(
-            TLS_CLIENT "signer_id size(%lu) checking failed\n",
+            TLS_CLIENT "signer_id size(%zu) checking failed\n",
             claim->value_size);
         goto done;
     }
@@ -229,7 +229,7 @@ int verify_callback(int preverify_ok, X509_STORE_CTX* ctx)
 
     // convert a cert into a buffer in DER format
     der_len = i2d_X509(crt, nullptr);
-    buff = (unsigned char*)malloc(der_len);
+    buff = (unsigned char*)malloc((size_t)der_len);
     if (buff == nullptr)
     {
         printf(TLS_CLIENT "malloc failed (der_len=%d)\n", der_len);
@@ -257,7 +257,7 @@ int verify_callback(int preverify_ok, X509_STORE_CTX* ctx)
     // verify tls certificate
     oe_verifier_initialize();
     result = oe_verify_attestation_certificate_with_evidence(
-        der, der_len, enclave_claims_verifier, nullptr);
+        der, (size_t)der_len, enclave_claims_verifier, nullptr);
     if (result != OE_OK)
     {
         printf(TLS_CLIENT "result=%s\n", oe_result_str(result));

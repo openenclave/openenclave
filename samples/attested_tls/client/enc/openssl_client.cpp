@@ -39,7 +39,7 @@ int communicate_with_server(SSL* ssl)
     // Write an GET request to the server
     printf(TLS_CLIENT "-----> Write to server:\n");
     len = snprintf((char*)buf, sizeof(buf) - 1, CLIENT_PAYLOAD);
-    while ((bytes_written = SSL_write(ssl, buf, (size_t)len)) <= 0)
+    while ((bytes_written = SSL_write(ssl, buf, len)) <= 0)
     {
         error = SSL_get_error(ssl, bytes_written);
         if (error == SSL_ERROR_WANT_WRITE)
@@ -57,7 +57,7 @@ int communicate_with_server(SSL* ssl)
     {
         len = sizeof(buf) - 1;
         memset(buf, 0, sizeof(buf));
-        bytes_read = SSL_read(ssl, buf, (size_t)len);
+        bytes_read = SSL_read(ssl, buf, len);
         if (bytes_read <= 0)
         {
             int error = SSL_get_error(ssl, bytes_read);
@@ -71,8 +71,8 @@ int communicate_with_server(SSL* ssl)
 
         printf(TLS_CLIENT " %d bytes read\n", bytes_read);
         // check to to see if received payload is expected
-        if ((bytes_read != SERVER_PAYLOAD_SIZE) ||
-            (memcmp(SERVER_PAYLOAD, buf, bytes_read) != 0))
+        if (((size_t)bytes_read != SERVER_PAYLOAD_SIZE) ||
+            (memcmp(SERVER_PAYLOAD, buf, (size_t)bytes_read) != 0))
         {
             printf(
                 TLS_CLIENT "ERROR: expected reading %lu bytes but only "
@@ -99,8 +99,6 @@ done:
 int create_socket(char* server_name, char* server_port)
 {
     int sockfd = -1;
-    char* addr_ptr = nullptr;
-    int port = 0;
     struct addrinfo hints, *dest_info = nullptr, *curr_di = nullptr;
     int res;
 

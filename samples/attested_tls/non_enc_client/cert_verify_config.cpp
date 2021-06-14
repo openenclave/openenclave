@@ -12,7 +12,7 @@ oe_result_t verify_claim_value(const oe_claim_t* claim)
         if (SERVER_ENCLAVE_MRENCLAVE[i] != (uint8_t)claim->value[i])
         {
             printf(
-                TLS_ENCLAVE "\nunique_id[%lu] expected: 0x%0x  found: 0x%0x ",
+                TLS_ENCLAVE "\nunique_id[%zu] expected: 0x%0x  found: 0x%0x ",
                 i,
                 SERVER_ENCLAVE_MRENCLAVE[i],
                 (uint8_t)claim->value[i]);

@@ -30,7 +30,7 @@ static void _display_help(const char* command)
     printf(
         "\t1. %s: generate evidence, a report, or a certificate.\n",
         COMMAND_GENERATE_EVIDENCE);
-    printf("Options:\n\tType oetuil <command> --help for more information\n");
+    printf("Options:\n\tType oeutil <command> --help for more information\n");
 }
 
 static oeutil_command_t _get_oeutil_command(int argc, const char* argv[])

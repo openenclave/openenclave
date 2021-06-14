@@ -271,12 +271,6 @@ static void _display_help(const char* command)
         "\t\t%s: evidence in OE_FORMAT_UUID_SGX_ECDSA format.\n",
         INPUT_PARAM_OPTION_SGX_ECDSA);
     printf(
-        "\t\t%s: evidence in OE_FORMAT_UUID_SGX_EPID_LINKABLE format.\n",
-        INPUT_PARAM_OPTION_SGX_EPID_LINKABLE);
-    printf(
-        "\t\t%s: evidence in OE_FORMAT_UUID_SGX_EPID_UNLINKABLE format.\n",
-        INPUT_PARAM_OPTION_SGX_EPID_UNLINKABLE);
-    printf(
         "\t%s, %s <in|out>: use SGX in-process or out-of-process quoting.\n",
         SHORT_INPUT_PARAM_OPTION_QUOTE_PROC,
         INPUT_PARAM_OPTION_QUOTE_PROC);
@@ -293,8 +287,7 @@ static void _display_help(const char* command)
         INPUT_PARAM_OPTION_ENDORSEMENTS_FILENAME);
     printf(
         "\t%s, %s: verify the generated remote attestation certificate, "
-        "report, "
-        "or evidence in ECDSA format.\n",
+        "report, or evidence.\n",
         SHORT_INPUT_PARAM_OPTION_VERIFY,
         INPUT_PARAM_OPTION_VERIFY);
     printf(
@@ -1500,8 +1493,7 @@ int _parse_args(int argc, const char* argv[])
         1)
     {
         printf("Please specify to generate a certificate, a report, or "
-               "evidence in SGX_ECDSA, SGX_EPID_LINKABLE or "
-               "SGX_EPID_UNLINKABLE format.\n");
+               "evidence in SGX_ECDSA format.\n");
         return 1;
     }
 
