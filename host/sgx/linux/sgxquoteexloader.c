@@ -118,7 +118,7 @@ void oe_sgx_load_quote_ex_library(oe_sgx_quote_ex_library_t* library)
                 dlerror());
 
             library->handle = 0;
-            result = OE_NOT_FOUND;
+            result = OE_QUOTE_LIBRARY_LOAD_ERROR;
         }
     }
 
