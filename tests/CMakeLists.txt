@@ -161,6 +161,7 @@ if (UNIX
   add_subdirectory(c99_compliant)
   add_subdirectory(create-errors)
   add_subdirectory(crypto)
+  add_subdirectory(data_types)
   add_subdirectory(edl_opt_out)
   add_subdirectory(hexdump)
   add_subdirectory(hostcalls)
