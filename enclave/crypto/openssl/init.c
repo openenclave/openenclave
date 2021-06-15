@@ -7,6 +7,10 @@
 #include <openssl/engine.h>
 static oe_once_t _openssl_initialize_once;
 static ENGINE* eng;
+int is_symcrypt_engine_available = 0;
+
+/* Forward declaration */
+int SYMCRYPT_ENGINE_Initialize();
 
 static void _finalize(void)
 {
@@ -51,16 +55,45 @@ done:
     return;
 }
 
+static int _initialize_symcrypt_engine()
+{
+    int rc = 0;
+
+    /* The actual implementation of SYMCRYPT_ENGINE_Initialize
+     * always returns 1. */
+    if (SYMCRYPT_ENGINE_Initialize() != 1)
+        goto done;
+
+    rc = 1;
+
+    OE_TRACE_INFO("SymCrypt engine is registered");
+
+done:
+    return rc;
+}
+
 static void _initialize(void)
 {
-    /*
-     * OpenSSL in the enclave requires us to explicitly register the RDRAND
-     * engine.
+    /* _initialize_symcrypt_engine only registers the SymCrypt engine and
+     * returns 1 if the enclave opts into the engine at link-time. Otherwise,
+     * the weak implementation of the function is used, which always returns 0.
      */
-    _initialize_rdrand_engine();
+    is_symcrypt_engine_available = _initialize_symcrypt_engine();
+
+    if (!is_symcrypt_engine_available)
+    {
+        /* Explicitly register the RDRAND engine if the SymCrypt engine
+         * is not available, which provides its own RAND implementation. */
+        _initialize_rdrand_engine();
+    }
 }
 
 void oe_crypto_initialize(void)
 {
     oe_once(&_openssl_initialize_once, _initialize);
+}
+
+int oe_is_symcrypt_engine_available()
+{
+    return is_symcrypt_engine_available;
 }
