@@ -1,0 +1,12 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave {
+    from "openenclave/edl/logging.edl" import *; // Support OE_TEST and oe_host_printf
+    from "openenclave/edl/fcntl.edl" import *; // Support code coverage analysis
+    from "openenclave/edl/sgx/platform.edl" import *;
+
+    trusted {
+        public void ecall_test();
+    };
+};

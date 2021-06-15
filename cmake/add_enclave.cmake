@@ -204,7 +204,7 @@ function (add_enclave_sgx)
   elseif (ENCLAVE_CRYPTO_LIB_LOWER STREQUAL "openssl")
     enclave_link_libraries(${ENCLAVE_TARGET} oecryptoopenssl)
   else ()
-    message(FATAL_ERROR "Unsupported crypto library ${ENCLAVE_CRYPTO_LIB}.")
+    message(WARNING "Unsupported crypto library ${ENCLAVE_CRYPTO_LIB}.")
   endif ()
 
   if (ENCLAVE_CXX)

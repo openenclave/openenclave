@@ -153,6 +153,7 @@ if (UNIX
     endif ()
 
     if (BUILD_OPENSSL)
+      add_subdirectory(symcrypt_engine)
       add_subdirectory(openssl)
       add_subdirectory(openssl_unsupported)
     endif ()
