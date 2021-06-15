@@ -56,5 +56,15 @@ if (BUILD_TYPE_UPPER STREQUAL "DEBUG" OR BUILD_TYPE_UPPER STREQUAL
         --return-child-result # This fails the test in case of any error.
         -arg host/module_loading_host enc/module_loading_enc)
 
+    add_test(
+      NAME oelldb-multi-module-test
+      COMMAND
+        ${OE_BINDIR}/oelldb -o
+        "command script import ${CMAKE_CURRENT_SOURCE_DIR}/commands.py" -o
+        "quit" -- host/module_loading_host enc/module_loading_enc)
+
+    set_tests_properties(
+      oelldb-multi-module-test PROPERTIES PASS_REGULAR_EXPRESSION
+                                          "oelldb-multi-module-test passed")
   endif ()
 endif ()
