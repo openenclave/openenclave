@@ -44,7 +44,7 @@ typedef struct _oe_pthread_mutexattr
 
 typedef struct _oe_pthread_mutex
 {
-    uint64_t __private[4];
+    uint64_t __private[5];
 } oe_pthread_mutex_t;
 
 typedef struct _oe_pthread_condattr
@@ -54,7 +54,7 @@ typedef struct _oe_pthread_condattr
 
 typedef struct _oe_pthread_cond
 {
-    uint64_t __private[4];
+    uint64_t __private[6];
 } oe_pthread_cond_t;
 
 typedef struct _oe_pthread_rwlockattr
@@ -64,7 +64,7 @@ typedef struct _oe_pthread_rwlockattr
 
 typedef struct _oe_pthread_rwlock
 {
-    uint64_t __private[5];
+    uint64_t __private[7];
 } oe_pthread_rwlock_t;
 
 oe_pthread_t oe_pthread_self(void);
