@@ -10,6 +10,7 @@
 int square(volatile int a);
 __attribute__((weak)) int add_with_constant(volatile int a, volatile int b);
 __attribute__((weak)) int sub(int a, int b);
+int test_libc_symbols();
 
 int is_enclave_init;
 
@@ -41,6 +42,8 @@ void enc_module_test()
 
     OE_TEST(is_enclave_init == 1);
     OE_TEST(is_module_init == 1);
+
+    OE_TEST(test_libc_symbols() == 1);
 }
 
 OE_SET_ENCLAVE_SGX(

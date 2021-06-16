@@ -193,13 +193,19 @@ list(APPEND NEEDS_STDC_NAMES ${MUSL_SRC_DIR}/prng/rand.c
 
 list(APPEND W_NO_CONVERSION ${MUSL_SRC_DIR}/prng/rand.c)
 
-set_property(SOURCE ${W_NO_CONVERSION} APPEND_STRING PROPERTY COMPILE_FLAGS
-                                                              "-Wno-conversion")
+set_property(
+  SOURCE ${W_NO_CONVERSION}
+  APPEND_STRING
+  PROPERTY COMPILE_FLAGS "-Wno-conversion")
 
-set_property(SOURCE ${NEEDS_STDC_NAMES} APPEND_STRING
-             PROPERTY COMPILE_FLAGS " -I${CORELIBC_INCLUDES}")
-set_property(SOURCE ${NEEDS_STDC_NAMES} APPEND PROPERTY COMPILE_DEFINITIONS
-                                                        OE_NEED_STDC_NAMES)
+set_property(
+  SOURCE ${NEEDS_STDC_NAMES}
+  APPEND_STRING
+  PROPERTY COMPILE_FLAGS " -I${CORELIBC_INCLUDES}")
+set_property(
+  SOURCE ${NEEDS_STDC_NAMES}
+  APPEND
+  PROPERTY COMPILE_DEFINITIONS OE_NEED_STDC_NAMES)
 
 maybe_build_using_clangw(oecore)
 
@@ -279,6 +285,21 @@ if (OE_SGX)
     -fno-builtin>)
 elseif (OE_TRUSTZONE)
   enclave_compile_options(oecore PUBLIC -fvisibility=hidden ${OE_TZ_TA_C_FLAGS})
+endif ()
+
+if (OE_SGX)
+  list(
+    APPEND
+    DEFAULT_VISIBILITY
+    ${MUSL_SRC_DIR}/sting/memcmp.c
+    ${MUSL_SRC_DIR}/string/x86_64/memcpy.s
+    ${MUSL_SRC_DIR}/string/x86_64/memmove.s
+    ${MUSL_SRC_DIR}/string/x86_64/memset.s)
+
+  set_property(
+    SOURCE ${DEFAULT_VISIBILITY}
+    APPEND_STRING
+    PROPERTY COMPILE_FLAGS " -fvisibility=default")
 endif ()
 
 enclave_compile_options(oecore INTERFACE $<$<COMPILE_LANGUAGE:CXX>:-nostdinc++>)
