@@ -30,39 +30,61 @@ int cert_verify_callback(
 {
     oe_result_t result = OE_FAILURE;
     int ret = 1;
-    unsigned char* cert_buf = NULL;
-    size_t cert_size = 0;
+    unsigned char* certificate_buffer = nullptr;
+    size_t certificate_buffer_size = 0;
+    oe_claim_t* claims = nullptr;
+    size_t claims_length = 0;
 
     (void)data;
 
     printf(TLS_ENCLAVE "Received TLS certificate\n");
     printf(TLS_ENCLAVE "cert_verify_callback with depth = %d\n", depth);
 
-    cert_buf = crt->raw.p;
-    cert_size = crt->raw.len;
+    certificate_buffer = crt->raw.p;
+    certificate_buffer_size = crt->raw.len;
 
     printf(
-        TLS_ENCLAVE "crt->version = %d cert_size = %zu\n",
+        TLS_ENCLAVE "crt->version = %d certificate_buffer_size = %zu\n",
         crt->version,
-        cert_size);
+        certificate_buffer_size);
 
-    if (cert_size <= 0)
+    if (certificate_buffer_size <= 0)
         goto exit;
 
-    result = oe_verify_attestation_certificate_with_evidence(
-        cert_buf, cert_size, claims_verifier_callback, NULL);
+    result = oe_verify_attestation_certificate_with_evidence_v2(
+        certificate_buffer,
+        certificate_buffer_size,
+        nullptr,
+        0,
+        nullptr,
+        0,
+        &claims,
+        &claims_length);
+
     if (result != OE_OK)
     {
         printf(
             TLS_ENCLAVE
-            "oe_verify_attestation_certificate_with_evidence failed "
+            "oe_verify_attestation_certificate_with_evidence_v2 failed "
             "with result = %s\n",
             oe_result_str(result));
         goto exit;
     }
+
+    result = claims_verifier_callback(claims, claims_length, nullptr);
+
+    if (result != OE_OK)
+    {
+        printf(
+            TLS_ENCLAVE "claims_verifier_callback failed with result = %s\n",
+            oe_result_str(result));
+        goto exit;
+    }
+
     ret = 0;
     *flags = 0;
 
 exit:
+    oe_free_claims(claims, claims_length);
     return ret;
 }

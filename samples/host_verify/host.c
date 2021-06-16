@@ -245,17 +245,33 @@ oe_result_t verify_cert(const char* filename)
     size_t endorsements_buffer_size = 0;
     oe_policy_t* policies = NULL;
     size_t policies_size = 0;
+    oe_claim_t* claims = NULL;
+    size_t claims_length = 0;
 
     if (read_binary_file(filename, &cert_data, &cert_file_size))
     {
-        result = oe_verify_attestation_certificate_with_evidence(
-            cert_data, cert_file_size, enclave_claims_verifier, NULL);
+        result = oe_verify_attestation_certificate_with_evidence_v2(
+            cert_data,
+            cert_file_size,
+            endorsements_buffer,
+            endorsements_buffer_size,
+            policies,
+            policies_size,
+            &claims,
+            &claims_length);
+
+        if (result == OE_OK)
+        {
+            result = enclave_claims_verifier(claims, claims_length, NULL);
+        }
     }
 
     if (cert_data != NULL)
     {
         free(cert_data);
     }
+
+    oe_free_claims(claims, claims_length);
 
     return result;
 }
