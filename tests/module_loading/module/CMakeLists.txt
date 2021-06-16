@@ -47,6 +47,10 @@ enclave_compile_options(
   -fno-builtin-calloc
   -fno-builtin>)
 
+add_enclave_dependencies(module oelibc_includes)
+
+enclave_include_directories(module PRIVATE ${OE_INCDIR}/openenclave/libc)
+
 enclave_link_libraries(
   module
   PRIVATE
