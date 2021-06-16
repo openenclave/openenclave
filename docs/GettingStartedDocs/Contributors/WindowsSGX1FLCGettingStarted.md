@@ -122,7 +122,7 @@ Similarly, to build release enclaves, specify the flag
 cd C:/Users/test/openenclave
 mkdir build/x64-Release
 cd build/x64-Release
-cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCMAKE_INSTALL_PREFIX=C:/openenclave ../..
+cmake -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCMAKE_INSTALL_PREFIX=C:/openenclave ../..
 ninja
 ```
 
