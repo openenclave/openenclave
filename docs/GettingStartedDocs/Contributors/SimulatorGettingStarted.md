@@ -4,7 +4,6 @@
 
 - Ubuntu 18.04-LTS or Ubuntu 20.04 64-bit.
 - A machine with an Intel processor
-- For RHEL8 support, please see [ExperimentalSupportRHEL8.md](ExperimentalSupportRHEL8.md).
 
 ## Clone Open Enclave SDK repo from GitHub
 

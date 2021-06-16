@@ -42,9 +42,6 @@ On Ubuntu 18.04 or Ubuntu 20.04
   - [Set up Open Enclave SDK for SGX1](SGX1GettingStarted.md)
   - [Set up Open Enclave SDK for simulation mode](SimulatorGettingStarted.md)
 
-On RHEL8
- - [Set up Open Enclave SDK on RHEL8](ExperimentalSupportRHEL8.md)
-
 On Windows
  - [Set up Open Enclave SDK for SGX1+FLC](WindowsSGX1FLCGettingStarted.md)
  - [Set up Open Enclave SDK for SGX1](WindowsSGX1GettingStarted.md)
