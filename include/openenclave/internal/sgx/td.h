@@ -81,7 +81,7 @@ oe_thread_data_t* oe_get_thread_data(void);
  * Due to the inability to use OE_OFFSETOF on a struct while defining its
  * members, this value is computed and hard-coded.
  */
-#define OE_THREAD_SPECIFIC_DATA_SIZE (3744)
+#define OE_THREAD_SPECIFIC_DATA_SIZE (3732)
 
 typedef struct _oe_callsite oe_callsite_t;
 
@@ -162,6 +162,14 @@ typedef struct _td
     /* TLS atexit functions (see enclave/core/sgx/threadlocal.c) */
     oe_tls_atexit_t* tls_atexit_functions;
     uint64_t num_tls_atexit_functions;
+
+    /* The following information is only available for SGX2 and MISCSELECT is
+     * set to 1 */
+    /* The faulting address associated with the PF exception. Should be zero
+     * for other exception types. */
+    uint64_t faulting_address;
+    /* The error code for PF and GP exceptions. */
+    uint32_t error_code;
 
     /* Reserved for thread specific data. */
     uint8_t thread_specific_data[OE_THREAD_SPECIFIC_DATA_SIZE];

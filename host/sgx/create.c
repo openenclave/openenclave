@@ -35,8 +35,8 @@ static char* get_fullpath(const char* path)
 #include <assert.h>
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/eeid.h>
-#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/bits/sgx/sgxextra.h>
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/constants_x64.h>
@@ -98,13 +98,22 @@ static bool _is_kss_supported()
     eax = ebx = ecx = edx = 0;
 
     // Obtain feature information using CPUID
-    oe_get_cpuid(0x12, 0x1, &eax, &ebx, &ecx, &edx);
+    oe_get_cpuid(CPUID_SGX_LEAF, 0x1, &eax, &ebx, &ecx, &edx);
 
     // Check if KSS (bit 7) is supported by the processor
-    if (!(eax & (1 << 7)))
-        return false;
-    else
-        return true;
+    return (eax & CPUID_SGX_KSS_MASK);
+}
+
+static bool _is_misc_region_supported()
+{
+    uint32_t eax, ebx, ecx, edx;
+    eax = ebx = ecx = edx = 0;
+
+    // Obtain feature information using CPUID
+    oe_get_cpuid(CPUID_SGX_LEAF, 0x0, &eax, &ebx, &ecx, &edx);
+
+    // Check if EXINFO is supported by the processor
+    return (ebx & CPUID_SGX_MISC_EXINFO_MASK);
 }
 
 static oe_result_t _add_filled_pages(
@@ -317,8 +326,7 @@ typedef struct oe_load_extra_enclave_data_hook_arg
     uint64_t enclave_addr;
     uint64_t base_vaddr;
     uint64_t vaddr;
-}
-oe_load_extra_enclave_data_hook_arg_t;
+} oe_load_extra_enclave_data_hook_arg_t;
 
 /* This weak form may be overriden by the enclave application */
 OE_WEAK
@@ -392,8 +400,7 @@ static oe_result_t _calculate_enclave_size(
 
     /* Calculate the total size of the extra enclave data (if any) */
     {
-        oe_load_extra_enclave_data_hook_arg_t arg =
-        {
+        oe_load_extra_enclave_data_hook_arg_t arg = {
             .magic = OE_LOAD_EXTRA_ENCLAVE_DATA_HOOK_ARG_MAGIC,
             .sgx_load_context = NULL,
             .enclave_addr = 0,
@@ -801,6 +808,7 @@ static oe_result_t _eeid_resign(
             properties->config.attributes,
             properties->config.product_id,
             properties->config.security_version,
+            &properties->config.flags,
             OE_DEBUG_SIGN_KEY,
             OE_DEBUG_SIGN_KEY_SIZE,
             properties->config.family_id,
@@ -925,6 +933,10 @@ oe_result_t oe_sgx_build_enclave(
     if (!enclave->debug && oe_sgx_is_debug_auto_load_context(context))
         enclave->debug = props.config.attributes & OE_SGX_FLAGS_DEBUG;
 
+    /* Update the flag in the context to ensure the flag will be set in SECS */
+    if (enclave->debug)
+        context->attributes.flags |= OE_ENCLAVE_FLAG_DEBUG;
+
     /* Consolidate enclave-debug-flag with create-debug-flag */
     if (props.config.attributes & OE_SGX_FLAGS_DEBUG)
     {
@@ -964,6 +976,14 @@ oe_result_t oe_sgx_build_enclave(
         &loaded_enclave_pages_size,
         &enclave_size,
         &extra_size));
+
+    /* Check if the enclave is configured with CapturePFGPExceptions=1 */
+    if (props.config.flags.capture_pf_gp_exceptions)
+    {
+        /* Only opt into the feature if CPU (SGX2) supports the MISC region. */
+        if (_is_misc_region_supported())
+            context->capture_pf_gp_exceptions_enabled = 1;
+    }
 
     if (props.config.attributes & OE_SGX_FLAGS_KSS)
     {
@@ -1015,8 +1035,7 @@ oe_result_t oe_sgx_build_enclave(
 
     /* Add any extra data to the enclave */
     {
-        oe_load_extra_enclave_data_hook_arg_t arg =
-        {
+        oe_load_extra_enclave_data_hook_arg_t arg = {
             .magic = OE_LOAD_EXTRA_ENCLAVE_DATA_HOOK_ARG_MAGIC,
             .sgx_load_context = context,
             .enclave_addr = enclave_addr,

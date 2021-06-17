@@ -70,6 +70,8 @@ struct _oe_sgx_load_context
 
     const oe_config_data_t* config_data;
     bool use_config_id;
+
+    bool capture_pf_gp_exceptions_enabled;
 };
 
 oe_result_t oe_sgx_initialize_load_context(

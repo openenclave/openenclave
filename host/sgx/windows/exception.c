@@ -66,6 +66,8 @@ _host_exception_handler(struct _EXCEPTION_POINTERS* exception_pointers)
     host_context.rax = (uint64_t)context->Rax;
     host_context.rbx = (uint64_t)context->Rbx;
     host_context.rip = (uint64_t)context->Rip;
+    /* The support for the #PF simulation is for Linux only */
+    host_context.faulting_address = 0;
 
     // Call platform neutral handler.
     uint64_t action = oe_host_handle_exception(&host_context);
