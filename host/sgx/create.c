@@ -35,8 +35,8 @@ static char* get_fullpath(const char* path)
 #include <assert.h>
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/eeid.h>
-#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/bits/sgx/sgxextra.h>
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/constants_x64.h>
@@ -326,8 +326,7 @@ typedef struct oe_load_extra_enclave_data_hook_arg
     uint64_t enclave_addr;
     uint64_t base_vaddr;
     uint64_t vaddr;
-}
-oe_load_extra_enclave_data_hook_arg_t;
+} oe_load_extra_enclave_data_hook_arg_t;
 
 /* This weak form may be overriden by the enclave application */
 OE_WEAK
@@ -401,8 +400,7 @@ static oe_result_t _calculate_enclave_size(
 
     /* Calculate the total size of the extra enclave data (if any) */
     {
-        oe_load_extra_enclave_data_hook_arg_t arg =
-        {
+        oe_load_extra_enclave_data_hook_arg_t arg = {
             .magic = OE_LOAD_EXTRA_ENCLAVE_DATA_HOOK_ARG_MAGIC,
             .sgx_load_context = NULL,
             .enclave_addr = 0,
@@ -1035,8 +1033,7 @@ oe_result_t oe_sgx_build_enclave(
 
     /* Add any extra data to the enclave */
     {
-        oe_load_extra_enclave_data_hook_arg_t arg =
-        {
+        oe_load_extra_enclave_data_hook_arg_t arg = {
             .magic = OE_LOAD_EXTRA_ENCLAVE_DATA_HOOK_ARG_MAGIC,
             .sgx_load_context = context,
             .enclave_addr = enclave_addr,

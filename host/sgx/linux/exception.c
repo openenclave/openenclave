@@ -37,6 +37,9 @@ static void _host_signal_handler(
     host_context.rax = (uint64_t)context->uc_mcontext.gregs[REG_RAX];
     host_context.rbx = (uint64_t)context->uc_mcontext.gregs[REG_RBX];
     host_context.rip = (uint64_t)context->uc_mcontext.gregs[REG_RIP];
+    /* si_addr (same as CR2) will have lower 12 bits cleared by the
+     * SGX hardware for an enclave faulting access. */
+    host_context.faulting_address = (uint64_t)sig_info->si_addr;
 
     // Call platform neutral handler.
     uint64_t action = oe_host_handle_exception(&host_context);
