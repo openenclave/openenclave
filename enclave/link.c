@@ -8,6 +8,9 @@
 #include <openenclave/internal/malloc.h>
 #include "core_t.h"
 
+/* Forward declarartion */
+int SYMCRYPT_ENGINE_Initialize();
+
 //
 // start.S (the compilation unit containing the entry point) contains a
 // reference to this function, which sets up a dependency chain from the
@@ -24,12 +27,14 @@ const void* oe_link_enclave(void)
         oe_verify_report_ecall,
         oe_get_public_key_by_policy_ecall,
         oe_get_public_key_ecall,
-        // Specify oe_allocator_malloc so that there is a direct link from
-        // enclave entry-point to pluggable allocator functions. This will
-        // cause the first definitions of these functions to be picked up.
+        /* Specify the following functions so that there are direct links from
+         * enclave entry-point to these functions. This will cause the first
+         * definitions of these functions to be picked up, which allow for
+         * (weak) symbol overwritten */
         oe_allocator_malloc,
         oe_debug_malloc_tracking_start,
         oe_crypto_initialize,
+        SYMCRYPT_ENGINE_Initialize,
 #if defined(OE_USE_DEBUG_MALLOC)
         oe_debug_malloc_check,
 #endif /* defined(OE_USE_DEBUG_MALLOC) */
