@@ -3,7 +3,6 @@
 ## Platform requirements
 
 - Ubuntu 18.04-LTS or Ubuntu 20.04-LTS 64-bit.
-- For RHEL8 support, please see [ExperimentalSupportRHEL8.md](ExperimentalSupportRHEL8.md).
 - SGX1 capable system. Most likely this will be an Intel SkyLake or Intel KabyLake system
 
 ## Clone Open Enclave SDK repo from GitHub
