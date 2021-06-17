@@ -37,6 +37,10 @@ static void _host_signal_handler(
     host_context.rax = (uint64_t)context->uc_mcontext.gregs[REG_RAX];
     host_context.rbx = (uint64_t)context->uc_mcontext.gregs[REG_RBX];
     host_context.rip = (uint64_t)context->uc_mcontext.gregs[REG_RIP];
+    /* ATTN: si_addr (same as CR2) is always zero for an SIGSEGV fault
+     * occurs inside an enclave if the faulting address is outside of the
+     * enclave memory range. */
+    host_context.faulting_address = (uint64_t)sig_info->si_addr;
 
     // Call platform neutral handler.
     uint64_t action = oe_host_handle_exception(&host_context);

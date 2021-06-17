@@ -34,13 +34,18 @@ typedef struct _oe_sgx_enclave_image_info_t
 #define OE_SGX_FLAGS_KSS 0x0000000000000080ULL
 #define OE_SGX_SIGSTRUCT_SIZE 1808
 
+typedef struct _oe_sgx_enclave_flags_t
+{
+    uint32_t capture_pf_gp_exceptions : 1;
+    uint32_t reserved : 31;
+} oe_sgx_enclave_flags_t;
+
 typedef struct oe_sgx_enclave_config_t
 {
     uint16_t product_id;
     uint16_t security_version;
 
-    /* Padding to make packed and unpacked size the same */
-    uint32_t padding;
+    oe_sgx_enclave_flags_t flags;
 
     uint8_t family_id[16];
     uint8_t extended_product_id[16];
@@ -99,7 +104,10 @@ typedef struct _oe_sgx_enclave_properties
  * @param[in] ALLOW_DEBUG If true, allows the enclave to be created with
  * OE_ENCLAVE_FLAG_DEBUG and debugged at runtime
  * @param[in] REQUIRE_KSS If true, allows the enclave to be created with
- * kss properties
+ * KSS properties
+ * @param[in] CAPTURE_PF_GP_EXCEPTIONS If true, allows the enclave to capture
+ * #PF and #GP exceptions if the CPU supports the feature. The setting is
+ * ignored otherwise
  * @param[in] HEAP_PAGE_COUNT Number of heap pages to allocate in the enclave
  * @param[in] STACK_PAGE_COUNT Number of stack pages per thread to reserve in
  * the enclave
@@ -114,7 +122,8 @@ typedef struct _oe_sgx_enclave_properties
     EXTENDED_PRODUCT_ID,                                                  \
     FAMILY_ID,                                                            \
     ALLOW_DEBUG,                                                          \
-    REQUIRE_KSS,                                                            \
+    REQUIRE_KSS,                                                          \
+    CAPTURE_PF_GP_EXCEPTIONS,                                             \
     HEAP_PAGE_COUNT,                                                      \
     STACK_PAGE_COUNT,                                                     \
     TCS_COUNT)                                                            \
@@ -136,7 +145,8 @@ typedef struct _oe_sgx_enclave_properties
         {                                                                 \
             .product_id = PRODUCT_ID,                                     \
             .security_version = SECURITY_VERSION,                         \
-            .padding = 0,                                                 \
+            .flags.capture_pf_gp_exceptions = CAPTURE_PF_GP_EXCEPTIONS,   \
+            .flags.reserved = 0,                                          \
             .family_id = FAMILY_ID,                                       \
             .extended_product_id = EXTENDED_PRODUCT_ID,                   \
             .attributes = OE_MAKE_ATTRIBUTES(ALLOW_DEBUG, REQUIRE_KSS)    \
@@ -184,6 +194,7 @@ typedef struct _oe_sgx_enclave_properties
     {0},                                                                  \
     ALLOW_DEBUG,                                                          \
     false,                                                                \
+    0,                                                                    \
     HEAP_PAGE_COUNT,                                                      \
     STACK_PAGE_COUNT,                                                     \
     TCS_COUNT)
@@ -223,6 +234,57 @@ typedef struct _oe_sgx_enclave_properties
     FAMILY_ID,                                                            \
     ALLOW_DEBUG,                                                          \
     true,                                                                 \
+    0,                                                                    \
+    HEAP_PAGE_COUNT,                                                      \
+    STACK_PAGE_COUNT,                                                     \
+    TCS_COUNT)
+
+/**
+ * Defines the SGX2 properties for an enclave
+ *
+ * The enclave properties should only be defined once for all code compiled into
+ * an enclave binary. These properties can be overwritten at sign time by
+ * the oesign tool.
+ *
+ * @param[in] PRODUCT_ID ISV assigned Product ID (ISVPRODID) to use in the
+ * enclave signature
+ * @param[in] SECURITY_VERSION ISV assigned Security Version number (ISVSVN)
+ * to use in the enclave signature
+ * @param[in] EXTENDED_PRODUCT_ID ISV assigned Extended Product ID (ISVEXTPRODID)
+ *  to use in the enclave signature (SGX2 feature)
+ * @param[in] FAMILY_ID ISV assigned Product Family ID (ISVFAMILYID)
+ * to use in the enclave signature (SGX2 feature)
+ * @param[in] ALLOW_DEBUG If true, allows the enclave to be created with
+ * OE_ENCLAVE_FLAG_DEBUG and debugged at runtime
+ * @param[in] REQUIRE_KSS If true, allows the enclave to be created with
+ * KSS properties (SGX2 feature)
+ * @param[in] CAPTURE_PF_GP_EXCEPTIONS If true, allows the enclave to capture
+ * #PF and #GP exceptions if the CPU supports the feature. The setting is
+ * ignored otherwise (SGX2 feature)
+ * @param[in] HEAP_PAGE_COUNT Number of heap pages to allocate in the enclave
+ * @param[in] STACK_PAGE_COUNT Number of stack pages per thread to reserve in
+ * the enclave
+ * @param[in] TCS_COUNT Number of concurrent threads in an enclave to support
+ */
+ #define OE_SET_ENCLAVE_SGX2(                                             \
+    PRODUCT_ID,                                                           \
+    SECURITY_VERSION,                                                     \
+    EXTENDED_PRODUCT_ID,                                                  \
+    FAMILY_ID,                                                            \
+    ALLOW_DEBUG,                                                          \
+    CAPTURE_PF_GP_EXCEPTIONS,                                             \
+    REQUIRE_KSS,                                                          \
+    HEAP_PAGE_COUNT,                                                      \
+    STACK_PAGE_COUNT,                                                     \
+    TCS_COUNT)                                                            \
+ _OE_SET_ENCLAVE_SGX_IMPL(                                                \
+    PRODUCT_ID,                                                           \
+    SECURITY_VERSION,                                                     \
+    EXTENDED_PRODUCT_ID,                                                  \
+    FAMILY_ID,                                                            \
+    ALLOW_DEBUG,                                                          \
+    REQUIRE_KSS,                                                          \
+    CAPTURE_PF_GP_EXCEPTIONS,                                             \
     HEAP_PAGE_COUNT,                                                      \
     STACK_PAGE_COUNT,                                                     \
     TCS_COUNT)

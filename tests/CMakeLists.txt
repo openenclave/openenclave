@@ -112,6 +112,7 @@ if (UNIX
     add_subdirectory(module_loading)
     add_subdirectory(ocall-create)
     add_subdirectory(oeedger8r)
+    add_subdirectory(pf_gp_exceptions)
     add_subdirectory(print)
     add_subdirectory(props)
     add_subdirectory(qeidentity)

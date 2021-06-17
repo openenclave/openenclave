@@ -3,16 +3,17 @@
 
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/cpuid.h>
-#include <openenclave/internal/sgx/td.h>
-#include <openenclave/internal/thread.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/constants_x64.h>
+#include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/fault.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/jump.h>
 #include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/sgx/td.h>
+#include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
+#include "../tracee.h"
 #include "asmdefs.h"
 #include "context.h"
 #include "cpuid.h"
@@ -318,6 +319,8 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
     oe_exception_record.code = td->exception_code;
     oe_exception_record.flags = td->exception_flags;
     oe_exception_record.address = td->exception_address;
+    oe_exception_record.faulting_address = td->faulting_address;
+    oe_exception_record.error_code = td->error_code;
     oe_exception_record.context = oe_context;
 
     // Refer to oe_enter in host/sgx/enter.c. The contract we defined for EENTER
@@ -340,6 +343,13 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
             break;
         }
     }
+
+    // Clear information after all the handlers are done
+    td->exception_code = 0;
+    td->exception_flags = 0;
+    td->exception_address = 0;
+    td->faulting_address = 0;
+    td->error_code = 0;
 
     // Jump to the point where oe_context refers to and continue.
     if (handler_ret == OE_EXCEPTION_CONTINUE_EXECUTION)
@@ -385,20 +395,24 @@ void oe_virtual_exception_dispatcher(
         *arg_out = OE_EXCEPTION_CONTINUE_SEARCH;
         return;
     }
-    sgx_ssa_gpr_t* ssa_gpr =
-        (sgx_ssa_gpr_t*)(((uint8_t*)ssa_info.base_address) + ssa_info.frame_byte_size - OE_SGX_GPR_BYTE_SIZE);
+    uint64_t gprsgx_offset = (uint64_t)ssa_info.base_address +
+                             ssa_info.frame_byte_size - OE_SGX_GPR_BYTE_SIZE;
+    sgx_ssa_gpr_t* ssa_gpr = (sgx_ssa_gpr_t*)gprsgx_offset;
+    bool is_exit_info_valid = ssa_gpr->exit_info.as_fields.valid;
 
-    if (!ssa_gpr->exit_info.as_fields.valid)
+    if (!is_exit_info_valid)
     {
-        // Consider manually provided exception information for SGX1
-        if (oe_exception_record)
+        // Only allow the simulated #PF in debug mode
+        if (is_enclave_debug_allowed() && oe_exception_record)
         {
             td->exception_address = ssa_gpr->rip;
 
-            /* TODO PRP: We need to read the exception information from
-             * oe_exception_record instead */
             td->exception_code = OE_EXCEPTION_PAGE_FAULT;
             td->exception_flags |= OE_EXCEPTION_FLAGS_HARDWARE;
+
+            /* We expect the host to pass in the faulting address of #PF */
+            td->faulting_address = oe_exception_record->faulting_address;
+            td->error_code = OE_SGX_PAGE_FAULT_US_FLAG;
         }
         else
         {
@@ -446,6 +460,17 @@ void oe_virtual_exception_dispatcher(
     }
     else
     {
+        /* The following codes can only be captured with SGX2 and the
+         * MISCSELECT[0] bit is set to 1. */
+        if (is_exit_info_valid &&
+            (td->exception_code == OE_EXCEPTION_PAGE_FAULT ||
+             td->exception_code == OE_EXCEPTION_ACCESS_VIOLATION))
+        {
+            sgx_exinfo_t* exinfo =
+                (sgx_exinfo_t*)(gprsgx_offset - OE_SGX_MISC_BYTE_SIZE);
+            td->faulting_address = exinfo->maddr;
+            td->error_code = exinfo->errcd;
+        }
         // Modify the ssa_gpr so that e_resume will go to second pass exception
         // handler.
         ssa_gpr->rip = (uint64_t)oe_exception_dispatcher;
@@ -458,40 +483,5 @@ void oe_virtual_exception_dispatcher(
     // Acknowledge this exception is an enclave exception, host should let keep
     // running, and let enclave handle the exception.
     *arg_out = OE_EXCEPTION_CONTINUE_EXECUTION;
-    return;
-}
-
-/*
-**==============================================================================
-**
-** void oe_cleanup_xstates(void)
-**
-**  Cleanup all XSTATE registers that include both legacy registers and extended
-**  registers.
-**
-**==============================================================================
-*/
-
-void oe_cleanup_xstates(void)
-{
-    // Temporary workaround for #144 xrstor64 fault with optimized builds as
-    // reserved guard pages
-    // are incorrectly accessed. Xsave area is increased from 0x240 to 0x1000.
-    // Making these static
-    OE_ALIGNED(OE_XSAVE_ALIGNMENT)
-    static uint8_t
-        xsave_area[OE_MINIMAL_XSTATE_AREA_SIZE]; //#144 Making this static
-//__builtin_ia32_xrstor64 has different argument types in clang and gcc
-#ifdef __clang__
-    uint64_t restore_mask = ~((uint64_t)0x0);
-#else
-    int64_t restore_mask = ~(0x0);
-#endif
-
-    // The legacy registers(F87, SSE) values will be loaded from the
-    // LEGACY_XSAVE_AREA that at beginning of xsave_area.The extended registers
-    // will be initialized to their default values.
-    __builtin_ia32_xrstor64(xsave_area, restore_mask);
-
     return;
 }
