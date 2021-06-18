@@ -262,6 +262,62 @@ static int _emulate_wrfsbase(sgx_ssa_gpr_t* ssa_gpr)
     return -1;
 }
 
+static int _emulate_rdfsbase(sgx_ssa_gpr_t* ssa_gpr)
+{
+    // Emulate rdfsbase
+    const uint32_t OE_RDFSBASE_PREFIX_1 = 0xae0f48f3;
+    if (*((uint32_t*)ssa_gpr->rip) == OE_RDFSBASE_PREFIX_1)
+    {
+        uint64_t* regs[] = {
+            &ssa_gpr->rax, // c0
+            &ssa_gpr->rcx, // c1
+            &ssa_gpr->rdx, // c2
+            &ssa_gpr->rbx, // c3
+            &ssa_gpr->rsp, // c4
+            &ssa_gpr->rbp, // c5
+            &ssa_gpr->rsi, // c6
+            &ssa_gpr->rdi, // c7
+        };
+
+        uint8_t last_byte = ((uint8_t*)ssa_gpr->rip)[4];
+        uint8_t idx = (uint8_t)(last_byte - 0xc0);
+        if (idx >= sizeof(regs) / sizeof(regs[0]))
+            return -1;
+
+        *regs[idx] = ssa_gpr->fs_base;
+        ssa_gpr->rip += 5;
+
+        return 0;
+    }
+
+    // Emulate rdfsbase
+    const uint32_t OE_RDFSBASE_PREFIX_2 = 0xae0f49f3;
+    if (*((uint32_t*)ssa_gpr->rip) == OE_RDFSBASE_PREFIX_2)
+    {
+        uint64_t* regs[] = {
+            &ssa_gpr->r8,  // c0
+            &ssa_gpr->r9,  // c1
+            &ssa_gpr->r10, // c2
+            &ssa_gpr->r11, // c3
+            &ssa_gpr->r12, // c4
+            &ssa_gpr->r13, // c5
+            &ssa_gpr->r14, // c6
+            &ssa_gpr->r15, // c7
+        };
+
+        uint8_t last_byte = ((uint8_t*)ssa_gpr->rip)[4];
+        uint8_t idx = (uint8_t)(last_byte - 0xc0);
+        if (idx >= sizeof(regs) / sizeof(regs[0]))
+            return -1;
+
+        *regs[idx] = ssa_gpr->fs_base;
+        ssa_gpr->rip += 5;
+        return 0;
+    }
+
+    return -1;
+}
+
 /*
 **==============================================================================
 **
@@ -285,6 +341,9 @@ int _emulate_illegal_instruction(sgx_ssa_gpr_t* ssa_gpr)
     }
 
     if (_emulate_wrfsbase(ssa_gpr) == 0)
+        return 0;
+
+    if (_emulate_rdfsbase(ssa_gpr) == 0)
         return 0;
 
     return -1;
