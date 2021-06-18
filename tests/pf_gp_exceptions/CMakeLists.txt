@@ -8,7 +8,7 @@ if (BUILD_ENCLAVES)
 endif ()
 
 add_enclave_test(tests/pf_gp_exceptions pf_gp_exceptions_host
-                 sgx_pf_gp_exceptions_enc)
+                 sgx_pf_gp_exceptions_enc_signed)
 
 add_enclave_test(tests/pf_gp_exceptions_unsigned pf_gp_exceptions_host
                  sgx_pf_gp_exceptions_enc_unsigned)

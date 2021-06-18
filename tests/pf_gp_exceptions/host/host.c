@@ -19,10 +19,7 @@ static bool _is_misc_region_supported()
     oe_get_cpuid(CPUID_SGX_LEAF, 0x0, &eax, &ebx, &ecx, &edx);
 
     // Check if EXINFO is supported by the processor
-    if (!(ebx & CPUID_SGX_MISC_EXINFO_MASK))
-        return false;
-    else
-        return true;
+    return (ebx & CPUID_SGX_MISC_EXINFO_MASK);
 }
 
 int main(int argc, const char* argv[])
