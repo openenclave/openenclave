@@ -5,7 +5,9 @@
 #include <openenclave/enclave.h>
 #include "debug_mode_t.h"
 
+int is_enclave_debug_allowed();
+
 int test(void)
 {
-    return 0;
+    return is_enclave_debug_allowed();
 }
