@@ -913,6 +913,25 @@ if (WIN32
                                                                    -O0)
 endif ()
 
+# Expose necessary symbols for the SymCrypt FIPS module
+if (OE_SGX)
+  list(
+    APPEND
+    DEFAULT_VISIBILITY
+    malloc.c # for posix_memalign and free
+    pthread.c # for pthread_mutex_*
+    ${MUSLSRC}/string/memcmp.c
+    ${MUSLSRC}/string/x86_64/memcpy.s
+    ${MUSLSRC}/string/x86_64/memmove.s
+    ${MUSLSRC}/string/x86_64/memset.s
+    ${MUSLSRC}/stdlib/qsort.c)
+
+  set_property(
+    SOURCE ${DEFAULT_VISIBILITY}
+    APPEND_STRING
+    PROPERTY COMPILE_FLAGS " -fvisibility=default")
+endif ()
+
 enclave_compile_definitions(oelibc PRIVATE _XOPEN_SOURCE=700)
 
 if (USE_DEBUG_MALLOC)
