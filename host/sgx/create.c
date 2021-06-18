@@ -860,6 +860,10 @@ oe_result_t oe_sgx_build_enclave(
     if (!enclave->debug && oe_sgx_is_debug_auto_load_context(context))
         enclave->debug = props.config.attributes & OE_SGX_FLAGS_DEBUG;
 
+    /* Update the flag in the context to ensure the flag will be set in SECS */
+    if (enclave->debug)
+        context->attributes.flags |= OE_ENCLAVE_FLAG_DEBUG;
+
     /* Consolidate enclave-debug-flag with create-debug-flag */
     if (props.config.attributes & OE_SGX_FLAGS_DEBUG)
     {
