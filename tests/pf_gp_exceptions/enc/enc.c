@@ -8,6 +8,7 @@
 
 static uint64_t faulting_address;
 static uint32_t error_code;
+static uint32_t exception_code;
 
 uint64_t test_pfgp_handler(oe_exception_record_t* exception_record)
 {
@@ -17,10 +18,7 @@ uint64_t test_pfgp_handler(oe_exception_record_t* exception_record)
         faulting_address = exception_record->faulting_address;
         error_code = exception_record->error_code;
         exception_record->context->rip += MOV_INSTRUCTION_BYTES;
-        oe_host_printf(
-            "#PF: addr: 0x%lx, code: %u\n",
-            exception_record->faulting_address,
-            exception_record->error_code);
+        exception_code = OE_EXCEPTION_PAGE_FAULT;
     }
     else if (exception_record->code == OE_EXCEPTION_ACCESS_VIOLATION)
     {
@@ -28,14 +26,11 @@ uint64_t test_pfgp_handler(oe_exception_record_t* exception_record)
         faulting_address = exception_record->faulting_address;
         error_code = exception_record->error_code;
         exception_record->context->rip += LGDT_INSTRUCTION_BYTES;
-        oe_host_printf(
-            "#GP: addr: 0x%lx, code: %u\n",
-            exception_record->faulting_address,
-            exception_record->error_code);
+        exception_code = OE_EXCEPTION_ACCESS_VIOLATION;
     }
     else
     {
-        oe_host_printf("Unhandled code: %u\n", exception_record->code);
+        /* Unexpected code */
         oe_abort();
     }
 
@@ -57,11 +52,14 @@ int enc_pf_gp_exceptions()
     asm volatile("xor %rax, %rax\n\t"
                  "mov (%rax), %rax");
     OE_TEST(faulting_address == 0);
+    OE_TEST(exception_code == OE_EXCEPTION_PAGE_FAULT);
 
     /* Trigger #GP */
     faulting_address = 1;
     asm volatile("lgdt 0x00");
+    /* faulting_address should be cleared */
     OE_TEST(faulting_address == 0);
+    OE_TEST(exception_code == OE_EXCEPTION_ACCESS_VIOLATION);
 
     return 0;
 }

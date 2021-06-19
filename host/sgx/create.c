@@ -100,10 +100,7 @@ static bool _is_kss_supported()
     oe_get_cpuid(CPUID_SGX_LEAF, 0x1, &eax, &ebx, &ecx, &edx);
 
     // Check if KSS (bit 7) is supported by the processor
-    if (!(eax & CPUID_SGX_KSS_MASK))
-        return false;
-    else
-        return true;
+    return (eax & CPUID_SGX_KSS_MASK);
 }
 
 static bool _is_misc_region_supported()
@@ -115,10 +112,7 @@ static bool _is_misc_region_supported()
     oe_get_cpuid(CPUID_SGX_LEAF, 0x0, &eax, &ebx, &ecx, &edx);
 
     // Check if EXINFO is supported by the processor
-    if (!(ebx & CPUID_SGX_MISC_EXINFO_MASK))
-        return false;
-    else
-        return true;
+    return (ebx & CPUID_SGX_MISC_EXINFO_MASK);
 }
 
 static oe_result_t _add_filled_pages(
