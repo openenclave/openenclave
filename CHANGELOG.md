@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased][Unreleased_log]
 --------------
+
+[v0.17.0][v0.17.0_log]
+--------------
 ### Security
 - OE SDK is now built using clang-10. It is required to upgrade the compiler to clang-10 if you are building the SDK from source.
 
@@ -653,7 +656,9 @@ as listed below.
 
 Initial private preview release, no longer supported.
 
-[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.16.1...HEAD
+[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.17.0...HEAD
+
+[v0.17.0_log]:https://github.com/openenclave/openenclave/compare/v0.16.1...v0.17.0
 
 [v0.16.1_log]:https://github.com/openenclave/openenclave/compare/v0.16.0...v0.16.1
 
