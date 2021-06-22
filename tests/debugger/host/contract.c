@@ -6,7 +6,7 @@
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/tests.h>
 #include <string.h>
-#include "../../../../host/sgx/enclave.h"
+#include "../../../host/sgx/enclave.h"
 
 // The following variables are initialized so that the assertions below will
 // fail by default. The test expects the debugger to update the values
