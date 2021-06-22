@@ -5,51 +5,77 @@
 - name: Gather Ansible facts
   setup:
 
-- name: Include distribution vars
-  include_vars:
-    file: "{{ ansible_distribution | lower }}/main.yml"
-
-- name: Include distribution release specific vars
-  include_vars:
-    file: "{{ ansible_distribution | lower }}/{{ ansible_distribution_release | lower }}.yml"
-
-- name: Install the SGX driver requirements
-  include_tasks: "{{ ansible_distribution | lower }}/sgx-driver-requirements.yml"
-
 - name: Populate service facts
   service_facts:
 
-- name: Ensure aesmd service stopped
-  service:
-    name: aesmd
-    state: stopped
-  when: "'aesmd.service' in ansible_facts.services"
+- name: Load default driver
+  modprobe:
+    name: intel_sgx
+    state: present
+  ignore_errors: yes
+  register: intel_sgx_module
 
-- name: Download Intel SGX DCAP Driver
-  get_url:
-    url: "{{intel_sgx_w_flc_driver_url}}"
-    dest: /tmp/sgx_linux_x64_driver.bin
-    mode: 0755
-    timeout: 120
-  retries: 3
-  when: flc_enabled|bool
+- name: install driver
+  block:
 
-- name: Download Intel SGX1 Driver
-  get_url:
-    url: "{{intel_sgx1_driver_url}}"
-    dest: /tmp/sgx_linux_x64_driver.bin
-    mode: 0755
-    timeout: 120
-  retries: 3
-  when: not flc_enabled|bool
+  - name: Include distribution vars
+    include_vars:
+      file: "{{ ansible_distribution | lower }}/main.yml"
 
-- name: Install the Intel SGX Driver
-  command: /tmp/sgx_linux_x64_driver.bin
+  - name: Include distribution release specific vars
+    include_vars:
+      file: "{{ ansible_distribution | lower }}/{{ ansible_distribution_release | lower }}.yml"
 
-- name: Remove the Intel SGX driver installer
-  file:
-    path: /tmp/sgx_linux_x64_driver.bin
-    state: absent
+  - name: Install the SGX driver requirements
+    include_tasks: "{{ ansible_distribution | lower }}/sgx-driver-requirements.yml"
+
+  - name: Ensure aesmd service stopped
+    service:
+      name: aesmd
+      state: stopped
+    when: "'aesmd.service' in ansible_facts.services"
+
+  - name: Download Intel SGX DCAP Driver
+    get_url:
+      url: "{{intel_sgx_w_flc_driver_url}}"
+      dest: /tmp/sgx_linux_x64_driver.bin
+      mode: 0755
+      timeout: 120
+    retries: 3
+    when: flc_enabled|bool
+
+  - name: Download Intel SGX1 Driver
+    get_url:
+      url: "{{intel_sgx1_driver_url}}"
+      dest: /tmp/sgx_linux_x64_driver.bin
+      mode: 0755
+      timeout: 120
+    retries: 3
+    when: not flc_enabled|bool
+
+  - name: Install the Intel SGX Driver
+    command: /tmp/sgx_linux_x64_driver.bin
+
+  - name: Remove the Intel SGX driver installer
+    file:
+      path: /tmp/sgx_linux_x64_driver.bin
+      state: absent
+
+  - name: Add user to sgx_prv group
+    user:
+      name: "{{ lookup('env', 'USER') }}"
+      group: sgx_prv
+    when:
+     - intel_sgx_prv_permissions is defined
+     - intel_sgx_prv_permissions | bool
+
+  - name: Set out-of-proc attestation by default
+    lineinfile:
+      path: /etc/environment
+      state: present
+      line: SGX_AESM_ADDR=1
+
+  when: intel_sgx_module is failed
 
 - name: Ensure aesmd service running
   service:
