@@ -8,8 +8,8 @@
 #include <openenclave/internal/malloc.h>
 #include "core_t.h"
 
-/* Forward declarartion */
-int SYMCRYPT_ENGINE_Initialize();
+/* Forward declarartion for the symcrypt engine initializer */
+int SC_OSSL_ENGINE_Initialize();
 
 //
 // start.S (the compilation unit containing the entry point) contains a
@@ -34,7 +34,7 @@ const void* oe_link_enclave(void)
         oe_allocator_malloc,
         oe_debug_malloc_tracking_start,
         oe_crypto_initialize,
-        SYMCRYPT_ENGINE_Initialize,
+        SC_OSSL_ENGINE_Initialize,
 #if defined(OE_USE_DEBUG_MALLOC)
         oe_debug_malloc_check,
 #endif /* defined(OE_USE_DEBUG_MALLOC) */
