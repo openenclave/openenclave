@@ -35,13 +35,15 @@ def LinuxPackaging(String version, String build_type, String lvi_mitigation = 'N
     }
 }
 
-def WindowsPackaging(String version, String build_type, String lvi_mitigation = 'None') {
+def WindowsPackaging(String version, String build_type, String lvi_mitigation = 'None', String simulation = '1') {
     stage("Windows SGX1FLC ${build_type} LVI_MITIGATION=${lvi_mitigation}") {
         node("SGXFLC-Windows-${version}-DCAP") {
-            timeout(GLOBAL_TIMEOUT_MINUTES) {
-                oe.WinCompilePackageTest("build", build_type, "ON", CTEST_TIMEOUT_SECONDS, lvi_mitigation)
-                azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.nupkg', storageType: 'blobstorage', virtualPath: "${BRANCH_NAME}/${BUILD_NUMBER}/windows/${version}/${build_type}/lvi-mitigation-${lvi_mitigation}/SGX1FLC/", containerName: 'oejenkins')
-                azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.nupkg', storageType: 'blobstorage', virtualPath: "${BRANCH_NAME}/latest/windows/${version}/${build_type}/lvi-mitigation-${lvi_mitigation}/SGX1FLC/", containerName: 'oejenkins')
+            withEnv(["OE_SIMULATION=${simulation}"]) {
+                timeout(GLOBAL_TIMEOUT_MINUTES) {
+                    oe.WinCompilePackageTest("build", build_type, "ON", CTEST_TIMEOUT_SECONDS, lvi_mitigation)
+                    azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.nupkg', storageType: 'blobstorage', virtualPath: "${BRANCH_NAME}/${BUILD_NUMBER}/windows/${version}/${build_type}/lvi-mitigation-${lvi_mitigation}/SGX1FLC/", containerName: 'oejenkins')
+                    azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.nupkg', storageType: 'blobstorage', virtualPath: "${BRANCH_NAME}/latest/windows/${version}/${build_type}/lvi-mitigation-${lvi_mitigation}/SGX1FLC/", containerName: 'oejenkins')
+                }
             }
         }
     }
@@ -50,7 +52,7 @@ def WindowsPackaging(String version, String build_type, String lvi_mitigation = 
 try{
     oe.emailJobStatus('STARTED')
     parallel "2004 SGX1FLC Package Debug" :          { LinuxPackaging('2004', 'Debug') },
-         "2004 SGX1FLC Package Debug LVI" :          { LinuxPackaging('2004', 'Debug', 'ControlFlow') },,
+         "2004 SGX1FLC Package Debug LVI" :          { LinuxPackaging('2004', 'Debug', 'ControlFlow') },
          "2004 SGX1FLC Package RelWithDebInfo" :     { LinuxPackaging('2004', 'RelWithDebInfo') },
          "2004 SGX1FLC Package RelWithDebInfo LVI" : { LinuxPackaging('2004', 'RelWithDebInfo', 'ControlFlow') },
          "1804 SGX1FLC Package Debug" :              { LinuxPackaging('1804', 'Debug') },
@@ -60,7 +62,11 @@ try{
          "Windows 2019 Debug" :                      { WindowsPackaging('2019','Debug') },
          "Windows 2019 Debug LVI" :                  { WindowsPackaging('2019','Debug', 'ControlFlow') },
          "Windows 2019 RelWithDebInfo" :             { WindowsPackaging('2019','RelWithDebInfo') },
-         "Windows 2019 RelWithDebInfo LVI" :         { WindowsPackaging('2019','RelWithDebInfo', 'ControlFlow') }
+         "Windows 2019 RelWithDebInfo LVI" :         { WindowsPackaging('2019','RelWithDebInfo', 'ControlFlow') },
+         "Windows 2019 Sim Debug" :                  { WindowsPackaging('2019','Debug', 'None', '1') },
+         "Windows 2019 Sim Debug LVI" :              { WindowsPackaging('2019','Debug', 'ControlFlow', '1') },
+         "Windows 2019 Sim RelWithDebInfo" :         { WindowsPackaging('2019','RelWithDebInfo', 'None', '1') },
+         "Windows 2019 Sim RelWithDebInfo LVI" :     { WindowsPackaging('2019','RelWithDebInfo', 'ControlFlow', '1') }
 } catch(Exception e) {
     println "Caught global pipeline exception :" + e
     GLOBAL_ERROR = e
