@@ -160,6 +160,7 @@ static sgx_secs_t* _new_secs(
             context->config_data->config_id,
             sizeof(secs->config_id));
         secs->config_svn = context->config_data->config_svn;
+        secs->flags |= SGX_FLAGS_KSS;
     }
 
     /* Set the EXINFO bit if CapturePFGPExceptions=1 */

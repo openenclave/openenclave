@@ -114,19 +114,21 @@ ExtendedProductID=2768c720-1e28-11eb-adc1-0242ac120002
 ```
 
 As a convenience, you can specify the enclave properties in code using the
-`OE_SET_ENCLAVE_SGX_KSS` macro if KSS properties are included.  For example, the equivalent properties could be
-defined in any .c or .cpp file compiled into the enclave:
+`OE_SET_ENCLAVE_SGX2` macro to leverage SGX2 properties and enable KSS using RequireKSS argument in the macro.
+For example, the equivalent properties could be defined in any .c or .cpp file compiled into the enclave:
 
 ```c
-OE_SET_ENCLAVE_SGX_KSS(
-    1,    /* ProductID */
-    1,    /* SecurityVersion */
-    1,    /* Debug */
-    47183823-2574-4bfd-b411-99ed177d3e43, /* FamilyID */
-    2768c720-1e28-11eb-adc1-0242ac120002, /* ExtendedProductID */
-    1024, /* NumHeapPages: heap size in units of 4KB pages */
-    1024, /* NumStackPages: stack size, in units of 4KB pages */
-    1);   /* NumTCS */
+OE_SET_ENCLAVE_SGX2(
+    1,     /* ProductID */
+    1,     /* SecurityVersion */
+    {0},   /* ExtendedProductID */
+    {0},   /* FamilyID */
+    true,  /* Debug */
+    true,  /* CapturePFGPExceptions */
+    true   /* RequireKSS */
+    1024,  /* NumHeapPages */
+    1024,  /* NumStackPages */
+    1);    /* NumTCS */
 ```
 
 You can also specify the enclave properties in code using the

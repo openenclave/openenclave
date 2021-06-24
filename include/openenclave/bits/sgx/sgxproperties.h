@@ -203,46 +203,6 @@ typedef struct _oe_sgx_enclave_properties
     TCS_COUNT)
 
 /**
- * Defines the SGX properties for an enclave with KSS properties
- *
- * Maps to _OE_SET_ENCLAVE_SGX_IMPL and set the KSS attribute bit
- * @param[in] PRODUCT_ID ISV assigned Product ID (ISVPRODID) to use in the
- * enclave signature
- * @param[in] SECURITY_VERSION ISV assigned Security Version number (ISVSVN)
- * to use in the enclave signature
- * @param[in] EXTENDED_PRODUCT_ID ISV assigned Extended Product ID (ISVEXTPRODID)
- *  to use in the enclave signature
- * @param[in] FAMILY_ID ISV assigned Product Family ID (ISVFAMILYID)
- * to use in the enclave signature
- * @param[in] ALLOW_DEBUG If true, allows the enclave to be created with
- * OE_ENCLAVE_FLAG_DEBUG and debugged at runtime
- * @param[in] HEAP_PAGE_COUNT Number of heap pages to allocate in the enclave
- * @param[in] STACK_PAGE_COUNT Number of stack pages per thread to reserve in
- * the enclave
- * @param[in] TCS_COUNT Number of concurrent threads in an enclave to support
- */
- #define OE_SET_ENCLAVE_SGX_KSS(                                          \
-    PRODUCT_ID,                                                           \
-    SECURITY_VERSION,                                                     \
-    EXTENDED_PRODUCT_ID,                                                  \
-    FAMILY_ID,                                                            \
-    ALLOW_DEBUG,                                                          \
-    HEAP_PAGE_COUNT,                                                      \
-    STACK_PAGE_COUNT,                                                     \
-    TCS_COUNT)                                                            \
- _OE_SET_ENCLAVE_SGX_IMPL(                                                \
-    PRODUCT_ID,                                                           \
-    SECURITY_VERSION,                                                     \
-    EXTENDED_PRODUCT_ID,                                                  \
-    FAMILY_ID,                                                            \
-    ALLOW_DEBUG,                                                          \
-    true,                                                                 \
-    0,                                                                    \
-    HEAP_PAGE_COUNT,                                                      \
-    STACK_PAGE_COUNT,                                                     \
-    TCS_COUNT)
-
-/**
  * Defines the SGX2 properties for an enclave
  *
  * The enclave properties should only be defined once for all code compiled into
