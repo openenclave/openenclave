@@ -87,6 +87,13 @@ In addition, the following two properties are defined by the developer and map d
   can be used to prevent rollback attacks against sealing keys. This value should be
   incremented whenever a security fix is made to the enclave code.
 
+Optionally, to create a 0-based enclave (currently only available in SGX on Linux, with PSW version 2.14.1 or above) the following setting can be provided:
+
+- **CreateZeroBaseEnclave**: Should the enclave be created with base address 0x0? Defaults to 0.
+- **StartAddress**: When the enclave base address is 0x0 (CreateZeroBaseEnclave=1), the enclave image will be created at this address. The value needs to be aligned to OE_PAGE_SIZE (0x1000) and greater than mmap min address (/proc/sys/vm/mmap_min_addr).
+
+0-based enclaves guarantee NullPointerException behavior when 0-page is accessed. Applications that depend on this behavior can now be run inside an enclave (example, .NET runtime).
+
 Here is the example from helloworld.conf used in the helloworld sample:
 ```
 # Enclave settings:
@@ -113,9 +120,7 @@ FamilyID=47183823-2574-4bfd-b411-99ed177d3e43
 ExtendedProductID=2768c720-1e28-11eb-adc1-0242ac120002
 ```
 
-As a convenience, you can specify the enclave properties in code using the
-`OE_SET_ENCLAVE_SGX2` macro to leverage SGX2 properties and enable KSS using RequireKSS argument in the macro.
-For example, the equivalent properties could be defined in any .c or .cpp file compiled into the enclave:
+As a convenience, you can specify the enclave properties in code using the `OE_SET_ENCLAVE_SGX2` macro to leverage SGX2 properties and enable KSS using RequireKSS argument in the macro. For example, the equivalent properties could be defined in any .c or .cpp file compiled into the enclave:
 
 ```c
 OE_SET_ENCLAVE_SGX2(
@@ -126,6 +131,8 @@ OE_SET_ENCLAVE_SGX2(
     true,  /* Debug */
     true,  /* CapturePFGPExceptions */
     true   /* RequireKSS */
+    false, /* CreateZeroBaseEnclave */
+    0,     /* StartAddress */
     1024,  /* NumHeapPages */
     1024,  /* NumStackPages */
     1);    /* NumTCS */
