@@ -53,12 +53,15 @@ int enc_pf_gp_exceptions(int is_misc_region_supported)
     if (oe_add_vectored_exception_handler(false, test_pfgp_handler) != OE_OK)
         return -1;
 
-    /* Trigger #PF by writing to a read-only enclave code page */
+    /* Trigger #PF by writing to a read-only enclave code page.
+     * The faulting address within enclave memory range will always have
+     * lower 12 bits cleared on both non-simulation (SGX2) and simulation (SGX1)
+     * mode. */
     faulting_address = 0;
     bypass_bytes = MOV_INSTRUCTION_BYTES;
     uint64_t code_page = (uint64_t)enc_pf_gp_exceptions;
     const uint64_t page_size = 0x1000;
-    code_page = ((code_page + (page_size - 1)) & ~(page_size - 1));
+    code_page = (code_page + (page_size - 1)) & ~(page_size - 1);
 
     asm volatile("mov %0, %%r8\n\t"
                  "mov %%r8, (%%r8)"
@@ -77,6 +80,34 @@ int enc_pf_gp_exceptions(int is_misc_region_supported)
         OE_TEST(error_code == OE_SGX_PAGE_FAULT_US_FLAG);
     }
     oe_host_printf("Test #PF on 0x%lx passed\n", faulting_address);
+
+    /* Trigger #PF by reading to an unmapped address on the host.
+     * The faulting address on the host memory will not have lower 12-bits
+     * cleared in non-simulation case (SGX2). For the simulation mode (SGX1),
+     * the faulting address will always be page-aligned. */
+    faulting_address = 0;
+    bypass_bytes = MOV_INSTRUCTION_BYTES;
+    uint64_t unmapped_address = 0x1001;
+    uint64_t unmapped_address_aligned = unmapped_address & ~(page_size - 1);
+
+    asm volatile("mov %0, %%r8\n\t"
+                 "mov (%%r8), %%r8"
+                 :
+                 : "r"(unmapped_address));
+    if (is_misc_region_supported)
+    {
+        /* Expect the address without lower 12-bits cleared */
+        OE_TEST(faulting_address == unmapped_address);
+        OE_TEST(exception_code == OE_EXCEPTION_PAGE_FAULT);
+    }
+    else
+    {
+        /* faulting_address is passed in by the host, always page-aligned */
+        OE_TEST(faulting_address == unmapped_address_aligned);
+        OE_TEST(exception_code == OE_EXCEPTION_PAGE_FAULT);
+        OE_TEST(error_code == OE_SGX_PAGE_FAULT_US_FLAG);
+    }
+    oe_host_printf("Test #PF on 0x%lx passed\n", unmapped_address);
 
     /* Trigger #GP */
     faulting_address = 1;
