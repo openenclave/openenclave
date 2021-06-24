@@ -42,7 +42,10 @@ int main(int argc, const char* argv[])
     if (result != OE_OK)
         oe_put_err("oe_create_enclave(): result=%u", result);
 
-    if (_is_misc_region_supported())
+    if (flags & OE_ENCLAVE_FLAG_SIMULATE)
+        printf("Simulation mode does not support exceptions. Skip the test "
+               "ECALL.\n");
+    else if (_is_misc_region_supported())
     {
         result = enc_pf_gp_exceptions(enclave, &return_value);
         if (result != OE_OK)
@@ -52,8 +55,7 @@ int main(int argc, const char* argv[])
     }
     else
         printf("CPU does not support the CapturePFGPExceptions=1 "
-               "configuration. Skip "
-               "the test ECALL.\n");
+               "configuration. Skip the test ECALL.\n");
 
     result = oe_terminate_enclave(enclave);
     OE_TEST(result == OE_OK);
