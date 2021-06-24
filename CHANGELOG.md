@@ -12,10 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [v0.17.0][v0.17.0_log]
 --------------
-### Security
-- OE SDK is now built using clang-10. It is required to upgrade the compiler to clang-10 if you are building the SDK from source.
 
 ### Added
+- Ubuntu 20.04 packages are included in this release.
+- OE SDK is now built using clang-10. It is required to upgrade the compiler to clang-10 if you are building the SDK from source.
 - Add the CapturePFGPExceptions preference for the SGX2 feature of capturing #PF and #GP exceptions inside an enclave.
   - Developers can specify the CapturePFGPExceptions with a binary value in the enclave config file or set the value via the newly added OE_SET_ENCLAVE_SGX2 macro, which is used to set SGX2-specific properties.
   - When setting CapturePFGPExceptions=1, the OE loader will enable the feature when running on an SGX2-capable CPU.
