@@ -18,21 +18,108 @@ AGENTS_LABELS = [
     "acc-ubuntu-18.04-vanilla": env.UBUNTU_VANILLA_1804_CUSTOM_LABEL ?: "vanilla-ubuntu-1804"
 ]
 
+def CmakeArgs(String build_type = "RelWithDebInfo", String code_coverage = "OFF", String debug_malloc = "ON", String lvi_args="", String cmake_args = "") {
+    def args = "-G Ninja -DCMAKE_INSTALL_PREFIX:PATH='/opt/openenclave' -DCPACK_GENERATOR=DEB -DCODE_COVERAGE=${code_coverage} -DUSE_DEBUG_MALLOC=${debug_malloc} -DCMAKE_BUILD_TYPE=${build_type} ${lvi_args} ${cmake_args} -Wdev"
+    return args
+}
+
+def WaitForAptLock() {
+    def aptWait = """
+        i=0
+        echo "Checking for locks..."
+        # Check for locks
+        while fuser /var/lib/dpkg/lock > /dev/null 2>&1 ||
+              fuser /var/lib/dpkg/lock-frontend > /dev/null 2>&1 ||
+              fuser /var/lib/apt/lists/lock > /dev/null 2>&1; do
+            # Wait up to 600 seconds to lock to be released
+            if (( i > 600 )); then
+                echo "Timeout waiting for lock."
+                exit 1
+            fi
+            echo "Waiting for apt/dpkg locks..."
+            i=\${i++}
+            sleep 1
+        done
+    """
+    return aptWait
+}
+
+def TestCommand() {
+    def testCommand = """
+        echo "Running Test Command"
+        ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
+    """
+    return testCommand
+}
+
+def InstallBuildCommand() {
+    def installCommand = """
+        echo "Running Install Build Command"
+        cpack -G DEB
+        ${WaitForAptLock()}
+        sudo ninja -v install
+    """
+    return installCommand
+}
+
+def InstallReleaseCommand() {
+    def installCommand = """
+        echo "Running Install Release Command"
+        echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu bionic main' | sudo tee /etc/apt/sources.list.d/intel-sgx.list
+        wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | sudo apt-key add -
+
+        echo "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-7 main" | sudo tee /etc/apt/sources.list.d/llvm-toolchain-bionic-7.list
+        wget -qO - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+
+        echo "deb [arch=amd64] https://packages.microsoft.com/ubuntu/18.04/prod bionic main" | sudo tee /etc/apt/sources.list.d/msprod.list
+        wget -qO - https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+
+        ${WaitForAptLock()}
+        sudo apt update
+
+        ${WaitForAptLock()}
+        sudo apt install -y open-enclave
+
+        echo "Open Enclave SDK version installed"
+        apt list --installed | grep open-enclave
+    """
+    return installCommand
+}
+
+def TestSamplesCommand() {
+    def testCommand = """
+        echo "Running Test Samples Command"
+        cp -r /opt/openenclave/share/openenclave/samples ~/
+        pushd ~/samples
+        source /opt/openenclave/share/openenclave/openenclaverc
+        for i in *; do
+            if [ -d \${i} ]; then
+                cd \${i}
+                mkdir build
+                cd build
+                cmake ..
+                make
+                make run
+                cd ../..
+            fi
+        done
+        popd
+        rm -rf ~/samples
+    """
+    return testCommand
+}
+
 def ACCCodeCoverageTest(String label, String compiler, String build_type) {
     stage("${label} ${compiler} ${build_type} Code Coverage") {
         node("${label}") {
             timeout(GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
+                def cmakeArgs = CmakeArgs(build_type)
                 def task = """
-                           cmake ${WORKSPACE}                                           \
-                               -G Ninja                                                 \
-                               -DCODE_COVERAGE=ON                                       \
-                               -DUSE_DEBUG_MALLOC=OFF                                   \
-                               -DCMAKE_BUILD_TYPE=${build_type}                         \
-                               -Wdev
+                           cmake ${WORKSPACE} ${cmakeArgs}
                            ninja -v
-                           ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
+                           ${TestCommand()}
                            ninja code_coverage
                            """
                 oe.Run(compiler, task)
@@ -75,15 +162,11 @@ def ACCTest(String label, String compiler, String build_type, List extra_cmake_a
                         done
                         """
                 }
+                def cmakeArgs = CmakeArgs(build_type,"OFF","ON","-DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin",extra_cmake_args.join(' '))
                 def task = """
-                           cmake ${WORKSPACE}                                           \
-                               -G Ninja                                                 \
-                               -DCMAKE_BUILD_TYPE=${build_type}                         \
-                               -DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin    \
-                               ${extra_cmake_args.join(' ')}                            \
-                               -Wdev
+                           cmake ${WORKSPACE} ${cmakeArgs}
                            ninja -v
-                           ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
+                           ${TestCommand()}
                            """
                 withEnv(test_env) {
                     oe.Run(compiler, task)
@@ -93,6 +176,28 @@ def ACCTest(String label, String compiler, String build_type, List extra_cmake_a
     }
 }
 
+def ACCUpgradeTest(String label, String compiler, String version, List extra_cmake_args = [], List test_env = []) {
+    stage("${label} Container ${version} RelWithDebInfo, extra_cmake_args: ${extra_cmake_args}") {
+        node("${label}") {
+            timeout(GLOBAL_TIMEOUT_MINUTES) {
+                cleanWs()
+                checkout scm
+                def cmakeArgs = CmakeArgs("RelWithDebInfo","OFF","ON","-DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin",extra_cmake_args.join(' '))
+                def task = """
+                           ${InstallReleaseCommand()}
+                           ${TestSamplesCommand()}
+                           cmake ${WORKSPACE} ${cmakeArgs}
+                           ninja -v
+                           ${InstallBuildCommand()}
+                           ${TestSamplesCommand()}
+                           """
+                withEnv(test_env) {
+                    oe.Run(compiler, task)
+                }
+            }
+        }
+    }
+}
 
 def ACCContainerTest(String label, String version, List extra_cmake_args = []) {
     stage("${label} Container ${version} RelWithDebInfo, extra_cmake_args: ${extra_cmake_args}") {
@@ -100,15 +205,11 @@ def ACCContainerTest(String label, String version, List extra_cmake_args = []) {
             timeout(GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
+                def cmakeArgs = CmakeArgs("RelWithDebInfo","OFF","ON","-DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin",extra_cmake_args.join(' '))
                 def task = """
-                           cmake ${WORKSPACE}                                           \
-                               -G Ninja                                                 \
-                               -DCMAKE_BUILD_TYPE=RelWithDebInfo                        \
-                               -DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin    \
-                               ${extra_cmake_args.join(' ')}                            \
-                               -Wdev
+                           cmake ${WORKSPACE} ${cmakeArgs}
                            ninja -v
-                           ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
+                           ${TestCommand()}
                            """
                 oe.ContainerRun("oetools-${version}:${DOCKER_TAG}", "clang-10", task, "--cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket")
             }
@@ -122,32 +223,12 @@ def ACCPackageTest(String label, String version, List extra_cmake_args = []) {
             timeout(GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
+                def cmakeArgs = CmakeArgs("RelWithDebInfo","OFF","ON","-DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin",extra_cmake_args.join(' '))
                 def task = """
-                           cmake ${WORKSPACE}                                         \
-                             -G Ninja                                                 \
-                             -DCMAKE_BUILD_TYPE=RelWithDebInfo                        \
-                             -DCMAKE_INSTALL_PREFIX:PATH='/opt/openenclave'           \
-                             -DCPACK_GENERATOR=DEB                                    \
-                             -DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin    \
-                             ${extra_cmake_args.join(' ')}                            \
-                             -Wdev
+                           cmake ${WORKSPACE} ${cmakeArgs}
                            ninja -v
-                           cpack -G DEB
-                           sudo ninja -v install
-                           cp -r /opt/openenclave/share/openenclave/samples ~/
-                           cd ~/samples
-                           source /opt/openenclave/share/openenclave/openenclaverc
-                           for i in *; do
-                               if [ -d \${i} ]; then
-                                   cd \${i}
-                                   mkdir build
-                                   cd build
-                                   cmake ..
-                                   make
-                                   make run
-                                   cd ../..
-                               fi
-                           done
+                           ${InstallBuildCommand()}
+                           ${TestSamplesCommand()}
                            """
                 oe.ContainerRun("oetools-${version}:${DOCKER_TAG}", "clang-10", task, "--cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket")
             }
@@ -476,7 +557,9 @@ try{
                  //"ACC1804 Code Coverage Test" :                     { ACCCodeCoverageTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-10', 'Debug') },
 
                 "ACC2004 clang-10 RelWithDebInfo LVI snmalloc":            { ACCTest(AGENTS_LABELS["acc-ubuntu-20.04"], 'clang-10', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON',  '-DUSE_SNMALLOC=ON']) },
-                "ACC1804 clang-10 RelWithDebInfo LVI FULL Tests snmalloc": { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-10', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) }
+                "ACC1804 clang-10 RelWithDebInfo LVI FULL Tests snmalloc": { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-10', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) },
+                "ACC1804 Upgrade Package RelWithDebInfo LVI":              { ACCUpgradeTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-10', '18.04', ['-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
+                "ACC2004 Upgrade Package RelWithDebInfo LVI":              { ACCUpgradeTest(AGENTS_LABELS["acc-ubuntu-20.04"], 'clang-10', '20.04', ['-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON']) }
                 ]
             parallel testing_stages
         }
