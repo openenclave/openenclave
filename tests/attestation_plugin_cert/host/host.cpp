@@ -24,9 +24,9 @@
 
 #define FILENAME_LENGTH 80
 
-// This is the claims validation callback. A TLS connecting party (client or
+// This is the claims validation function. A TLS connecting party (client or
 // server) can verify the passed in claims to decide whether to
-// accept a connection request
+// accept a connection request.
 oe_result_t enclave_claims_verifier(
     oe_claim_t* claims,
     size_t claims_length,
@@ -77,8 +77,10 @@ void run_test(oe_enclave_t* enclave, int test_type)
 {
     oe_result_t result = OE_FAILURE;
     oe_result_t ecall_result;
-    unsigned char* cert = nullptr;
-    size_t cert_size = 0;
+    unsigned char* certificate = nullptr;
+    size_t certificate_size = 0;
+    oe_claim_t* claims = nullptr;
+    size_t claims_length = 0;
 
     OE_TRACE_INFO(
         "Host: get tls certificate signed with %s key from an enclave \n",
@@ -86,12 +88,12 @@ void run_test(oe_enclave_t* enclave, int test_type)
     if (test_type == TEST_EC_KEY)
     {
         result = get_tls_cert_signed_with_ec_key(
-            enclave, &ecall_result, &cert, &cert_size);
+            enclave, &ecall_result, &certificate, &certificate_size);
     }
     else if (test_type == TEST_RSA_KEY)
     {
         result = get_tls_cert_signed_with_rsa_key(
-            enclave, &ecall_result, &cert, &cert_size);
+            enclave, &ecall_result, &certificate, &certificate_size);
     }
 
     if ((result != OE_OK) || (ecall_result != OE_OK))
@@ -119,24 +121,48 @@ void run_test(oe_enclave_t* enclave, int test_type)
 #else
         file = fopen(filename, "wb");
 #endif
-        fwrite(cert, 1, cert_size, file);
+        fwrite(certificate, 1, certificate_size, file);
         fclose(file);
     }
 
-    // validate cert
+    // validate certificate
     OE_TRACE_INFO("Host: Verifying tls certificate\n");
-    OE_TRACE_INFO("Host: cert = %p cert_size = %d\n", cert, cert_size);
-    result = oe_verify_attestation_certificate_with_evidence(
-        cert, cert_size, enclave_claims_verifier, nullptr);
+    OE_TRACE_INFO(
+        "Host: certificate = %p certificate_size = %d\n",
+        certificate,
+        certificate_size);
+    result = oe_verify_attestation_certificate_with_evidence_v2(
+        certificate,
+        certificate_size,
+        nullptr,
+        0,
+        nullptr,
+        0,
+        &claims,
+        &claims_length);
+
     OE_TRACE_INFO(
         "Host: Verifying the certificate from a host ... %s\n",
-        result == OE_OK ? "Success" : "Fail");
+        oe_result_str(result));
+
+    OE_CHECK(result);
+
+    result = enclave_claims_verifier(claims, claims_length, nullptr);
+
+    OE_TRACE_INFO(
+        "Host: Verifying the enclave claims from a host ... %s\n",
+        oe_result_str(result));
+
+    OE_CHECK(result);
+
     fflush(stdout);
     OE_TEST(result == OE_OK);
 
-    OE_TRACE_INFO("free cert 0xx%p\n", cert);
+done:
+    OE_TRACE_INFO("free certificate 0x%p\n", certificate);
     // oe_verifier_shutdown();
-    free(cert);
+    free(certificate);
+    oe_free_claims(claims, claims_length);
 }
 
 int main(int argc, const char* argv[])
