@@ -93,12 +93,11 @@ function (add_libcxx_test_enc NAME CXXFILE)
   endif ()
 
   # Test cases listed in CLANG_10_FAILED_TESTS_WITH_SPECULATIVE_LOAD_HARDENING are failing
-  # when speculative load hardening is enabled with Clang 10. Disable speculative load hardening
+  # when speculative load hardening is enabled with Clang. Disable compiler optimizations
   # for those test cases NOTE: This only matters when `ENABLE_FULL_LIBCXX_TESTS=ON`.
   if (NAME IN_LIST CLANG_10_FAILED_TESTS_WITH_SPECULATIVE_LOAD_HARDENING)
     if (WIN32 OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
-      enclave_compile_options(libcxxtest-${NAME}_enc PRIVATE
-                              -mno-speculative-load-hardening)
+      set_source_files_properties(main.cpp PROPERTIES COMPILE_FLAGS -O0)
     endif ()
   endif ()
 
