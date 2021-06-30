@@ -55,11 +55,11 @@ add_enclave_library(
 
 # When speculative load hardening is enabled on future.cpp with Clang-10 compiler
 # future and promise constructs of C++ are not working as expected and resulting in
-# SIGBUS errors. Disable speculative load hardening till this issue is addressed
+# SIGBUS errors. Disable compiler optimizations till this issue is addressed
 # in clang-10 compiler codebase.
 if (WIN32 OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
-  set_property(SOURCE libcxx/src/future.cpp
-               PROPERTY COMPILE_FLAGS -mno-speculative-load-hardening)
+  set_source_files_properties(libcxx/src/future.cpp PROPERTIES COMPILE_FLAGS
+                                                               -O0)
 endif ()
 
 maybe_build_using_clangw(libcxx)

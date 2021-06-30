@@ -2,7 +2,9 @@
 # Licensed under the MIT License.
 
 ---
-intel_sgx_w_flc_driver_url: "https://download.01.org/intel-sgx/sgx-dcap/1.9/linux/distro/ubuntu20.04-server/sgx_linux_x64_driver_1.36.2.bin"
+intel_sgx_w_flc_driver_url: "https://download.01.org/intel-sgx/sgx-dcap/1.10.3/linux/distro/ubuntu20.04-server/sgx_linux_x64_driver_1.41.bin"
+# For Intel SGX driver 1.41 and above, intel_sgx_prv_permissions needs to be set to yes
+intel_sgx_prv_permissions: yes
 intel_sgx1_driver_url: "https://download.01.org/intel-sgx/sgx-linux/2.13.3/distro/ubuntu20.04-server/sgx_linux_x64_driver_2.11.0_2d2b795.bin"
 intel_sgx_package_dependencies:
   - "libprotobuf17"
