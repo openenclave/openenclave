@@ -301,13 +301,13 @@ As a result, the module will be part of the enclave measurement (i.e., `MRENCLAV
   {
        extern void (*__init_array_start)(void);
        extern void (*__init_array_end)(void);
-  +    const uint64_t baseaddr = (uint64_t)__oe_get_enclave_base();
+  +    const uint64_t start_address = (uint64_t)__oe_get_enclave_start_address();
   +    const oe_enclave_module_info_t* module_info = oe_get_module_info();
  
   +    if (module_info->base_rva)
        {
-  +        uint64_t init_array_start = baseaddr + module_info->init_array_rva;
-  +        uint64_t init_array_end = baseaddr + module_info->init_array_rva +
+  +        uint64_t init_array_start = start_address + module_info->init_array_rva;
+  +        uint64_t init_array_end = start_address + module_info->init_array_rva +
   +                                  module_info->init_array_size;
   +        _call_init_functions(
   +            (void (**)(void))(init_array_start),
