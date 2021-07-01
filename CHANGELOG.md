@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - The tool integrated `oegenerate` in this release.
 - SGX enclaves created using OE SDK can now be debugged using `oelldb`.
   `oelldb` is a python based extension for LLDB that supports debugging SGX enclaves. lldb-7 or above is required.
+- SGX Evidence verification stops checking SGX QEIdentity nextUpdate field.
 
 
 ### Deprecated
