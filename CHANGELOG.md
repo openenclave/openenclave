@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased][Unreleased_log]
 --------------
+### Added
+- Enabled creation of enclaves with base address 0x0 in SGX on Linux.
+  - This feature requires PSW version 2.14.1 or above.
+  - In 0-base enclaves a page fault is thrown on NULL pointer dereference.
+  - This enables applications to adopt NullPointerException/ NullReferenceException in their program logic and/or use other application stacks that do (Example, .NET runtime).
+  - Developers can create an 0-base enclave by setting the oesign tool configuration option 'CreateZeroBaseEnclave' to 1 or by passing in argument CREATE_ZERO_BASE_ENCLAVE=1 in OE_SET_ENCLAVE_SGX2().
+  - If the 0-base enclave creation is chosen, enclave image start address should be provided by setting the oesign tool configuration option 'StartAddress' or pass in the argument ENCLAVE_START_ADDRESS in OE_SET_ENCLAVE_SGX2().
 
 [v0.17.0][v0.17.0_log]
 --------------
@@ -30,7 +37,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SGX enclaves created using OE SDK can now be debugged using `oelldb`.
   `oelldb` is a python based extension for LLDB that supports debugging SGX enclaves. lldb-7 or above is required.
 - SGX Evidence verification stops checking SGX QEIdentity nextUpdate field.
-
 
 ### Deprecated
 - The `Release` build type for building the Open Enclave SDK from source is deprecated. The recommendation is using `RelWithDebInfo` instead.
