@@ -125,11 +125,17 @@ static void _load_sgx_enclave_common_impl(void)
     {
         OE_CHECK(_lookup_function("enclave_create", (void**)&_enclave_create));
         /*
-         * NOTE: _enclave_create_ex is available only in newer PSW. Hence, it
-         * should not check for valid function pointer until all systems upgrade
-         * PSW.
+         * NOTE: enclave_create_ex() is available only in newer PSW. We should
+         * not check for valid function pointer until all systems upgrade to
+         * PSW version 2.14.1 or higher.
+         * Hence, directly use LOOKUP_FUNCTION() and not _lookup_function().
          */
-        _lookup_function("enclave_create_ex", (void**)&_enclave_create_ex);
+        _enclave_create_ex = LOOKUP_FUNCTION("enclave_create_ex");
+        if (!_enclave_create_ex)
+            OE_TRACE_INFO(
+                "enclave_create_ex not found in %s. "
+                "Need PSW version 2.14.1 or higher.\n",
+                LIBRARY_NAME);
         OE_CHECK(
             _lookup_function("enclave_load_data", (void**)&_enclave_load_data));
         OE_CHECK(_lookup_function(
