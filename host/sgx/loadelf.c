@@ -740,6 +740,7 @@ static oe_result_t _link_elf_image(
     uint64_t nrelocs = 0;
     const elf64_sym_t* symtab = NULL;
     size_t symtab_size = 0;
+    int missing_symbols_count = 0;
 
     if (elf64_get_dynamic_symbol_table(&image->elf, &symtab, &symtab_size) != 0)
         goto done;
@@ -802,12 +803,12 @@ static oe_result_t _link_elf_image(
             else
             {
                 if ((symbol->st_info >> 4) != STB_WEAK)
-                    OE_RAISE_MSG(
-                        OE_UNSUPPORTED_ENCLAVE_IMAGE,
-                        "symbol %s not found\n",
-                        name);
+                {
+                    ++missing_symbols_count;
+                    OE_TRACE_ERROR("symbol not found: %s", name);
+                }
                 else
-                    OE_TRACE_WARNING("Weak symbol %s is not resolved\n");
+                    OE_TRACE_WARNING("weak symbol is not resolved: %s", name);
             }
         }
         /* Patch non-symbolic relocation records */
@@ -817,6 +818,12 @@ static oe_result_t _link_elf_image(
                 p->r_addend, (int64_t)image->image_rva, &p->r_addend));
         }
     }
+
+    if (missing_symbols_count)
+        OE_RAISE_MSG(
+            OE_UNSUPPORTED_ENCLAVE_IMAGE,
+            "%d symbols not found",
+            missing_symbols_count);
 
     result = OE_OK;
 
