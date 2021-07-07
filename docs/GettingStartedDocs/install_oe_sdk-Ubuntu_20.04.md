@@ -1,5 +1,4 @@
 # Install the Open Enclave SDK (Ubuntu 20.04)
-> **Warning**: this page is a work in progress. Support for Ubuntu 20.04 is coming soon.
 
 ## Platform requirements
 
