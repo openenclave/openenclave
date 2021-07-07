@@ -32,9 +32,11 @@ def buildWindowsDockerContainers() {
             }
             stage("Push to OE Docker Hub Registry") {
                 docker.withRegistry('', DOCKERHUB_REPO_CREDS) {
-                    if(TAG_LATEST == "true") {
+                    if(PUBLISH_DOCKER_HUB == "true") {
                         oe.exec_with_retry { puboe2019.push() }
-                        oe.exec_with_retry { puboe2019.push('latest') }
+                        if(TAG_LATEST == "true") {
+                            oe.exec_with_retry { puboe2019.push('latest') }
+                        }
                     }
                 }
             }
