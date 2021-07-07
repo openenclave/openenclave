@@ -7,12 +7,17 @@
 #if defined(__linux__)
 #include <linux/futex.h>
 #include <stdlib.h>
+#include <sys/random.h>
 #include <sys/syscall.h>
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
 #elif defined(_WIN32)
+#define WIN32_NO_STATUS
 #include <Windows.h>
+#undef WIN32_NO_STATUS
+#include <bcrypt.h>
+#include <ntstatus.h>
 #endif
 
 #include <openenclave/host.h>
@@ -332,5 +337,30 @@ oe_result_t oe_verify_quote_ocall(
         p_qe_identity_issuer_chain,
         qe_identity_issuer_chain_size);
 
+    return result;
+}
+
+oe_result_t oe_sgx_get_additional_host_entropy_ocall(uint8_t* data, size_t size)
+{
+    oe_result_t result = OE_FAILURE;
+
+    if (!data || !size)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+#if defined(__linux__)
+    /* Fail on either the function returns error (-1) or the buffer is partially
+     * filled */
+    if (getrandom((void*)data, size, 0) < (ssize_t)size)
+        goto done;
+#elif defined(_WIN32)
+    if (BCryptGenRandom(
+            NULL, data, (ULONG)size, BCRYPT_USE_SYSTEM_PREFERRED_RNG) !=
+        STATUS_SUCCESS)
+        goto done;
+#endif
+
+    result = OE_OK;
+
+done:
     return result;
 }

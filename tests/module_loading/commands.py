@@ -46,7 +46,7 @@ def bp_init_module(frame, bp_loc, dict):
     return False
 
 # Breakpoint by line number in module
-def bp_module_c_17(frame, bp_loc, dict):
+def bp_module_c_19(frame, bp_loc, dict):
     # Check that value has been set
     is_module_init = lldb_eval("is_module_init")
     if int(is_module_init.value) != 1:
@@ -63,12 +63,12 @@ def bp_fini_module(frame, bp_loc, dict):
     return False
 
 # Breakpoint in square function
-def bp_module_c_30(frame, bp_loc, dict):
+def bp_module_c_32(frame, bp_loc, dict):
     lldb_expr("r = a * a")
     return False
 
 # Another breakpoint to test variable lookup
-def bp_module_c_42(frame, bp_loc, dict):
+def bp_module_c_44(frame, bp_loc, dict):
     lldb_expr(" t = a + b + k")
     t = lldb_eval("t")
     print("t = %s" % t.value)
@@ -87,17 +87,17 @@ def run_test():
     bp = target.BreakpointCreateByName("init_module")
     bp.SetScriptCallbackFunction('commands.bp_init_module')
 
-    bp = target.BreakpointCreateByLocation("module.c", 17)
-    bp.SetScriptCallbackFunction('commands.bp_module_c_17')
+    bp = target.BreakpointCreateByLocation("module.c", 19)
+    bp.SetScriptCallbackFunction('commands.bp_module_c_19')
 
     bp = target.BreakpointCreateByName("fini_module")
     bp.SetScriptCallbackFunction('commands.bp_fini_module')
 
-    bp = target.BreakpointCreateByLocation("module.c", 30)
-    bp.SetScriptCallbackFunction('commands.bp_module_c_30')
+    bp = target.BreakpointCreateByLocation("module.c", 32)
+    bp.SetScriptCallbackFunction('commands.bp_module_c_32')
 
-    bp = target.BreakpointCreateByLocation("module.c", 42)
-    bp.SetScriptCallbackFunction('commands.bp_module_c_42')
+    bp = target.BreakpointCreateByLocation("module.c", 44)
+    bp.SetScriptCallbackFunction('commands.bp_module_c_44')
 
     # The `personality` syscall is used by lldb to turn off ASLR.
     # This syscall may not be permitted within containers.

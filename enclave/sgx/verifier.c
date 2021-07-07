@@ -51,7 +51,6 @@ static void dump_info(
     }
 }
 
-#if !defined(OE_USE_BUILTIN_EDL)
 /**
  * Declare the prototype of the following function to avoid the
  * missing-prototypes warning.
@@ -154,7 +153,6 @@ oe_result_t _oe_verify_quote_ocall(
     return OE_UNSUPPORTED;
 }
 OE_WEAK_ALIAS(_oe_verify_quote_ocall, oe_verify_quote_ocall);
-#endif
 
 oe_result_t oe_verify_qve_report_and_identity(
     const uint8_t* p_quote,
