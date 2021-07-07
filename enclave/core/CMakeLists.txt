@@ -34,7 +34,7 @@ if (OE_SGX)
     OUTPUT platform_t.h platform_args.h
     DEPENDS ${SGX_EDL_FILE} edger8r
     COMMAND edger8r --header-only --search-path ${OE_INCLUDE_DIR} --trusted
-            ${SGX_EDL_FILE})
+            ${SGX_EDL_FILE} -DOE_SGX_ENTROPY)
 
   add_custom_target(platform_trusted_edl DEPENDS platform_t.h platform_args.h)
 endif ()

@@ -351,23 +351,8 @@ macro (add_enclave_optee)
 
   target_link_libraries(${ENCLAVE_TARGET} oeenclave)
 
-  # If the CRYPTO_LIB argument to add_enclave() is not set, the following
-  # logic determines the default crypto library based on the value of the
-  # DEFAULT_TEST_ENCLAVE_CRYPTO_LIB global variable (e.g., either "MbedTLS" or "OpenSSL").
-  # If the CRYPTO_LIB argument is set, it overrides the DEFAULT_TEST_ENCLAVE_CRYPTO_LIB.
   # Note that the OpenSSL-based crypto library is currently not supported on OP-TEE.
-  if (NOT ENCLAVE_CRYPTO_LIB)
-    set(ENCLAVE_CRYPTO_LIB ${DEFAULT_TEST_ENCLAVE_CRYPTO_LIB})
-  endif ()
-
-  string(TOLOWER "${ENCLAVE_CRYPTO_LIB}" ENCLAVE_CRYPTO_LIB_LOWER)
-  if (ENCLAVE_CRYPTO_LIB_LOWER STREQUAL "mbedtls")
-    enclave_link_libraries(${ENCLAVE_TARGET} oecryptombedtls)
-  elseif (ENCLAVE_CRYPTO_LIB_LOWER STREQUAL "openssl")
-    enclave_link_libraries(${ENCLAVE_TARGET} oecryptoopenssl)
-  else ()
-    message(FATAL_ERROR "Unsupported crypto library ${ENCLAVE_CRYPTO_LIB}.")
-  endif ()
+  target_link_libraries(${ENCLAVE_TARGET} oecryptombedtls)
 
   if (ENCLAVE_CXX)
     target_link_libraries(${ENCLAVE_TARGET} oelibcxx)

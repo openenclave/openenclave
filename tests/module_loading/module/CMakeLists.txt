@@ -20,7 +20,6 @@ enclave_compile_options(
   PUBLIC
   -fPIC
   -nostdinc
-  -fstack-protector-strong
   # Preserve frame-pointer in Release mode to enable oe_backtrace.
   -fno-omit-frame-pointer
   # Put each function or data in its own section.

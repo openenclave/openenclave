@@ -39,7 +39,7 @@ commands 3
 end
 
 # Set a breakpoint by line number
-b module.c:17
+b module.c:19
 commands 4
     # Check that value has been set.
     if is_module_init != 1
@@ -58,7 +58,7 @@ commands 5
 end
 
 # Set breakpoint in square function
-b module.c:30
+b module.c:32
 commands 6
     # Evaluate expression
     set var r = a * a
@@ -66,7 +66,7 @@ commands 6
 end
 
 # Set conditional breakpoint
-b module.c:42
+b module.c:44
 commands 7
     p t
     set var t = a + b + k

@@ -185,6 +185,11 @@ Ocall | Dependent Public APIs | Comments |
 :---|:---:|:---|
 oe_sgx_backtrace_symbols_ocall | backtrace, backtrace_symbols | Part of libc APIs. |
 
+## sgx/entropy.edl
+Ocall | Dependent Public APIs | Comments |
+:---|:---:|:---|
+oe_sgx_get_additional_host_entropy_ocall | N/A | Required by the SymCrypt FIPS module. |
+
 ## sgx/switchless/edl
 Ecall | Dependent Public APIs | Comments |
 :---|:---:|:---|

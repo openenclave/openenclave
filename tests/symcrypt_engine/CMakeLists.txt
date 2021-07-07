@@ -9,3 +9,7 @@ endif ()
 
 add_enclave_test(tests/symcrypt_engine symcrypt_engine_host
                  sgx_symcrypt_engine_enc)
+
+add_enclave_test(
+  tests/symcrypt_engine_no_entropy symcrypt_engine_no_entropy_host
+  sgx_symcrypt_engine_no_entropy_enc)
