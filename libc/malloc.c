@@ -23,3 +23,8 @@
  * musl/src/malloc/lite_malloc.c
  */
 OE_WEAK_ALIAS(malloc, __libc_malloc);
+
+/*
+ * __libc_free is used by MUSL locale functions.
+ */
+OE_WEAK_ALIAS(free, __libc_free);
