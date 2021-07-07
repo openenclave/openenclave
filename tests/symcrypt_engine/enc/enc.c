@@ -5,7 +5,11 @@
 #include <openenclave/internal/crypto/init.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/tests.h>
+#ifdef USE_ENTROPY_EDL
 #include "symcrypt_engine_t.h"
+#else
+#include "symcrypt_engine_no_entropy_t.h"
+#endif
 
 void ecall_test()
 {

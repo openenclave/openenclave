@@ -9,8 +9,11 @@ static oe_once_t _openssl_initialize_once;
 static ENGINE* _rdrand_engine;
 int _is_symcrypt_engine_available = 0;
 
-/* Forward declaration */
+#define HOST_ENTROPY_TEST_SIZE 16
+
+/* Forward declarations */
 int SC_OSSL_ENGINE_Initialize();
+int oe_sgx_get_additional_host_entropy(uint8_t*, size_t);
 
 static void _finalize(void)
 {
@@ -85,6 +88,14 @@ static void _initialize(void)
         /* Explicitly register the RDRAND engine if the SymCrypt engine
          * is not available, which provides its own RAND implementation. */
         _initialize_rdrand_engine();
+    }
+    else
+    {
+        uint8_t data[HOST_ENTROPY_TEST_SIZE];
+        /* Enforce the invocation of oe_sgx_get_additional_host_entropy,
+         * which will cause an enclave abort if the entropy.edl has not been
+         * included properly */
+        oe_sgx_get_additional_host_entropy(data, HOST_ENTROPY_TEST_SIZE);
     }
 }
 

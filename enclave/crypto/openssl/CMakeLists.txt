@@ -18,6 +18,7 @@ add_enclave_library(
   ${PROJECT_SOURCE_DIR}/common/crypto/openssl/rsa.c
   ${PROJECT_SOURCE_DIR}/common/crypto/openssl/sha.c
   cert.c
+  entropy.c
   gcm.c
   init.c
   symcrypt_engine.c)
@@ -27,7 +28,7 @@ maybe_build_using_clangw(oecryptoopenssl)
 enclave_enable_code_coverage(oecryptoopenssl)
 
 enclave_include_directories(
-  oecryptoopenssl PRIVATE
+  oecryptoopenssl PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include>
   $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/3rdparty/mbedtls>)
 

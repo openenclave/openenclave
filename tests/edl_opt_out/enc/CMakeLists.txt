@@ -25,6 +25,8 @@ add_enclave(
   edl_opt_out_enc
   UUID
   892e7f65-5da1-45d0-8209-53795ce5be8f
+  CRYPTO_LIB
+  OpenSSL
   SOURCES
   enc.c
   ${CMAKE_CURRENT_BINARY_DIR}/edl_opt_out_t.c)

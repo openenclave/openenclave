@@ -3,6 +3,7 @@
 
 enclave {
 #ifdef OE_SGX
+    from "openenclave/edl/sgx/entropy.edl" import *;
     from "openenclave/edl/sgx/platform.edl" import *;
 #else
     from "openenclave/edl/optee/platform.edl" import *;

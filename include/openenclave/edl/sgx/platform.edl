@@ -19,4 +19,7 @@ enclave
     from "openenclave/edl/sgx/debug.edl" import *;
     from "openenclave/edl/sgx/thread.edl" import *;
     from "openenclave/edl/sgx/switchless.edl" import *;
+#ifdef OE_SGX_ENTROPY
+    from "openenclave/edl/sgx/entropy.edl" import *;
+#endif
 };
