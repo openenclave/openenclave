@@ -6,6 +6,7 @@
 #include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/sgx/td.h>
 #include <openenclave/internal/thread.h>
+#include "../tracee.h"
 #include "context.h"
 #include "cpuid.h"
 #include "init.h"
@@ -317,7 +318,7 @@ void oe_virtual_exception_dispatcher(
     uint64_t* arg_out)
 {
     SSA_Info ssa_info = {0};
-    OE_UNUSED(arg_in);
+    oe_exception_record_t* oe_exception_record = (oe_exception_record_t*)arg_in;
 
     // Verify if the first SSA has valid exception info.
     if (_get_enclave_thread_first_ssa_info(td, &ssa_info) != 0)
@@ -331,9 +332,24 @@ void oe_virtual_exception_dispatcher(
     sgx_ssa_gpr_t* ssa_gpr = (sgx_ssa_gpr_t*)gprsgx_offset;
     if (!ssa_gpr->exit_info.as_fields.valid)
     {
-        // Not a valid/expected enclave exception;
-        *arg_out = OE_EXCEPTION_CONTINUE_SEARCH;
-        return;
+        // Only allow the simulated #PF in debug mode
+        if (is_enclave_debug_allowed() && oe_exception_record)
+        {
+            td->exception_address = ssa_gpr->rip;
+
+            td->exception_code = OE_EXCEPTION_PAGE_FAULT;
+            td->exception_flags |= OE_EXCEPTION_FLAGS_HARDWARE;
+
+            /* We expect the host to pass in the faulting address of #PF */
+            td->faulting_address = oe_exception_record->faulting_address;
+            td->error_code = OE_SGX_PAGE_FAULT_US_FLAG;
+        }
+        else
+        {
+            // Not a valid/expected enclave exception;
+            *arg_out = OE_EXCEPTION_CONTINUE_SEARCH;
+            return;
+        }
     }
 
     // Get the exception address, code, and flags.
