@@ -294,11 +294,37 @@ class ModuleUnloadedBreakpoint:
         unload_enclave_symbol(library_image.path, library_image.base_address)
         return False
 
+class LibraryLoadedBreakpoint:
+    def __init__(self, target):
+        breakpoint = target.BreakpointCreateByName("oe_notify_debugger_library_load")
+        breakpoint.SetScriptCallbackFunction('lldb_sgx_plugin.ModuleLoadedBreakpoint.onHit')
+
+    @staticmethod
+    def onHit(frame, bp_loc, dict):
+        library_image_addr = frame.FindValue("rdi", lldb.eValueTypeRegister).signed
+        library_image = oe_debug_module_t(library_image_addr)
+        load_enclave_symbol(library_image.path, library_image.base_address)
+        return False
+
+class LibraryUnloadedBreakpoint:
+    def __init__(self, target):
+        breakpoint = target.BreakpointCreateByName("oe_notify_debugger_library_unload")
+        breakpoint.SetScriptCallbackFunction('lldb_sgx_plugin.ModuleUnloadedBreakpoint.onHit')
+
+    @staticmethod
+    def onHit(frame, bp_loc, dict):
+        library_image_addr = frame.FindValue("rdi", lldb.eValueTypeRegister).signed
+        library_image = oe_debug_module_t(library_image_addr)
+        unload_enclave_symbol(library_image.path, library_image.base_address)
+        return False
+
 def oe_debugger_init(debugger):
     EnclaveCreationBreakpoint(debugger.GetSelectedTarget())
     EnclaveTerminationBreakpoint(debugger.GetSelectedTarget())
     ModuleLoadedBreakpoint(debugger.GetSelectedTarget())
     ModuleUnloadedBreakpoint(debugger.GetSelectedTarget())
+    LibraryLoadedBreakpoint(debugger.GetSelectedTarget())
+    LibraryUnloadedBreakpoint(debugger.GetSelectedTarget())
 
 # Invoked when `command script import lldb_sgx_plugin' is called.
 def __lldb_init_module(debugger, dict):
