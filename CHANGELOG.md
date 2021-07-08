@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased][Unreleased_log]
 --------------
+
+[v0.17.1][v0.17.1_log]
+--------------
+
 ### Added
 - Enabled creation of enclaves with base address 0x0 in SGX on Linux.
   - This feature requires PSW version 2.14.1 or above.
@@ -662,7 +666,9 @@ as listed below.
 
 Initial private preview release, no longer supported.
 
-[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.17.0...HEAD
+[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.17.1...HEAD
+
+[v0.17.1_log]:https://github.com/openenclave/openenclave/compare/v0.17.0...v0.17.1
 
 [v0.17.0_log]:https://github.com/openenclave/openenclave/compare/v0.16.1...v0.17.0
 
