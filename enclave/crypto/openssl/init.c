@@ -63,8 +63,6 @@ static int _initialize_symcrypt_engine()
     if (result != OE_SYMCRYPT_ENGINE_SUCCESS)
         goto done;
 
-    OE_TRACE_INFO("SymCrypt engine is registered");
-
 done:
     if (result == OE_SYMCRYPT_ENGINE_FAIL)
         OE_TRACE_ERROR("SymCrypt engine initialization failed");

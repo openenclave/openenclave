@@ -624,20 +624,14 @@ OE_NO_RETURN
 static void _exit_enclave(uint64_t arg1, uint64_t arg2)
 {
     static bool _initialized = false;
-    static bool _stitch_ocall_stack = false;
     oe_sgx_td_t* td = oe_sgx_get_td();
 
     // Since determining whether an enclave supports debugging is a stateless
-    // idempotent operation, there is no need to lock. The result is cached
-    // for performance since is_enclave_debug_allowed uses local report to
-    // securely determine if an enclave supports debugging or not.
+    // idempotent operation, there is no need to lock.
     if (!_initialized)
-    {
-        _stitch_ocall_stack = is_enclave_debug_allowed();
         _initialized = true;
-    }
 
-    if (_stitch_ocall_stack)
+    if (is_enclave_debug_allowed())
     {
         oe_ecall_context_t* host_ecall_context = td->host_ecall_context;
 
