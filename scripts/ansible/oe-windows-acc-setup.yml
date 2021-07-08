@@ -66,15 +66,19 @@
         name: WinRM
         start_mode: delayed
 
-    - name: Install all security, critical, and rollup updates without a scheduled task
-      win_updates:
-        category_names:
-          - SecurityUpdates
-          - CriticalUpdates
-          - UpdateRollups
-
-    - name: OE setup | Reboot the node
-      win_reboot:
+    - name: OE setup | Windows Updates
+      block: 
+        - name: Install all security, critical, and rollup updates without a scheduled task
+          win_updates:
+            category_names:
+              - SecurityUpdates
+              - CriticalUpdates
+              - UpdateRollups
+            reboot: yes
+            reboot_timeout: 3600
+      always:
+        - name: OE setup | Reboot the node
+          win_reboot:
 
     - import_role:
         name: windows/openenclave
