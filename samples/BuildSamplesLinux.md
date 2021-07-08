@@ -85,6 +85,7 @@ For example, for the helloworld sample:
 ```
 
 ### Build the samples using CMake
+The current version requires CMake 3.11 or higher. 
 
 To build a sample using CMake, change directory to your target sample directory and execute the following commands:
 
