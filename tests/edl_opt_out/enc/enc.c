@@ -122,7 +122,7 @@ void enc_edl_opt_out()
         oe_sgx_backtrace_symbols_ocall(NULL, NULL, NULL, 0, NULL, 0, NULL) ==
         OE_UNSUPPORTED);
 
-    /* sgx/switchless.edl*/
+    /* sgx/switchless.edl */
     OE_TEST(oe_sgx_sleep_switchless_worker_ocall(NULL) == OE_UNSUPPORTED);
     OE_TEST(oe_sgx_wake_switchless_worker_ocall(NULL) == OE_UNSUPPORTED);
 
@@ -168,6 +168,12 @@ void enc_edl_opt_out()
             OE_UNSUPPORTED);
         OE_TEST(result == OE_UNSUPPORTED);
     }
+
+    /* sgx/entropy.edl */
+    /* Only available with oecryptoopenssl */
+    OE_TEST(
+        oe_sgx_get_additional_host_entropy_ocall(NULL, NULL, 0) ==
+        OE_UNSUPPORTED);
 #endif
 }
 

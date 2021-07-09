@@ -8,7 +8,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef USE_ENTROPY_EDL
 #include "symcrypt_engine_u.h"
+#else
+#include "symcrypt_engine_no_entropy_u.h"
+#endif
 
 int main(int argc, const char* argv[])
 {
@@ -23,19 +27,25 @@ int main(int argc, const char* argv[])
 
     const uint32_t flags = oe_get_create_flags();
 
-    if ((result = oe_create_symcrypt_engine_enclave(
-             argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
-        oe_put_err("oe_create_enclave(): result=%u", result);
+#ifdef USE_ENTROPY_EDL
+    result = oe_create_symcrypt_engine_enclave(
+        argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
+    OE_TEST(result == OE_OK);
 
     result = ecall_test(enclave);
-
-    if (result != OE_OK)
-        oe_put_err("oe_call_enclave() failed: result=%u", result);
+    OE_TEST(result == OE_OK);
 
     result = oe_terminate_enclave(enclave);
     OE_TEST(result == OE_OK);
 
     printf("=== passed all tests (symcrypt_engine)\n");
+#else
+    result = oe_create_symcrypt_engine_no_entropy_enclave(
+        argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
+    OE_TEST(result == OE_ENCLAVE_ABORTING);
+
+    printf("=== passed all tests (symcrypt_engine_no_entropy)\n");
+#endif
 
     return 0;
 }
