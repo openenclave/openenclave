@@ -132,3 +132,5 @@ def GetUnloadSymbolCommand(EnclaveFile, Base):
     except:
         print ("Error parsing enclave file.  Check format of file.")
         return -1
+    # If we are here we couldn't construct a remove-symbol-file command
+    return -1

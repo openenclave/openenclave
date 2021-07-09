@@ -200,6 +200,61 @@ static struct
     {19, OE_EXCEPTION_SIMD_FLOAT_POINT},
 };
 
+static int _emulate_wrfsbase(sgx_ssa_gpr_t* ssa_gpr)
+{
+    // Emulate wrfsbase
+    const uint32_t OE_WRFSBASE_PREFIX_1 = 0xae0f48f3;
+    if (*((uint32_t*)ssa_gpr->rip) == OE_WRFSBASE_PREFIX_1)
+    {
+        uint64_t regs[] = {
+            ssa_gpr->rax, // d0
+            ssa_gpr->rcx, // d1
+            ssa_gpr->rdx, // d2
+            ssa_gpr->rbx, // d3
+            ssa_gpr->rsp, // d4
+            ssa_gpr->rbp, // d5
+            ssa_gpr->rsi, // d6
+            ssa_gpr->rdi, // d7
+        };
+
+        uint8_t last_byte = ((uint8_t*)ssa_gpr->rip)[4];
+        uint8_t idx = (uint8_t)(last_byte - 0xd0);
+        if (idx >= sizeof(regs) / sizeof(regs[0]))
+            return -1;
+
+        ssa_gpr->fs_base = regs[idx];
+        ssa_gpr->rip += 5;
+        return 0;
+    }
+
+    // Emulate wrfsbase
+    const uint32_t OE_WRFSBASE_PREFIX_2 = 0xae0f49f3;
+    if (*((uint32_t*)ssa_gpr->rip) == OE_WRFSBASE_PREFIX_2)
+    {
+        uint64_t regs[] = {
+            ssa_gpr->r8,  // d0
+            ssa_gpr->r9,  // d1
+            ssa_gpr->r10, // d2
+            ssa_gpr->r11, // d3
+            ssa_gpr->r12, // d4
+            ssa_gpr->r13, // d5
+            ssa_gpr->r14, // d6
+            ssa_gpr->r15, // d7
+        };
+
+        uint8_t last_byte = ((uint8_t*)ssa_gpr->rip)[4];
+        uint8_t idx = (uint8_t)(last_byte - 0xd0);
+        if (idx >= sizeof(regs) / sizeof(regs[0]))
+            return -1;
+
+        ssa_gpr->fs_base = regs[idx];
+        ssa_gpr->rip += 5;
+        return 0;
+    }
+
+    return -1;
+}
+
 /*
 **==============================================================================
 **
@@ -218,6 +273,9 @@ int _emulate_illegal_instruction(sgx_ssa_gpr_t* ssa_gpr)
         return oe_emulate_cpuid(
             &ssa_gpr->rax, &ssa_gpr->rbx, &ssa_gpr->rcx, &ssa_gpr->rdx);
     }
+
+    if (_emulate_wrfsbase(ssa_gpr) == 0)
+        return 0;
 
     return -1;
 }
@@ -351,30 +409,32 @@ void oe_virtual_exception_dispatcher(
             return;
         }
     }
-
-    // Get the exception address, code, and flags.
-    td->exception_address = ssa_gpr->rip;
-    td->exception_code = OE_EXCEPTION_UNKNOWN;
-    for (uint32_t i = 0; i < OE_COUNTOF(g_vector_to_exception_code_mapping);
-         i++)
+    else
     {
-        if (g_vector_to_exception_code_mapping[i].sgx_vector ==
-            ssa_gpr->exit_info.as_fields.vector)
+        // Get the exception address, code, and flags.
+        td->exception_address = ssa_gpr->rip;
+        td->exception_code = OE_EXCEPTION_UNKNOWN;
+        for (uint32_t i = 0; i < OE_COUNTOF(g_vector_to_exception_code_mapping);
+             i++)
         {
-            td->exception_code =
-                g_vector_to_exception_code_mapping[i].exception_code;
-            break;
+            if (g_vector_to_exception_code_mapping[i].sgx_vector ==
+                ssa_gpr->exit_info.as_fields.vector)
+            {
+                td->exception_code =
+                    g_vector_to_exception_code_mapping[i].exception_code;
+                break;
+            }
         }
-    }
 
-    td->exception_flags = 0;
-    if (ssa_gpr->exit_info.as_fields.exit_type == SGX_EXIT_TYPE_HARDWARE)
-    {
-        td->exception_flags |= OE_EXCEPTION_FLAGS_HARDWARE;
-    }
-    else if (ssa_gpr->exit_info.as_fields.exit_type == SGX_EXIT_TYPE_SOFTWARE)
-    {
-        td->exception_flags |= OE_EXCEPTION_FLAGS_SOFTWARE;
+        td->exception_flags = 0;
+        if (ssa_gpr->exit_info.as_fields.exit_type == SGX_EXIT_TYPE_HARDWARE)
+        {
+            td->exception_flags |= OE_EXCEPTION_FLAGS_HARDWARE;
+        }
+        else if (ssa_gpr->exit_info.as_fields.exit_type == SGX_EXIT_TYPE_SOFTWARE)
+        {
+            td->exception_flags |= OE_EXCEPTION_FLAGS_SOFTWARE;
+        }
     }
 
     if (td->exception_code == OE_EXCEPTION_ILLEGAL_INSTRUCTION &&
@@ -392,8 +452,9 @@ void oe_virtual_exception_dispatcher(
     {
         /* The following codes can only be captured with SGX2 and the
          * MISCSELECT[0] bit is set to 1. */
-        if (td->exception_code == OE_EXCEPTION_PAGE_FAULT ||
-            td->exception_code == OE_EXCEPTION_ACCESS_VIOLATION)
+        if (ssa_gpr->exit_info.as_fields.valid &&
+            (td->exception_code == OE_EXCEPTION_PAGE_FAULT ||
+            td->exception_code == OE_EXCEPTION_ACCESS_VIOLATION))
         {
             sgx_exinfo_t* exinfo =
                 (sgx_exinfo_t*)(gprsgx_offset - OE_SGX_MISC_BYTE_SIZE);
