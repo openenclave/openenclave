@@ -18,6 +18,7 @@ parallel "Windows Stage": {
                        string(name: 'DOCKER_TAG', value: env.DOCKER_TAG),
                        string(name: 'AGENTS_LABEL', value: env.WINDOWS_AGENTS_LABEL),
                        string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
+                       booleanParam(name: 'PUBLISH_DOCKER_HUB', value: env.PUBLISH_DOCKER_HUB),
                        booleanParam(name: 'TAG_LATEST', value: env.TAG_LATEST)]
         }
     }, "Linux Stage": {
@@ -31,6 +32,7 @@ parallel "Windows Stage": {
                        string(name: 'DOCKER_TAG', value: env.DOCKER_TAG),
                        string(name: 'AGENTS_LABEL', value: env.AGENTS_LABEL),
                        string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
+                       booleanParam(name: 'PUBLISH_DOCKER_HUB', value: env.PUBLISH_DOCKER_HUB),
                        booleanParam(name: 'TAG_LATEST', value: env.TAG_LATEST)]
         }
     }
