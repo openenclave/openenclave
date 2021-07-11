@@ -270,8 +270,11 @@ int _emulate_illegal_instruction(sgx_ssa_gpr_t* ssa_gpr)
     // Emulate CPUID
     if (*((uint16_t*)ssa_gpr->rip) == OE_CPUID_OPCODE)
     {
-        return oe_emulate_cpuid(
+        int ret = oe_emulate_cpuid(
             &ssa_gpr->rax, &ssa_gpr->rbx, &ssa_gpr->rcx, &ssa_gpr->rdx);
+        if (ret == 0)
+            ssa_gpr->rip += 2;
+        return ret;
     }
 
     if (_emulate_wrfsbase(ssa_gpr) == 0)
@@ -444,9 +447,6 @@ void oe_virtual_exception_dispatcher(
         td->host_rbp = td->host_previous_rbp;
         td->host_rsp = td->host_previous_rsp;
         td->host_ecall_context = td->host_previous_ecall_context;
-
-        // Advance RIP to the next instruction for continuation
-        ssa_gpr->rip += 2;
     }
     else
     {
