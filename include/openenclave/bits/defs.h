@@ -233,7 +233,7 @@
 
 /* OE_WEAK */
 #ifdef __GNUC__
-#define OE_WEAK __attribute__((weak))
+#define OE_WEAK __attribute__((__weak__))
 #else
 #define OE_WEAK
 #endif

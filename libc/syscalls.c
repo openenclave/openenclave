@@ -30,19 +30,19 @@ static const uint64_t _SEC_TO_MSEC = 1000UL;
 static const uint64_t _MSEC_TO_USEC = 1000UL;
 static const uint64_t _MSEC_TO_NSEC = 1000000UL;
 
-OE_DEFINE_SYSCALL6(SYS_mmap)
+OE_WEAK OE_DEFINE_SYSCALL6(SYS_mmap)
 {
     /* Always fail */
     return EPERM;
 }
 
-OE_DEFINE_SYSCALL2(SYS_munmap)
+OE_WEAK OE_DEFINE_SYSCALL2(SYS_munmap)
 {
     /* Always fail */
     return EPERM;
 }
 
-OE_DEFINE_SYSCALL2(SYS_clock_gettime)
+OE_WEAK OE_DEFINE_SYSCALL2(SYS_clock_gettime)
 {
     clockid_t clock_id = (clockid_t)arg1;
     struct timespec* tp = (struct timespec*)arg2;
@@ -72,7 +72,7 @@ done:
     return ret;
 }
 
-OE_DEFINE_SYSCALL2(SYS_gettimeofday)
+OE_WEAK OE_DEFINE_SYSCALL2(SYS_gettimeofday)
 {
     struct timeval* tv = (struct timeval*)arg1;
     void* tz = (void*)arg2;
@@ -241,7 +241,7 @@ long __syscall(long n, long x1, long x2, long x3, long x4, long x5, long x6)
     abort();
 }
 
-long syscall(long number, ...)
+OE_WEAK long syscall(long number, ...)
 {
     va_list ap;
 
