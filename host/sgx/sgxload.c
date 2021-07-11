@@ -321,6 +321,15 @@ void oe_sgx_cleanup_load_context(oe_sgx_load_context_t* context)
     memset(context, 0, sizeof(oe_sgx_load_context_t));
 }
 
+void* oe_sgx_get_enclave_base_address_hook(void);
+
+// Application may override this function to determine enclave's base address.
+OE_WEAK
+void* oe_sgx_get_enclave_base_address_hook(void)
+{
+    return NULL; /* Let OS choose the enclave base address */
+}
+
 oe_result_t oe_sgx_create_enclave(
     oe_sgx_load_context_t* context,
     size_t enclave_size,
@@ -388,7 +397,7 @@ oe_result_t oe_sgx_create_enclave(
     {
         uint32_t enclave_error;
         void* base = oe_sgx_enclave_create(
-            NULL, /* Let OS choose the enclave base address */
+            oe_sgx_get_enclave_base_address_hook(),
             secs->size,
             enclave_commit_size,
             ENCLAVE_TYPE_SGX1,
