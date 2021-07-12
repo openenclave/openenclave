@@ -648,7 +648,7 @@ static void _exit_enclave(uint64_t arg1, uint64_t arg2)
             host_ecall_context->debug_eexit_rip = frame[1];
         }
     }
-    oe_asm_exit(arg1, arg2, td);
+    oe_asm_exit(arg1, arg2, td, 0 /* aborting */);
 }
 
 /*
@@ -1083,9 +1083,15 @@ void __oe_handle_main(
         switch (code)
         {
             case OE_CODE_ECALL:
+            {
+                /* The invocation of the virtual exception handler is not
+                 * allowed when cssa=0. */
+                if (func == OE_ECALL_VIRTUAL_EXCEPTION_HANDLER)
+                    oe_abort();
+
                 _handle_ecall(td, func, arg_in, output_arg1, output_arg2);
                 break;
-
+            }
             case OE_CODE_ORET:
                 /* Eventually calls oe_exit_enclave() and never returns here if
                  * successful */
@@ -1097,8 +1103,10 @@ void __oe_handle_main(
                 oe_abort();
         }
     }
-    else /* cssa > 0 */
+    else if (cssa == 1)
     {
+        /* cssa == 1 indicates the entry after an AEX. We only allow the
+         * invocation of the virtual exception handler in this case. */
         if ((code == OE_CODE_ECALL) &&
             (func == OE_ECALL_VIRTUAL_EXCEPTION_HANDLER))
         {
@@ -1106,7 +1114,13 @@ void __oe_handle_main(
             return;
         }
 
-        /* ATTN: handle asynchronous exception (AEX) */
+        /* Unexpected case */
+        oe_abort();
+    }
+    else /* cssa > 1 */
+    {
+        /* Currently OE only supports an enclave with nssa = 2, which means
+         * that cssa can never exceed 1 (indicating nested AEX). */
         oe_abort();
     }
 }

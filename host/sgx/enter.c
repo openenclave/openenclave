@@ -3,6 +3,7 @@
 
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/constants_x64.h>
 #include <openenclave/internal/registers.h>
 #include <openenclave/internal/sgx/ecall_context.h>
 #include "asmdefs.h"
@@ -57,6 +58,12 @@
 #define OE_ENCLU_CLOBBERED_REGISTERS                                      \
     "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15", "xmm6", "xmm7", \
         "xmm8", "xmm9", "xmm10", "xmm11", "xmm12", "xmm13", "xmm14", "xmm15"
+
+// Release two registers for the simulation mode, which is required by the
+// inline assembly to save rsp and rbp in memory (used as scratch registers)
+#define OE_SIMULATE_ENCLU_CLOBBERED_REGISTERS                                 \
+    "r10", "r11", "r12", "r13", "r14", "r15", "xmm6", "xmm7", "xmm8", "xmm9", \
+        "xmm10", "xmm11", "xmm12", "xmm13", "xmm14", "xmm15"
 
 #define OE_VZEROUPPER              \
     asm volatile("vzeroupper \n\t" \
@@ -263,6 +270,10 @@ void oe_enter_sim(
     OE_UNUSED(aep);
     OE_ALIGNED(16)
     uint64_t fx_state[64];
+    uint16_t func;
+    uint64_t cssa;
+    sgx_ssa_gpr_t* ssa_gpr;
+    const uint64_t ssa = (uint64_t)tcs + OE_SSA_FROM_TCS_BYTE_OFFSET;
 
     // Backup host FS and GS registers
     void* host_fs = oe_get_fs_register_base();
@@ -292,9 +303,20 @@ void oe_enter_sim(
         if (oe_is_avx_enabled)
             OE_VZEROUPPER;
 
+        // Simulate the cssa set by EENTER
+        func = oe_get_func_from_call_arg1(arg1);
+        if (func == OE_ECALL_VIRTUAL_EXCEPTION_HANDLER)
+            cssa = 1;
+        else
+            cssa = 0;
+
+        // Obtain ssa_gpr based on cssa
+        ssa_gpr =
+            (sgx_ssa_gpr_t*)(ssa + OE_PAGE_SIZE * cssa + OE_SGX_GPR_OFFSET_FROM_SSA);
+
         // Define register bindings and initialize the registers.
         // See oe_enter for ENCLU contract.
-        OE_DEFINE_REGISTER(rax, 0 /* CSSA */);
+        OE_DEFINE_REGISTER(rax, cssa);
         OE_DEFINE_REGISTER(rbx, tcs);
         OE_DEFINE_REGISTER(rcx, 0 /* filled in asm snippet */);
         OE_DEFINE_REGISTER(rdx, &ecall_context);
@@ -304,15 +326,19 @@ void oe_enter_sim(
 
         asm volatile("fxsave %[fx_state] \n\t"   // Save floating point state
                      "pushfq \n\t"               // Save flags
+                     "mov %%rsp, %[ursp] \n\t"   // Save rsp to the SSA.URSP
+                     "mov %%rbp, %[urbp] \n\t"   // Save rbp to the SSA.URBP
                      "lea 1f(%%rip), %%rcx \n\t" // Load return address in rcx
-                     "mov 72(%%rbx), %% r8 \n\t" // Load enclave entry point
+                     "mov 72(%%rbx), %%r8 \n\t"  // Load enclave entry point
                      "jmp *%%r8  \n\t"           // Jump to enclave entry point
                      "1: \n\t"
                      "popfq \n\t"               // Restore flags
                      "fxrstor %[fx_state] \n\t" // Restore floating point state
-                     : OE_ENCLU_REGISTERS
+                     : OE_ENCLU_REGISTERS,
+                       [ursp] "=m"(ssa_gpr->ursp),
+                       [urbp] "=m"(ssa_gpr->urbp)
                      : [fx_state] "m"(fx_state)OE_FRAME_POINTER
-                     : OE_ENCLU_CLOBBERED_REGISTERS);
+                     : OE_SIMULATE_ENCLU_CLOBBERED_REGISTERS);
 
         // Update arg1 and arg2 with outputs returned by the enclave.
         arg1 = rdi;

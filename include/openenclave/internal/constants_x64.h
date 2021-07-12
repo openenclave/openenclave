@@ -15,6 +15,8 @@
 //
 
 #define SGX_SSA_RSP_OFFSET 0XF68
+#define SGX_SSA_URSP_OFFSET 0xFD8
+#define SGX_SSA_URBP_OFFSET 0xFE0
 
 //
 // Open Enclave layout constant definitions.
@@ -23,6 +25,7 @@
 #define OE_SSA_FROM_TCS_BYTE_OFFSET OE_PAGE_SIZE
 #define OE_DEFAULT_SSA_FRAME_SIZE 0x1
 #define OE_SGX_GPR_BYTE_SIZE 0xb8
+#define OE_SGX_GPR_OFFSET_FROM_SSA OE_PAGE_SIZE - OE_SGX_GPR_BYTE_SIZE
 #define OE_SGX_TCS_HEADER_BYTE_SIZE 0x48
 #define OE_SGX_MISC_BYTE_SIZE 0x10
 
@@ -61,6 +64,12 @@
 #define OE_CONTEXT_RIP 0x88
 #define OE_CONTEXT_MXCSR 0x90
 #define OE_CONTEXT_FLOAT 0xA0
+
+//
+// Open Enclave structure-specific offset definitions.
+//
+
+#define OE_SGX_ENCLAVE_SIZE_OFFSET 0x88
 
 //
 // XSTATE constants.
