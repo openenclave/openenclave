@@ -29,12 +29,9 @@
 #define td_last_sp 8
 #define td_magic 168
 #define td_depth (td_magic + 8)
-#define td_host_rcx (td_depth + 8)
-#define td_host_rsp (td_host_rcx + 8)
-#define td_host_rbp (td_host_rsp + 8)
-#define td_host_previous_rsp (td_host_rbp + 8)
-#define td_host_previous_rbp (td_host_previous_rsp + 8)
-#define td_oret_func (td_host_previous_rbp + 8)
+#define td_eenter_rax (td_depth + 8)
+#define td_host_rcx (td_eenter_rax + 8)
+#define td_oret_func (td_host_rcx + 8)
 #define td_oret_arg (td_oret_func + 8)
 #define td_callsites (td_oret_arg + 8)
 #define td_simulate (td_callsites + 8)
@@ -50,7 +47,11 @@
 void oe_exit_enclave(uint64_t arg1, uint64_t arg2) OE_NO_RETURN;
 
 /* This is the actual implementation of eexit */
-void oe_asm_exit(uint64_t arg1, uint64_t arg2, oe_sgx_td_t* td) OE_NO_RETURN;
+void oe_asm_exit(
+    uint64_t arg1,
+    uint64_t arg2,
+    oe_sgx_td_t* td,
+    uint64_t aborting) OE_NO_RETURN;
 #endif
 
 #ifndef __ASSEMBLER__
