@@ -20,6 +20,7 @@ The targets relevant to users of the SDK are:
 
 - `openenclave::oeedger8r`
 - `openenclave::oesign`
+- `openenclave::oeapkman`
 
 ### Libraries
 

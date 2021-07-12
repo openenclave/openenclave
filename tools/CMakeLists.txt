@@ -62,6 +62,9 @@ install(
   DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 if (OE_SGX)
+  if (UNIX)
+    add_subdirectory(oeapkman)
+  endif ()
   add_subdirectory(oesgx)
   add_subdirectory(oesign)
   add_subdirectory(oeverify)

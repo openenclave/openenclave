@@ -1,0 +1,396 @@
+#!/bin/bash
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+# URL to fetch alpine root fs from About 2.5 MB download.
+ALPINE_ROOTFS_URL="https://dl-cdn.alpinelinux.org/alpine/v3.14/\
+releases/x86_64/alpine-minirootfs-3.14.0-x86_64.tar.gz"
+
+# Use a recent version of proot. With older versions, apk would
+# report messages like "2 errors", that are innocuous, but catch
+# the eye.
+PROOT_URL="https://gitlab.com/proot/proot/-/jobs/981080842/\
+artifacts/download?file_type=archive"
+
+# Name of the folder where root filesystem will be extracted to.
+ALPINE_FS="alpine-fs"
+
+APORTS_BRANCH=3.13-stable
+
+# Figure out the user's home folder. If the command is executed
+# as sudo, then we use $SUDO_USER's home folder and not the
+# root's home folder.
+if [ -n "$SUDO_USER" ]; then
+    HOME_DIR=/home/${SUDO_USER}
+else
+    HOME_DIR=~
+fi
+
+OEAPKMAN_DIR=${HOME_DIR}/.oeapkman
+CURRENT_DIR=$(pwd)
+
+LOCK_FILE="/var/lock/oeapkman.lock"
+
+print_usage()
+{
+    usage="\
+oeapkman -  package manager and toolbox for enclave development.
+            version 0.1a, alpine-linux 3.14-stable
+
+oeapkman uses \`unshare\`/\`proot\` to manage an installation of alpine-linux.
+Alpine linux exists as a normal directory on the host machine and thus headers
+and libraries can be transparently used to build enclaves on the host machine.
+oeapkman also sets up the a development environment for fine-tuning and building
+packages specifically for enclaves.
+
+Links:
+Open Enclave SDK  : https://openenclave.io/sdk/
+Alpine Linux Wiki : https://wiki.alpinelinux.org/wiki/Main_Page
+Building Packages : https://wiki.alpinelinux.org/wiki/Abuild_and_Helpers
+Package Search    : https://pkgs.alpinelinux.org/packages
+Search Contents   : https://pkgs.alpinelinux.org/contents
+Proot             : https://proot-me.github.io/
+
+usage: oeapkman COMMAND [<ARGUMENTS>]
+
+Package installation and removal:
+  search     Search for packages matching given patterns.
+             E.g:
+                oeapkman search sqlite quickjs
+             Hint: Search for static and dev versions of libraries.
+             Hint: Use the \`Search Contents\` link above to find out what package
+                   contains the header/library files you are looking for.
+  add        Install packages
+             E.g:
+                oeapkman add sqlite-static sqlite-dev
+                oeapkman add quickjs
+  del        Remove given packages.
+
+Using packages:
+  root       The root folder of this alpine-linux instance. Header and library paths
+             can be specified relative to the root path.
+             E.g:
+             Specify header paths to compiler:
+                -I \`oeapkman root\`/usr/include/c++/10.2.1 -I \`oeapkman root\`/usr/include
+             Specify library paths to linker:
+                -L \`oeapkman root\`/usr/lib
+
+Execute commands:
+  exec       Execute a command in the current working directory. Current user's
+             home folder made as well as /home is made  available to alpine
+             linux. Tools in the alpine-linux distribution can thus be run on
+             any file under the home folder.
+             E.g:
+                 oeapkman exec clang -c foo.c
+                 Compile foo.c in current folder using the clang compiler from
+                 the alpine install.
+
+
+Help:
+ help       Print usage.
+"
+
+    echo "$usage"
+}
+
+setup_alpine_fs()
+{
+    mkdir -p "$OEAPKMAN_DIR" && cd "$OEAPKMAN_DIR" || exit 1
+    if ! test -d "${ALPINE_FS}"; then
+
+        if ! command -v tar > /dev/null; then
+            echo "Install tar to proceed." && exit 1
+        fi
+        if ! command -v curl > /dev/null; then
+            if ! command -v wget > /dev/null; then
+                echo "Install curl or wget to proceed." && exit 1
+            fi
+        fi
+
+        if command -v curl > /dev/null; then
+            curl -L -o alpine-minirootfs.tar.gz "$ALPINE_ROOTFS_URL"
+        elif command -v wget > /dev/null; then
+            wget -O alpine-minirootfs.tar.gz  "$ALPINE_ROOTFS_URL"
+        else
+            echo "Install curl or wget to proceed." && exit 1
+        fi
+
+        sh -c "mkdir -p tmp && cd tmp && tar xf ../alpine-minirootfs.tar.gz"
+        cp /etc/resolv.conf tmp/etc/resolv.conf
+        echo "https://dl-cdn.alpinelinux.org/alpine/edge/testing" >> tmp/etc/apk/repositories
+        mkdir tmp/apkbuild
+        mv tmp "${ALPINE_FS}"
+
+        echo "Checking if unshare works..."
+        if ! alpine_exec echo "unshare works" 2>/dev/null; then
+            # Download and use proot
+            echo "unshare doesn't work"
+            if command -v curl > /dev/null; then
+                curl -L -o proot.zip "$PROOT_URL"
+            else
+                wget -O proot.zip "$PROOT_URL"
+            fi
+            "$ALPINE_FS/lib/ld-musl-x86_64.so.1" "$ALPINE_FS/bin/busybox" unzip proot.zip
+            MODE="proot"
+        else
+            MODE="unshare"
+        fi
+
+        # Initialize apk
+        alpine_exec sh -c "apk update && apk add bash"
+        echo "oeapkman configured to use \`$MODE\`"
+    fi
+}
+
+alpine_exec()
+{
+    export SHELL=/bin/sh
+    export TERM=xterm-256color
+    export PS1="oeapkman \w$ "
+    export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
+
+    if test -f dist/proot; then
+        # Root home folder is /root. Therefore bind both $HOME and /home
+        dist/proot -b /dev -b /dev/pts -b /proc -b /sys -b /dev/shm \
+                   -b "$HOME" \
+                   -b /home \
+                   -b /opt \
+                   -r alpine-fs \
+                   -0 \
+                   -w "$CURRENT_DIR" \
+                    "$@"
+
+    else
+        ALPINE_EXEC_CMD="
+            mount --rbind /home \"$ALPINE_FS/home\"
+            mount --rbind /opt \"$ALPINE_FS/opt\"
+            mount -t proc /proc \"$ALPINE_FS/proc\"
+            mount --rbind /dev \"$ALPINE_FS/dev\"
+            mount --rbind  /sys \"$ALPINE_FS/sys\"
+            chroot \"$ALPINE_FS\" sh -c 'cd \"$CURRENT_DIR\" && \"\$@\"' oeapkman \"\$@\"
+        "
+        unshare --map-root-user --pid --fork --mount --propagation unchanged \
+                sh -c "$ALPINE_EXEC_CMD" oeapkman "$@"
+    fi
+}
+
+
+setup_alpine_fs
+
+wrap_ld()
+{
+    if test -f "$ALPINE_FS/apkbuild/ld.wrap.done"; then
+        return
+    fi
+    echo "Wrapping ld"
+    LD_DIR="${ALPINE_FS}/usr/x86_64-alpine-linux-musl/bin"
+    if ! test -f "$LD_DIR/ld.orig"; then
+        mv "$LD_DIR/ld" "$LD_DIR/ld.orig"
+    fi
+    # Remove ld found in usr/bin folder so that everything get routed to
+    # the same ld
+    #if test -f "$ALPINE_FS/usr/bin/ld"; then
+    #    rm "$ALPINE_FS/usr/bin/ld"
+    #fi
+    /bin/cat <<EOF > "$LD_DIR/ld"
+#!/bin/bash
+create_archive() {
+    OBJECTS=""
+    DEPS=""
+    next_is_out=0
+    libname="a.a"
+    for arg in "\$@"
+    do
+        if [ \$next_is_out -eq 1 ]; then
+            libname="\$arg.a"
+            next_is_out=0
+            continue
+        fi
+        case "\$arg" in
+            *"crt1.o"|*"crtbeginS.o"|*"crtendS.o"|*"crti.o"|*"crts.o"|*"crtn.o")
+                continue
+                ;;
+            *".o")
+                OBJECTS="\$OBJECTS \$arg"
+                ;;
+            *".a")
+                DEPS="\$DEPS \$arg"
+                ;;
+            "-o")
+                next_is_out=1
+        esac
+    done
+    LIBDIR="/apkbuild/exe-libs/\$libname"
+    libname=\$(basename \$libname)
+    rm -rf "\$LIBDIR" 2>/dev/null
+    mkdir -p "\$LIBDIR"
+    DEPSTR=""
+    for dep in \$DEPS
+    do
+        cp "\$dep" "\$LIBDIR"
+        DEPSTR="\$DEPSTR -l:\$(basename \$dep)"
+    done
+
+    if [ ! -z "\$OBJECTS" ]; then
+        ar r  "\$LIBDIR/\$libname" \$OBJECTS 2>/dev/null
+        echo "\$DEPSTR" > "\$LIBDIR/\$libname.deps"
+    fi
+}
+
+/usr/x86_64-alpine-linux-musl/bin/ld.orig "\$@"
+create_archive "\$@" || exit 0
+EOF
+
+    chmod +x "$LD_DIR/ld"
+    touch "$ALPINE_FS/apkbuild/ld.wrap.done"
+}
+
+ensure_apkbuild_prereqs()
+{
+    PREREQS_CMD="
+mkdir -p /apkbuild && cd /apkbuild
+
+if ! test -f packages.done; then
+  echo \"Installing apkbuild prerequisites\"
+  apk add git runuser build-base alpine-sdk clang gdb bear && touch packages.done
+fi
+
+if ! test -f keygen.done; then
+  abuild-keygen -an && touch keygen.done
+fi
+
+if ! test -f git.config.done; then
+  echo \"Configuring git\"
+  git config --global user.name \"enclave developer\" && \\
+  git config --global user.email \"enclave-dev@unknown.com\" && \\
+  touch git.config.done
+fi
+
+if ! test -f git.clone.done; then
+  echo \"Cloning repo\"
+  git clone --depth 1 --branch ${APORTS_BRANCH} git://git.alpinelinux.org/aports && \\
+  touch git.clone.done
+fi
+"
+    alpine_exec flock "$LOCK_FILE" sh -c "$PREREQS_CMD"
+    wrap_ld
+}
+
+abuild_prepare()
+{
+    FLAGS=" -mspeculative-load-hardening -fpic -g -Og -fno-omit-frame-pointer"
+    /bin/cat <<EOM >${ALPINE_FS}/apkbuild/prepare.sh
+export CC=clang
+export CXX=clang++
+export CFLAGS="$FLAGS"
+export CXXFLAGS="$FLAGS"
+if [ -d "/apkbuild/aports/testing/\$1" ]; then
+   cd "/apkbuild/aports/testing/\$1"
+fi
+if [ -d "/apkbuild/aports/community/\$1" ]; then
+   cd "/apkbuild/aports/community/\$1"
+fi
+if [ -d "/apkbuild/aports/main/\$1" ]; then
+   cd "/apkbuild/aports/main/\$1"
+fi
+abuild -F checksum
+abuild -F deps
+abuild -F unpack
+abuild -F prepare
+EOM
+    alpine_exec sh /apkbuild/prepare.sh "$1"
+}
+abuild_build()
+{
+    FLAGS=" -mspeculative-load-hardening -fpic -g -Og -fno-omit-frame-pointer"
+    /bin/cat <<EOM >${ALPINE_FS}/apkbuild/build.sh
+export CC=clang
+export CXX=clang++
+export CFLAGS="$FLAGS"
+export CXXFLAGS="$FLAGS"
+if [ -d "/apkbuild/aports/testing/\$1" ]; then
+   cd "/apkbuild/aports/testing/\$1"
+fi
+if [ -d "/apkbuild/aports/community/\$1" ]; then
+   cd "/apkbuild/aports/community/\$1"
+fi
+if [ -d "/apkbuild/aports/main/\$1" ]; then
+   cd "/apkbuild/aports/main/\$1"
+fi
+bear -- abuild -F -K build
+abuild -F -K package
+mkdir -p /apkbuild/pkgs
+cp -r pkg/\$1/* /apkbuild/pkgs
+echo Done!
+EOM
+    alpine_exec sh /apkbuild/build.sh "$1"
+}
+
+ROOTFS_PATH="${OEAPKMAN_DIR}/${ALPINE_FS}"
+
+
+case "$1" in
+    "search")
+        alpine_exec flock "$LOCK_FILE" apk "$@" -v | sort
+        ;;
+
+    "add")
+        alpine_exec flock "$LOCK_FILE" apk "$@" && exit 0
+        ret=$?
+        if [ "$ret" -gt 0 ]; then
+            echo "Safe to ignore above  error  when running in container."
+        else
+            exit $ret
+        fi
+        ;;
+
+    "del")
+        alpine_exec flock "$LOCK_FILE" apk "$@"
+        ;;
+
+    "root")
+        echo "$ROOTFS_PATH"
+        ;;
+
+    "build-init")
+        ensure_apkbuild_prereqs
+        ;;
+
+    "prepare")
+        ensure_apkbuild_prereqs
+        abuild_prepare "$2"
+        ;;
+
+    "build")
+        ensure_apkbuild_prereqs
+        abuild_build "$2"
+        ;;
+
+    "exec")
+        shift
+        alpine_exec "$@"
+        ;;
+
+    "help")
+        print_usage
+        ;;
+
+    "--init")
+        ensure_oeapkman_dir
+        ensure_dependencies
+        setup_alpine_fs
+        ;;
+
+    "--wrap-ld")
+        wrap_ld
+        ;;
+
+    "")
+        exit 0
+        ;;
+
+    *)
+        print_usage
+        exit 1
+        ;;
+esac
