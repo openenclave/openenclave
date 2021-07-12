@@ -20,6 +20,7 @@ The targets relevant to users of the SDK are:
 
 - `openenclave::oeedger8r`
 - `openenclave::oesign`
+- `openenclave::oeapkman` (only on Linux)
 
 ### Libraries
 
@@ -172,3 +173,12 @@ Finally, you can run the enclave with:
 ```sh
 ./example_host /path/to/example_enclave.signed
 ```
+
+### Running `oeapkman`
+
+On Linux, Alpine Linux static libraries can be installed for use within enclaves as follows:
+```bash
+oeapkman add sqlite-static sqlite-dev
+```
+
+For a complete walkthrough of using `oeapkman` refer to [apkman sample](../samples/apkman/README.md).
