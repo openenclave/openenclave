@@ -77,6 +77,29 @@ def windowsCrossCompile(String label, String build_type, String lvi_mitigation =
     }
 }
 
+def windowsCrossPlatform(String label) {
+    def node_label = AGENTS_LABELS[label]
+    stage("Windows ${node_label} Cross Plaform Build") {
+        node(node_label) {
+            timeout(GLOBAL_TIMEOUT_MINUTES) {
+                cleanWs()
+                checkout scm
+
+                dir("devex/cross-nuget/standalone-builds/windows") {
+                    bat(
+                        returnStdout: false,
+                        returnStatus: false,
+                        script: """
+                            vcvars64.bat x64 && powershell -c "Set-ExecutionPolicy Bypass -Scope Process; .\\build.ps1 -SDK_PATH ${WORKSPACE}"
+                            vcvars64.bat x64 && powershell -c "Set-ExecutionPolicy Bypass -Scope Process; .\\pack.ps1"
+                        """
+                    )
+                }
+            }
+        }
+    }
+}
+
 properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '90',
                                       artifactNumToKeepStr: '180',
                                       daysToKeepStr: '90',
@@ -107,7 +130,8 @@ try{
                 "Win2019 RelWithDebInfo Cross Compile DCAP LVI":                  { windowsCrossCompile('acc-win2019', 'RelWithDebInfo', 'ControlFlow') },
 
                 "Win2019 Sim Debug Cross Compile LVI snmalloc":                   { windowsCrossCompile('acc-win2019', 'Debug',          'ControlFlow', '1', 'OFF', ['-DUSE_SNMALLOC=ON']) },
-                "Win2019 RelWithDebInfo Cross Compile DCAP LVI snmalloc":         { windowsCrossCompile('acc-win2019', 'RelWithDebInfo', 'ControlFlow', '0', 'OFF', ['-DUSE_SNMALLOC=ON']) }
+                "Win2019 RelWithDebInfo Cross Compile DCAP LVI snmalloc":         { windowsCrossCompile('acc-win2019', 'RelWithDebInfo', 'ControlFlow', '0', 'OFF', ['-DUSE_SNMALLOC=ON']) },
+                "Win2019 Cross Platform":                                         { windowsCrossPlatform('acc-win2019-dcap') }
             ]
             parallel testing_stages
         }
