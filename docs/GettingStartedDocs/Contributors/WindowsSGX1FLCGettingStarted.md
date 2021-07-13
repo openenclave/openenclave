@@ -62,7 +62,7 @@ updating the PSW and DCAP software components:
 ./scripts/install-windows-prereqs.ps1 -LaunchConfiguration SGX1FLC-NoIntelDrivers
 ```
 
-To install the prerequisites along with the Azure DCAP Client, use the below
+To install the prerequisites along with the [Azure DCAP Client](https://github.com/microsoft/Azure-DCAP-Client), use the below
 command. The Azure DCAP Client is necessary to perform attestation on an Azure
 Confidential Computing VM. This command assumes that you would like the
 prerequisites to be installed to `C:/oe_prereqs`.
