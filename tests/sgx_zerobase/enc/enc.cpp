@@ -3,42 +3,84 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/tests.h>
+#include <openenclave/internal/thread.h>
+#include <iostream>
+
 #include "sgx_zerobase_t.h"
 
-const char* protected_message = "Hello world from Enclave\n\0";
+static uint64_t faulting_address = sizeof(uint64_t) - 1;
+static uint32_t error_code;
+static uint32_t exception_code;
+static oe_once_t _exception_handler_init_once;
 
-int secure_string_patching(
-    const char* source,
-    char* output,
-    size_t output_length)
+uint64_t test_pfgp_handler(oe_exception_record_t* exception_record)
 {
-    const char* running_source = source;
-    size_t running_length = output_length;
-    while (running_length > 0 && *running_source != '\0')
+    if (exception_record->code == OE_EXCEPTION_PAGE_FAULT)
     {
-        *output = *running_source;
-        running_length--;
-        running_source++;
-        output++;
+        const int MOV_INSTRUCTION_BYTES = 3;
+        faulting_address = exception_record->faulting_address;
+        error_code = exception_record->error_code;
+        exception_record->context->rip += MOV_INSTRUCTION_BYTES;
+        exception_code = OE_EXCEPTION_PAGE_FAULT;
     }
-    const char* ptr = protected_message;
-    while (running_length > 0 && *ptr != '\0')
+    else
     {
-        *output = *ptr;
-        running_length--;
-        ptr++;
-        output++;
+        /* Unexpected code */
+        oe_abort();
     }
-    if (running_length < 1)
+
+    return OE_EXCEPTION_CONTINUE_EXECUTION;
+}
+
+void _initialize_exception_handler(void)
+{
+    oe_result_t result;
+    result = oe_add_vectored_exception_handler(false, test_pfgp_handler);
+}
+
+int test_enclave_memory_access(uint64_t address, bool* exception)
+{
+    oe_result_t result = OE_OK;
+
+    if (exception)
+    {
+        /* A handler should be added only once per program execution */
+        oe_once(&_exception_handler_init_once, _initialize_exception_handler);
+    }
+
+    if (result != OE_OK)
     {
         return -1;
     }
-    *output = '\0';
-    int rval = -1;
-    OE_TEST(
-        unsecure_string_patching(&rval, source, output, output_length) ==
-        OE_OK);
-    return rval;
+
+    /* Read value from memory address 'address'*/
+    asm volatile("mov (%0), %0\n\t" : : "r"(address) : "memory");
+
+    if (exception)
+    {
+        if (faulting_address == address)
+            *exception = true;
+        else
+            *exception = false;
+    }
+
+    return 0;
+}
+
+int test_ecall(const char* message)
+{
+    if (!message)
+        return -1;
+    else
+        fprintf(stdout, "[enclave] Message from host : %s\n", message);
+
+    int res = -1;
+    const char* input = "testing ocall\0";
+    OE_TEST(test_ocall(&res, input) == OE_OK);
+    if (res != 0)
+        fprintf(stderr, "[enclave] ocall failed %d\n", res);
+
+    return res;
 }
 
 OE_SET_ENCLAVE_SGX2(
@@ -47,7 +89,7 @@ OE_SET_ENCLAVE_SGX2(
     {0},     /* ExtendedProductID */
     {0},     /* FamilyID */
     true,    /* Debug */
-    false,   /* CapturePFGPExceptions */
+    true,    /* CapturePFGPExceptions */
     false,   /* RequireKSS */
     true,    /* CreateZeroBaseEnclave */
     0x21000, /* StartAddress */

@@ -279,10 +279,9 @@ if (ENABLE_ZERO_BASE_TESTS)
 
   set_tests_properties(
     tests/oesign-create-zero-base
-    PROPERTIES PASS_REGULAR_EXPRESSION "Created" FAIL_REGULAR_EXPRESSION
-               "ERROR;Fail;Error")
+    PROPERTIES PASS_REGULAR_EXPRESSION "Created;Test not run."
+               FAIL_REGULAR_EXPRESSION "ERROR;Fail;Error")
 
-  # Test enclave creation at 0-base
   add_test(
     NAME tests/oesign-create-zero-base-start-address
     COMMAND
@@ -292,6 +291,6 @@ if (ENABLE_ZERO_BASE_TESTS)
 
   set_tests_properties(
     tests/oesign-create-zero-base-start-address
-    PROPERTIES PASS_REGULAR_EXPRESSION "Created" FAIL_REGULAR_EXPRESSION
-               "ERROR;Fail;Error")
+    PROPERTIES PASS_REGULAR_EXPRESSION "Created;Test not run."
+               FAIL_REGULAR_EXPRESSION "ERROR;Fail;Error")
 endif ()

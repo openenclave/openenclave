@@ -57,6 +57,14 @@ int main(int argc, const char* argv[])
         oe_put_err("oe_sgx_load_enclave_properties(): result=%u", result);
     }
 
+    if (properties.config.flags.create_zero_base_enclave &&
+        (properties.config.attributes & OE_ENCLAVE_FLAG_SIMULATE))
+    {
+        printf("0-base enclave creation is not supported in simulation-mode. "
+               "Test not run.");
+        return 0;
+    }
+
     if ((result = oe_create_oesign_test_enclave(
              argv[1], OE_ENCLAVE_TYPE_AUTO, flags, NULL, 0, &enclave)) != OE_OK)
     {

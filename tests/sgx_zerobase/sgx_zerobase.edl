@@ -7,16 +7,15 @@ enclave {
     from "openenclave/edl/sgx/platform.edl" import *;
 
     trusted {
-        public int secure_string_patching(
-            [in, string] const char* src,
-            [out, size=dst_length] char* dst,
-            size_t dst_length);
+        public int test_ecall(
+            [in, string] const char* src);
+        public int test_enclave_memory_access(
+            uint64_t address,
+            [in, out] bool* exception);
     };
 
     untrusted {
-        int unsecure_string_patching(
-            [in, string] const char* src,
-            [in, out, size=dst_length] char* dst,
-            size_t dst_length);
+        int test_ocall(
+            [in, string] const char* src);
     };
 };
