@@ -38,6 +38,36 @@ def simulationContainerTest(String version, String build_type, List extra_cmake_
     }
 }
 
+def buildCrossPlatform(String version) {
+    stage("Ubuntu ${version} OP-TEE Build") {
+        node(AGENTS_LABELS["ubuntu-nonsgx"]) {
+            timeout(GLOBAL_TIMEOUT_MINUTES) {
+                cleanWs()
+                checkout scm
+                def os = version == "20.04" ? "focal" : "bionic"
+                def task = """
+                           cd ${WORKSPACE}
+
+                           sdk_path=\$(pwd)
+                           export OE_SDK_PATH=\${sdk_path}
+                           export BUILD_PATH=\${sdk_path}/build
+                           export OPTEE_BUILD_PATH=\${sdk_path}/build/optee
+                           export PACK_PATH=\${sdk_path}/path
+                           export OS_CODENAME=${os}
+
+                           sudo ansible-playbook scripts/ansible/oe-contributors-setup-cross-arm.yml
+                           sudo apt install python python3-pyelftools p7zip-full -y
+
+                           bash devex/cross-nuget/standalone-builds/linux/build-optee.sh
+                           bash devex/cross-nuget/standalone-builds/linux/runner.sh
+                           """
+
+                oe.ContainerRun("oetools-${version}:${DOCKER_TAG}", "clang-10", task, "--cap-add=SYS_PTRACE")
+            }
+        }
+    }
+}
+
 def AArch64GNUTest(String version, String build_type) {
     stage("AArch64 GNU gcc Ubuntu${version} ${build_type}") {
         node(AGENTS_LABELS["ubuntu-nonsgx"]) {
@@ -116,6 +146,14 @@ try{
                 "Sim 1804 clang-10 SGX1FLC RelWithDebInfo":          { simulationContainerTest('18.04', 'RelWithDebInfo', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
                 "Sim 1804 clang-10 SGX1FLC Debug snmalloc":          { simulationContainerTest('18.04', 'Debug',          ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) },
                 "Sim 1804 clang-10 SGX1FLC RelWithDebInfo snmalloc": { simulationContainerTest('18.04', 'RelWithDebInfo', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) },
+                "Sim 2004 clang-10 SGX1 Debug":                      { simulationContainerTest('20.04', 'Debug',          ['-DHAS_QUOTE_PROVIDER=OFF', '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
+                "Sim 2004 clang-10 SGX1 RelWithDebInfo":             { simulationContainerTest('20.04', 'RelWithDebInfo', ['-DHAS_QUOTE_PROVIDER=OFF', '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
+                "Sim 2004 clang-10 SGX1FLC Debug":                   { simulationContainerTest('20.04', 'Debug',          ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
+                "Sim 2004 clang-10 SGX1FLC RelWithDebInfo":          { simulationContainerTest('20.04', 'RelWithDebInfo', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
+                "Sim 2004 clang-10 SGX1FLC Debug snmalloc":          { simulationContainerTest('20.04', 'Debug',          ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) },
+                "Sim 2004 clang-10 SGX1FLC RelWithDebInfo snmalloc": { simulationContainerTest('20.04', 'RelWithDebInfo', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) },
+                "Ubuntu 1804 Cross Platform Build":                  { buildCrossPlatform("18.04") },
+                "Ubuntu 2004 Cross Platform Build":                  { buildCrossPlatform("20.04") }
             ]
             parallel testing_stages
         }
@@ -124,8 +162,9 @@ try{
             testing_stages += [
                 "Sim 1804 clang-10 SGX1 RelWithDebInfo":             { simulationContainerTest('18.04', 'RelWithDebInfo', ['-DHAS_QUOTE_PROVIDER=OFF', '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
                 "Sim 1804 clang-10 SGX1FLC Debug":                   { simulationContainerTest('18.04', 'Debug',          ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
-                "Sim 1804 clang-10 SGX1FLC RelWithDebInfo":          { simulationContainerTest('18.04', 'RelWithDebInfo', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
-                "Sim 1804 clang-10 SGX1FLC RelWithDebInfo snmalloc": { simulationContainerTest('18.04', 'RelWithDebInfo', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON', '-DUSE_SNMALLOC=ON']) },
+                "Sim 2004 clang-10 SGX1FLC RelWithDebInfo":          { simulationContainerTest('20.04', 'RelWithDebInfo', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
+                "Sim 2004 clang-10 SGX1FLC RelWithDebInfo snmalloc": { simulationContainerTest('20.04', 'RelWithDebInfo', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON', '-DUSE_SNMALLOC=ON']) },
+                "Ubuntu 1804 Cross Platform Build":                  { buildCrossPlatform("18.04") }
             ]
             parallel testing_stages
         }

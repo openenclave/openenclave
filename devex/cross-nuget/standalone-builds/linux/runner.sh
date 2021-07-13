@@ -59,7 +59,7 @@ echo "Build settings OS_CODENAME: $OS_CODENAME, OE_SDK_PATH: $OE_SDK_PATH, OPTEE
 ## ========================================
 
 # Build the SDK for Intel SGX Default Debug
-echo "Building: SDK/SGX/Default/Debug" >> runner."$OS_CODENAME"
+echo "Building: SDK/SGX/Default/Debug"
 pushd "$SDK_DEBUG_SGX_DEFAULT_OUT_PATH" || exit 1
 cmake -G Ninja "$OE_SDK_PATH"                              \
     -DLVI_MITIGATION=ControlFlow                           \
@@ -77,7 +77,7 @@ popd || exit 1
 popd || exit 1  # SDK Build Done
 
 # Build the SDK for Intel SGX Default Release
-echo "Building: SDK/SGX/Default/Release" >> runner."$OS_CODENAME"
+echo "Building: SDK/SGX/Default/Release"
 pushd "$SDK_RELEASE_SGX_DEFAULT_OUT_PATH" || exit 1
 cmake -G Ninja "$OE_SDK_PATH"                              \
     -DLVI_MITIGATION=ControlFlow                           \
@@ -99,7 +99,7 @@ popd || exit 1  # SDK Build Done
 ## ========================================
 
 # Build the SDK for OP-TEE on QEMU ARMv8 Debug
-echo "Building: SDK/OP-TEE/QEMU/Debug" >> runner."$OS_CODENAME"
+echo "Building: SDK/OP-TEE/QEMU/Debug"
 pushd "$SDK_DEBUG_OPTEE_QEMU_ARMV8_OUT_PATH" || exit 1
 DEV_KIT="$OPTEE_DEBUG_QEMU_ARMV8_OUT_PATH"
 cmake -G Ninja "$OE_SDK_PATH"                                  \
@@ -118,7 +118,7 @@ popd || exit 1
 popd || exit 1  # SDK Build Done
 
 # Build the SDK for OP-TEE on the Scalys Grapeboard Debug
-echo "Building: SDK/OP-TEE/Grapeboard/Debug" >> runner."$OS_CODENAME"
+echo "Building: SDK/OP-TEE/Grapeboard/Debug"
 pushd "$SDK_DEBUG_OPTEE_GRAPEBOARD_OUT_PATH" || exit 1
 DEV_KIT="$OPTEE_DEBUG_GRAPEBOARD_OUT_PATH"
 cmake -G Ninja "$OE_SDK_PATH"                                  \
@@ -137,7 +137,7 @@ popd || exit 1
 popd || exit 1  # SDK Build Done
 
 # Build the SDK for OP-TEE on QEMU ARMv8 Release
-echo "Building: SDK/OP-TEE/QEMU/Release" >> runner."$OS_CODENAME"
+echo "Building: SDK/OP-TEE/QEMU/Release"
 pushd "$SDK_RELEASE_OPTEE_QEMU_ARMV8_OUT_PATH" || exit 1
 DEV_KIT="$OPTEE_RELEASE_QEMU_ARMV8_OUT_PATH"
 cmake -G Ninja "$OE_SDK_PATH"                                  \
@@ -156,7 +156,7 @@ popd || exit 1
 popd || exit 1  # SDK Build Done
 
 # Build the SDK for OP-TEE on the Scalys Grapeboard Release
-echo "Building: SDK/OP-TEE/Grapeboard/Release" >> runner."$OS_CODENAME"
+echo "Building: SDK/OP-TEE/Grapeboard/Release"
 pushd "$SDK_RELEASE_OPTEE_GRAPEBOARD_OUT_PATH" || exit 1
 DEV_KIT="$OPTEE_RELEASE_GRAPEBOARD_OUT_PATH"
 cmake -G Ninja "$OE_SDK_PATH"                                  \
