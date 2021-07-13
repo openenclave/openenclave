@@ -118,13 +118,20 @@ add_enclave_library(
   ${MUSLSRC}/complex/cabs.c
   ${MUSLSRC}/complex/cabsf.c
   ${MUSLSRC}/complex/cabsl.c
+  ${MUSLSRC}/complex/cacos.c
   ${MUSLSRC}/complex/cacosf.c
+  ${MUSLSRC}/complex/cacosh.c
   ${MUSLSRC}/complex/cacoshf.c
+  ${MUSLSRC}/complex/cacoshl.c
+  ${MUSLSRC}/complex/cacosl.c
   ${MUSLSRC}/complex/carg.c
   ${MUSLSRC}/complex/cargf.c
   ${MUSLSRC}/complex/cargl.c
+  ${MUSLSRC}/complex/casin.c
   ${MUSLSRC}/complex/casinf.c
+  ${MUSLSRC}/complex/casinh.c
   ${MUSLSRC}/complex/casinhf.c
+  ${MUSLSRC}/complex/casinhl.c
   ${MUSLSRC}/complex/catan.c
   ${MUSLSRC}/complex/catanf.c
   ${MUSLSRC}/complex/catanh.c
@@ -151,6 +158,9 @@ add_enclave_library(
   ${MUSLSRC}/complex/conj.c
   ${MUSLSRC}/complex/conjf.c
   ${MUSLSRC}/complex/conjl.c
+  ${MUSLSRC}/complex/cpow.c
+  ${MUSLSRC}/complex/cpowf.c
+  ${MUSLSRC}/complex/cpowl.c
   ${MUSLSRC}/complex/cproj.c
   ${MUSLSRC}/complex/cprojf.c
   ${MUSLSRC}/complex/cprojl.c
@@ -163,7 +173,9 @@ add_enclave_library(
   ${MUSLSRC}/complex/csinhf.c
   ${MUSLSRC}/complex/csinhl.c
   ${MUSLSRC}/complex/csinl.c
+  ${MUSLSRC}/complex/csqrt.c
   ${MUSLSRC}/complex/csqrtf.c
+  ${MUSLSRC}/complex/csqrtl.c
   ${MUSLSRC}/complex/ctan.c
   ${MUSLSRC}/complex/ctanf.c
   ${MUSLSRC}/complex/ctanh.c
@@ -927,10 +939,8 @@ if (OE_SGX)
     ${MUSLSRC}/string/x86_64/memset.s
     ${MUSLSRC}/stdlib/qsort.c)
 
-  set_property(
-    SOURCE ${DEFAULT_VISIBILITY}
-    APPEND_STRING
-    PROPERTY COMPILE_FLAGS " -fvisibility=default")
+  set_property(SOURCE ${DEFAULT_VISIBILITY} APPEND_STRING
+               PROPERTY COMPILE_FLAGS " -fvisibility=default")
 endif ()
 
 enclave_compile_definitions(oelibc PRIVATE _XOPEN_SOURCE=700)
