@@ -800,22 +800,32 @@ add_enclave_library(
   ${MUSLSRC}/temp/__randname.c
   ${MUSLSRC}/thread/__lock.c
   ${MUSLSRC}/thread/__wait.c
+  ${MUSLSRC}/time/asctime.c
+  ${MUSLSRC}/time/asctime_r.c
   ${MUSLSRC}/time/clock_gettime.c
   ${MUSLSRC}/time/clock_nanosleep.c
+  ${MUSLSRC}/time/ctime.c
+  ${MUSLSRC}/time/ctime_r.c
   ${MUSLSRC}/time/difftime.c
+  ${MUSLSRC}/time/ftime.c
   ${MUSLSRC}/time/gettimeofday.c
   ${MUSLSRC}/time/gmtime.c
   ${MUSLSRC}/time/gmtime_r.c
+  ${MUSLSRC}/time/localtime_r.c
+  ${MUSLSRC}/time/localtime.c
   ${MUSLSRC}/time/__map_file.c
-  ${MUSLSRC}/time/__month_to_secs.c
   ${MUSLSRC}/time/mktime.c
+  ${MUSLSRC}/time/__month_to_secs.c
   ${MUSLSRC}/time/nanosleep.c
   ${MUSLSRC}/time/__secs_to_tm.c
   ${MUSLSRC}/time/strftime.c
-  ${MUSLSRC}/time/__tz.c
+  ${MUSLSRC}/time/strptime.c
   ${MUSLSRC}/time/time.c
   ${MUSLSRC}/time/timegm.c
+  ${MUSLSRC}/time/timespec_get.c
   ${MUSLSRC}/time/__tm_to_secs.c
+  ${MUSLSRC}/time/__tz.c
+  ${MUSLSRC}/time/wcsftime.c
   ${MUSLSRC}/time/__year_to_secs.c
   ${MUSLSRC}/unistd/access.c
   ${MUSLSRC}/unistd/chdir.c
@@ -927,10 +937,8 @@ if (OE_SGX)
     ${MUSLSRC}/string/x86_64/memset.s
     ${MUSLSRC}/stdlib/qsort.c)
 
-  set_property(
-    SOURCE ${DEFAULT_VISIBILITY}
-    APPEND_STRING
-    PROPERTY COMPILE_FLAGS " -fvisibility=default")
+  set_property(SOURCE ${DEFAULT_VISIBILITY} APPEND_STRING
+               PROPERTY COMPILE_FLAGS " -fvisibility=default")
 endif ()
 
 enclave_compile_definitions(oelibc PRIVATE _XOPEN_SOURCE=700)
