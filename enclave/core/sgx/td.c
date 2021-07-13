@@ -17,13 +17,8 @@
 
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_sgx_td_t, magic) == td_magic);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_sgx_td_t, depth) == td_depth);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_sgx_td_t, eenter_rax) == td_eenter_rax);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_sgx_td_t, host_rcx) == td_host_rcx);
-OE_STATIC_ASSERT(OE_OFFSETOF(oe_sgx_td_t, host_rsp) == td_host_rsp);
-OE_STATIC_ASSERT(OE_OFFSETOF(oe_sgx_td_t, host_rbp) == td_host_rbp);
-OE_STATIC_ASSERT(
-    OE_OFFSETOF(oe_sgx_td_t, host_previous_rsp) == td_host_previous_rsp);
-OE_STATIC_ASSERT(
-    OE_OFFSETOF(oe_sgx_td_t, host_previous_rbp) == td_host_previous_rbp);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_sgx_td_t, oret_func) == td_oret_func);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_sgx_td_t, oret_arg) == td_oret_arg);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_sgx_td_t, callsites) == td_callsites);
@@ -36,7 +31,7 @@ OE_STATIC_ASSERT(
 
 // Static asserts for consistency with
 // debugger/pythonExtension/gdb_sgx_plugin.py
-OE_STATIC_ASSERT(td_callsites == 0xf0);
+OE_STATIC_ASSERT(td_callsites == 0xd8);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_callsite_t, ocall_context) == 0x40);
 OE_STATIC_ASSERT(sizeof(oe_ocall_context_t) == (2 * sizeof(uintptr_t)));
 

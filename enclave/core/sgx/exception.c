@@ -315,13 +315,10 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
     oe_exception_record.error_code = td->error_code;
     oe_exception_record.context = oe_context;
 
-    // Refer to oe_enter in host/sgx/enter.c. The contract we defined for EENTER
-    // is the RBP should not change after return from EENTER.
-    // When the exception is handled, restores the host RBP, RSP to the
-    // value when regular ECALL happens before first pass exception
-    // handling.
-    td->host_rbp = td->host_previous_rbp;
-    td->host_rsp = td->host_previous_rsp;
+    // Refer to oe_enter in host/sgx/enter.c.
+    // Restore host_ecall_context from the first EENTER (cssa=0) that allows for
+    // correctly stitching the stack on EEXIT when the enclave is in the debug
+    // mode
     td->host_ecall_context = td->host_previous_ecall_context;
 
     // Traverse the existing exception handlers, stop when
@@ -443,9 +440,10 @@ void oe_virtual_exception_dispatcher(
     if (td->exception_code == OE_EXCEPTION_ILLEGAL_INSTRUCTION &&
         _emulate_illegal_instruction(ssa_gpr) == 0)
     {
-        // Restore the RBP & RSP as required by return from EENTER
-        td->host_rbp = td->host_previous_rbp;
-        td->host_rsp = td->host_previous_rsp;
+        // Refer to oe_enter in host/sgx/enter.c.
+        // Restore host_ecall_context from the first EENTER (cssa=0) that allows
+        // for correctly stitching the stack on EEXIT when the enclave is in the
+        // debug mode
         td->host_ecall_context = td->host_previous_ecall_context;
     }
     else

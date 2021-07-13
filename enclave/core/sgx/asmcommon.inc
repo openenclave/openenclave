@@ -25,8 +25,8 @@
 //==============================================================================
 .macro oe_cleanup_xstates
     // Preserve registers being used
-    push %rax
-    push %rdx
+    mov %rax, %r8
+    mov %rdx, %r9
 
     // Check if extended states are supported by the OS.
     // If not, fallback to FXRSTOR to clear legacy SSE states only.
@@ -47,8 +47,8 @@
     fxrstor64 OE_XSAVE_INITIAL_STATE(%rip)
 2:
     // Restore the registers
-    pop %rdx
-    pop %rax
+    mov %r8, %rax
+    mov %r9, %rdx
 .endm
 
 //==============================================================================
@@ -73,7 +73,6 @@
     // The exit and enter routines are responsible for clearing r11
     // prior to returning.
     xor %rdx, %rdx
-    xor %r8,  %r8
     xor %r9,  %r9
     xor %r10, %r10
     xor %r12, %r12
@@ -81,11 +80,17 @@
     xor %r14, %r14
     xor %r15, %r15
 
-    // Zero out the RFLAGS
-    // This only clears the DF and state flag bits since
-    // the system flags and reserved bits are not writable here
-    push %r15
-    popfq
+    // Zero out the RFLAGS except for system flags and
+    // reserved bits that are not writable by the enclave
+    mov %rax, %r8
+    xor %rax, %rax
+    test %al, %al // Clear OF
+    cld // Clear DF
+    sahf // Clear SF, ZF AF, PF, and CF
+    mov %r8, %rax
+
+    // No need to clear r8, which equals to rax (return value to the host)
+
 .endm
 
 #endif
