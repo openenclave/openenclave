@@ -6,17 +6,22 @@ enclave {
     from "openenclave/edl/fcntl.edl" import *;
     from "openenclave/edl/sgx/platform.edl" import *;
 
+    struct exceptions
+    {
+        bool exception;
+        uint32_t code;
+    };
+
     trusted {
-        public int secure_string_patching(
-            [in, string] const char* src,
-            [out, size=dst_length] char* dst,
-            size_t dst_length);
+        public int test_ecall(
+            [in, string] const char* src);
+        public int test_enclave_memory_access(
+            uint64_t address,
+            [in, out] struct exceptions* exception);
     };
 
     untrusted {
-        int unsecure_string_patching(
-            [in, string] const char* src,
-            [in, out, size=dst_length] char* dst,
-            size_t dst_length);
+        int test_ocall(
+            [in, string] const char* src);
     };
 };
