@@ -103,7 +103,6 @@ add_enclave_library(
   stdlib.c
   strerror.c
   syscalls.c
-  sysconf.c
   regcomp.c
   regexec.c
   tre-mem.c
@@ -170,6 +169,11 @@ add_enclave_library(
   ${MUSLSRC}/complex/ctanhf.c
   ${MUSLSRC}/complex/ctanhl.c
   ${MUSLSRC}/complex/ctanl.c
+  ${MUSLSRC}/conf/confstr.c
+  ${MUSLSRC}/conf/fpathconf.c
+  ${MUSLSRC}/conf/legacy.c
+  ${MUSLSRC}/conf/pathconf.c
+  ${MUSLSRC}/conf/sysconf.c
   ${MUSLSRC}/ctype/__ctype_b_loc.c
   ${MUSLSRC}/ctype/__ctype_get_mb_cur_max.c
   ${MUSLSRC}/ctype/__ctype_tolower_loc.c
@@ -259,9 +263,10 @@ add_enclave_library(
   ${MUSLSRC}/locale/wcscoll.c
   ${MUSLSRC}/locale/wcsxfrm.c
   ${MUSLSRC}/linux/getrandom.c
-  ${MUSLSRC}/linux/mount.c
   ${MUSLSRC}/linux/epoll.c
   ${MUSLSRC}/linux/flock.c
+  ${MUSLSRC}/linux/mount.c
+  ${MUSLSRC}/linux/sysinfo.c
   ${MUSLSRC}/math/__math_divzero.c
   ${MUSLSRC}/math/__math_divzerof.c
   ${MUSLSRC}/math/__math_invalid.c
@@ -489,6 +494,7 @@ add_enclave_library(
   ${MUSLSRC}/misc/basename.c
   ${MUSLSRC}/misc/dirname.c
   ${MUSLSRC}/misc/getdomainname.c
+  ${MUSLSRC}/misc/getrlimit.c
   ${MUSLSRC}/misc/ioctl.c
   ${MUSLSRC}/misc/nftw.c
   ${MUSLSRC}/misc/uname.c
@@ -927,10 +933,8 @@ if (OE_SGX)
     ${MUSLSRC}/string/x86_64/memset.s
     ${MUSLSRC}/stdlib/qsort.c)
 
-  set_property(
-    SOURCE ${DEFAULT_VISIBILITY}
-    APPEND_STRING
-    PROPERTY COMPILE_FLAGS " -fvisibility=default")
+  set_property(SOURCE ${DEFAULT_VISIBILITY} APPEND_STRING
+               PROPERTY COMPILE_FLAGS " -fvisibility=default")
 endif ()
 
 enclave_compile_definitions(oelibc PRIVATE _XOPEN_SOURCE=700)
