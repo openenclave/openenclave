@@ -81,7 +81,7 @@ oe_thread_data_t* oe_get_thread_data(void);
  * Due to the inability to use OE_OFFSETOF on a struct while defining its
  * members, this value is computed and hard-coded.
  */
-#define OE_THREAD_SPECIFIC_DATA_SIZE (3732)
+#define OE_THREAD_SPECIFIC_DATA_SIZE (3756)
 
 typedef struct _oe_callsite oe_callsite_t;
 
@@ -117,11 +117,8 @@ typedef struct _td
     uint64_t depth;
 
     /* Host registers saved here on entry and restored on exit */
-    uint64_t host_rcx; /* EENTER return address */
-    uint64_t host_rsp;
-    uint64_t host_rbp;
-    uint64_t host_previous_rsp;
-    uint64_t host_previous_rbp;
+    uint64_t eenter_rax; /* cssa set by EENTER */
+    uint64_t host_rcx;   /* EENTER return address */
 
     /* Return arguments from OCALL */
     uint16_t oret_func;

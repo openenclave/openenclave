@@ -3,15 +3,17 @@
 
 #include "asmdefs.h"
 #include "asmcommon.inc"
+#include <openenclave/internal/constants_x64.h>
 
 //==============================================================================
 //
-// void oe_asm_exit(uint64_t arg1, uint64_t arg2, oe_sgx_td_t* td)
+// void oe_asm_exit(uint64_t arg1, uint64_t arg2, oe_sgx_td_t* td, uint64_t aborting)
 //
 // Registers:
 //     RDI - arg1
 //     RSI - arg2
 //     RDX - td
+//     RCX - aborting
 //
 // Purpose:
 //     Restores user registers and executes the EEXIT instruction to leave the
@@ -53,10 +55,12 @@ oe_asm_exit:
 .cfi_startproc
 
 .get_td:
-
     mov %rdx, %r11
 
 .determine_exit_type:
+    // Check if the argument aborting is set
+    cmp $1, %rcx
+    je .clean_exit
 
     // Check the depth of the ECALL stack (zero for clean exit)
     // exit-type-check.
@@ -70,8 +74,7 @@ oe_asm_exit:
     lfence 
 
     mov %rsp, td_last_sp(%r11)
-
-    jmp .clear_enclave_registers
+    jmp .prepare_eexit
 
 .clean_exit:
     // Stop speculative execution at target of conditional jump
@@ -81,18 +84,35 @@ oe_asm_exit:
     // Clear the oe_sgx_td_t.last_sp field (force oe_enter to calculate stack pointer)
     movq $0, td_last_sp(%r11)
 
-.clear_enclave_registers:
+.prepare_eexit:
+    mov _td_from_tcs_offset(%rip), %r8
+    mov %r11, %r9
+    sub %r8, %r9 // td_to_tcs
+    lea OE_SSA_FROM_TCS_BYTE_OFFSET(%r9), %r12
+    mov td_eenter_rax(%r11), %r8
+    cmp $1, %r8
+    je .locate_next_ssa
+    jmp .restore_host_registers
+
+.locate_next_ssa:
+    // Stop speculative execution at fallthrough of conditional
+    // td_eenter_rax check.
+    lfence
+
+    add $PAGE_SIZE, %r12
+    xor %r8, %r8
+    // Reset the saved cssa to zero to match the value on
+    // the previous oe_enter (which ERESUME will return to)
+    mov %r8, td_eenter_rax(%r11)
+
+.restore_host_registers:
+    mov td_host_rcx(%r11), %rcx
+    mov SGX_SSA_URSP_OFFSET(%r12), %rsp
+    mov SGX_SSA_URBP_OFFSET(%r12), %rbp
 
     oe_cleanup_registers
 
-.restore_host_registers:
-
-    mov td_host_rcx(%r11), %rcx
-    mov td_host_rsp(%r11), %rsp
-    mov td_host_rbp(%r11), %rbp
-
 .execute_eexit:
-
     // Check oe_sgx_td_t.simulate flag
     // simulate-flag-check.
     mov td_simulate(%r11), %rax
