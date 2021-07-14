@@ -7,9 +7,9 @@ OEUTIL
 
 Usage: `oeutil <command> <options>`
 
+-----
 
-oeutil generate-evidence
-=====
+## oeutil generate-evidence
 
 `oeutil generate-evidence` can generate the following files in binary format, or dump them in readable text, and verify them:
 
@@ -40,35 +40,40 @@ where `options` are:
 
 Note that parameters are not case-sensitive.
 
-Example 1 Generate, verify and dump a ceritificate. Without "--out", there will be no certificate output file:
+Example 1. Generate, verify and dump a ceritificate. Without "--out", there will be no certificate output file:
 
     ./oeutil generate-evidence --format cert keyecec.pem publickeyec.pem --verify --verbose
 
-Example 2 Generate an OE report and output its endorsements binary to "endorsements.bin", and output OE report to "report.bin":
+Example 2. Generate an OE report and output its endorsements binary to "endorsements.bin", and output OE report to "report.bin":
 
     ./oeutil generate --format legacy_report_remote --endorsements endorsements.bin --out report.bin
 
-Example 3 Generate and verify OE evidence in SGX_ECDSA format, dump evidence buffer and its verified claims, and output OE evidence to "evidence.bin":
+Example 3. Generate and verify OE evidence in SGX_ECDSA format, dump evidence buffer and its verified claims, and output OE evidence to "evidence.bin":
 
     ./oeutil gen --format sgx_ecdsa --verify --verbose --out evidence.bin
 
+-----
 
-Creating RSA and EC keys pairs in Linux using openssl.
-Generate an RSA private key, of size 2048, and output it to a file named key.pem
-=====
-openssl genrsa -out keyrsa.pem 2048
+## Using OpenSSL to create a key pair on Linux
 
+A user can use OpenSSL to create an RSA key pair or an EC key pair on Linux. Then, the public key can be used in a certificate.
 
-Extract the public key from the key pair, which can be used in a certificate:
-=====
-openssl rsa -in keyrsa.pem -outform PEM -pubout -out publicrsa.pem
+### Generate a key pair
 
+A user can generate an RSA private key of size 2048, and output it to a file named `key.pem` with the following command:
 
-Generate an EC private key, of size 256, and output it to a file named key.pem
-=====
-openssl ecparam -name prime256v1 -genkey -noout -out keyec.pem
+    openssl genrsa -out keyrsa.pem 2048
 
+A user can also generate an EC private key of size 256:
 
-Extract the public key from the key pair, which can be used in a certificate
-=====
-openssl ec -in keyec.pem -pubout -out publicec.pem
+    openssl ecparam -name prime256v1 -genkey -noout -out keyec.pem
+
+### Extract a key pair
+
+A user can extract the public RSA key from the generated RSA key pair, and use it in a certificate:
+
+    openssl rsa -in keyrsa.pem -outform PEM -pubout -out publicrsa.pem
+
+A user can also extract the public EC key from the generate EC key pair:
+
+    openssl ec -in keyec.pem -pubout -out publicec.pem
