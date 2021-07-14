@@ -442,6 +442,41 @@ OE_WEAK OE_DEFINE_SYSCALL0(SYS_getppid)
     return (long)oe_getppid();
 }
 
+OE_WEAK OE_DEFINE_SYSCALL3_M(SYS_getrandom)
+{
+    oe_errno = 0;
+    long ret = -1;
+    void* buf = (void*)arg1;
+    size_t buflen = (size_t)arg2;
+    unsigned int flags = (unsigned int)arg3;
+
+    /* Flags (e.g., GRND_RANDOM and GRND_NONBLOCK) are not supported. */
+    if (!buf || !buflen || flags)
+    {
+        oe_errno = OE_EINVAL;
+        goto done;
+    }
+
+    if (oe_random_internal(buf, buflen) != OE_OK)
+    {
+        oe_errno = OE_EAGAIN;
+        goto done;
+    }
+
+    ret = (long)buflen;
+
+done:
+    return ret;
+}
+
+OE_WEAK OE_DEFINE_SYSCALL2(SYS_getrlimit)
+{
+    OE_UNUSED(arg1);
+    OE_UNUSED(arg2);
+    oe_errno = OE_ENOSYS;
+    return -1;
+}
+
 OE_WEAK OE_DEFINE_SYSCALL3_M(SYS_getsockname)
 {
     oe_errno = 0;
@@ -774,6 +809,16 @@ OE_WEAK OE_DEFINE_SYSCALL4(SYS_pread64)
     return oe_pread(fd, buffer, count, offset);
 }
 
+OE_WEAK OE_DEFINE_SYSCALL4(SYS_prlimit64)
+{
+    OE_UNUSED(arg1);
+    OE_UNUSED(arg2);
+    OE_UNUSED(arg3);
+    OE_UNUSED(arg4);
+    oe_errno = OE_ENOSYS;
+    return -1;
+}
+
 OE_WEAK OE_DEFINE_SYSCALL5_M(SYS_pselect6)
 {
     oe_errno = 0;
@@ -918,6 +963,15 @@ OE_WEAK OE_DEFINE_SYSCALL1(SYS_rmdir)
 }
 #endif
 
+OE_WEAK OE_DEFINE_SYSCALL3(SYS_sched_getaffinity)
+{
+    OE_UNUSED(arg1);
+    OE_UNUSED(arg2);
+    OE_UNUSED(arg3);
+    oe_errno = OE_ENOSYS;
+    return -1;
+}
+
 #if __x86_64__ || _M_X64
 OE_WEAK OE_DEFINE_SYSCALL5_M(SYS_select)
 {
@@ -1003,6 +1057,13 @@ OE_WEAK OE_DEFINE_SYSCALL2(SYS_stat)
 }
 #endif
 
+OE_WEAK OE_DEFINE_SYSCALL1(SYS_sysinfo)
+{
+    OE_UNUSED(arg1);
+    oe_errno = OE_ENOSYS;
+    return -1;
+}
+
 OE_WEAK OE_DEFINE_SYSCALL2(SYS_truncate)
 {
     oe_errno = 0;
@@ -1086,33 +1147,6 @@ OE_WEAK OE_DEFINE_SYSCALL2(SYS_umount2)
     (void)flags;
 
     return oe_umount(target);
-}
-
-OE_WEAK OE_DEFINE_SYSCALL3_M(SYS_getrandom)
-{
-    oe_errno = 0;
-    long ret = -1;
-    void* buf = (void*)arg1;
-    size_t buflen = (size_t)arg2;
-    unsigned int flags = (unsigned int)arg3;
-
-    /* Flags (e.g., GRND_RANDOM and GRND_NONBLOCK) are not supported. */
-    if (!buf || !buflen || flags)
-    {
-        oe_errno = OE_EINVAL;
-        goto done;
-    }
-
-    if (oe_random_internal(buf, buflen) != OE_OK)
-    {
-        oe_errno = OE_EAGAIN;
-        goto done;
-    }
-
-    ret = (long)buflen;
-
-done:
-    return ret;
 }
 
 static long _syscall(

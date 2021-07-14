@@ -197,6 +197,8 @@ OE_DECLARE_SYSCALL0(SYS_getpid);
 OE_DECLARE_SYSCALL0(SYS_getppid);
 /* musl getrandom() invokes the syscall via syscall_cp */
 OE_DECLARE_SYSCALL3_M(SYS_getrandom);
+/* Needed for sysconf. Currently unimplemented. */
+OE_DECLARE_SYSCALL2(SYS_getrlimit);
 OE_DECLARE_SYSCALL3_M(SYS_getsockname);
 OE_DECLARE_SYSCALL5_M(SYS_getsockopt);
 OE_DECLARE_SYSCALL2(SYS_gettimeofday);
@@ -240,6 +242,8 @@ OE_DECLARE_SYSCALL3_M(SYS_poll);
 OE_DECLARE_SYSCALL4_M(SYS_ppoll);
 OE_DECLARE_SYSCALL4_M(SYS_pread);
 OE_DECLARE_SYSCALL4(SYS_pread64);
+/* Needed for sysconf. Currently unimplemented. */
+OE_DECLARE_SYSCALL4(SYS_prlimit64);
 OE_DECLARE_SYSCALL5_M(SYS_pselect6);
 OE_DECLARE_SYSCALL4_M(SYS_pwrite);
 OE_DECLARE_SYSCALL4(SYS_pwrite64);
@@ -254,6 +258,8 @@ OE_DECLARE_SYSCALL4_M(SYS_renameat);
 #if __x86_64__ || _M_X64
 OE_DECLARE_SYSCALL1(SYS_rmdir);
 #endif
+/* Needed for sysconf. Currently unimplemented. */
+OE_DECLARE_SYSCALL3(SYS_sched_getaffinity);
 #if __x86_64__ || _M_X64
 OE_DECLARE_SYSCALL5_M(SYS_select);
 #endif
@@ -271,6 +277,8 @@ OE_DECLARE_SYSCALL2(SYS_stat);
  * musl/src/stat/stat.c. SYS_statx need not be implemented.
  */
 OE_DECLARE_SYSCALL5(SYS_statx);
+/* Needed for sysconf. Currently unimplemented. */
+OE_DECLARE_SYSCALL1(SYS_sysinfo);
 OE_DECLARE_SYSCALL2(SYS_truncate);
 // Needed by musl/src/stdio/pclose.c
 OE_DECLARE_SYSCALL4(SYS_wait4);
