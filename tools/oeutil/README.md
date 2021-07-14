@@ -54,9 +54,9 @@ Example 3. Generate and verify OE evidence in SGX_ECDSA format, dump evidence bu
 
 -----
 
-## Using OpenSSL to create a key pair on Linux
+## Using OpenSSL to create a key pair
 
-A user can use OpenSSL to create an RSA key pair or an EC key pair on Linux. Then, the public key can be used in a certificate.
+A user can use OpenSSL to create an RSA key pair or an EC key pair. Then, the public key can be used in a certificate.
 
 ### Generate a key pair
 
