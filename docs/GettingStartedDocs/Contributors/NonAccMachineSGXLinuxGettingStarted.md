@@ -107,14 +107,14 @@ sudo ln -s libdcap_quoteprov.so.1.8.100.2 libdcap_quoteprov.so
 
 NOTES TO USERS WHO HAVE ALREADY INSTALLED AZURE DCAP CLIENT:
 
-If you have Azure DCAP client installed before trying these instructions, please make sure the Azure one is renamed to something else.
+If you have [Azure DCAP Client](https://github.com/microsoft/Azure-DCAP-Client) installed before trying these instructions, please make sure the Azure one is renamed to something else.
 
 To check if you have it installed, run the following command.
 ```bash
 dpkg --list | grep az-dcap-client
 ```
 
-If you don't have the Azure DCAP client installed previously, please skip the content below.
+If you don't have the Azure DCAP Client installed previously, please skip the content below.
 
 In most cases the Azure version of libdcap_quoteprov.so is located in /usr/lib. Check your path before changing. Here we use /usr/lib as an example.
 
