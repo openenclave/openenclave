@@ -11,22 +11,28 @@
    - To check your Windows version, run `winver` on the command line.
 
 ## Software prerequisites
-- [Microsoft Visual Studio Build Tools 2019](https://aka.ms/vs/15/release/vs_buildtools.exe)
-- [Git for Windows 64-bit](https://git-scm.com/download/win)
-- [Clang/LLVM for Windows 64-bit](https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/LLVM-8.0.1-win64.exe)
-- [Python 3](https://www.python.org/downloads/windows/)
-- [ShellCheck](https://oejenkins.blob.core.windows.net/oejenkins/shellcheck-v0.7.0.zip)
-- [OpenSSL 1.1.1](https://oejenkins.blob.core.windows.net/oejenkins/openssl.1.1.1506.73.nupkg)
-- [cmake format](https://github.com/cheshirekow/cmake_format)
+This guide will help you install Software prerequisites on Windows systems that support SGX.
+> Note: see [Windows Open Enclave SDK Prerequisites](WindowsPrerequisites.md) for a full list of current prerequisite versions, and download links.
+
+The following will be installed as part of this guide:
+- [Microsoft Visual Studio Build Tools 2019](#microsoft-visual-studio-build-tools-2019)
+- [Git for Windows 64-bit](#git-for-windows-64-bit)
+- [Clang/LLVM 10.0.0 for Windows 64-bit](#clang)
+- [Python 3](#python-3)
+- [ShellCheck 0.7.0](#shellcheck)
+- [OpenSSL 1.1.1](#openssl)
+- [cmake format](#cmake-format)
+
+> Note: the list above does not contain the additional prerequisites specific to SGX that will need to be installed. See [Platform requirements](#platform-requirements) to determine your system type and [Prerequisites specific to SGX support on your system](#prerequisites-specific-to-sgx-support-on-your-system) to install the additional prerequisites for your system.
 
 ## Prerequisites specific to SGX support on your system
 
-For systems with support for SGX1  - [Intel's PSW, Intel Enclave Common API library](WindowsManualSGX1Prereqs.md)
+For systems with support for SGX1  - [Intel PSW, Intel Enclave Common API library](WindowsManualSGX1Prereqs.md)
 
-For systems with support for SGX1 + FLC - [Intel's PSW, Intel's Data Center Attestation Primitives and related dependencies](WindowsManualSGX1FLCDCAPPrereqs.md)
+For systems with support for SGX1 + FLC - [Intel PSW, Intel Data Center Attestation Primitives, and related dependencies](WindowsManualSGX1FLCDCAPPrereqs.md)
 
 ## Microsoft Visual Studio Build Tools 2019
-Install [Visual Studio Build Tools 2019](https://aka.ms/vs/16/release/vs_buildtools.exe). Choose the "C++ build tools" workload. Visual Studio Build Tools 2019 has support for CMake Version 3.15 (CMake ver 3.12 or above is required for building Open Enclave SDK). For more information about CMake support, look [here](https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studio/).
+Download Visual Studio Build Tools 2019 from [Windows Open Enclave SDK Prerequisites](WindowsPrerequisites.md). Choose the "C++ build tools" workload. Visual Studio Build Tools 2019 has support for CMake Version 3.15 (CMake ver 3.12 or above is required for building Open Enclave SDK). For more information about CMake support, look [here](https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studio/).
 
 ## Git for Windows 64-bit
 
@@ -47,10 +53,12 @@ builds. It is also useful to have the `Git\mingw64\bin` folder added to PATH.
 
 ## Clang
 
-Install Clang 8.0.1 and add the LLVM folder (typically C:\Program Files\LLVM\bin)
-to PATH. Open Enclave SDK uses clang to build the enclave binaries.
+ Open Enclave SDK uses Clang to build the enclave binaries. Follow these steps to install Clang:
 
-Open up a command prompt and ensure that clang is added to PATH.
+1. Download Clang from [Windows Open Enclave SDK Prerequisites](WindowsPrerequisites.md). 
+2. Install Clang and add the LLVM folder (typically C:\Program Files\LLVM\bin)
+to PATH.
+4. Open up a command prompt and ensure that clang is added to PATH.
 
 ```cmd
 C:\> where clang
@@ -70,16 +78,17 @@ Python 3 is used as part of the mbedtls tests and for cmake-format.
 
 ## ShellCheck
 
-[ShellCheck](https://www.shellcheck.net/) is used to check the format of shell scripts. Install it as follows.
+[ShellCheck](https://www.shellcheck.net/) is used to check the format of shell scripts. Download ShellCheck from [Windows Open Enclave SDK Prerequisites](WindowsPrerequisites.md). 
 
-Download the [ShellCheck zip](https://oejenkins.blob.core.windows.net/oejenkins/shellcheck-v0.7.0.zip).
-Inside it there is a shellcheck-v0.7.0.exe which must be copied to a directory in your PATH and renamed to shellcheck.exe.
+For example, [ShellCheck v0.7.0](https://oejenkins.blob.core.windows.net/oejenkins/shellcheck-v0.7.0.zip) can be installed as follows.
+
+Download and extract the ShellCheck zip file. Inside it there is shellcheck-v0.7.0.exe which must be copied to a directory in your PATH and renamed to shellcheck.exe.
 
 ## OpenSSL
 
-Download and install the latest build of OpenSSL for Windows from one of the following [locations](https://wiki.openssl.org/index.php/Binaries) or build and install it from source.
+Download and install OpenSSL for Windows from our [direct download link here](https://oejenkins.blob.core.windows.net/oejenkins/openssl-1.1.1-latest.nupkg) which is distributed under the [dual OpenSSL and SSLeay license](https://www.openssl.org/source/license-openssl-ssleay.txt) without further legal obligations.
 
-Alternatively, you can use the latest version of OpenSSL that the OpenEnclave CI team [publishes](https://oejenkins.blob.core.windows.net/oejenkins/openssl.1.1.1506.73.nupkg) which is distributed under the [dual OpenSSL and SSLeay license](https://www.openssl.org/source/license-openssl-ssleay.txt) without further legal obligations.
+Alternatively, you can obtain OpenSSL at one of the [locations listed in the OpenSSL wiki](https://wiki.openssl.org/index.php/Binaries), or build and install it from source.
 
 After installing OpenSSL, add `openssl` to your `PATH`.
 

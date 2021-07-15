@@ -1,0 +1,15 @@
+# Windows Open Enclave SDK Prerequisites
+- [Git v2.31.1](https://github.com/git-for-windows/git/releases/download/v2.31.1.windows.1/Git-2.31.1-64-bit.exe)
+- [OpenSSL 1.1.1](https://oejenkins.blob.core.windows.net/oejenkins/openssl-1.1.1-latest.nupkg)
+- [Visual Studio Build Tools](https://aka.ms/vs/15/release/vs_buildtools.exe)
+- [Clang 10.0.0](https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/LLVM-10.0.0-win64.exe)
+- [ShellCheck v0.7.0](https://oejenkins.blob.core.windows.net/oejenkins/shellcheck-v0.7.0.zip)
+- [Nuget 3.4.3](https://www.nuget.org/api/v2/package/NuGet.exe/3.4.3)
+- [Python 3](https://www.python.org/ftp/python/3.7.4/python-3.7.4-embed-amd64.zip)
+- [Python pip](https://bootstrap.pypa.io/pip/3.4/get-pip.py)
+- [Intel SGX PSW v2.13.100.2](https://registrationcenter-download.intel.com/akdlm/irc_nas/18000/Intel%20SGX%20PSW%20for%20Windows%20v2.13.100.2.exe)
+
+## Additional Windows Open Enclave SDK Prerequisites for SGX1 with Flexible Launch Control (FLC)
+- [Devcon](https://download.microsoft.com/download/7/D/D/7DD48DE6-8BDA-47C0-854A-539A800FAA90/wdk/Installers/787bee96dbd26371076b37b13c405890.cab)
+- [Intel SGX DCAP v1.11.100.2](https://registrationcenter-download.intel.com/akdlm/irc_nas/17999/Intel%20SGX%20DCAP%20for%20Windows%20v1.11.100.2.exe)
+- [Azure DCAP 1.10.0](https://www.nuget.org/api/v2/package/Microsoft.Azure.DCAP/1.10.0)
