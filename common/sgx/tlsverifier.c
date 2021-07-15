@@ -112,35 +112,13 @@ oe_result_t oe_verify_attestation_certificate(
     // set enclave to NULL because we are dealing only with remote report now
     //------------------------------------------------------------------------
 
-    // determine the size of the extension
-    if (oe_cert_find_extension(
-            &cert, (const char*)oid_oe_report, NULL, &report_size) ==
-        OE_BUFFER_TOO_SMALL)
-    {
-        report = (uint8_t*)oe_malloc(report_size);
-        if (!report)
-            OE_RAISE(OE_OUT_OF_MEMORY);
-
-        OE_CHECK(oe_cert_find_extension(
-            &cert, (const char*)oid_oe_report, report, &report_size));
-    }
-    else if (
-        oe_cert_find_extension(
-            &cert, (const char*)oid_new_oe_report, NULL, &report_size) ==
-        OE_BUFFER_TOO_SMALL)
-    {
-        report = (uint8_t*)oe_malloc(report_size);
-        if (!report)
-            OE_RAISE(OE_OUT_OF_MEMORY);
-
-        OE_CHECK(oe_cert_find_extension(
-            &cert, (const char*)oid_new_oe_report, report, &report_size));
-    }
-    else
-    {
-        OE_RAISE_MSG(
-            OE_FAILURE, "No expected certificate extension matched", NULL);
-    }
+    result = oe_cert_find_extension(
+        &cert, (const char*)oid_oe_report, &report, &report_size);
+    if (result == OE_NOT_FOUND)
+        result = oe_cert_find_extension(
+            &cert, (const char*)oid_new_oe_report, &report, &report_size);
+    if (result != OE_OK)
+        OE_RAISE_MSG(result, "No expected certificate extension matched", NULL);
 
     OE_TRACE_VERBOSE("extract_x509_report_extension() succeeded");
 

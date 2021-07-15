@@ -808,13 +808,15 @@ static void _test_cert_extensions(
         {
             const Extension* ext = &extensions[i];
             const char* oid = ext->oid;
-            uint8_t data[4096];
-            size_t size = sizeof(data);
+            uint8_t* data = NULL;
+            size_t size = 0;
 
-            OE_TEST(oe_cert_find_extension(&cert, oid, data, &size) == OE_OK);
+            OE_TEST(oe_cert_find_extension(&cert, oid, &data, &size) == OE_OK);
             OE_TEST(strcmp(oid, ext->oid) == 0);
             OE_TEST(size == ext->size);
             OE_TEST(memcmp(data, ext->data, size) == 0);
+
+            free(data);
         }
     }
 
@@ -822,26 +824,29 @@ static void _test_cert_extensions(
     if (!extensions)
     {
         oe_result_t r;
-        uint8_t data[4096];
-        size_t size = sizeof(data);
+        uint8_t* data = NULL;
+        size_t size = 0;
 
-        r = oe_cert_find_extension(&cert, "1.2.3.4", data, &size);
+        r = oe_cert_find_extension(&cert, "1.2.3.4", &data, &size);
         OE_TEST(r == OE_NOT_FOUND);
+        OE_TEST(data == NULL);
     }
 
     /* Find the extension with the given OID and check for OE_NOT_FOUND */
     if (!extensions)
     {
         oe_result_t r;
-        uint8_t data[4096];
-        size_t size = sizeof(data);
+        uint8_t* data = NULL;
+        size_t size = 0;
 
-        r = oe_cert_find_extension(&cert, test_oid, data, &size);
+        r = oe_cert_find_extension(&cert, test_oid, &data, &size);
 
         if (extensions)
             OE_TEST(r == OE_OK);
         else
             OE_TEST(r == OE_NOT_FOUND);
+
+        free(data);
     }
 
     oe_cert_free(&cert);

@@ -516,26 +516,22 @@ oe_result_t oe_verify_attestation_certificate_with_evidence_v2(
     // determine the size of the extension
     while (oid_array_index < oid_array_count)
     {
-        if (oe_cert_find_extension(
-                &cert,
-                (const char*)oid_array[oid_array_index],
-                NULL,
-                &report_size) == OE_BUFFER_TOO_SMALL)
+        oe_result_t find_result = oe_cert_find_extension(
+            &cert,
+            (const char*)oid_array[oid_array_index],
+            &report,
+            &report_size);
+
+        if (find_result == OE_NOT_FOUND)
         {
-            report = (uint8_t*)oe_malloc(report_size);
-            if (!report)
-                OE_RAISE(OE_OUT_OF_MEMORY);
-
-            OE_CHECK(oe_cert_find_extension(
-                &cert,
-                (const char*)oid_array[oid_array_index],
-                report,
-                &report_size));
-
-            break;
+            oid_array_index++;
+            continue;
         }
 
-        oid_array_index++;
+        if (find_result == OE_OK)
+            break;
+
+        OE_RAISE_MSG(find_result, "oe_cert_find_extension failed", NULL);
     }
 
     // if there is no match

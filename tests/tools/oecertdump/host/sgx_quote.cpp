@@ -109,29 +109,15 @@ void parse_certificate_extension(const uint8_t* data, size_t data_len)
     oe_cert_chain_t cert_chain = {0};
     oe_cert_t leaf_cert = {0};
     ParsedExtensionInfo extension_info = {{0}};
-    size_t buffer_size = 1024;
-    uint8_t* buffer = NULL;
 
     // get leaf cert to parse sgx extension
     oe_cert_chain_read_pem(&cert_chain, data, data_len);
     oe_cert_chain_get_leaf_cert(&cert_chain, &leaf_cert);
 
-    // Try parsing the extensions.
-    buffer = (uint8_t*)malloc(buffer_size);
-    if (buffer == NULL)
-        OE_RAISE(OE_OUT_OF_MEMORY);
-    result =
-        ParseSGXExtensions(&leaf_cert, buffer, &buffer_size, &extension_info);
+    result = oe_parse_sgx_extensions(&leaf_cert, &extension_info);
+    if (result != OE_OK)
+        goto done;
 
-    if (result == OE_BUFFER_TOO_SMALL)
-    {
-        free(buffer);
-        buffer = (uint8_t*)malloc(buffer_size);
-        if (buffer == NULL)
-            OE_RAISE(OE_OUT_OF_MEMORY);
-        result = ParseSGXExtensions(
-            &leaf_cert, buffer, &buffer_size, &extension_info);
-    }
     printf(
         "\n    parsed qe certificate extension (%s) {\n",
         SGX_EXTENSION_OID_STR);
@@ -162,7 +148,6 @@ void parse_certificate_extension(const uint8_t* data, size_t data_len)
         extension_info.opt_smt_enabled ? "true" : "false");
     printf("    } qe cert extension \n");
 done:
-    free(buffer);
     oe_cert_chain_free(&cert_chain);
     oe_cert_free(&leaf_cert);
 }
@@ -559,7 +544,7 @@ oe_result_t get_sgx_report_from_certificate(
 {
     oe_result_t result = OE_OK;
     uint8_t* report_buffer = nullptr;
-    size_t report_buffer_size = certificate_in_der_length;
+    size_t report_buffer_size = 0;
     oe_cert_t certificate = {0};
 
     result = oe_cert_read_der(
@@ -567,15 +552,11 @@ oe_result_t get_sgx_report_from_certificate(
     if (result != OE_OK)
         return result;
 
-    report_buffer = (uint8_t*)malloc(report_buffer_size);
-    if (!report_buffer)
-        return OE_OUT_OF_MEMORY;
-
     // find the extension
     result = oe_cert_find_extension(
         &certificate,
         X509_OID_FOR_NEW_QUOTE_STRING,
-        report_buffer,
+        &report_buffer,
         &report_buffer_size);
 
     if (result == OE_OK)
@@ -585,8 +566,7 @@ oe_result_t get_sgx_report_from_certificate(
     }
     else
     {
-        if (!report_buffer)
-            free(report_buffer);
+        free(report_buffer);
     }
 
     return result;
