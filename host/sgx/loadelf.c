@@ -204,8 +204,8 @@ static oe_result_t _initialize_image_segments(
     oe_result_t result = OE_UNEXPECTED;
 
     /* Find out the image size and number of segments to be loaded */
-    uint64_t lo = 0xFFFFFFFFFFFFFFFF; /* lowest address of all segments */
-    uint64_t hi = 0;                  /* highest address of all segments */
+    uint64_t low = 0xFFFFFFFFFFFFFFFF; /* lowest address of all segments */
+    uint64_t high = 0;                 /* highest address of all segments */
 
     for (size_t i = 0; i < ehdr->e_phnum; i++)
     {
@@ -222,26 +222,29 @@ static oe_result_t _initialize_image_segments(
         switch (ph->p_type)
         {
             case PT_LOAD:
-                if (lo > ph->p_vaddr)
-                    lo = ph->p_vaddr;
-
-                if (hi < ph->p_vaddr + ph->p_memsz)
-                    hi = ph->p_vaddr + ph->p_memsz;
-
+            {
+                uint64_t current_low = ph->p_vaddr;
+                uint64_t current_high;
+                OE_CHECK(
+                    oe_safe_add_u64(current_low, ph->p_memsz, &current_high));
+                if (low > current_low)
+                    low = current_low;
+                if (high < current_high)
+                    high = current_high;
+            }
                 image->num_segments++;
                 break;
-
             default:
                 break;
         }
     }
 
     /* Fail if LO not found */
-    if (lo != 0)
+    if (low != 0)
         OE_RAISE(OE_INVALID_IMAGE);
 
     /* Fail if HI not found */
-    if (hi == 0)
+    if (high == 0)
         OE_RAISE(OE_INVALID_IMAGE);
 
     /* Fail if no segment found */
@@ -249,7 +252,7 @@ static oe_result_t _initialize_image_segments(
         OE_RAISE(OE_INVALID_IMAGE);
 
     /* Calculate the full size of the image (rounded up to the page size) */
-    image->image_size = oe_round_up_to_page_size(hi - lo);
+    image->image_size = oe_round_up_to_page_size(high - low);
 
     /* Allocate the in-memory image for program segments on a page boundary */
     image->image_base = (char*)oe_memalign(OE_PAGE_SIZE, image->image_size);
@@ -310,7 +313,7 @@ static oe_result_t _stage_image_segments(
                 segment->memsz = ph->p_memsz;
                 segment->vaddr = ph->p_vaddr;
                 segment->flags = ph->p_flags;
-
+                uint64_t segment_start_address = 0;
                 void* segment_data = elf64_get_segment(&image->elf, i);
                 if (!segment_data)
                 {
@@ -319,12 +322,13 @@ static oe_result_t _stage_image_segments(
                         "Failed to get segment at index %lu",
                         i);
                 }
-
+                OE_CHECK(oe_safe_add_u64(
+                    (uint64_t)image->image_base,
+                    segment->vaddr,
+                    &segment_start_address));
                 /* Copy the segment data to the image buffer */
                 memcpy(
-                    image->image_base + segment->vaddr,
-                    segment_data,
-                    ph->p_filesz);
+                    (void*)segment_start_address, segment_data, ph->p_filesz);
                 pt_read_segments_index++;
                 break;
             }
@@ -386,12 +390,15 @@ static oe_result_t _stage_image_segments(
     {
         const oe_elf_segment_t* current = &image->segments[i];
         const oe_elf_segment_t* next = &image->segments[i + 1];
+        uint64_t current_segment_end_address = 0;
         if (current->vaddr >= next->vaddr)
         {
             OE_RAISE_MSG(
                 OE_UNEXPECTED, "Segment vaddrs found out of order", NULL);
         }
-        if ((current->vaddr + current->memsz) >
+        OE_CHECK(oe_safe_add_u64(
+            current->vaddr, current->memsz, &current_segment_end_address));
+        if (current_segment_end_address >
             oe_round_down_to_page_size(next->vaddr))
         {
             OE_RAISE_MSG(OE_INVALID_IMAGE, "Overlapping segments found", NULL);
@@ -585,11 +592,11 @@ static oe_result_t _add_relocation_pages(
 
         for (size_t i = 0; i < npages; i++)
         {
-            uint64_t addr = enclave->start_address + *vaddr;
+            uint64_t addr = 0;
             uint64_t src = (uint64_t)&pages[i];
             uint64_t flags = SGX_SECINFO_REG | SGX_SECINFO_R;
             bool extend = true;
-
+            OE_CHECK(oe_safe_add_u64(enclave->start_address, *vaddr, &addr));
             OE_CHECK(oe_sgx_load_enclave_data(
                 context, enclave->base_address, addr, src, flags, extend));
             (*vaddr) += sizeof(oe_page_t);
@@ -620,7 +627,9 @@ static oe_result_t _add_segment_pages(
 
         /* Align if segment base address is not page aligned */
         uint64_t page_rva = oe_round_down_to_page_size(segment->vaddr);
-        uint64_t segment_end = segment->vaddr + segment->memsz;
+        uint64_t segment_end = 0;
+        OE_CHECK(oe_safe_add_u64(
+            segment->vaddr, (uint64_t)segment->memsz, &segment_end));
         uint64_t flags = _make_secinfo_flags(segment->flags);
 
         if (flags == 0)
@@ -633,17 +642,18 @@ static oe_result_t _add_segment_pages(
 
         for (; page_rva < segment_end; page_rva += OE_PAGE_SIZE)
         {
+            uint64_t src = 0;
+            uint64_t addr = 0;
+            OE_CHECK(
+                oe_safe_add_u64((uint64_t)image->image_base, page_rva, &src));
+            OE_CHECK(oe_safe_add_u64(enclave->start_address, *vaddr, &addr));
+            OE_CHECK(oe_safe_add_u64(addr, page_rva, &addr));
             OE_CHECK(oe_sgx_load_enclave_data(
-                context,
-                enclave->base_address,
-                enclave->start_address + *vaddr + page_rva,
-                (uint64_t)image->image_base + page_rva,
-                flags,
-                true));
+                context, enclave->base_address, addr, src, flags, true));
         }
     }
 
-    *vaddr = *vaddr + image->image_size;
+    OE_CHECK(oe_safe_add_u64(*vaddr, image->image_size, vaddr));
     result = OE_OK;
 
 done:
@@ -700,6 +710,9 @@ static oe_result_t _get_dynamic_symbol_rva(
     if (elf64_find_dynamic_symbol_by_name(&image->elf, name, &sym) != 0)
         goto done;
 
+    if (sym.st_value > image->image_size)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
     *rva = sym.st_value;
     result = OE_OK;
 
@@ -719,7 +732,8 @@ static oe_result_t _set_uint64_t_dynamic_symbol_value(
     if (elf64_find_dynamic_symbol_by_name(&image->elf, name, &sym) != 0)
         goto done;
 
-    symbol_address = (uint64_t*)(image->image_base + sym.st_value);
+    OE_CHECK(oe_safe_add_u64(
+        (uint64_t)image->image_base, sym.st_value, (uint64_t*)&symbol_address));
     *symbol_address = value;
 
     result = OE_OK;
@@ -915,9 +929,10 @@ static oe_result_t _patch_elf_image(
     oe_sgx_enclave_properties_t* oeprops;
     oe_enclave_module_info_t* module_info;
     uint64_t enclave_rva = 0;
-
-    oeprops =
-        (oe_sgx_enclave_properties_t*)(image->image_base + image->oeinfo_rva);
+    uint64_t oeprops_address = 0;
+    OE_CHECK(oe_safe_add_u64(
+        (uint64_t)image->image_base, image->oeinfo_rva, &oeprops_address));
+    oeprops = (oe_sgx_enclave_properties_t*)oeprops_address;
 
     assert((image->image_size & (OE_PAGE_SIZE - 1)) == 0);
     assert((image->reloc_size & (OE_PAGE_SIZE - 1)) == 0);
@@ -983,11 +998,16 @@ static oe_result_t _patch_elf_image(
          * to perform the init/fini functions of the module. Note that the
          * struct, defined as a global variable in the enclave image, is
          * initialized to zero by default */
-        size_t module_info_rva = 0;
-        OE_CHECK(
-            _get_dynamic_symbol_rva(image, "_module_info", &module_info_rva));
-        module_info =
-            (oe_enclave_module_info_t*)(image->image_base + module_info_rva);
+        size_t module_info_rva_offset = 0;
+        uint64_t module_info_rva_address = 0;
+
+        OE_CHECK(_get_dynamic_symbol_rva(
+            image, "_module_info", &module_info_rva_offset));
+        OE_CHECK(oe_safe_add_u64(
+            (uint64_t)image->image_base,
+            module_info_rva_offset,
+            &module_info_rva_address));
+        module_info = (oe_enclave_module_info_t*)(module_info_rva_address);
         if (!module_info)
             OE_RAISE_MSG(
                 OE_INVALID_IMAGE,
@@ -1192,7 +1212,7 @@ static oe_result_t _get_debug_modules(
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_debug_module_t* debug_module = NULL;
-
+    uint64_t debug_module_base_address = 0;
     *modules = NULL;
     if (image->submodule)
     {
@@ -1209,8 +1229,11 @@ static oe_result_t _get_debug_modules(
             OE_RAISE(OE_OUT_OF_MEMORY);
         debug_module->path_length = strlen(debug_module->path);
 
-        debug_module->base_address =
-            (void*)(enclave->start_address + image->submodule->image_rva);
+        OE_CHECK(oe_safe_add_u64(
+            enclave->start_address,
+            image->submodule->image_rva,
+            &debug_module_base_address));
+        debug_module->base_address = (void*)(debug_module_base_address);
         debug_module->size = image->submodule->image_size;
 
         debug_module->enclave = enclave->debug_enclave;
@@ -1230,12 +1253,16 @@ static oe_result_t _sgx_load_enclave_properties(
     oe_sgx_enclave_properties_t* properties)
 {
     oe_result_t result = OE_UNEXPECTED;
-
+    uint64_t oeinfo_start_address = 0;
+    OE_CHECK(oe_safe_add_u64(
+        (uint64_t)image->elf.image_base,
+        image->elf.oeinfo_rva,
+        &oeinfo_start_address));
     /* Copy from the image at oeinfo_rva. */
     OE_CHECK(oe_memcpy_s(
         properties,
         sizeof(*properties),
-        image->elf.image_base + image->elf.oeinfo_rva,
+        (const void*)oeinfo_start_address,
         sizeof(*properties)));
 
     result = OE_OK;
@@ -1250,15 +1277,25 @@ static oe_result_t _sgx_update_enclave_properties(
 {
     oe_result_t result = OE_UNEXPECTED;
 
+    uint64_t elf_oeinfo_pos = 0;
+    uint64_t elf_image_oeinfo_pos = 0;
+    OE_CHECK(oe_safe_add_u64(
+        (uint64_t)image->elf.elf.data,
+        image->elf.oeinfo_file_pos,
+        &elf_oeinfo_pos));
+    OE_CHECK(oe_safe_add_u64(
+        (uint64_t)image->elf.image_base,
+        image->elf.oeinfo_rva,
+        &elf_image_oeinfo_pos));
     /* Copy to both the image and ELF file*/
     OE_CHECK(oe_memcpy_s(
-        (uint8_t*)image->elf.elf.data + image->elf.oeinfo_file_pos,
+        (uint8_t*)elf_oeinfo_pos,
         sizeof(*properties),
         properties,
         sizeof(*properties)));
 
     OE_CHECK(oe_memcpy_s(
-        image->elf.image_base + image->elf.oeinfo_rva,
+        (void*)elf_image_oeinfo_pos,
         sizeof(*properties),
         properties,
         sizeof(*properties)));
