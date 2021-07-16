@@ -26,10 +26,8 @@ typedef struct _parsed_extension_info
     bool opt_smt_enabled;
 } ParsedExtensionInfo;
 
-oe_result_t ParseSGXExtensions(
+oe_result_t oe_parse_sgx_extensions(
     oe_cert_t* cert,
-    uint8_t* buffer,
-    size_t* buffer_size,
     ParsedExtensionInfo* parsed_info);
 
 OE_EXTERNC_END

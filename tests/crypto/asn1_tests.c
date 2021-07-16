@@ -330,8 +330,8 @@ done:
 static void _test_asn1_parsing(void)
 {
     oe_cert_t cert;
-    uint8_t data[4096];
-    size_t size = sizeof(data);
+    uint8_t* data = NULL;
+    size_t size = 0;
     const char OID[] = "1.2.840.113741.1.13.1";
     oe_result_t r;
 
@@ -340,7 +340,7 @@ static void _test_asn1_parsing(void)
     OE_TEST(oe_cert_read_pem(&cert, _CERT, strlen(_CERT) + 1) == OE_OK);
 
     /* Find the SGX_EXTENSION */
-    r = oe_cert_find_extension(&cert, OID, data, &size);
+    r = oe_cert_find_extension(&cert, OID, &data, &size);
     OE_TEST(r == OE_OK);
 
     oe_hex_dump(data, size);
@@ -362,6 +362,7 @@ static void _test_asn1_parsing(void)
     OE_TEST(strcmp(str, _PARSE_OUTPUT) == 0);
 
     free(str);
+    free(data);
 
     printf("=== passed %s()\n", __FUNCTION__);
 }

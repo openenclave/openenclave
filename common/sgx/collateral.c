@@ -156,43 +156,6 @@ done:
     return result;
 }
 
-/**
- * Parse sgx extensions from given cert.
- */
-static oe_result_t _parse_sgx_extensions(
-    oe_cert_t* leaf_cert,
-    ParsedExtensionInfo* parsed_extension_info)
-{
-    oe_result_t result = OE_FAILURE;
-
-    // The size of buffer required to parse extensions is not known beforehand.
-    size_t buffer_size = 1024;
-    uint8_t* buffer = NULL;
-
-    buffer = (uint8_t*)oe_malloc(buffer_size);
-    if (buffer == NULL)
-        OE_RAISE(OE_OUT_OF_MEMORY);
-
-    // Try parsing the extensions.
-    result = ParseSGXExtensions(
-        leaf_cert, buffer, &buffer_size, parsed_extension_info);
-
-    if (result == OE_BUFFER_TOO_SMALL)
-    {
-        // Allocate larger buffer. extensions_buffer_size contains required size
-        // of buffer.
-        oe_free(buffer);
-        buffer = (uint8_t*)oe_malloc(buffer_size);
-
-        result = ParseSGXExtensions(
-            leaf_cert, buffer, &buffer_size, parsed_extension_info);
-    }
-
-done:
-    oe_free(buffer);
-    return result;
-}
-
 typedef struct _url
 {
     char str[256];
@@ -212,7 +175,7 @@ oe_result_t oe_get_sgx_quote_verification_collateral_from_certs(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // Gather fmspc.
-    OE_CHECK(_parse_sgx_extensions(leaf_cert, &parsed_extension_info));
+    OE_CHECK(oe_parse_sgx_extensions(leaf_cert, &parsed_extension_info));
     OE_CHECK(oe_memcpy_s(
         args->fmspc,
         sizeof(args->fmspc),
@@ -273,7 +236,7 @@ oe_result_t oe_validate_revocation_list(
     OE_STATIC_ASSERT(OE_COUNTOF(crl_ptrs) >= OE_SGX_ENDORSEMENTS_CRL_COUNT);
 
     OE_CHECK_MSG(
-        _parse_sgx_extensions(pck_cert, &parsed_extension_info),
+        oe_parse_sgx_extensions(pck_cert, &parsed_extension_info),
         "Failed to parse SGX extensions from leaf cert. %s",
         oe_result_str(result));
 
