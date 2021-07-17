@@ -97,6 +97,7 @@ add_enclave_library(
   link.c
   locale.c
   malloc.c
+  mman.c
   pthread.c
   sched_yield.c
   sigaction.c
@@ -494,8 +495,6 @@ add_enclave_library(
   ${MUSLSRC}/misc/ioctl.c
   ${MUSLSRC}/misc/nftw.c
   ${MUSLSRC}/misc/uname.c
-  ${MUSLSRC}/mman/mmap.c
-  ${MUSLSRC}/mman/munmap.c
   ${MUSLSRC}/multibyte/btowc.c
   ${MUSLSRC}/multibyte/c16rtomb.c
   ${MUSLSRC}/multibyte/c32rtomb.c
