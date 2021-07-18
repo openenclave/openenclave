@@ -1,0 +1,36 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+# 
+ARG BASE_IMAGE="ubuntu@sha256:fff16eea1a8ae92867721d90c59a75652ea66d29c05294e6e2f898704bdb8cf1"
+FROM $BASE_IMAGE
+
+#
+# Build container to demonstrate the use of the .deb package of the OpenEnclave SDK
+#
+
+RUN ln -fs  /usr/share/zoneinfo/Etc/UTC /etc/localtime # Prevents forced interaction from package install
+RUN apt-get update \
+        && DEBIAN_FRONTEND=noninteractive apt-get install -y curl python3 gnupg2 perl git vim clang-7 make pkg-config libssl-dev
+
+ADD "https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key" /tmp
+RUN cat /tmp/intel-sgx-deb.key | apt-key add -
+RUN echo "deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu focal main" >/etc/apt/sources.list.d/intel-sgx.list
+
+
+RUN apt-get update \
+        && DEBIAN_FRONTEND=noninteractive apt-get install -y libsgx-enclave-common libsgx-launch
+
+RUN mkdir -p /output
+RUN mkdir -p /output/build
+RUN chmod -R 777 /output
+RUN mkdir -p /opt/openenclave
+RUN chmod -R 777 /opt/openenclave
+ENV ARCH=$(arch)
+
+# 
+RUN mkdir /home/azureuser
+WORKDIR /home/azureuser
+ADD test_deb.sh /home/azureuser
+
+#install the required software
+CMD bash
