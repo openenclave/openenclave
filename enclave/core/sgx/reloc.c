@@ -22,7 +22,8 @@ bool oe_apply_relocations(void)
 {
     const elf64_rela_t* relocs = (const elf64_rela_t*)__oe_get_reloc_base();
     size_t nrelocs = __oe_get_reloc_size() / sizeof(elf64_rela_t);
-    const uint8_t* baseaddr = (const uint8_t*)__oe_get_enclave_base();
+    const uint8_t* start_address =
+        (const uint8_t*)__oe_get_enclave_start_address();
 
     for (size_t i = 0; i < nrelocs; i++)
     {
@@ -33,7 +34,7 @@ bool oe_apply_relocations(void)
             break;
 
         /* Compute address of reference to be relocated */
-        uint64_t* dest = (uint64_t*)(baseaddr + p->r_offset);
+        uint64_t* dest = (uint64_t*)(start_address + p->r_offset);
 
         uint64_t reloc_type = ELF64_R_TYPE(p->r_info);
 
@@ -43,7 +44,7 @@ bool oe_apply_relocations(void)
             int64_t addend = p->r_addend;
             /* Process only if the symbol is defined */
             if (addend)
-                *dest = (uint64_t)(baseaddr + p->r_addend);
+                *dest = (uint64_t)(start_address + p->r_addend);
         }
     }
 

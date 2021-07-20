@@ -26,7 +26,7 @@ int dl_iterate_phdr(
 
     struct dl_phdr_info info;
     memset(&info, 0, sizeof(info));
-    info.dlpi_addr = (Elf64_Addr)__oe_get_enclave_base();
+    info.dlpi_addr = (Elf64_Addr)__oe_get_enclave_start_address();
     info.dlpi_name = "";
     info.dlpi_phdr = (Elf64_Phdr*)((uint8_t*)ehdr + ehdr->e_phoff);
     info.dlpi_phnum = ehdr->e_phnum;
