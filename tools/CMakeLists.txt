@@ -69,3 +69,5 @@ if (OE_SGX)
     add_subdirectory(oeutil)
   endif ()
 endif ()
+
+add_subdirectory(oesign/oesignlib)
