@@ -569,7 +569,7 @@ static uint64_t _make_secinfo_flags(uint32_t flags)
 
 static oe_result_t _add_relocation_pages(
     oe_sgx_load_context_t* context,
-    uint64_t enclave_base,
+    oe_enclave_t* enclave,
     const oe_enclave_elf_image_t* image,
     uint64_t* vaddr)
 {
@@ -585,13 +585,13 @@ static oe_result_t _add_relocation_pages(
 
         for (size_t i = 0; i < npages; i++)
         {
-            uint64_t addr = enclave_base + *vaddr;
+            uint64_t addr = enclave->start_address + *vaddr;
             uint64_t src = (uint64_t)&pages[i];
             uint64_t flags = SGX_SECINFO_REG | SGX_SECINFO_R;
             bool extend = true;
 
             OE_CHECK(oe_sgx_load_enclave_data(
-                context, enclave_base, addr, src, flags, extend));
+                context, enclave->base_address, addr, src, flags, extend));
             (*vaddr) += sizeof(oe_page_t);
         }
     }
@@ -604,7 +604,7 @@ done:
 
 static oe_result_t _add_segment_pages(
     oe_sgx_load_context_t* context,
-    uint64_t enclave_base,
+    oe_enclave_t* enclave,
     const oe_enclave_elf_image_t* image,
     uint64_t* vaddr)
 {
@@ -635,8 +635,8 @@ static oe_result_t _add_segment_pages(
         {
             OE_CHECK(oe_sgx_load_enclave_data(
                 context,
-                enclave_base,
-                enclave_base + *vaddr + page_rva,
+                enclave->base_address,
+                enclave->start_address + *vaddr + page_rva,
                 (uint64_t)image->image_base + page_rva,
                 flags,
                 true));
@@ -672,14 +672,13 @@ static oe_result_t _add_pages(
     assert(enclave->size > image_size);
 
     /* Add the program segments first */
-    OE_CHECK(_add_segment_pages(context, enclave->addr, &image->elf, vaddr));
+    OE_CHECK(_add_segment_pages(context, enclave, &image->elf, vaddr));
     if (image->submodule)
-        OE_CHECK(_add_segment_pages(
-            context, enclave->addr, image->submodule, vaddr));
+        OE_CHECK(_add_segment_pages(context, enclave, image->submodule, vaddr));
 
     /* The base image points to the merged (base + module), zero-padded
      * relocation data after the patching step. */
-    OE_CHECK(_add_relocation_pages(context, enclave->addr, &image->elf, vaddr));
+    OE_CHECK(_add_relocation_pages(context, enclave, &image->elf, vaddr));
 
     result = OE_OK;
 
@@ -1179,7 +1178,11 @@ static oe_result_t _patch(
 
     OE_CHECK(image->get_tls_page_count(image, &tls_page_count));
     OE_CHECK(_patch_elf_image(
-        &image->elf, image->submodule, enclave_size, tls_page_count, extra_size));
+        &image->elf,
+        image->submodule,
+        enclave_size,
+        tls_page_count,
+        extra_size));
 
     result = OE_OK;
 done:
@@ -1211,7 +1214,7 @@ static oe_result_t _get_debug_modules(
         debug_module->path_length = strlen(debug_module->path);
 
         debug_module->base_address =
-            (void*)(enclave->addr + image->submodule->image_rva);
+            (void*)(enclave->start_address + image->submodule->image_rva);
         debug_module->size = image->submodule->image_size;
 
         debug_module->enclave = enclave->debug_enclave;
