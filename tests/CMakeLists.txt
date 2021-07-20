@@ -70,9 +70,11 @@ if (OE_SGX)
   add_subdirectory(switchless_worksleep)
   add_subdirectory(switchless_one_tcs)
 
-  if (COMPILER_SUPPORTS_SNMALLOC AND NOT USE_SNMALLOC)
-    # Do not build that test if we are already using snmalloc for all other tests
-    add_subdirectory(snmalloc)
+  if (COMPILER_SUPPORTS_SNMALLOC)
+    if (NOT USE_SNMALLOC)
+      # Do not build that test if we are already using snmalloc for all other tests
+      add_subdirectory(snmalloc)
+    endif ()
   else ()
     message("The C++ compiler cannot compile snmalloc. Skipping snmalloc test.")
   endif ()
