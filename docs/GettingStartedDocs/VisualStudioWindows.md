@@ -21,9 +21,9 @@ You will need the following:
   Visual Studio extension, v0.7 or later.  The extension can be installed via that marketplace link, or from within
   Visual Studio.  (Do Extensions -> Manage Extensions -> Online -> search for "enclave".)  You must restart Visual Studio after
   installing the extension.
-- Intel's PSW2.6. This should be automatically installed on Windows 10 systems that support SGX.  If manual install is needed:
-  - For systems with support for SGX1: [Intel's PSW 2.6,Intel Enclave Common API library](https://github.com/openenclave/openenclave/blob/master/docs/GettingStartedDocs/Contributors/WindowsManualSGX1Prereqs.md)
-  - For systems with support for SGX1+FLC: [Intel's PSW2.6, Intel's Data Center Attestation Primitives and related dependencies](https://github.com/openenclave/openenclave/blob/master/docs/GettingStartedDocs/Contributors/WindowsManualSGX1FLCDCAPPrereqs.md)
+- Intel's Platform Software for Windows (PSW). This should be automatically installed on Windows 10 systems that support SGX.  If manual install is needed:
+  - For systems with support for SGX1: [Intel PSW, Intel Enclave Common API library](https://github.com/openenclave/openenclave/blob/master/docs/GettingStartedDocs/Contributors/WindowsManualSGX1Prereqs.md)
+  - For systems with support for SGX1+FLC: [Intel PSW, Intel's Data Center Attestation Primitives and related dependencies](https://github.com/openenclave/openenclave/blob/master/docs/GettingStartedDocs/Contributors/WindowsManualSGX1FLCDCAPPrereqs.md)
 - [Clang/LLVM for Windows 64-bit](http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe).  The installer will ask whether LLVM should be added to the PATH, and this must be done at least for the current user, so Visual Studio can find it.
 
 ## Walkthrough: Creating a C/C++ Enclave Application
