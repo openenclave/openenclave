@@ -363,9 +363,6 @@ void* oe_debug_calloc(size_t nmemb, size_t size)
 {
     void* ptr;
 
-    if (_check_multiply_overflow(nmemb, size))
-        return NULL;
-
     const size_t total_size = nmemb * size;
 
     if (!(ptr = oe_debug_malloc(total_size)))
@@ -389,6 +386,7 @@ void* oe_debug_realloc(void* ptr, size_t size)
         if (header->size == size)
             return ptr;
 
+        // oe_debug_malloc sets errno correctly.
         if (!(new_ptr = oe_debug_malloc(size)))
             return NULL;
 
@@ -419,15 +417,10 @@ int oe_debug_posix_memalign(void** memptr, size_t alignment, size_t size)
     const size_t block_size = _calculate_block_size(alignment, size);
     void* block = NULL;
     header_t* header = NULL;
+    int ret = 0;
 
-    if (!memptr)
-        return OE_EINVAL;
-
-    if (!oe_is_ptrsize_multiple(alignment) || !oe_is_pow2(alignment))
-        return OE_EINVAL;
-
-    if (oe_allocator_posix_memalign(&block, alignment, block_size) != 0)
-        return OE_ENOMEM;
+    if ((ret = oe_allocator_posix_memalign(&block, alignment, block_size)) != 0)
+        return ret;
 
     header = (header_t*)((uint8_t*)block + padding_size);
 
@@ -437,19 +430,6 @@ int oe_debug_posix_memalign(void** memptr, size_t alignment, size_t size)
     *memptr = header->data;
 
     return 0;
-}
-
-void* oe_debug_memalign(size_t alignment, size_t size)
-{
-    void* ptr = NULL;
-
-    // The only difference between posix_memalign and the obsolete memalign is
-    // that posix_memalign requires alignment to be a multiple of sizeof(void*).
-    // Adjust the alignment if needed.
-    alignment = oe_round_up_to_multiple(alignment, sizeof(void*));
-
-    oe_debug_posix_memalign(&ptr, alignment, size);
-    return ptr;
 }
 
 size_t oe_debug_malloc_usable_size(void* ptr)
@@ -512,9 +492,12 @@ void* oe_malloc(size_t size)
 
     if (!p && size)
     {
+        oe_errno = OE_ENOMEM;
         if (_failure_callback)
             _failure_callback(__FILE__, __LINE__, __FUNCTION__, size);
     }
+    else
+        oe_errno = 0;
 
     return p;
 }
@@ -534,6 +517,10 @@ void oe_free(void* ptr)
 void* oe_calloc(size_t nmemb, size_t size)
 {
     void* p = NULL;
+
+    if (_check_multiply_overflow(nmemb, size))
+        goto done;
+
     if (oe_use_debug_malloc)
     {
         p = oe_debug_calloc(nmemb, size);
@@ -543,11 +530,15 @@ void* oe_calloc(size_t nmemb, size_t size)
         p = oe_allocator_calloc(nmemb, size);
     }
 
+done:
     if (!p && nmemb && size)
     {
+        oe_errno = OE_ENOMEM;
         if (_failure_callback)
             _failure_callback(__FILE__, __LINE__, __FUNCTION__, nmemb * size);
     }
+    else
+        oe_errno = 0;
 
     return p;
 }
@@ -566,9 +557,12 @@ void* oe_realloc(void* ptr, size_t size)
 
     if (!p && size)
     {
+        oe_errno = OE_ENOMEM;
         if (_failure_callback)
             _failure_callback(__FILE__, __LINE__, __FUNCTION__, size);
     }
+    else
+        oe_errno = 0;
 
     return p;
 }
@@ -577,12 +571,15 @@ void* oe_memalign(size_t alignment, size_t size)
 {
     void* ptr = NULL;
 
-    // The only difference between posix_memalign and the obsolete memalign is
-    // that posix_memalign requires alignment to be a multiple of sizeof(void*).
-    // Adjust the alignment if needed.
-    alignment = oe_round_up_to_multiple(alignment, sizeof(void*));
+    if (!oe_is_pow2(alignment))
+        oe_errno = OE_EINVAL;
+    else
+    {
+        if (alignment < sizeof(void*))
+            alignment = sizeof(void*);
+        oe_errno = oe_posix_memalign(&ptr, alignment, size);
+    }
 
-    oe_posix_memalign(&ptr, alignment, size);
     return ptr;
 }
 
@@ -590,10 +587,16 @@ int oe_posix_memalign(void** memptr, size_t alignment, size_t size)
 {
     int rc = -1;
 
+    if (!memptr)
+        return OE_EINVAL;
+
+    if (!oe_is_ptrsize_multiple(alignment) || !oe_is_pow2(alignment))
+        return OE_EINVAL;
+
     if (oe_use_debug_malloc)
         rc = oe_debug_posix_memalign(memptr, alignment, size);
     else
-        rc = oe_posix_memalign(memptr, alignment, size);
+        rc = oe_allocator_posix_memalign(memptr, alignment, size);
 
     if (rc != 0 && size)
     {
