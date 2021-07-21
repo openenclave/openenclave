@@ -9,6 +9,7 @@
 #include <openenclave/internal/sgx/plugin.h>
 #include <openenclave/internal/tests.h>
 #include <openenclave/internal/trace.h>
+#include <sgx_dcap_ql_wrapper.h>
 #include <sgx_dcap_quoteverify.h>
 #include <sgx_ql_lib_common.h>
 #include <sgx_quote_3.h>
@@ -84,6 +85,9 @@ static quote3_error_t (*_sgx_qv_verify_quote)(
     sgx_ql_qe_report_info_t* p_qve_report_info,
     uint32_t supplemental_data_size,
     uint8_t* p_supplemental_data);
+
+static quote3_error_t (
+    *_sgx_ql_set_path)(sgx_ql_path_type_t path_type, const char* p_path);
 
 #ifdef _WIN32
 
@@ -360,6 +364,9 @@ done:
 static void _load_sgx_dcap_ql_impl(void)
 {
     oe_result_t result = OE_FAILURE;
+    const char* qpl_path = getenv("OE_SGX_DCAP_QPL");
+    quote3_error_t error = SGX_QL_ERROR_UNEXPECTED;
+
     OE_TRACE_INFO("Loading %s\n", SGX_DCAP_QL_NAME);
     _ql_module = LOAD_SGX_DCAP_LIB(SGX_DCAP_QL_NAME);
 
@@ -375,10 +382,23 @@ static void _load_sgx_dcap_ql_impl(void)
             (void**)&_sgx_qe_get_quote_size));
         OE_CHECK(_lookup_function(
             _ql_module, "sgx_qe_get_quote", (void**)&_sgx_qe_get_quote));
+        OE_CHECK(_lookup_function(
+            _ql_module, "sgx_ql_set_path", (void**)&_sgx_ql_set_path));
 
         atexit(_unload_sgx_dcap_ql);
-        result = OE_OK;
         OE_TRACE_INFO("Loaded %s\n", SGX_DCAP_QL_NAME);
+
+        if (qpl_path != NULL)
+        {
+            error = _sgx_ql_set_path(SGX_QL_QPL_PATH, qpl_path);
+            if (error != SGX_QL_SUCCESS)
+                OE_RAISE_MSG(
+                    OE_PLATFORM_ERROR,
+                    "quote3_error_t=%s\n",
+                    get_quote3_error_t_string(error));
+            OE_TRACE_INFO("Set QPL path for QL: %s", qpl_path);
+        }
+        result = OE_OK;
     }
     else
     {
