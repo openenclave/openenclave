@@ -4,6 +4,7 @@
 #ifndef _OE_INCLUDE_TIME_H
 #define _OE_INCLUDE_TIME_H
 
+#include <openenclave/bits/time.h>
 #include <openenclave/bits/types.h>
 
 /*
@@ -35,6 +36,20 @@ OE_EXTERNC_BEGIN
 */
 
 uint64_t oe_get_time(void);
+
+/*
+ * Forward declaration of ocall since libc/CMakeLists.txt does not process any
+ * EDLs. The code is structured such that if this declaration does not match
+ * oeedger8r generated declaration, there will be compile error.
+ */
+#ifdef OE_BUILD_ENCLAVE
+oe_result_t oe_syscall_clock_gettime_ocall(
+    int* ret,
+    oe_clockid_t clockid,
+    oe_timespec* tp);
+#else
+int oe_syscall_clock_gettime_ocall(oe_clockid_t clockid, oe_timespec* tp);
+#endif
 
 #ifdef _WIN32
 /*

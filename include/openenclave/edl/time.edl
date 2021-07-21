@@ -25,6 +25,11 @@ enclave
 
     untrusted
     {
+        int oe_syscall_clock_gettime_ocall(
+	    oe_clockid_t clockid,
+	    [out] struct oe_timespec* tp)
+	    propagate_errno;
+
         int oe_syscall_nanosleep_ocall(
             [in] struct oe_timespec* req,
             [in, out] struct oe_timespec* rem)

@@ -5,6 +5,7 @@
 #define _GNU_SOURCE
 
 #include <errno.h>
+#include <openenclave/bits/time.h>
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
@@ -47,26 +48,36 @@ OE_WEAK OE_DEFINE_SYSCALL2(SYS_clock_gettime)
     clockid_t clock_id = (clockid_t)arg1;
     struct timespec* tp = (struct timespec*)arg2;
     int ret = -1;
-    uint64_t msec;
 
+    errno = 0;
     if (!tp)
         goto done;
 
     if (clock_id != CLOCK_REALTIME)
     {
-        /* Only supporting CLOCK_REALTIME */
-        oe_assert("clock_gettime(): panic" == NULL);
-        goto done;
+        // Disaptch to clock_gettime
+        oe_timespec ts;
+        if (oe_syscall_clock_gettime_ocall(&ret, clock_id, &ts) != OE_OK)
+        {
+            // If the ocall failed, ensure that ret is non zero.
+            if (ret == 0)
+                ret = -1;
+            goto done;
+        }
+        tp->tv_nsec = ts.tv_nsec;
+        tp->tv_sec = ts.tv_sec;
+    }
+    else
+    {
+        uint64_t msec;
+        if ((msec = oe_get_time()) == (uint64_t)-1)
+            goto done;
+
+        tp->tv_sec = msec / _SEC_TO_MSEC;
+        tp->tv_nsec = (msec % _SEC_TO_MSEC) * _MSEC_TO_NSEC;
     }
 
-    if ((msec = oe_get_time()) == (uint64_t)-1)
-        goto done;
-
-    tp->tv_sec = msec / _SEC_TO_MSEC;
-    tp->tv_nsec = (msec % _SEC_TO_MSEC) * _MSEC_TO_NSEC;
-
     ret = 0;
-
 done:
 
     return ret;

@@ -74,3 +74,78 @@ int oe_localtime(const time_t* timep, struct tm* result)
 {
     return localtime_s(result, timep);
 }
+
+int oe_syscall_clock_gettime_ocall(oe_clockid_t clockid, oe_timespec* tp)
+{
+    struct timespec ts;
+    int ret = -1;
+    switch (clockid)
+    {
+        case CLOCK_REALTIME:
+        {
+            uint64_t time = _time();
+            tp->tv_sebc = (long)(time / TICKS_PER_SECOND);
+            tp->tv_usec = (long)((time % TICKS_PER_SECOND) / TICKS_PER_USECOND);
+            ret = 0;
+            break;
+        }
+        case CLOCK_MONOTONIC:
+        {
+            LARGE_INTEGER pf, pc;
+            if (QueryPerformanceFrequency(&pf) == 0 ||
+                QueryPerformanceCounter(&pc) == 0)
+            {
+                errno = EINVAL;
+                goto done;
+            }
+
+            tp->tv_sec = pc.QuadPart / pf.QuadPart;
+            tp->tv_nsec = (pc.QuadPart % pf.QuadPart) * 1000000000L;
+            break;
+        }
+        case CLOCK_PROCESS_CPUTIME_ID:
+        {
+            FILETIME creation_time, exit_time, kernel_time, user_time;
+            if (GetProcessTimes(
+                    GetCurrentProcess(),
+                    &creation_time,
+                    &exit_time,
+                    &kernel_time,
+                    &user_time) == 0)
+            {
+                errno = EINVAL;
+                uint64_t total_time = kernel_time.u64 + user_time.u64;
+                tp->tv_sec = total_time / 10000000;
+                tp->tv_nsec = (total_time % 10000000) * 100;
+                goto done;
+            }
+            break;
+        }
+        case CLOCK_THREAD_CPUTIME_ID:
+        {
+            FILETIME creation_time, exit_time, kernel_time, user_time;
+            if (GetThreadTimes(
+                    GetCurrentThread(),
+                    &creation_time,
+                    &exit_time,
+                    &kernel_time,
+                    &user_time) == 0)
+            {
+                errno = EINVAL;
+                uint64_t total_time = kernel_time.u64 + user_time.u64;
+                tp->tv_sec = total_time / 10000000;
+                tp->tv_nsec = (total_time % 10000000) * 100;
+                goto done;
+            }
+            break;
+        }
+        default:
+            errno = EINVAL;
+            goto done;
+    }
+
+    errno = 0;
+    ret = 0;
+done:
+    return ret;
+}
