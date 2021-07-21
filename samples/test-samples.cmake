@@ -49,6 +49,11 @@ if (BUILD_ENCLAVES)
     list(APPEND SAMPLES_LIST pluggable_allocator)
     list(APPEND CRYPTO_LIB_LIST mbedtls)
   endif ()
+
+  if (UNIX)
+    list(APPEND SAMPLES_LIST apkman)
+    list(APPEND CRYPTO_LIB_LIST mbedtls)
+  endif ()
 endif ()
 
 if ($ENV{OE_SIMULATION})

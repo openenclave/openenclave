@@ -123,6 +123,16 @@ if(NOT TARGET openenclave::oegdb)
   set_target_properties(openenclave::oegdb PROPERTIES IMPORTED_LOCATION ${OE_BINDIR}/oegdb)
 endif ()
 
+# This target is an external project, so we have to manually
+# "export" it here for users of the package.
+if(NOT TARGET openenclave::oeapkman)
+  add_executable(openenclave::oeapkman IMPORTED)
+  set_target_properties(openenclave::oeapkman
+    PROPERTIES
+    IMPORTED_LOCATION ${OE_BINDIR}/oeapkman
+    ROOT "$ENV{HOME}/.oeapkman/alpine-fs")
+endif ()
+
 # Apply Spectre mitigations if available.
 set(OE_SPECTRE_MITIGATION_FLAGS "@SPECTRE_MITIGATION_FLAGS@")
 
