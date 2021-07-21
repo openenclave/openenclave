@@ -43,6 +43,17 @@ void* oe_sgx_enclave_create(
     size_t info_size,
     uint32_t* enclave_error);
 
+void* oe_sgx_enclave_create_ex(
+    void* base_address,
+    size_t virtual_size,
+    size_t initial_commit,
+    uint32_t type,
+    const void* info,
+    size_t info_size,
+    const uint32_t ex_features,
+    const void* ex_features_p[32],
+    uint32_t* enclave_error);
+
 size_t oe_sgx_enclave_load_data(
     void* target_address,
     size_t target_size,

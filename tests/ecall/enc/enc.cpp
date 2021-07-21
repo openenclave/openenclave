@@ -44,7 +44,7 @@ void enc_test(test_args* args)
     }
 
     /* Get enclave offsets and bases */
-    args->base = const_cast<void*>(__oe_get_enclave_base());
+    args->base = const_cast<void*>(__oe_get_enclave_start_address());
     args->base_heap_page = oe_get_base_heap_page();
     args->num_heap_pages = oe_get_num_heap_pages();
     args->num_pages = oe_get_num_pages();

@@ -8,7 +8,7 @@ bool oe_is_within_enclave(const void* p, size_t n)
 {
     uint64_t range_start = (uint64_t)p;
     uint64_t range_end = range_start + (n == 0 ? 1 : n);
-    uint64_t enclave_start = (uint64_t)__oe_get_enclave_base();
+    uint64_t enclave_start = (uint64_t)__oe_get_enclave_start_address();
     uint64_t enclave_end = enclave_start + __oe_get_enclave_size();
 
     // Disallow nullptr and check that arithmetic operations do not wrap
@@ -27,7 +27,7 @@ bool oe_is_outside_enclave(const void* p, size_t n)
 {
     uint64_t range_start = (uint64_t)p;
     uint64_t range_end = range_start + (n == 0 ? 1 : n);
-    uint64_t enclave_start = (uint64_t)__oe_get_enclave_base();
+    uint64_t enclave_start = (uint64_t)__oe_get_enclave_start_address();
     uint64_t enclave_end = enclave_start + __oe_get_enclave_size();
 
     // Disallow nullptr and check that arithmetic operations do not wrap

@@ -24,13 +24,13 @@ void assert_debugger_binary_contract_enclave_side()
     oe_sgx_td_t* td = oe_sgx_get_td();
     sgx_tcs_t* tcs = (sgx_tcs_t*)td_to_tcs(td);
 
-    // Assert that enclave base address can be computed just from tcs.
+    // Assert that enclave start address can be computed just from tcs.
     // See: debugger/ptraceLib/enclave_context.c
     if (td->simulate)
     {
-        const void* enclave_base_address = __oe_get_enclave_base();
+        const void* enclave_start_address = __oe_get_enclave_start_address();
         void* computed_address = (uint8_t*)tcs + OE_PAGE_SIZE - tcs->ossa;
-        OE_TEST(enclave_base_address == computed_address);
+        OE_TEST(enclave_start_address == computed_address);
     }
     else
     {

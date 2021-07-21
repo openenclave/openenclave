@@ -64,6 +64,11 @@ static const char _usage_sign[] =
     "  -o, --output-file        [optional] file name (with path) where the\n"
     "                           signature of the enclave image will be\n"
     "                           written.\n"
+    "  -z, --zero-base          [optional] enable/disable creation of enclave\n"
+    "                           at address 0x0 by passing in 1/0\n"
+    "  -s, --start-address      [optional] if zero-base enclave is enabled,\n"
+    "                           the enclave image will be created with this\n"
+    "                           start address\n"
 #if HAS_ENGINE_SUPPORT
     "\n"
     "  OR\n"
@@ -290,6 +295,8 @@ int sign_parser(int argc, const char* argv[])
     const char* keyfile = NULL;
     const char* digest_signature = NULL;
     const char* output_file = NULL;
+    const char* zero_base = NULL;
+    const char* start_address = NULL;
     const char* x509 = NULL;
     const char* engine_id = NULL;
     const char* engine_load_path = NULL;
@@ -303,6 +310,8 @@ int sign_parser(int argc, const char* argv[])
         {"digest-signature", required_argument, NULL, 'd'},
         {"output-file", required_argument, NULL, 'o'},
         {"x509", required_argument, NULL, 'x'},
+        {"zero-base", required_argument, NULL, 'z'},
+        {"start-address", required_argument, NULL, 's'},
 #if HAS_ENGINE_SUPPORT
         {"engine", required_argument, NULL, 'n'},
         {"load-path", required_argument, NULL, 'p'},
@@ -310,7 +319,7 @@ int sign_parser(int argc, const char* argv[])
 #endif
         {NULL, 0, NULL, 0},
     };
-    const char short_options[] = "he:c:k:n:p:i:d:o:x:";
+    const char short_options[] = "he:c:k:n:p:i:d:o:x:z:s:";
 
     int c;
 
@@ -354,6 +363,11 @@ int sign_parser(int argc, const char* argv[])
             case 'x':
                 x509 = optarg;
                 break;
+            case 'z':
+                zero_base = optarg;
+                break;
+            case 's':
+                start_address = optarg;
 #if HAS_ENGINE_SUPPORT
             case 'n':
                 engine_id = optarg;

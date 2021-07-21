@@ -118,7 +118,7 @@ static bool _is_misc_region_supported()
 
 static oe_result_t _add_filled_pages(
     oe_sgx_load_context_t* context,
-    uint64_t enclave_addr,
+    oe_enclave_t* enclave,
     uint64_t* vaddr,
     size_t npages,
     uint32_t filler,
@@ -133,7 +133,7 @@ static oe_result_t _add_filled_pages(
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     /* Reject invalid parameters */
-    if (!context || !enclave_addr || !vaddr)
+    if (!context || !enclave || !vaddr || !enclave->start_address)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Fill or clear the page */
@@ -151,12 +151,12 @@ static oe_result_t _add_filled_pages(
     /* Add the pages */
     for (i = 0; i < npages; i++)
     {
-        uint64_t addr = enclave_addr + *vaddr;
+        uint64_t addr = enclave->start_address + *vaddr;
         uint64_t src = (uint64_t)page;
         uint64_t flags = SGX_SECINFO_REG | SGX_SECINFO_R | SGX_SECINFO_W;
 
         OE_CHECK(oe_sgx_load_enclave_data(
-            context, enclave_addr, addr, src, flags, extend));
+            context, enclave->base_address, addr, src, flags, extend));
         (*vaddr) += OE_PAGE_SIZE;
     }
 
@@ -171,30 +171,28 @@ done:
 
 static oe_result_t _add_stack_pages(
     oe_sgx_load_context_t* context,
-    uint64_t enclave_addr,
+    oe_enclave_t* enclave,
     uint64_t* vaddr,
     size_t npages)
 {
     const bool extend = true;
     return _add_filled_pages(
-        context, enclave_addr, vaddr, npages, 0xcccccccc, extend);
+        context, enclave, vaddr, npages, 0xcccccccc, extend);
 }
 
 static oe_result_t _add_heap_pages(
     oe_sgx_load_context_t* context,
-    uint64_t enclave_addr,
+    oe_enclave_t* enclave,
     uint64_t* vaddr,
     size_t npages)
 {
     /* Do not measure heap pages */
     const bool extend = false;
-    return _add_filled_pages(context, enclave_addr, vaddr, npages, 0, extend);
+    return _add_filled_pages(context, enclave, vaddr, npages, 0, extend);
 }
 
 static oe_result_t _add_control_pages(
     oe_sgx_load_context_t* context,
-    uint64_t enclave_addr,
-    uint64_t enclave_size,
     uint64_t entry,
     size_t tls_page_count,
     uint64_t* vaddr,
@@ -203,8 +201,8 @@ static oe_result_t _add_control_pages(
     oe_result_t result = OE_UNEXPECTED;
     oe_page_t* page = NULL;
 
-    if (!context || !enclave_addr || !enclave_size || !entry || !vaddr ||
-        !enclave)
+    if (!context || !entry || !vaddr || !enclave || !enclave->start_address ||
+        !enclave->size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Create "control" pages:
@@ -223,7 +221,8 @@ static oe_result_t _add_control_pages(
                 OE_FAILURE, "OE_SGX_MAX_TCS (%d) hit\n", OE_SGX_MAX_TCS);
 
         enclave->bindings[enclave->num_bindings].enclave = enclave;
-        enclave->bindings[enclave->num_bindings++].tcs = enclave_addr + *vaddr;
+        enclave->bindings[enclave->num_bindings++].tcs =
+            enclave->start_address + *vaddr;
     }
 
     /* Add the TCS page */
@@ -236,6 +235,13 @@ static oe_result_t _add_control_pages(
         /* Zero-fill the TCS page */
         memset(page, 0, sizeof(*page));
 
+        /*
+         * Addresses in TCS are expected to be relative to the base address
+         * of the enclave, while vaddr is relative to address zero.
+         * Add base_offset to adjust these addresses.
+         */
+        uint64_t base_offset = enclave->start_address - enclave->base_address;
+
         /* Set TCS to pointer to page */
         tcs = (sgx_tcs_t*)page;
 
@@ -243,7 +249,7 @@ static oe_result_t _add_control_pages(
         tcs->flags = 0;
 
         /* SSA resides on page immediately following the TCS page */
-        tcs->ossa = *vaddr + OE_PAGE_SIZE;
+        tcs->ossa = base_offset + *vaddr + OE_PAGE_SIZE;
 
         /* Used at runtime (set to zero for now) */
         tcs->cssa = 0;
@@ -252,7 +258,7 @@ static oe_result_t _add_control_pages(
         tcs->nssa = 2;
 
         /* The entry point for the program (from ELF) */
-        tcs->oentry = entry;
+        tcs->oentry = base_offset + entry;
 
         /* FS segment: Used for thread-local variables.
          * The reserved (unused) space in oe_sgx_td_t is used for thread-local
@@ -261,7 +267,8 @@ static oe_result_t _add_control_pages(
          * segment.
          */
         tcs->fsbase =
-            *vaddr + (tls_page_count + OE_SGX_TCS_CONTROL_PAGES) * OE_PAGE_SIZE;
+            base_offset + *vaddr +
+            (tls_page_count + OE_SGX_TCS_CONTROL_PAGES) * OE_PAGE_SIZE;
 
         /* The existing Windows SGX enclave debugger finds the start of the
          * thread data by assuming that it is located at the start of the GS
@@ -281,13 +288,13 @@ static oe_result_t _add_control_pages(
 
         /* Ask ISGX driver perform EADD on this page */
         {
-            uint64_t addr = enclave_addr + *vaddr;
+            uint64_t addr = enclave->start_address + *vaddr;
             uint64_t src = (uint64_t)page;
             uint64_t flags = SGX_SECINFO_TCS;
             bool extend = true;
 
             OE_CHECK(oe_sgx_load_enclave_data(
-                context, enclave_addr, addr, src, flags, extend));
+                context, enclave->base_address, addr, src, flags, extend));
         }
 
         /* Increment the page size */
@@ -295,7 +302,7 @@ static oe_result_t _add_control_pages(
     }
 
     /* Add two blank pages */
-    OE_CHECK(_add_filled_pages(context, enclave_addr, vaddr, 2, 0, true));
+    OE_CHECK(_add_filled_pages(context, enclave, vaddr, 2, 0, true));
 
     /* Skip over guard page */
     (*vaddr) += OE_PAGE_SIZE;
@@ -303,10 +310,10 @@ static oe_result_t _add_control_pages(
     /* Add blank pages (for either FS segment or GS segment) */
     if (tls_page_count)
         OE_CHECK(_add_filled_pages(
-            context, enclave_addr, vaddr, tls_page_count, 0, true));
+            context, enclave, vaddr, tls_page_count, 0, true));
 
     /* Add one page for thread-specific data (TSD) slots */
-    OE_CHECK(_add_filled_pages(context, enclave_addr, vaddr, 1, 0, true));
+    OE_CHECK(_add_filled_pages(context, enclave, vaddr, 1, 0, true));
 
     result = OE_OK;
 
@@ -323,7 +330,8 @@ typedef struct oe_load_extra_enclave_data_hook_arg
 {
     uint64_t magic;
     oe_sgx_load_context_t* sgx_load_context;
-    uint64_t enclave_addr;
+    uint64_t enclave_base;
+    uint64_t enclave_start;
     uint64_t base_vaddr;
     uint64_t vaddr;
 } oe_load_extra_enclave_data_hook_arg_t;
@@ -361,11 +369,11 @@ oe_result_t oe_load_extra_enclave_data(
 
     if (arg->sgx_load_context)
     {
-        uint64_t addr = arg->enclave_addr + arg->base_vaddr + vaddr;
+        uint64_t addr = arg->enclave_start + arg->base_vaddr + vaddr;
 
         OE_CHECK(oe_sgx_load_enclave_data(
             arg->sgx_load_context,
-            arg->enclave_addr,
+            arg->enclave_base,
             addr,
             (uint64_t)page,
             flags,
@@ -403,7 +411,8 @@ static oe_result_t _calculate_enclave_size(
         oe_load_extra_enclave_data_hook_arg_t arg = {
             .magic = OE_LOAD_EXTRA_ENCLAVE_DATA_HOOK_ARG_MAGIC,
             .sgx_load_context = NULL,
-            .enclave_addr = 0,
+            .enclave_base = 0,
+            .enclave_start = 0,
             .base_vaddr = 0,
             .vaddr = 0,
         };
@@ -466,7 +475,7 @@ static oe_result_t _add_data_pages(
 
     /* Add the heap pages */
     OE_CHECK(_add_heap_pages(
-        context, enclave->addr, vaddr, size_settings->num_heap_pages));
+        context, enclave, vaddr, size_settings->num_heap_pages));
 
     for (i = 0; i < size_settings->num_tcs; i++)
     {
@@ -475,20 +484,14 @@ static oe_result_t _add_data_pages(
 
         /* Add the stack for this thread control structure */
         OE_CHECK(_add_stack_pages(
-            context, enclave->addr, vaddr, size_settings->num_stack_pages));
+            context, enclave, vaddr, size_settings->num_stack_pages));
 
         /* Add guard page */
         *vaddr += OE_PAGE_SIZE;
 
         /* Add the "control" pages */
-        OE_CHECK(_add_control_pages(
-            context,
-            enclave->addr,
-            enclave->size,
-            entry,
-            tls_page_count,
-            vaddr,
-            enclave));
+        OE_CHECK(
+            _add_control_pages(context, entry, tls_page_count, vaddr, enclave));
     }
 
     result = OE_OK;
@@ -680,6 +683,20 @@ oe_result_t oe_sgx_validate_enclave_properties(
         goto done;
     }
 
+    if (properties->config.flags.create_zero_base_enclave)
+    {
+        if (!oe_sgx_is_valid_start_address(properties->config.start_address))
+        {
+            if (field_name)
+                *field_name = "config.start_address";
+            OE_TRACE_ERROR(
+                "oe_sgx_is_valid_start_address failed: start_address = %lx\n",
+                properties->config.start_address);
+            result = OE_FAILURE;
+            goto done;
+        }
+    }
+
     if (!oe_sgx_is_valid_product_id(properties->config.product_id))
     {
         if (field_name)
@@ -769,12 +786,12 @@ static oe_result_t _add_eeid_marker_page(
         _calculate_enclave_size(
             image_size, tls_page_count, props, &marker->offset, NULL);
 
-        uint64_t addr = enclave->addr + *vaddr;
+        uint64_t addr = enclave->start_address + *vaddr;
         uint64_t src = (uint64_t)page;
         uint64_t flags = SGX_SECINFO_REG | SGX_SECINFO_R | SGX_SECINFO_W;
 
         OE_CHECK(oe_sgx_load_enclave_data(
-            context, enclave->addr, addr, src, flags, false));
+            context, enclave->start_address, addr, src, flags, false));
         (*vaddr) += OE_PAGE_SIZE;
         oe_memalign_free(page);
 
@@ -878,7 +895,8 @@ oe_result_t oe_sgx_build_enclave(
     oe_sgx_enclave_properties_t props;
     size_t extra_size = 0;
 
-    if (!enclave)
+    /* Reject invalid parameters */
+    if (!context || !path || !enclave)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     memset(&oeimage, 0, sizeof(oeimage));
@@ -895,10 +913,6 @@ oe_result_t oe_sgx_build_enclave(
     /* Initialize the lock */
     if (oe_mutex_init(&enclave->lock))
         OE_RAISE(OE_FAILURE);
-
-    /* Reject invalid parameters */
-    if (!context || !path || !enclave)
-        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Load the elf object */
     if (oe_load_enclave_image(path, &oeimage) != OE_OK)
@@ -985,6 +999,20 @@ oe_result_t oe_sgx_build_enclave(
             context->capture_pf_gp_exceptions_enabled = 1;
     }
 
+    /* Check if the enclave is configured with CreateZeroBaseEnclave=1 */
+    context->create_zero_base_enclave =
+        props.config.flags.create_zero_base_enclave;
+
+    context->start_address = props.config.start_address;
+
+    if (enclave->simulate && context->create_zero_base_enclave)
+    {
+        OE_TRACE_ERROR(
+            "Requested creation of 0-base enclave in simulation mode, "
+            "which is currently not supported.\n");
+        OE_RAISE(OE_INVALID_PARAMETER);
+    }
+
     if (props.config.attributes & OE_SGX_FLAGS_KSS)
     {
         if ((context->type == OE_SGX_LOAD_TYPE_CREATE) && !_is_kss_supported())
@@ -1021,8 +1049,11 @@ oe_result_t oe_sgx_build_enclave(
     OE_CHECK(oe_sgx_create_enclave(
         context, enclave_size, loaded_enclave_pages_size, &enclave_addr));
 
-    /* Save the enclave base address, size, and text address */
-    enclave->addr = enclave_addr;
+    /* Save the enclave start address, base address, size, and text address */
+    enclave->start_address = enclave_addr;
+    enclave->base_address = context->create_zero_base_enclave
+                                ? (uint64_t)OE_ADDRESS_ZERO
+                                : enclave_addr;
     enclave->size = enclave_size;
 
     /* Patch image */
@@ -1036,11 +1067,13 @@ oe_result_t oe_sgx_build_enclave(
         oe_load_extra_enclave_data_hook_arg_t arg = {
             .magic = OE_LOAD_EXTRA_ENCLAVE_DATA_HOOK_ARG_MAGIC,
             .sgx_load_context = context,
-            .enclave_addr = enclave_addr,
+            .enclave_base = enclave->base_address,
+            .enclave_start = enclave->start_address,
             .base_vaddr = vaddr,
             .vaddr = 0,
         };
-        OE_CHECK(oe_load_extra_enclave_data_hook(&arg, enclave_addr + vaddr));
+        OE_CHECK(oe_load_extra_enclave_data_hook(
+            &arg, enclave->start_address + vaddr));
         vaddr += arg.vaddr;
     }
 
@@ -1099,7 +1132,7 @@ oe_result_t oe_sgx_build_enclave(
         debug_enclave->path = enclave->path;
         debug_enclave->path_length = strlen(enclave->path);
 
-        debug_enclave->base_address = (void*)enclave->addr;
+        debug_enclave->base_address = (void*)enclave->start_address;
         debug_enclave->size = enclave->size;
 
         debug_enclave->tcs_array =

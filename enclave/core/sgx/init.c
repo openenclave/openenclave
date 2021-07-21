@@ -31,7 +31,8 @@
 static void _check_memory_boundaries(void)
 {
     /* This is a tautology! */
-    if (!oe_is_within_enclave(__oe_get_enclave_base(), __oe_get_enclave_size()))
+    if (!oe_is_within_enclave(
+            __oe_get_enclave_start_address(), __oe_get_enclave_size()))
         oe_abort();
 
     if (!oe_is_within_enclave(__oe_get_reloc_base(), __oe_get_reloc_size()))
@@ -39,6 +40,17 @@ static void _check_memory_boundaries(void)
 
     if (!oe_is_within_enclave(__oe_get_heap_base(), __oe_get_heap_size()))
         oe_abort();
+
+    if (__oe_get_enclave_create_zero_base_flag())
+    {
+        /*
+         * Make sure that the enclave image address and
+         * the configured start address are same.
+         */
+        if (__oe_get_configured_enclave_start_address() !=
+            (uint64_t)__oe_get_enclave_start_address())
+            oe_abort();
+    }
 }
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
@@ -59,7 +71,7 @@ static oe_result_t _eeid_patch_memory()
 
     if (_is_eeid_base_image(&oe_enclave_properties_sgx))
     {
-        uint8_t* enclave_base = (uint8_t*)__oe_get_enclave_base();
+        uint8_t* enclave_base = (uint8_t*)__oe_get_enclave_start_address();
         uint8_t* heap_base = (uint8_t*)__oe_get_heap_base();
         const oe_eeid_marker_t* marker = (oe_eeid_marker_t*)heap_base;
         oe_eeid_t* eeid = (oe_eeid_t*)(enclave_base + marker->offset);

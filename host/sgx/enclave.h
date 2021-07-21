@@ -99,8 +99,12 @@ typedef struct _oe_enclave
     /* Path of the enclave file */
     char* path;
 
-    /* Base address of enclave within enclave address space (BASEADDR) */
-    uint64_t addr;
+    /* Base address of enclave address range (BASEADDR). If not,
+     * a 0-based enclave, currently base_address = start_address */
+    uint64_t base_address;
+
+    /* Enclave image start address within enclave address space */
+    uint64_t start_address;
 
     /* Size of enclave in bytes */
     uint64_t size;

@@ -50,6 +50,8 @@ typedef struct _config_file_options
     optional_oe_uuid_t family_id;
     optional_oe_uuid_t extended_product_id;
     optional_bool_t capture_pf_gp_exceptions;
+    optional_bool_t create_zero_base_enclave;
+    optional_uint64_t start_address;
 } config_file_options_t;
 
 int uuid_from_string(str_t* str, uint8_t* uuid, size_t expected_size);
@@ -338,6 +340,59 @@ static int _load_config_file(const char* path, config_file_options_t* options)
             options->capture_pf_gp_exceptions.value = (bool)value;
             options->capture_pf_gp_exceptions.has_value = true;
         }
+        else if (strcmp(str_ptr(&lhs), "CreateZeroBaseEnclave") == 0)
+        {
+            uint64_t value;
+
+            if (options->create_zero_base_enclave.has_value)
+            {
+                oe_err(
+                    "%s(%zu): Duplicate 'CreateZeroBaseEnclave' value provided",
+                    path,
+                    line);
+                goto done;
+            }
+
+            // CreateZeroBaseEnclave must be 0 or 1
+            if (str_u64(&rhs, &value) != 0 || (value > 1))
+            {
+                oe_err(
+                    "%s(%zu): 'CreateZeroBaseEnclave' value must be 0 or 1",
+                    path,
+                    line);
+                goto done;
+            }
+
+            options->create_zero_base_enclave.value = (bool)value;
+            options->create_zero_base_enclave.has_value = true;
+        }
+        else if (strcmp(str_ptr(&lhs), "StartAddress") == 0)
+        {
+            uint64_t n;
+
+            if (options->start_address.has_value)
+            {
+                oe_err(
+                    "%s(%zu): Duplicate 'StartAddress' value provided",
+                    path,
+                    line);
+                goto done;
+            }
+
+            if (str_ptr(&rhs)[0] == '-' || str_u64(&rhs, &n) != 0 ||
+                !oe_sgx_is_valid_start_address(n))
+            {
+                oe_err(
+                    "%s(%zu): bad value for 'StartAddress': %s",
+                    path,
+                    line,
+                    str_ptr(&rhs));
+                goto done;
+            }
+
+            options->start_address.value = n;
+            options->start_address.has_value = true;
+        }
         else
         {
             oe_err("%s(%zu): unknown setting: %s", path, line, str_ptr(&rhs));
@@ -512,6 +567,17 @@ void _merge_config_file_options(
         properties->config.flags.capture_pf_gp_exceptions = 1;
     else
         properties->config.flags.capture_pf_gp_exceptions = 0;
+
+    /* If the CreateZeroBaseEnclave option is present */
+    if (options->create_zero_base_enclave.value == 1)
+        properties->config.flags.create_zero_base_enclave = 1;
+    else
+        properties->config.flags.create_zero_base_enclave = 0;
+
+    /* If create_zero_base_enclave is enabled and StartAddress is provided */
+    if (options->create_zero_base_enclave.value == 1 &&
+        options->start_address.has_value)
+        properties->config.start_address = options->start_address.value;
 }
 
 oe_result_t _initialize_enclave_properties(

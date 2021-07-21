@@ -11,6 +11,8 @@ OE_SET_ENCLAVE_SGX2(
     true,  /* Debug */
     false, /* CapturePFGPExceptions */
     true,  /* RequireKSS */
+    false, /* CreateZeroBaseEnclave */
+    0,     /* StartAddress */
     1024,  /* NumHeapPages */
     1024,  /* NumStackPages */
     1);    /* NumTCS */

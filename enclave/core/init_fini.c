@@ -72,14 +72,14 @@ void oe_call_init_functions(void)
 {
     extern void (*__init_array_start)(void);
     extern void (*__init_array_end)(void);
-    const uint64_t baseaddr = (uint64_t)__oe_get_enclave_base();
+    const uint64_t start_address = (uint64_t)__oe_get_enclave_start_address();
     const oe_enclave_module_info_t* module_info = oe_get_module_info();
 
     if (module_info && module_info->base_rva && module_info->init_array_rva &&
         module_info->init_array_size)
     {
-        uint64_t init_array_start = baseaddr + module_info->init_array_rva;
-        uint64_t init_array_end = baseaddr + module_info->init_array_rva +
+        uint64_t init_array_start = start_address + module_info->init_array_rva;
+        uint64_t init_array_end = start_address + module_info->init_array_rva +
                                   module_info->init_array_size;
         _call_init_functions(
             (void (**)(void))(init_array_start),
@@ -149,7 +149,7 @@ void oe_call_fini_functions(void)
 {
     extern void (*__fini_array_start)(void);
     extern void (*__fini_array_end)(void);
-    const uint64_t baseaddr = (uint64_t)__oe_get_enclave_base();
+    const uint64_t start_address = (uint64_t)__oe_get_enclave_start_address();
     const oe_enclave_module_info_t* module_info = oe_get_module_info();
 
     _call_fini_functions(&__fini_array_start, &__fini_array_end);
@@ -157,8 +157,8 @@ void oe_call_fini_functions(void)
     if (module_info && module_info->base_rva && module_info->fini_array_rva &&
         module_info->fini_array_size)
     {
-        uint64_t fini_array_start = baseaddr + module_info->fini_array_rva;
-        uint64_t fini_array_end = baseaddr + module_info->fini_array_rva +
+        uint64_t fini_array_start = start_address + module_info->fini_array_rva;
+        uint64_t fini_array_end = start_address + module_info->fini_array_rva +
                                   module_info->fini_array_size;
         _call_fini_functions(
             (void (**)(void))(fini_array_start),

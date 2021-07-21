@@ -44,7 +44,7 @@ static char** _backtrace_symbols(
         /* Calculate space for each string */
         for (int i = 0; i < size; i++)
         {
-            const uint64_t vaddr = (uint64_t)buffer[i] - enclave->addr;
+            const uint64_t vaddr = (uint64_t)buffer[i] - enclave->start_address;
             const char* name = elf64_get_function_name(&elf, vaddr);
 
             if (!name)
@@ -73,7 +73,7 @@ static char** _backtrace_symbols(
     /* Copy strings into return buffer */
     for (int i = 0; i < size; i++)
     {
-        const uint64_t vaddr = (uint64_t)buffer[i] - enclave->addr;
+        const uint64_t vaddr = (uint64_t)buffer[i] - enclave->start_address;
         const char* name = elf64_get_function_name(&elf, vaddr);
 
         if (!name)

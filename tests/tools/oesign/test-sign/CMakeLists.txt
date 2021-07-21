@@ -267,3 +267,31 @@ add_test(
 set_tests_properties(
   tests/oesign-sign-familyid-tooshort PROPERTIES PASS_REGULAR_EXPRESSION
                                                  "bad value for 'FamilyID'")
+
+if (ENABLE_ZERO_BASE_TESTS)
+  # Test enclave creation at 0-base
+  add_test(
+    NAME tests/oesign-create-zero-base
+    COMMAND
+      oesign sign -e $<TARGET_FILE:oesign_test_enc> -c
+      ${OESIGN_TEST_INPUTS_DIR}/create_zero_base_enclave.conf -k
+      ${OESIGN_TEST_INPUTS_DIR}/sign_key.private.pem)
+
+  set_tests_properties(
+    tests/oesign-create-zero-base
+    PROPERTIES PASS_REGULAR_EXPRESSION "Created" FAIL_REGULAR_EXPRESSION
+               "ERROR;Fail;Error")
+
+  # Test enclave creation at 0-base
+  add_test(
+    NAME tests/oesign-create-zero-base-start-address
+    COMMAND
+      oesign sign -e $<TARGET_FILE:oesign_test_enc> -c
+      ${OESIGN_TEST_INPUTS_DIR}/create_zero_base_enclave_w_start_address.conf
+      -k ${OESIGN_TEST_INPUTS_DIR}/sign_key.private.pem)
+
+  set_tests_properties(
+    tests/oesign-create-zero-base-start-address
+    PROPERTIES PASS_REGULAR_EXPRESSION "Created" FAIL_REGULAR_EXPRESSION
+               "ERROR;Fail;Error")
+endif ()

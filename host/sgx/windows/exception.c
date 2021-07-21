@@ -35,8 +35,8 @@ static LONG WINAPI _handle_simulation_mode_exception(
         if (enclave->simulate)
         {
             // Determine if the exception happened within the enclave.
-            uint64_t enclave_start = enclave->addr;
-            uint64_t enclave_end = enclave->addr + enclave->size;
+            uint64_t enclave_start = enclave->start_address;
+            uint64_t enclave_end = enclave->start_address + enclave->size;
             if (context->Rip >= enclave_start && context->Rip < enclave_end)
             {
                 // Check if the exception was due to an incorrect FS value.
