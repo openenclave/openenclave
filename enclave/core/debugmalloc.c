@@ -364,8 +364,10 @@ void* oe_debug_calloc(size_t nmemb, size_t size)
     void* ptr;
 
     if (_check_multiply_overflow(nmemb, size))
+    {
+        oe_errno = OE_ENOMEM;
         return NULL;
-
+    }
     const size_t total_size = nmemb * size;
 
     if (!(ptr = oe_debug_malloc(total_size)))
