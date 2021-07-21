@@ -274,9 +274,9 @@ add_enclave_library(
   ${MUSLSRC}/locale/uselocale.c
   ${MUSLSRC}/locale/wcscoll.c
   ${MUSLSRC}/locale/wcsxfrm.c
-  ${MUSLSRC}/linux/getrandom.c
   ${MUSLSRC}/linux/epoll.c
   ${MUSLSRC}/linux/flock.c
+  ${MUSLSRC}/linux/getrandom.c
   ${MUSLSRC}/linux/mount.c
   ${MUSLSRC}/linux/sysinfo.c
   ${MUSLSRC}/math/__math_divzero.c
@@ -600,15 +600,18 @@ add_enclave_library(
   ${MUSLSRC}/search/lsearch.c
   ${MUSLSRC}/select/select.c
   ${MUSLSRC}/select/poll.c
-  ${MUSLSRC}/stat/mkdir.c
+  ${MUSLSRC}/search/hsearch.c
+  ${MUSLSRC}/search/insque.c
+  ${MUSLSRC}/search/lsearch.c
   ${MUSLSRC}/search/tdelete.c
+  ${MUSLSRC}/search/tdestroy.c
   ${MUSLSRC}/search/tfind.c
   ${MUSLSRC}/search/tsearch.c
   ${MUSLSRC}/search/twalk.c
   ${MUSLSRC}/stat/fstat.c
   ${MUSLSRC}/stat/fstatat.c
+  ${MUSLSRC}/stat/mkdir.c
   ${MUSLSRC}/stat/stat.c
-  ${MUSLSRC}/stdio/asprintf.c
   ${MUSLSRC}/stdio/asprintf.c
   ${MUSLSRC}/stdio/clearerr.c
   ${MUSLSRC}/stdio/dprintf.c
@@ -690,7 +693,6 @@ add_enclave_library(
   ${MUSLSRC}/stdio/sscanf.c
   ${MUSLSRC}/stdio/stderr.c
   ${MUSLSRC}/stdio/stdin.c
-  ${MUSLSRC}/stdio/tmpfile.c
   ${MUSLSRC}/stdio/__stdio_close.c
   ${MUSLSRC}/stdio/__stdio_exit.c
   ${MUSLSRC}/stdio/__stdio_read.c
@@ -700,6 +702,8 @@ add_enclave_library(
   ${MUSLSRC}/stdio/__stdout_write.c
   ${MUSLSRC}/stdio/swprintf.c
   ${MUSLSRC}/stdio/swscanf.c
+  ${MUSLSRC}/stdio/tempnam.c
+  ${MUSLSRC}/stdio/tmpfile.c
   ${MUSLSRC}/stdio/__toread.c
   ${MUSLSRC}/stdio/__towrite.c
   ${MUSLSRC}/stdio/__uflow.c
@@ -729,6 +733,9 @@ add_enclave_library(
   ${MUSLSRC}/stdlib/atoll.c
   ${MUSLSRC}/stdlib/bsearch.c
   ${MUSLSRC}/stdlib/div.c
+  ${MUSLSRC}/stdlib/ecvt.c
+  ${MUSLSRC}/stdlib/fcvt.c
+  ${MUSLSRC}/stdlib/gcvt.c
   ${MUSLSRC}/stdlib/imaxabs.c
   ${MUSLSRC}/stdlib/imaxdiv.c
   ${MUSLSRC}/stdlib/labs.c
@@ -743,6 +750,7 @@ add_enclave_library(
   ${MUSLSRC}/string/bcmp.c
   ${MUSLSRC}/string/bcopy.c
   ${MUSLSRC}/string/bzero.c
+  ${MUSLSRC}/string/explicit_bzero.c
   ${MUSLSRC}/string/index.c
   ${MUSLSRC}/string/memccpy.c
   ${MUSLSRC}/string/memchr.c
@@ -775,6 +783,7 @@ add_enclave_library(
   ${MUSLSRC}/string/strpbrk.c
   ${MUSLSRC}/string/strrchr.c
   ${MUSLSRC}/string/strsep.c
+  ${MUSLSRC}/string/strsignal.c
   ${MUSLSRC}/string/strspn.c
   ${MUSLSRC}/string/strstr.c
   ${MUSLSRC}/string/strtok.c

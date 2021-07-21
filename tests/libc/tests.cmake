@@ -27,6 +27,7 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/functional/memstream.c
     3rdparty/musl/libc-test/src/functional/qsort.c
     3rdparty/musl/libc-test/src/functional/random.c
+    3rdparty/musl/libc-test/src/functional/search_hsearch.c
     3rdparty/musl/libc-test/src/functional/search_insque.c
     3rdparty/musl/libc-test/src/functional/search_lsearch.c
     3rdparty/musl/libc-test/src/functional/search_tsearch.c
@@ -315,7 +316,6 @@ if (FALSE)
     3rdparty/musl/libc-test/src/functional/pthread_mutex.c
     3rdparty/musl/libc-test/src/functional/pthread_robust.c
     3rdparty/musl/libc-test/src/functional/pthread_tsd.c
-    3rdparty/musl/libc-test/src/functional/search_hsearch.c
     3rdparty/musl/libc-test/src/functional/sem_init.c
     3rdparty/musl/libc-test/src/functional/sem_open.c
     3rdparty/musl/libc-test/src/functional/setjmp.c
