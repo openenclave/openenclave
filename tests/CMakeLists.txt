@@ -26,7 +26,7 @@ endif ()
 
 if (OE_SGX AND UNIX)
   option(ENABLE_ZERO_BASE_TESTS
-         "Build 0-base enclave tests and include in test list" OFF)
+         "Build 0-base enclave tests and include in test list" ON)
   if (ENABLE_ZERO_BASE_TESTS)
     message("ENABLE_ZERO_BASE_TESTS set - building all 0-base enclave tests")
   else ()
