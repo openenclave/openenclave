@@ -152,10 +152,13 @@ int main(int argc, const char* argv[])
 
         fprintf(
             stdout,
-            "\nTest 6: memory access between enclave start address "
-            "and the end of elrange - [0x21000, 0x40000)\n"
+            "\nTest 6: memory access between start_address and elrange_end"
+            " - [0x21000, 0x40000)\n"
             "Expected result: no exceptions\n");
-
+        /*
+         * elrange_end =
+         * nearest_pow_2((start_address - base_address) + enclave_image_size)
+         */
         address = 0x31000;
         exception = false; /* reset exception */
 
