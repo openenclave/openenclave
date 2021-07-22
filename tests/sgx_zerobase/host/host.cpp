@@ -123,7 +123,7 @@ int main(int argc, const char* argv[])
             -1,
             0) != address)
     {
-        fprintf(stderr, "host mmap at address %lx failed\n", address);
+        fprintf(stderr, "host mmap at address 0x%lx failed\n", address);
         return 1;
     }
 
@@ -139,14 +139,15 @@ int main(int argc, const char* argv[])
 
         address = 0x0;
 
-        OE_TEST(test_enclave_memory_access(enclave, &res, address, &exception));
+        result = test_enclave_memory_access(enclave, &res, address, &exception);
         if (res != 0)
         {
             fprintf(stderr, "test_enclave_memory_access failed %d\n", res);
             return 1;
         }
 
-        fprintf(stdout, "address %lx, exception %d\n", address, exception.code);
+        fprintf(
+            stdout, "address 0x%lx, exception %d\n", address, exception.code);
         if (!exception.exception)
             return 1;
 
@@ -156,16 +157,20 @@ int main(int argc, const char* argv[])
             "and the end of elrange - [0x21000, 0x40000)\n"
             "Expected result: no exceptions\n");
 
-        address = 0x30000;
+        address = 0x2f000;
+        /* reset exception */
+        exception.exception = false;
+        exception.code = 0;
 
-        OE_TEST(test_enclave_memory_access(enclave, &res, address, NULL));
+        result = test_enclave_memory_access(enclave, &res, address, &exception);
         if (res != 0)
         {
             fprintf(stderr, "test_enclave_memory_access failed %d\n", res);
             return 1;
         }
 
-        fprintf(stdout, "address %lx, exception %d\n", address, exception.code);
+        fprintf(
+            stdout, "address 0x%lx, exception %d\n", address, exception.code);
         if (exception.exception)
             return 1;
     }

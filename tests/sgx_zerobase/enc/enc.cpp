@@ -21,6 +21,10 @@ uint64_t test_pfgp_handler(oe_exception_record_t* exception_record)
         exception_record->context->rip += MOV_INSTRUCTION_BYTES;
         exception_code = OE_EXCEPTION_PAGE_FAULT;
     }
+    else if (exception_record->code == OE_EXCEPTION_BREAKPOINT)
+    {
+        error_code = exception_record->error_code;
+    }
     else
     {
         /* Unexpected code */
@@ -33,9 +37,13 @@ uint64_t test_pfgp_handler(oe_exception_record_t* exception_record)
 int test_enclave_memory_access(uint64_t address, struct exceptions* exception)
 {
     oe_result_t result = OE_OK;
+    static int once = 0;
 
-    if (exception)
+    if (exception && !once)
+    {
         result = oe_add_vectored_exception_handler(false, test_pfgp_handler);
+        once++;
+    }
 
     if (result != OE_OK)
     {
@@ -43,7 +51,7 @@ int test_enclave_memory_access(uint64_t address, struct exceptions* exception)
     }
 
     /* Assign value to memory address 'address'*/
-    asm volatile("mov %0, (%0)\n\t" : "memory" : "r"(address));
+    asm volatile("mov (%0), %0\n\t" : : "r"(address) : "memory");
 
     if (exception)
     {

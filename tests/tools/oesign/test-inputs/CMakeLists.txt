@@ -117,14 +117,14 @@ add_custom_command(
   OUTPUT create_zero_base_enclave.conf
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
   COMMAND
-    python ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py --config_file
+    ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py --config_file
     create_zero_base_enclave.conf --create_zero_base_enclave 1)
 
 add_custom_command(
   OUTPUT create_zero_base_enclave_w_start_address.conf
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
   COMMAND
-    python ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py --config_file
+    ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py --config_file
     create_zero_base_enclave_w_start_address.conf --create_zero_base_enclave 1
     --start_address 196608)
 
