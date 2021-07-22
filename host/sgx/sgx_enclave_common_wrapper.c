@@ -150,18 +150,15 @@ static void _load_sgx_enclave_common_impl(void)
     }
     else
     {
-        OE_TRACE_ERROR("Failed to load %s\n", LIBRARY_NAME);
+        OE_TRACE_ERROR(
+            "Failed to load %s. Cannot create SGX enclaves. Try simulation "
+            "mode instead.\n",
+            LIBRARY_NAME);
         goto done;
     }
 
 done:
-    if (result != OE_OK)
-    {
-        // It is a catastrophic error if sgx_enclave_common library cannot be
-        // successfully loaded.
-        OE_TRACE_ERROR("Terminating host application.");
-        abort();
-    }
+    return;
 }
 
 static bool _load_sgx_enclave_common(void)
@@ -169,6 +166,11 @@ static bool _load_sgx_enclave_common(void)
     static oe_once_type _once;
     oe_once(&_once, _load_sgx_enclave_common_impl);
     return (_module != NULL);
+}
+
+oe_result_t oe_sgx_load_sgx_enclave_common(void)
+{
+    return _load_sgx_enclave_common() ? OE_OK : OE_FAILURE;
 }
 
 void* oe_sgx_enclave_create(
