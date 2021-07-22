@@ -427,6 +427,8 @@ oe_result_t oe_sgx_create_enclave(
     }
     else
     {
+        OE_CHECK(oe_sgx_load_sgx_enclave_common());
+
         uint32_t enclave_error = 0;
         image_base = oe_sgx_enclave_create_ex(
             start_address,
