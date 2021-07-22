@@ -130,7 +130,7 @@ int main(int argc, const char* argv[])
     /* Enclave memory access tests */
     if (_is_misc_region_supported())
     {
-        struct exceptions exception;
+        bool exception = false;
 
         fprintf(
             stdout,
@@ -146,21 +146,18 @@ int main(int argc, const char* argv[])
             return 1;
         }
 
-        fprintf(
-            stdout, "address 0x%lx, exception %d\n", address, exception.code);
-        if (!exception.exception)
+        fprintf(stdout, "address 0x%lx, page-fault %d\n", address, exception);
+        if (!exception)
             return 1;
 
         fprintf(
             stdout,
-            "\nTest 6: memory access between enclave image start address "
+            "\nTest 6: memory access between enclave start address "
             "and the end of elrange - [0x21000, 0x40000)\n"
             "Expected result: no exceptions\n");
 
-        address = 0x2f000;
-        /* reset exception */
-        exception.exception = false;
-        exception.code = 0;
+        address = 0x31000;
+        exception = false; /* reset exception */
 
         result = test_enclave_memory_access(enclave, &res, address, &exception);
         if (res != 0)
@@ -169,9 +166,28 @@ int main(int argc, const char* argv[])
             return 1;
         }
 
+        fprintf(stdout, "address 0x%lx, page-fault %d\n", address, exception);
+        if (exception)
+            return 1;
+
         fprintf(
-            stdout, "address 0x%lx, exception %d\n", address, exception.code);
-        if (exception.exception)
+            stdout,
+            "\nTest 7: Enclave memory access between /proc/sys/vm/mmap_min_addr"
+            " and enclave image start address - [0x1000, 0x21000)\n"
+            "Expected result: page-fault\n");
+
+        address = 0x15000;
+        exception = false; /* reset exception */
+
+        result = test_enclave_memory_access(enclave, &res, address, &exception);
+        if (res != 0)
+        {
+            fprintf(stderr, "test_enclave_memory_access failed %d\n", res);
+            return 1;
+        }
+
+        fprintf(stdout, "address 0x%lx, page-fault %d\n", address, exception);
+        if (!exception)
             return 1;
     }
     else
@@ -179,7 +195,7 @@ int main(int argc, const char* argv[])
             stdout,
             "\nCPU does not support the CapturePFGPExceptions=1 "
             "configuration.\n"
-            "Cannot catch exception from enclave, "
+            "Cannot catch exceptions from enclave, "
             "skipping enclave memory access tests.\n");
 
     if (oe_terminate_enclave(enclave) != OE_OK)

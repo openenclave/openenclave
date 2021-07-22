@@ -21,10 +21,6 @@ uint64_t test_pfgp_handler(oe_exception_record_t* exception_record)
         exception_record->context->rip += MOV_INSTRUCTION_BYTES;
         exception_code = OE_EXCEPTION_PAGE_FAULT;
     }
-    else if (exception_record->code == OE_EXCEPTION_BREAKPOINT)
-    {
-        error_code = exception_record->error_code;
-    }
     else
     {
         /* Unexpected code */
@@ -34,13 +30,14 @@ uint64_t test_pfgp_handler(oe_exception_record_t* exception_record)
     return OE_EXCEPTION_CONTINUE_EXECUTION;
 }
 
-int test_enclave_memory_access(uint64_t address, struct exceptions* exception)
+int test_enclave_memory_access(uint64_t address, bool* exception)
 {
     oe_result_t result = OE_OK;
     static int once = 0;
 
     if (exception && !once)
     {
+        /* A handler should be declared only once per program execution */
         result = oe_add_vectored_exception_handler(false, test_pfgp_handler);
         once++;
     }
@@ -57,11 +54,10 @@ int test_enclave_memory_access(uint64_t address, struct exceptions* exception)
     {
         if (faulting_address == address)
         {
-            exception->exception = true;
-            exception->code = exception_code;
+            *exception = true;
         }
         else
-            exception->exception = false;
+            *exception = false;
     }
 
     return 0;

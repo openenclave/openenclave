@@ -17,7 +17,7 @@ enclave {
             [in, string] const char* src);
         public int test_enclave_memory_access(
             uint64_t address,
-            [in, out] struct exceptions* exception);
+            [in, out] bool* exception);
     };
 
     untrusted {
