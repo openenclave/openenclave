@@ -90,15 +90,16 @@ commit-on-demand) in ELRANGE.
 - Ranges in ELRANGE not tracked by an EMA are considered free and ready for new allocations.
 - The EMM labels certain EMAs reserved for runtime or its internal usage and make them
 not accessible from public APIs.
-- A thread calling an EMM API on an EMA with operation pending in another thread will wait
+- A thread calling an EMM API on an EMA with an operation pending in another thread will wait
 until the pending operation is finished.
 
 **Assumptions:**
 
-- When enclave is loaded, the OS has reserved the whole address range covered by ELRANGE.
+- When enclave is loaded, the OS reserves the whole address range covered by ELRANGE.
 It is assumed the host app will not remap any part of this reserved range.
-  - In the future, when the new feature that allows loading an enclave with base address
-at zero, we may support partial ELRANGE reserved by the OS.
+- When an enclave is loaded with base address at zero, only partial ELRANGE may be
+  reserved by the OS. In that case, the EMM will assume the partial ELRANGE as valid reserved
+  range for use inside the enclave.
 - Memory manager does not check EPC pressure, or proactively trim pages when EPC runs low.
 The OS can reclaim EPC pages when EPC running low or cgroups threshold reached
 - Memory manager does not maintain and recycle committed then freed pages
@@ -125,15 +126,17 @@ for the region
  */
 typedef struct _sgx_pfinfo
 {
-    uint64_t maddr;                     //address for #PF
-    union _pfec {
+    uint64_t maddr; //address for #PF
+    union _pfec
+    {
         uint32_t errcd;
-        struct {//PFEC bits
-            uint32_t p       : 1;    // P flag
-            uint32_t rw      : 1;    // RW access flag, 0 for read, 1 for write
-            uint32_t         : 13;   // U/S, I/O, PK and reserved bits not relevant for SGX PF
-            uint32_t sgx     : 1;    // SGX bit
-            uint32_t         : 16;   // reserved bits
+        struct
+        {                     //PFEC bits
+            uint32_t p : 1;   // P flag
+            uint32_t rw : 1;  // RW access flag, 0 for read, 1 for write
+            uint32_t : 13;    // U/S, I/O, PK and reserved bits not relevant for SGX PF
+            uint32_t sgx : 1; // SGX bit
+            uint32_t : 16;    // reserved bits
         };
     } pfec;
     uint32_t reserved;
@@ -156,61 +159,118 @@ typedef struct _sgx_pfinfo
  *         some other handler.
  *
  */
-typedef int (*enclave_fault_handler_t)(const sgx_pfinfo* pfinfo, void* private_data);
+typedef int (*enclave_fault_handler_t)(const sgx_pfinfo *pfinfo, void *private_data);
 
-/**
-* Allocate a new memory region in enclave address space (ELRANGE).
-* @param[in] addr, starting address of the region, page aligned. If NULL is provided,
-*                  then the function will select the starting address.
-* @param[in] length, size of the region in multiples of page size in bytes.
-* @param[in] flags, a bitwise OR of flags describing committing mode, committing
-* order, address preference, page type
-*        Flags should include exactly one of following for committing mode:
-*            - EMA_RESERVE: just reserve an address range, no EPC commited.
-*                           To allocate memory on a reserved range, call this
-*                           function again with EMA_COMMIT_ON_DEMAND or EMA_COMMIT_NOW.
-*            - EMA_COMMIT_NOW: reserves memory range and commit EPC pages. EACCEPT
-*                              for all allocated pages are done when this function returns.
-*            - EMA_COMMIT_ON_DEMAND: reserves memory range, EPC pages
-*                                    are committed (EACCEPT) on demand upon #PF.
-*        ORed with zero or one of the committing order flags:
-*            - EMA_GROWSDOWN: always commit pages from higher to lower addresses,
-*                             no gaps in addresses above the last committed.
-*            - EMA_GROWSUP: always commit pages from lower to higher addresses,
-*                             no gaps in addresses below the last committed.
-*        Optionally ORed with
-*            -  EMA_FIXED: allocate at fixed address, will return error if the
-*                           requested address is in use.
-*            -  EMA_ALIGNED(n):	Align the region on a requested	boundary.
-*                           Fail if a suitable region cannot be found,
-*                           The argument n specifies the binary logarithm of
-*                           the desired alignmentand must be at least 12.
-*        Optionally ORed with one of following page types: 
-*             - EMA_PT_SS_FIRST: the first page in shadow stack.
-*             - EMA_PT_SS_REST: the rest page in shadow stack.
-*             - EMA_PT_REG: regular page type.This is the default if not specified.
-*
-* @param[in] handler, custom handler for page faults in this region, NULL if
-*                     no custom handling needed.
-* @param[in] handler_private, private data for the @handler, which will be passed
-*                     back when the handler is called.
-* @param[out] out_addr, pointer to store the start address of allocated range.
-*                     Set to valid address by the function on success, NULL otherwise.
-* @retval 0 on success.
-* @retval EACCES if region is outside enclave address space.
-* @retval EEXIST if any page in range requested is in use and EMA_FIXED is set.
-* @retval EINVAL for invalid alignment bouandary, i.e., n < 12 in 
-(n).
-* @retval ENOMEM for out of memory, or no free space to satisfy alignment boundary.
+/* bit 0 - 7 are allocation flags */
+#define EMA_ALLOC_FLAGS_SHIFT 0 
+#define EMA_ALLOC_FLAGS(n) (((unsigned int)(n) << EMA_ALLOC_FLAGS_SHIFT))
+#define EMA_ALLOC_FLAGS_MASK    EMA_ALLOC_FLAGS(0xFF)
+
+/* Only reserve an address range, no physical memory commited.*/
+#define EMA_RESERVE             EMA_ALLOC_FLAGS(1)
+
+/* Reserve address range and commit physical memory. */
+#define EMA_COMMIT_NOW          EMA_ALLOC_FLAGS(2)
+
+/* Reserve address range and commit physical memory on demand.*/
+#define EMA_COMMIT_ON_DEMAND    EMA_ALLOC_FLAGS(4)
+
+/* Always commit pages from higher to lower addresses,
+ *  no gaps in addresses above the last committed.
+ */
+#define EMA_GROWSDOWN           EMA_ALLOC_FLAGS(8)
+
+/* Always commit pages from lower to higher addresses,
+ * no gaps in addresses below the last committed.
 */
+#define EMA_GROWSUP  EMA_ALLOC_FLAGS(0x10)
+
+/* Map addr must be exactly as requested */     
+#define EMA_FIXED EMA_ALLOC_FLAGS(0x20UL)
+
+/* bit 8 - 15 are page types */
+#define EMA_PAGE_TYPE_SHIFT 8 
+#define EMA_PAGE_TYPE(n) (((unsigned int)(n) << EMA_PAGE_TYPE_SHIFT))
+#define EMA_PAGE_TYPE_MASK      EMA_PAGE_TYPE(0xFF)
+#define EMA_PAGE_TYPE_TCS       EMA_PAGE_TYPE(0x1)  /* TCS page type */
+#define EMA_PAGE_TYPE_REG       EMA_PAGE_TYPE(0x2)  /* regular page type, default if not specified. */
+#define EMA_PAGE_TYPE_TRIM      EMA_PAGE_TYPE(0x4)  /* TRIM page type */
+#define EMA_PAGE_TYPE_SS_FIRST  EMA_PAGE_TYPE(0x5)  /* the first page in shadow stack. */
+#define EMA_PAGE_TYPE_SS_REST   EMA_PAGE_TYPE(0x6)  /* the rest pages in shadow stack. */
+
+/* Use bit 24-32 for alignment masks. */
+#define EMA_ALIGNMENT_SHIFT 24
+/*
+ * Alignment (expressed in log2).  Must be >= log2(PAGE_SIZE) and
+ * < # bits in a pointer (32 or 64).
+ */
+#define EMA_ALIGNED(n) (((unsigned int)(n) << EMA_ALIGNMENT_SHIFT))
+#define EMA_ALIGNMENT_MASK EMA_ALIGNED(0xFFUL)
+#define EMA_ALIGNMENT_64KB EMA_ALIGNED(16UL)
+#define EMA_ALIGNMENT_16MB EMA_ALIGNED(24UL)
+#define EMA_ALIGNMENT_4GB EMA_ALIGNED(32UL)
+
+
+
+/* Permissions flags */
+#define EMA_PROT_NOACCESS   0x0UL
+#define EMA_PROT_READ       0x1UL
+#define EMA_PROT_WRITE      0x2UL
+#define EMA_PROT_EXECUTE    0x4UL
+
+/*
+ * Allocate a new memory region in enclave address space (ELRANGE).
+ * @param[in] addr, starting address of the region, page aligned. If NULL is provided,
+ *                  then the function will select the starting address.
+ * @param[in] length, size of the region in multiples of page size in bytes.
+ * @param[in] flags, a bitwise OR of flags describing committing mode, committing
+ * order, address preference, page type
+ *        Flags should include exactly one of following for committing mode:
+ *            - EMA_RESERVE: just reserve an address range, no EPC commited.
+ *                           To allocate memory on a reserved range, call this
+ *                           function again with EMA_COMMIT_ON_DEMAND or EMA_COMMIT_NOW.
+ *            - EMA_COMMIT_NOW: reserves memory range and commit EPC pages. EACCEPT
+ *                              for all allocated pages are done when this function returns.
+ *            - EMA_COMMIT_ON_DEMAND: reserves memory range, EPC pages
+ *                                    are committed (EACCEPT) on demand upon #PF.
+ *        ORed with zero or one of the committing order flags:
+ *            - EMA_GROWSDOWN: always commit pages from higher to lower addresses,
+ *                             no gaps in addresses above the last committed.
+ *            - EMA_GROWSUP: always commit pages from lower to higher addresses,
+ *                             no gaps in addresses below the last committed.
+ *        Optionally ORed with
+ *            -  EMA_FIXED: allocate at fixed address, will return error if the
+ *                           requested address is in use.
+ *            -  EMA_ALIGNED(n):	Align the region on a requested	boundary.
+ *                           Fail if a suitable region cannot be found,
+ *                           The argument n specifies the binary logarithm of
+ *                           the desired alignment and must be at least 12.
+ *        Optionally ORed with one of following page types:
+ *             - EMA_PAGE_TYPE_REG: regular page type. This is the default if not specified.
+ *             - EMA_PAGE_TYPE_SS_FIRST: the first page in shadow stack.
+ *             - EMA_PAGE_TYPE_SS_REST: the rest page in shadow stack.
+ *
+ * @param[in] handler, custom handler for page faults in this region, NULL if
+ *                     no custom handling needed.
+ * @param[in] handler_private, private data for the @handler, which will be passed
+ *                     back when the handler is called.
+ * @param[out] out_addr, pointer to store the start address of allocated range.
+ *                     Set to valid address by the function on success, NULL otherwise.
+ * @retval 0 on success.
+ * @retval EACCES if region is outside enclave address space.
+ * @retval EEXIST if any page in range requested is in use and EMA_FIXED is set.
+ * @retval EINVAL for invalid alignment bouandary, i.e., n < 12 in EMA_ALIGNED(n).
+ * @retval ENOMEM for out of memory, or no free space to satisfy alignment boundary.
+ */
 int sgx_mm_alloc(void *addr, size_t length, int flags,
-                    enclave_fault_handler_t handler, void* handler_private,
-                    void** out_addr);
+                 enclave_fault_handler_t handler, void *handler_private,
+                 void **out_addr);
+
 ```
 
 **Remarks:**
-- Permissions of newly allocated regions are always PROT_READ|PROT_WRITE and of page
-    type PT_REG, except for EMA_RESERVE mode regions which will have PROT_NONE.
+- Permissions of newly allocated regions are always EMA_PROT_READ|EMA_PROT_WRITE and of page
+    type EMA_PAGE_TYPE_REG, except for EMA_RESERVE mode regions which will have EMA_PROT_NONE.
 - Once allocated by sgx_mm_alloc, a region will stay in allocated state and become
     deallocated once sgx_mm_dealloc is called.
 - If sgx_mm_dealloc on a partial range of a previously allocated region, then the
@@ -223,17 +283,17 @@ int sgx_mm_alloc(void *addr, size_t length, int flags,
 ### sgx_mm_uncommit and sgx_mm_dealloc
 
 ```
-/**
-* Uncommit (trim) physical EPC pages in a previously committed range.
-* The pages in the allocation are freed, but the address range is still reserved.
-* @param[in] addr, page aligned start address of the region to be trimmed.
-* @param[in] length, size in bytes of multiples of page size.
-* @retval 0 on success.
-* @retval EINVAL if the address range is not allocated or outside enclave.
-*/
+/*
+ * Uncommit (trim) physical EPC pages in a previously committed range.
+ * The pages in the allocation are freed, but the address range is still reserved.
+ * @param[in] addr, page aligned start address of the region to be trimmed.
+ * @param[in] length, size in bytes of multiples of page size.
+ * @retval 0 on success.
+ * @retval EINVAL if the address range is not allocated or outside enclave.
+ */
 int sgx_mm_uncommit(void *addr, size_t length);
 
-/**
+/*
  * Deallocate the address range.
  * The pages in the allocation are freed and the address range is released for future allocation.
  * @param[in] addr page aligned start address of the region to be freed and released
@@ -241,44 +301,43 @@ int sgx_mm_uncommit(void *addr, size_t length);
  * @retval 0 on success.
  * @retval EINVAL if the address range is not allocated or outside enclave.
  */
-int sgx_mm_dealloc(void* addr, size_t length);
+int sgx_mm_dealloc(void *addr, size_t length);
 
 ```
 
 ### sgx_mm_modify_type, sgx_mm_modify_permissions and sgx_mm_modify_ex
 
 ```
-/**
+/*
  * Change permissions and/or page type of a previously allocated region
  * @param[in] addr start address of the region, must be page aligned
  * @param[in] length size in bytes of page multiples.
- * @param[in] prot permissions bitwise OR of following with the same values
- * as those defined for Linux mmap/mprotect syscalls:
- *        - PROT_READ: Pages may be read.
- *        - PROT_WRITE: Pages may be written.
- *        - PROT_EXECUTE: Pages may be executed.
+ * @param[in] prot permissions bitwise OR of following with:
+ *        - EMA_PROT_READ: Pages may be read.
+ *        - EMA_PROT_WRITE: Pages may be written.
+ *        - EMA_PROT_EXECUTE: Pages may be executed.
  *
  * @param[in] type page type, one of the following
- *       - EMA_PT_TCS: TCS page
+ *       - EMA_PAGE_TYPE_TCS: TCS page
  *       - -1: no page type change, keep the original type
  *
- * @retval 0 on success, o
+ * @retval 0 on success.
  * @retval EACCES if original page type can not be changed to target type.
  * @retval EINVAL if the memory region was not allocated or outside enclave
                   or other invalid parameters.
  * @retval EPERM if the request permissions are not allowed, e.g., by target page type or
- *               SELinux policy, or target page type is no allowed by this API, e.g., PT_TRIM, 
+ *               SELinux policy, or target page type is no allowed by this API, e.g., PT_TRIM,
  *               PT_SS_FIRST, PT_SS_REST.
  */
 int sgx_mm_modify_ex(void *addr, size_t length, int prot, int type);
 
-/**
+/*
  * Change permissions of an allocated region.
  * Equivalent to sgx_mm_modify_ex(addr, length, prot, -1).
  */
 int sgx_mm_modify_permissions(void *addr, size_t length, int prot);
 
-/**
+/*
  * Change permissions of an allocated region.
  * Equivalent to sgx_mm_modify_ex(addr, length, -1, type).
  */
@@ -287,30 +346,35 @@ int sgx_mm_modify_type(void *addr, size_t length, int type);
 ```
 **Remarks:**
 - The memory manager will track current permissions for each region, and can
-    determine whether new permissions require OCALL for EMODPR, e.g RW<->RX, RW->R.
-- This API should not be used to change EPC page type to PT_TRIM. Trimming pages
+    determine whether new permissions require an OCall for EMODPR, e.g RW<->RX, RW->R.
+- These APIs should not be used to change EPC page type to PT_TRIM. Trimming pages
     are done by sgx_mm_uncommit and sgx_mm_dealloc only.
 
 
 ### sgx_mm_commit
+
 ```
-/**
-* Commit a partial or full range of memory allocated previously with EMA_COMMIT_ON_DEMAND.
-* The API will return 0 if all pages in the requested range are successfully committed.
-* Calling this API on pages already committed has no effect.
-* @param[in] addr, page aligned starting address.
-* @param[in] length, length of the region in bytes of multiples of page size.
-* @retval 0 on success.
-* @retval EINVAL if any requested page is not in any previously allocated regions, or
-*                 outside the enclave address range.
-* @retval EFAULT for any other errors.
-*/
-int sgx_mm_commit(void* addr, size_t length);
+
+/*
+ * Commit a partial or full range of memory allocated previously with EMA_COMMIT_ON_DEMAND.
+ * The API will return 0 if all pages in the requested range are successfully committed.
+ * Calling this API on pages already committed has no effect.
+ * @param[in] addr, page aligned starting address.
+ * @param[in] length, length of the region in bytes of multiples of page size.
+ * @retval 0 on success.
+ * @retval EINVAL if any requested page is not in any previously allocated regions, or
+ *                 outside the enclave address range.
+ * @retval EFAULT for any other errors.
+ */
+int sgx_mm_commit(void *addr, size_t length);
+
 ```
 
 ### sgx_mm_commit_data
+
 ```
-/**
+
+/*
  * Load data into target pages within a region previously allocated by sgx_mm_alloc.
  * This can be called to load data and set target permissions at the same time,
  * e.g. dynamic code loading. The caller has verified data to be trusted and expected
@@ -327,7 +391,7 @@ int sgx_mm_commit(void* addr, size_t length);
  * @retval EPERM if the target permissions are not allowed by OS security policy,
  *                  e.g., SELinux rules.
  */
-int sgx_mm_commit_data(void* addr, size_t length, uint8_t* data, int prot);
+int sgx_mm_commit_data(void *addr, size_t length, uint8_t *data, int prot);
 
 ```
 **Remarks:**
@@ -343,32 +407,36 @@ abstraction layer APIs.
 ### Exception Handler Registration
 
 ```
-/** Return value used by the EMM #PF handler to indicate
+/* Return value used by the EMM #PF handler to indicate
  *  to the dispatcher that it should continue searching for the next handler.
  */
 #define EXCEPTION_CONTINUE_SEARCH 0x0
 
-/** Return value used by the EMM #PF handler to indicate
+/* Return value used by the EMM #PF handler to indicate
  *  to the dispatcher that it should stop searching and continue execution.
  */
 #define EXCEPTION_CONTINUE_EXECUTION 0xFFFFFFFF
-/**
+
+/*
  * The EMM page fault (#PF) handler
+ *
  * @param[in] pfinfo, info reported in the SSA MISC region for page fault
  * @retval EXCEPTION_CONTINUE_EXECUTION on success handling the exception.
  * @retval EXCEPTION_CONTINUE_SEARCH if the EMM does not handle the exception.
  */
-typedef int (*enclave_pfhandler_t)(const sgx_pfinfo* pfinfo);
+typedef int (*enclave_pfhandler_t)(const sgx_pfinfo *pfinfo);
 
-/**
+/*
  * Register the EMM handler with the global exception handler registry
  * The Runtime should ensure this handler is called first in case of
  * a #PF before all other handlers.
+ *
  * @param[in] pfhandler, the EMM page fault handler.
  * @retval true on success.
  * @retval false on failure.
  */
 bool sgx_register_pfhandler(enclave_pfhandler_t pfhandler);
+
 /**
  * Unregister the EMM handler with the global exception handler registry
  * @param[in] pfhandler, the EMM page fault handler.
@@ -382,43 +450,104 @@ bool sgx_unregister_pfhandler(enclave_pfhandler_t pfhandler);
 ### OCalls
 
 ```
-/**
- * Call OS  to reserve region for EAUG, immediately or on-demand
+/*
+ * Call OS to reserve region for EAUG, immediately or on-demand
+ *
  * @param[in] addr, desired page aligned start address, NULL if no desired address
  * @param[in] length, size of the region in multiples of page size in bytes
- * @param[in] flags, must be MAP_SHARED | MAP_FIXED masked with optional flags:
- *              MAP_POPULATE: hint for kernel to EAUG pages as soon as possible.
- *              MAP_GROWSDOWN: used for stacks. The mapping will grow down to the next mapping.
- * @param[out] out_addr, start address of region reserved by OS.
+ * @param[in] flags,  a bitwise OR of flags describing committing mode, committing
+ *                     order, address preference, page type. The untrusted side
+ *    implementation should always invoke mmap syscall with MAP_SHARED|MAP_FIXED_NOREPLACE, and
+ *    translate following additional bits to proper parameters invoking mmap or other SGX specific
+ *    syscall(s) provided by the kernel.
+ *        The flags param of this interface should include exactly one of following for committing mode:
+ *            - EMA_RESERVE: kernel map an address range with PROT_NONE, no EPC EAUGed.
+ *            - EMA_COMMIT_NOW: reserves memory range with EMA_PROT_READ|EMA_PROT_WRITE, if supported, 
+ *                   kernel is given a hint to EAUG EPC pages for the area as soon as possible.
+ *            - EMA_COMMIT_ON_DEMAND: reserves memory range, EPC pages can be EAUGed upon #PF.
+ *        ORed with zero or one of the committing order flags:
+ *            - EMA_GROWSDOWN: if supported, a hint given for the kernel to EAUG pages from higher
+ *                              to lower addresses, no gaps in addresses above the last committed.
+ *            - EMA_GROWSUP: if supported, a hint given for the kernel to EAUG pages from lower
+ *                              to higher addresses, no gaps in addresses below the last committed.
+ *        Optionally ORed with
+ *            -  EMA_ALIGNED(n):	Align the region on a requested	boundary.
+ *                           Fail if a suitable region cannot be found,
+ *                           The argument n specifies the binary logarithm of
+ *                           the desired alignmentand must be at least 12.
+ *        Optionally ORed with one of following page types:
+ *             - EMA_PAGE_TYPE_REG: regular page type.This is the default if not specified.
+ *             - EMA_PAGE_TYPE_SS_FIRST: the first page in shadow stack.
+ *             - EMA_PAGE_TYPE_SS_REST: the rest page in shadow stack. 
  * @retval 0 on success.
  * @retval EINVAL if any parameter passed in is not valid.
  * @retval errno reported by dependent syscalls, e.g. mmap().
  */
-int mmap_ocall(void* addr, size_t length, int flags, void** out_addr);
+int sgx_mmap_ocall(void *addr, size_t length, int prot, int flags);
 
-/**
- *
+/*
  * Call OS to change permissions, type, or notify EACCEPT done after TRIM
  *
  * @param[in] addr, start address of the memory to change protections.
  * @param[in] length, length of the area.  This must be a multiple of the page size.
- * @param[in] prot, this must be OR'ed of following:
- *            PROT_READ
- *            PROT_WRITE
- *            PROT_EXEC
- *            PROT_TRIM: change the page type to PT_TRIM, implies RW.
- *            PROT_TCS: change the page type to PT_TCS
- *            PROT_SS_FIRST
- *            PROT_SS_REST
- *            PROT_NONE: Signal the kernel EACCEPT is done for PT_TRIM pages.
+ * @param[in] flags, this must be OR'ed of following:
+ *            EMA_PROT_READ
+ *            EMA_PROT_WRITE
+ *            EMA_PROT_EXEC
+ *            EMA_PAGE_TYPE_TRIM: change the page type to PT_TRIM, implies RW.
+ *            EMA_PAGE_TYPE_TCS: change the page type to PT_TCS
+ *            EMA_PROT_NOACCESS: Signal the kernel EACCEPT is done for PT_TRIM pages.
  * @retval 0 on success
  * @retval EINVAL if any parameter passed in is not valid.
  * @retval errno reported by dependent syscalls, e.g. mprotect().
  */
 
-int mprotect_ocall(void* addr, int flags);
+int sgx_mprotect_ocall(void *addr, size_t length, int flags);
+
+/*
+ * OCall to make regular munmap syscall.
+ * @param[in] addr, start address of the memory to unmap.
+ * @param[in] length, length of the area.  This must be a multiple of the page size.
+ * @retval 0 on success
+ * @retval errno reported by munmap syscall
+ */
+int sgx_munmap_ocall(void *addr, size_t length);
+
 
 ```
+
+### Other Utilities
+
+```
+/*
+ * Define a mutex and init/lock/unlock/destroy functions.
+ */
+typedef sgx_mutex_t;
+int sgx_mutex_init(sgx_mutex_t* mutex);
+int sgx_mutex_lock(sgx_mutex_t* mutex);
+int sgx_mutex_unlock(sgx_mutex_t* mutex);
+int sgx_mutex_destroy(sgx_mutex_t* mutex);
+
+/*
+ * Check whether the given buffer is strictly within the enclave.
+ *
+ * Check whether the buffer given by the **ptr** and **size** parameters is
+ * strictly within the enclave's memory. If so, return true. If any
+ * portion of the buffer lies outside the enclave's memory, return false.
+ *
+ * @param[in] ptr The pointer pointer to buffer.
+ * @param[in] size The size of buffer
+ *
+ * @retval true The buffer is strictly within the enclave.
+ * @retval false At least some part of the buffer is outside the enclave, or
+ * the arguments are invalid. For example, if **ptr** is null or **size**
+ * causes arithmetic operations to wrap.
+ *
+ */
+bool sgx_is_within_enclave(const void *ptr, size_t size);
+
+```
+
 ### Support for EMM Initialization
 
 In addition to implement the abstraction layer APIs, a runtime shall provide
@@ -457,23 +586,27 @@ The main difference is that the private ema_alloc allows an extra flag
 EMA_SYSTEM passed in.
 
 ```
+#define EMA_SYSTEM EMA_ALLOC_FLAGS(0x40) /* EMA reserved by system */
+
 /**
  * Same as sgx_mm_alloc, EMA_SYSTEM can be OR'ed with flags to indicate
  * that the EMA can not be modified thru public APIs
  */
 int ema_alloc(void *addr, size_t length, int flags,
-                          enclave_fault_handler_t handler,
-                          void* handler_private,
-                          void** out_addr);
+              enclave_fault_handler_t handler,
+              void *handler_private,
+              void **out_addr);
 
-int ema_dealloc(void* addr, size_t length);
+int ema_dealloc(void *addr, size_t length);
+
 int ema_uncommit(void *addr, size_t length);
 
-int ema_commit(void* addr, size_t length);
+int ema_commit(void *addr, size_t length);
 
-int ema_commit_data(void* addr, size_t length, uint8_t* data, int prot);
+int ema_commit_data(void *addr, size_t length, uint8_t *data, int prot);
 
 int ema_modify_ex(void *addr, size_t length, int prot, int type);
+
 ```
 
 Internal APIs and Structures
@@ -488,20 +621,23 @@ Each enclave has a global doubly linked EMA list to keep track of all dynamicall
 allocated regions in enclave address space (ELRANGE).
 
 ```
-typedef struct _ema_t  {
-    size_t      start_addr;     // starting address, should be on a page boundary
-    size_t      size;           // bytes
-    int         alloc_flags;    // EMA_RESERVED, EMA_COMMIT_NOW, EMA_COMMIT_ON_DEMAND, OR'ed with EMA_SYSTEM, EMA_GROWSDOWN, ENA_GROWSUP
-    int         perms;          // EMA_NOACCESS, READONLY, READWRITE, EXECUTE_READ, EXECUTE_READWRITE
-    int         page_type;      // EMA_PT_REG, EMA_PT_TCS, EMA_PT_TRIM
-    uint8_t*    eaccept_map;    // bitmap for EACCEPT status, bit 0 in eaccept_map[0] for the page at start address
-                                // bit i in eaccept_map[j] for page at start_address+(i+j<<3)<<12
-    mutex_t     lock;           // lock to prevent concurrent modification, could be sgx_thread_mutex_t/rwlock_t
-    int         transition;     // state to indicate whether a transition in progress, e.g page type/permission changes
-    enclave_fault_handler_t h;  // custom PF handler  (for EACCEPTCOPY use)
-    void*       hprivate;       // private data for handler
-    ema_t*      next;           // next in doubly linked list
-    ema_t*      prev;           // prev in doubly linked list
+typedef BitArray;
+typedef struct _ema_t {
+    size_t              start_addr;     // starting address, should be on a page boundary
+    size_t              size;           // bytes
+    uint32_t            alloc_flags;    // EMA_RESERVED, EMA_COMMIT_NOW, EMA_COMMIT_ON_DEMAND,
+                                        // OR'ed with EMA_SYSTEM, EMA_GROWSDOWN, ENA_GROWSUP
+    uint64_t            si_flags;       // EMA_PROT_NOACCESS, EMA_PROT_READ |{EMA_PROT_WRITE, EMA_PROT_EXECUTE}
+                                        // Or'd with one of EMA_PAGE_TYPE_REG, EMA_PAGE_TYPE_TCS, EMA_PAGE_TYPE_TRIM
+    BitArray*           eaccept_map;    // bitmap for EACCEPT status, bit 0 in eaccept_map[0] for the page at start address
+                                        // bit i in eaccept_map[j] for page at start_address+(i+j<<3)<<12
+    sgx_mutex_t*        lock;           // lock to prevent concurrent modification
+    int                 transition;     // state to indicate whether a transition in progress, e.g page type/permission changes.
+    enclave_fault_handler_t
+                        h;              // custom PF handler  (for EACCEPTCOPY use)
+    void*               hprivate;       // private data for handler
+    ema_t*              next;           // next in doubly linked list
+    ema_t*              prev;           // prev in doubly linked list
 } ema_t;
 
 ```
@@ -515,16 +651,17 @@ typedef struct _ema_t  {
 ```
 typedef struct _sec_info_t
 {
-   uint64_t         flags;
-   uint64_t         reserved[7];
+    uint64_t         flags;
+    uint64_t         reserved[7];
 } sec_info_t;
 
 // EACCEPT
-int do_eaccept(const sec_info_t * si, size_t addr);
+int do_eaccept(const sec_info_t* si, size_t addr);
 //EMODPE
 int do_emodpe(const sec_info_t* si, size_t addr);
 //EACCEPTCOPY
-int do_eacceptcopy(const sec_info_t * si, size_t dest, size_t src);
+int do_eacceptcopy(const sec_info_t* si, size_t dest, size_t src);
+
 ```
 
 
@@ -540,4 +677,3 @@ file), any reserved region for special purposes, e.g. minimal heap, stack,
 TCS areas, SSAs for expected minimal number of threads, etc. The runtime
 would read those info to populate the initial EMAs described in the section
 above on [Support for EMM Initialization](#support-for-emm-initialization)
-
