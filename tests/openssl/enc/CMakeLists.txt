@@ -39,6 +39,7 @@ enclave_include_directories(openssl-support PRIVATE ${OPENSSL_DIR}/include
 # definition errors due to the way test_cleanup.c is written.
 add_enclave_library(openssl-common OBJECT enc.c
                     ${CMAKE_CURRENT_BINARY_DIR}/openssl_t.c)
+add_enclave_dependencies(openssl-common openssl_generated)
 
 enclave_link_libraries(openssl-common PRIVATE oelibc oe_includes)
 enclave_include_directories(
