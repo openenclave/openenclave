@@ -3,12 +3,12 @@
 
 #include <host/ecall_ids.h>
 #include <host/hostthread.h>
+#include <math.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/tests.h>
-#include <cmath>
 #include "../abi_utils.h"
 #include "abi_u.h"
 
@@ -239,7 +239,7 @@ void test_mmx_abi_poison(oe_enclave_t* enclave)
     OE_TEST(enclave_add_float(enclave, &float_result) == OE_OK);
 
     printf("x87 FPU result = %f\n", float_result);
-    OE_TEST(!std::isnan(float_result));
+    OE_TEST(!isnan(float_result));
 }
 
 void test_fpu_stack_overflow(oe_enclave_t* enclave)
@@ -266,7 +266,7 @@ void test_fpu_stack_overflow(oe_enclave_t* enclave)
     OE_TEST(enclave_add_float(enclave, &float_result) == OE_OK);
 
     printf("x87 FPU result = %f\n", float_result);
-    OE_TEST(!std::isnan(float_result));
+    OE_TEST(!isnan(float_result));
 }
 
 int main(int argc, const char* argv[])

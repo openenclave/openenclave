@@ -48,6 +48,7 @@ function call_clang {
         [ "$a" == "/W3" ]           && continue
         [ "$a" == "/W4" ]           && continue
         [ "$a" == "/WX" ]           && continue
+        [ "$a" == "/Wv:18" ]        && continue
 
         # Ignore warnings for specific error codes
         if [[ "$a" =~ /[wW][dD][0-9]* ]]; then
