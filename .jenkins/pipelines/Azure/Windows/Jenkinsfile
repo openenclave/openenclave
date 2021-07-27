@@ -15,6 +15,26 @@ AGENTS_LABELS = [
     "acc-win2019-dcap": env.WINDOWS_2019_DCAP_CUSTOM_LABEL ?: "SGXFLC-Windows-2019-DCAP"
 ]
 
+def windowsPrereqsVerify(String label) {
+    stage("Windows ${label} Install Prereqs Verification") {
+        node(AGENTS_LABELS[label]) {
+            timeout(GLOBAL_TIMEOUT_MINUTES) {
+                cleanWs()
+                checkout scm
+                dir('scripts') {
+                    bat(
+                        returnStdout: false,
+                        returnStatus: false,
+                        script: """
+                            powershell.exe -ExecutionPolicy Unrestricted -NoLogo -NonInteractive -NoProfile -WindowStyle Hidden -File install-windows-prereqs.ps1 -InstallPath C:\\oe_prereqs -LaunchConfiguration SGX1FLC-NoIntelDrivers -DCAPClientType Azure -VerificationOnly
+                        """
+                    )
+                }
+            }
+        }
+    }
+}
+
 def windowsLinuxElfBuild(String label, String version, String compiler, String build_type, String lvi_mitigation = 'None', String lvi_mitigation_skip_tests = 'OFF', List extra_cmake_args = []) {
     stage("Ubuntu ${version} SGX1 ${compiler} ${build_type} LVI_MITIGATION=${lvi_mitigation}") {
         node(AGENTS_LABELS["ubuntu-nonsgx"]) {
@@ -108,7 +128,7 @@ properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '90',
 
 try{
     oe.emailJobStatus('STARTED')
-    def testing_stages = [:]
+    def testing_stages = [ "Windows 2019 Install Prerequisites Verification" : { windowsPrereqsVerify("acc-win2019-dcap") }]
     if(FULL_TEST_SUITE == "true") {
         stage("Full Test Suite") {
             testing_stages += [
