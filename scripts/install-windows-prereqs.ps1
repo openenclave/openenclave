@@ -37,7 +37,8 @@ Param(
     [Parameter(mandatory=$true)][string]$InstallPath,
     [Parameter(mandatory=$true)][ValidateSet("SGX1FLC", "SGX1", "SGX1FLC-NoIntelDrivers", "SGX1-NoIntelDrivers")][string]$LaunchConfiguration,
     [Parameter(mandatory=$true)][ValidateSet("None", "Azure")][string]$DCAPClientType,
-    [Parameter(mandatory=$false)][switch]$InstallDocker=$false
+    [Parameter(mandatory=$false)][switch]$InstallDocker=$false,
+    [Parameter(mandatory=$false)][switch]$VerificationOnly=$false
 )
 
 $ErrorActionPreference = "Stop"
@@ -601,6 +602,12 @@ function Install-Docker {
 }
 
 try {
+
+    if ($VerificationOnly) {
+        Write-Output 'Verification only - Complete'
+        Exit 0
+    }
+
     Start-LocalPackagesDownload
 
     Install-7Zip
