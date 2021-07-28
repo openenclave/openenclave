@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - This enables applications to adopt NullPointerException/ NullReferenceException in their program logic and/or use other application stacks that do (Example, .NET runtime).
   - Developers can create an 0-base enclave by setting the oesign tool configuration option 'CreateZeroBaseEnclave' to 1 or by passing in argument CREATE_ZERO_BASE_ENCLAVE=1 in OE_SET_ENCLAVE_SGX2().
   - If the 0-base enclave creation is chosen, enclave image start address should be provided by setting the oesign tool configuration option 'StartAddress' or pass in the argument ENCLAVE_START_ADDRESS in OE_SET_ENCLAVE_SGX2().
+- Support for `compiler-rt`. `oelibc` includes LLVM's `compiler-rt-10.0.1`.
 
 ## Changed
 - Updated libcxx to version 10.0.1

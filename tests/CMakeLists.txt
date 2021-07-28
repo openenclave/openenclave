@@ -173,6 +173,7 @@ if (UNIX
   endif ()
 
   add_subdirectory(c99_compliant)
+  add_subdirectory(compiler_rt)
   add_subdirectory(create-errors)
   add_subdirectory(crypto)
   add_subdirectory(data_types)
