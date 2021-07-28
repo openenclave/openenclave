@@ -40,9 +40,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN pip install cmake
 
-## The following sets the flag for out of proc attestation mode. Alternatively you can set this flag on the kubernetes deployment files
-ENV SGX_AESM_ADDR=1
-
 # Copy sample code folder into the container
 COPY . layered-attestation/
 WORKDIR /layered-attestation
