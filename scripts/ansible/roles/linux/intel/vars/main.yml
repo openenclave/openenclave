@@ -6,3 +6,6 @@ intel_sgx_directory: "/opt/intel"
 
 driver_validation_directories:
   - "{{ intel_sgx_directory }}/sgxdriver"
+
+intel_psw_version:  "2.13.103.1-*"
+intel_dcap_version: "1.10.103.1-*"
