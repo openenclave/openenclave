@@ -1,0 +1,6 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+---
+intel_psw_version:  "2.13.100.4-*"
+intel_dcap_version: "1.10.100.4-*"
