@@ -8,19 +8,27 @@
 - name: Populate service facts
   service_facts:
 
-- name: Load default driver
-  modprobe:
-    name: intel_sgx
-    state: present
+- name: Include distribution vars
+  include_vars:
+    file: "{{ ansible_distribution | lower }}/main.yml"
+
+- name: Check default driver files
+  stat:
+    path: "{{ item }}"
+  loop: "{{ intel_dcap_driver_files }}"
   ignore_errors: yes
-  register: intel_sgx_module
+  register: intel_sgx_driver
+
+- name: Trigger driver installation based on file existence
+  set_fact:
+    intel_sgx_driver_exists: yes
+  loop: "{{ intel_sgx_driver.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+  when: item.stat.exists
 
 - name: install driver
   block:
-
-  - name: Include distribution vars
-    include_vars:
-      file: "{{ ansible_distribution | lower }}/main.yml"
 
   - name: Include distribution release specific vars
     include_vars:
@@ -75,7 +83,8 @@
       state: present
       line: SGX_AESM_ADDR=1
 
-  when: intel_sgx_module is failed
+  when: intel_sgx_driver_exists is undefined or
+        not intel_sgx_driver_exists
 
 - name: Ensure aesmd service running
   service:
