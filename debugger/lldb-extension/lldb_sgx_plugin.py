@@ -136,6 +136,30 @@ g_loaded_oe_enclave_addrs = set()
 # Global enclave list parsed flag
 g_enclave_list_parsed = False
 
+# Mystikos enclave
+g_mystikos_enclave = None
+
+# List of mystikos regions.
+g_mystikos_regions = []
+
+# Determine if Mystikos is running in simulation mode.
+g_mystikos_simulation_mode = -1
+
+def is_mystikos_simulation_mode(frame):
+    global g_mystikos_simulation_mode
+    if g_mystikos_simulation_mode == -1:
+        g_mystikos_simulation_mode = False
+        while frame:
+            # The only reasonable way currently to determine whether
+            # mystikos is running in simulation mode when callbacks are
+            # invoked is to walk up the stack and look for the following
+            # function.
+            if frame.name == "exec_linux_action":
+                g_mystikos_simulation_mode = True
+                break
+            frame = frame.parent
+    return g_mystikos_simulation_mode
+
 def read_from_memory(addr, size):
     process = lldb.debugger.GetSelectedTarget().GetProcess()
     """Read data with specified size  from the specified memory"""
@@ -176,6 +200,7 @@ def load_enclave_symbol(enclave_path, enclave_base_addr):
     lldb.debugger.HandleCommand("target modules load --file " + enclave_path
                                 + " -s " + str(enclave_base_addr))
 
+    print("oelldb: Loaded symbols for %s" % enclave_path)
     # Store the oe_enclave address to global set that will be cleanup on exit.
     global g_loaded_oe_enclave_addrs
     g_loaded_oe_enclave_addrs.add(enclave_base_addr)
@@ -256,6 +281,21 @@ class EnclaveCreationBreakpoint:
     def onHit(frame, bp_loc, dict):
         enclave_addr = frame.FindValue("rdi", lldb.eValueTypeRegister ).signed
         enable_oeenclave_debug(enclave_addr)
+
+        # Debugger is notified of the enclave *after* the enclave has been EINITed.
+        # It is now OK to register any region for which registration has been
+        # delayed.
+        global g_mystikos_regions
+        global g_mystikos_enclave
+        if g_mystikos_regions:
+            for r in g_mystikos_regions:
+                load_enclave_symbol(r.path, r.base_address)
+            g_mystikos_regions = []
+            # The code will reach here only if there were modules without enclave field
+            # set. This happens only for Mystikos. Therefore, this debugger can also
+            # be safely used for OE applications (non Mystikos) that create multiple
+            # enclaves.
+            g_mystikos_enclave = enclave_addr
         return False
 
 class EnclaveTerminationBreakpoint:
@@ -268,6 +308,9 @@ class EnclaveTerminationBreakpoint:
         enclave_addr = frame.FindValue("rdi", lldb.eValueTypeRegister ).signed
         enclave = oe_debug_enclave_t(enclave_addr)
         unload_enclave_symbol(enclave.path, enclave.base_address)
+        global g_mystikos_enclave
+        if g_mystikos_enclave == enclave.base_address:
+            g_mystikos_enclave = None
         return False
 
 class ModuleLoadedBreakpoint:
@@ -279,7 +322,27 @@ class ModuleLoadedBreakpoint:
     def onHit(frame, bp_loc, dict):
         library_image_addr = frame.FindValue("rdi", lldb.eValueTypeRegister).signed
         library_image = oe_debug_module_t(library_image_addr)
-        load_enclave_symbol(library_image.path, library_image.base_address)
+        if library_image.enclave != 0:
+            load_enclave_symbol(library_image.path, library_image.base_address)
+        elif g_mystikos_enclave:
+            # If g_mystikos_enclave is not null, it means that the enclave was
+            # EINITed and processed. It is OK to process region even though
+            # the enclave field is null.
+            load_enclave_symbol(library_image.path, library_image.base_address)
+        elif is_mystikos_simulation_mode(frame):
+            # In simulation mode, Mystikos does not send enclave creation notifications.
+            # Therefore, we cannot rely on it to delay load modules. Instead, we eagerly
+            # load modules in simulation mode.
+            load_enclave_symbol(library_image.path, library_image.base_address)
+        else:
+            # Mystikos currently sends library notifications for regions before
+            # the enclave has been EINITed. When the debugger tries to set any
+            # pending breakpoints in these regions, the hardware fails the write
+            # operation. Therefore, delay registering modules until after the
+            # enclave has been EINITed.
+            global g_mystikos_regions
+            g_mystikos_regions.append(library_image)
+            print("oelldb: Delaying registration of region %s" % library_image.path)
         return False
 
 class ModuleUnloadedBreakpoint:
@@ -299,24 +362,10 @@ class LibraryLoadedBreakpoint:
         breakpoint = target.BreakpointCreateByName("oe_notify_debugger_library_load")
         breakpoint.SetScriptCallbackFunction('lldb_sgx_plugin.ModuleLoadedBreakpoint.onHit')
 
-    @staticmethod
-    def onHit(frame, bp_loc, dict):
-        library_image_addr = frame.FindValue("rdi", lldb.eValueTypeRegister).signed
-        library_image = oe_debug_module_t(library_image_addr)
-        load_enclave_symbol(library_image.path, library_image.base_address)
-        return False
-
 class LibraryUnloadedBreakpoint:
     def __init__(self, target):
         breakpoint = target.BreakpointCreateByName("oe_notify_debugger_library_unload")
         breakpoint.SetScriptCallbackFunction('lldb_sgx_plugin.ModuleUnloadedBreakpoint.onHit')
-
-    @staticmethod
-    def onHit(frame, bp_loc, dict):
-        library_image_addr = frame.FindValue("rdi", lldb.eValueTypeRegister).signed
-        library_image = oe_debug_module_t(library_image_addr)
-        unload_enclave_symbol(library_image.path, library_image.base_address)
-        return False
 
 def oe_debugger_init(debugger):
     EnclaveCreationBreakpoint(debugger.GetSelectedTarget())
