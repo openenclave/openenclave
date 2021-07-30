@@ -281,7 +281,7 @@ runtime, the alternative approach will not be pursued.
 
 ## Future Work Consideration
 
-Though outside the scope of this design doc, 0-base SGX Enclave can be leverage
+Though outside the scope of this design doc, 0-base SGX Enclave can be leveraged
 to support "two-way sandboxing" of an SGX Enclave. The SGX Technology's primary
 objective is to protect the enclave code/data from the untrusted host code or
 OS. Typically, the enclave code can access the code/data page of the host app.
@@ -292,7 +292,7 @@ For example, a SGX Enclave loading a container app into the Enclave memory to
 execute protects the container app against potential attacks from the host app
 or OS, but if the loaded container app is malicious or is compromised during run
 time by remote attacks, attacks on the host app or OS originated from the
-Enclave is possible. "Two-way sandboxing", where the Enclave code/data is
+Enclave are possible. "Two-way sandboxing", where the Enclave code/data is
 protected from the host code or OS, and the host app and OS are also protected
 from the Enclave code, is a valuable security property.
 
