@@ -4979,7 +4979,6 @@
 ../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.unary.prop.query/extent.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.unary.prop.query/rank.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.unary.prop.query/void_t.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.unary.prop.query/void_t_feature_test_macro.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.unary/meta.unary.cat/array.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.unary/meta.unary.cat/class.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.unary/meta.unary.cat/enum.pass.cpp

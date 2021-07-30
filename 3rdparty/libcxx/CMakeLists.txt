@@ -1,6 +1,20 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
+include(FetchContent)
+FetchContent_Declare(
+  libcxx_sources
+  SOURCE_DIR
+  "${CMAKE_CURRENT_SOURCE_DIR}/libcxx"
+  URL https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.1/libcxx-10.0.1.src.tar.xz
+  URL_HASH
+    SHA256=def674535f22f83131353b3c382ccebfef4ba6a35c488bdb76f10b68b25be86c)
+
+FetchContent_GetProperties(libcxx_sources)
+if (NOT libcxx_sources_POPULATED)
+  FetchContent_Populate(libcxx_sources)
+endif ()
+
 include(ExternalProject)
 ExternalProject_Add(
   libcxx_includes
@@ -27,6 +41,7 @@ add_enclave_library(
   libcxx/src/charconv.cpp
   libcxx/src/chrono.cpp
   libcxx/src/condition_variable.cpp
+  libcxx/src/condition_variable_destructor.cpp
   libcxx/src/debug.cpp
   libcxx/src/exception.cpp
   libcxx/src/functional.cpp
@@ -37,6 +52,7 @@ add_enclave_library(
   libcxx/src/locale.cpp
   libcxx/src/memory.cpp
   libcxx/src/mutex.cpp
+  libcxx/src/mutex_destructor.cpp
   libcxx/src/new.cpp
   libcxx/src/optional.cpp
   libcxx/src/random.cpp

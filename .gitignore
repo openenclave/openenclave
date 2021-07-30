@@ -10,6 +10,8 @@ graphviz/
 build/
 winbuild/
 
+3rdparty/libcxx/libcxx
+
 devex/cross-nuget/linux/build
 devex/cross-nuget/linux/pack
 devex/cross-nuget/linux/sdk
