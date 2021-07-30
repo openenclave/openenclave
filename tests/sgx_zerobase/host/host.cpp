@@ -1,40 +1,37 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/exception.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/error.h>
 #include <openenclave/internal/tests.h>
+#include <sys/mman.h>
 #include <iostream>
-#include <vector>
+
+#include "../host/sgx/cpuid.h"
 #include "sgx_zerobase_u.h"
 
 const char* message = "Hello world from Host\n\0";
 
-int unsecure_string_patching(
-    const char* source,
-    char* output,
-    size_t output_length)
+static bool _is_misc_region_supported()
 {
-    size_t running_length = output_length;
-    while (running_length > 0 && *source != '\0')
-    {
-        *output = *source;
-        running_length--;
-        source++;
-        output++;
-    }
-    const char* ptr = message;
-    while (running_length > 0 && *ptr != '\0')
-    {
-        *output = *ptr;
-        running_length--;
-        ptr++;
-        output++;
-    }
-    if (running_length < 1)
-    {
+    uint32_t eax, ebx, ecx, edx;
+    eax = ebx = ecx = edx = 0;
+
+    // Obtain feature information using CPUID
+    oe_get_cpuid(CPUID_SGX_LEAF, 0x0, &eax, &ebx, &ecx, &edx);
+
+    // Check if EXINFO is supported by the processor
+    return (ebx & CPUID_SGX_MISC_EXINFO_MASK);
+}
+
+int test_ocall(const char* message)
+{
+    if (!message)
         return -1;
-    }
-    *output = '\0';
+
+    fprintf(stdout, "[host] Message from enclave : %s\n", message);
+
     return 0;
 }
 
@@ -45,46 +42,146 @@ int main(int argc, const char* argv[])
 
     if (argc != 2)
     {
+        fprintf(stderr, "Usage: %s ENCLAVE_PATH\n", argv[0]);
+        return 1;
+    }
+
+    fprintf(
+        stdout,
+        "\nTest 1: Create 0-base enclave in sim-mode\n"
+        "Expected result : OE_INVALID_PARAMETER\n");
+    result = oe_create_sgx_zerobase_enclave(
+        argv[1],
+        OE_ENCLAVE_TYPE_SGX,
+        OE_ENCLAVE_FLAG_SIMULATE,
+        NULL,
+        0,
+        &enclave);
+
+    if (result != OE_INVALID_PARAMETER)
+    {
         fprintf(
             stderr,
-            "Usage: sgx_zerobase_host.exe <path to  packaged enc/dev dll>\n"
-            "Example: sgx_zerobase_host.exe "
-            "sgx_zerobase_enc.dev.pkg\\sgx_zerobase_enc.dll\n");
+            "Unexpected error when creating enclave in sim-mode, result=%d\n",
+            result);
         return 1;
     }
 
     const uint32_t flags = oe_get_create_flags();
 
+    /*
+     * 0-base enclaves are not supported in sim-mode.
+     */
+    if (flags & OE_ENCLAVE_FLAG_SIMULATE)
+    {
+        fprintf(stdout, "Simulation mode does not support 0-base enclaves.\n");
+        return 0;
+    }
+
+    fprintf(
+        stdout,
+        "\nTest 2: Create 0-base enclave\n"
+        "Expected result : OE_OK\n");
+
     result = oe_create_sgx_zerobase_enclave(
         argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
     if (result != OE_OK)
     {
-        fprintf(stderr, "Could not create enclave, result=%d\n", result);
+        fprintf(stderr, "Could not create 0-base enclave, result=%d\n", result);
         return 1;
     }
-    char output[1024];
-    const char* source = "My First App\n";
+
+    fprintf(
+        stdout,
+        "\nTest 3: Test ecall, ocall on 0-base enclave\n"
+        "Expected result : OE_OK\n");
+
+    const char* input = "testing ecall\0";
     int res = -1;
-    OE_TEST(
-        secure_string_patching(
-            enclave, &res, source, output, OE_COUNTOF(output)) == OE_OK);
+
+    OE_TEST(test_ecall(enclave, &res, input) == OE_OK);
 
     if (res != 0)
     {
-        fprintf(stderr, "%s: enclave called failed\n", argv[0]);
-        exit(1);
-    }
-
-    const char expect[] = "My First App\n"
-                          "Hello world from Enclave\n"
-                          "My First App\n"
-                          "Hello world from Host\n";
-
-    if (strcmp(output, expect) != 0)
-    {
-        fprintf(stderr, "%s: returned string don't match\n", argv[0]);
+        fprintf(stderr, "[host]: ecall/ocall failed %d\n", res);
         return 1;
     }
+
+    fprintf(
+        stdout,
+        "\nTest 4: Check host access between /proc/sys/vm/mmap_min_addr and "
+        "enclave image start address - [0x1000, 0x21000)\n"
+        "Expected result : success\n");
+
+    uint64_t address = 0x15000;
+
+    if ((uint64_t)mmap(
+            (void*)address,
+            1,
+            PROT_READ | PROT_WRITE,
+            MAP_SHARED | MAP_ANONYMOUS,
+            -1,
+            0) != address)
+    {
+        fprintf(stderr, "host mmap at address 0x%lx failed\n", address);
+        return 1;
+    }
+
+    /* Enclave memory access tests */
+    if (_is_misc_region_supported())
+    {
+        bool exception = false;
+
+        fprintf(
+            stdout,
+            "\nTest 5: memory access between start_address and elrange_end"
+            " - [0x21000, 0x40000)\n"
+            "Expected result: no exceptions\n");
+        /*
+         * elrange_end =
+         * nearest_pow_2((start_address - base_address) + enclave_image_size)
+         */
+        address = 0x31000;
+        exception = false; /* reset exception */
+
+        result = test_enclave_memory_access(enclave, &res, address, &exception);
+        if (res != 0)
+        {
+            fprintf(stderr, "test_enclave_memory_access failed %d\n", res);
+            return 1;
+        }
+
+        fprintf(stdout, "address 0x%lx, page-fault %d\n", address, exception);
+        if (exception)
+            return 1;
+
+        fprintf(
+            stdout,
+            "\nTest 6: Enclave memory access between /proc/sys/vm/mmap_min_addr"
+            " and enclave image start address - [0x1000, 0x21000)\n"
+            "Expected result: page-fault\n");
+
+        address = 0x15000;
+        exception = false; /* reset exception */
+
+        result = test_enclave_memory_access(enclave, &res, address, &exception);
+        if (res != 0)
+        {
+            fprintf(stderr, "test_enclave_memory_access failed %d\n", res);
+            return 1;
+        }
+
+        fprintf(stdout, "address 0x%lx, page-fault %d\n", address, exception);
+        if (!exception)
+            return 1;
+    }
+    else
+        fprintf(
+            stdout,
+            "\nCPU does not support the CapturePFGPExceptions=1 "
+            "configuration.\n"
+            "Cannot catch exceptions from enclave, "
+            "skipping enclave memory access tests.\n");
 
     if (oe_terminate_enclave(enclave) != OE_OK)
     {
@@ -92,7 +189,7 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    printf("=== passed all tests (sgx_zerobase)\n");
+    printf("\n=== passed all tests (sgx_zerobase)\n");
 
     return 0;
 }

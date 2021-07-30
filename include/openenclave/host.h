@@ -50,6 +50,11 @@ OE_EXTERNC_BEGIN
 #endif
 
 /**
+ * NOTE: When introducing new OE_ENCAVE_FLAG_*, make sure to update
+ * tools/oesign.c:_map_attributes(), if relevant.
+ */
+
+/**
  *  Flag passed into oe_create_enclave to run the enclave in debug mode.
  *  The flag allows the enclave to be created without the enclave binary
  *  being signed. It also gives a developer permission to debug the process
