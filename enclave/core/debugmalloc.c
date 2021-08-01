@@ -496,8 +496,6 @@ void* oe_malloc(size_t size)
         if (_failure_callback)
             _failure_callback(__FILE__, __LINE__, __FUNCTION__, size);
     }
-    else
-        oe_errno = 0;
 
     return p;
 }
@@ -537,8 +535,6 @@ done:
         if (_failure_callback)
             _failure_callback(__FILE__, __LINE__, __FUNCTION__, nmemb * size);
     }
-    else
-        oe_errno = 0;
 
     return p;
 }
@@ -561,8 +557,6 @@ void* oe_realloc(void* ptr, size_t size)
         if (_failure_callback)
             _failure_callback(__FILE__, __LINE__, __FUNCTION__, size);
     }
-    else
-        oe_errno = 0;
 
     return p;
 }
@@ -577,7 +571,9 @@ void* oe_memalign(size_t alignment, size_t size)
     {
         if (alignment < sizeof(void*))
             alignment = sizeof(void*);
-        oe_errno = oe_posix_memalign(&ptr, alignment, size);
+        int r = oe_posix_memalign(&ptr, alignment, size);
+        if (r)
+            oe_errno = r;
     }
 
     return ptr;
