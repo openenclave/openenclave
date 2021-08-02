@@ -29,7 +29,7 @@ static void _check_buffer(int* buf, size_t start, size_t end)
 void test_malloc(void)
 {
     /* malloc(0) is implementation defined, but we can always free it. */
-    errno = -1;
+    errno = 0;
     int* ptr = (int*)malloc(0);
     OE_TEST(errno == 0);
     free(ptr);
@@ -43,7 +43,6 @@ void test_malloc(void)
     free(ptr);
 
     /* Ensure that malloc fails. */
-    errno = 0;
     ptr = (int*)malloc(LARGE_N);
     OE_TEST(ptr == NULL);
     OE_TEST(errno == ENOMEM);
@@ -52,13 +51,12 @@ void test_malloc(void)
 void test_calloc(void)
 {
     /* calloc with 0 is implementation defined, but we can always free it. */
-    errno = -1;
+    errno = 0;
     int* ptr = (int*)calloc(0, 0);
     OE_TEST(errno == 0);
     free(ptr);
 
     /* Basic calloc test. */
-    errno = -1;
     ptr = (int*)calloc(256, sizeof(int));
     OE_TEST(ptr != NULL);
     OE_TEST(errno == 0);
@@ -67,7 +65,6 @@ void test_calloc(void)
     free(ptr);
 
     /* Ensure that calloc fails. */
-    errno = 0;
     ptr = (int*)calloc(1, LARGE_N);
     OE_TEST(ptr == NULL);
     OE_TEST(errno == ENOMEM);
@@ -76,7 +73,7 @@ void test_calloc(void)
 void test_realloc(void)
 {
     /* Realloc with null pointer works like malloc. */
-    errno = -1;
+    errno = 0;
     int* ptr = (int*)realloc(NULL, 256 * sizeof(int));
     OE_TEST(ptr != NULL);
     OE_TEST(errno == 0);
@@ -92,7 +89,6 @@ void test_realloc(void)
 
     /* Realloc to expand pointer. Ensure that the values up to the original
      * size are not changed. */
-    errno = -1;
     ptr = (int*)realloc(ptr, 1024 * sizeof(int));
     OE_TEST(ptr != NULL);
     OE_TEST(errno == 0);
@@ -133,7 +129,7 @@ void test_realloc(void)
 void test_memalign(void)
 {
     /* Get an aligned pointer below malloc's alignment. */
-    errno = -1;
+    errno = 0;
     int* ptr = (int*)memalign(8, 256 * sizeof(int));
     OE_TEST(ptr != NULL);
     OE_TEST(errno == 0);
@@ -143,7 +139,6 @@ void test_memalign(void)
     free(ptr);
 
     /* Get an aligned pointer beyond malloc's alignment. */
-    errno = -1;
     ptr = (int*)memalign(64, 256 * sizeof(int));
     OE_TEST(ptr != NULL);
     OE_TEST(errno == 0);
@@ -163,13 +158,13 @@ void test_memalign(void)
     OE_TEST(errno == EINVAL);
 
     /* Should NOT fail if alignment isn't a multiple of sizeof(void*). */
-    errno = EINVAL;
+    errno = 0;
     OE_TEST((ptr = memalign(4, 64)) != NULL);
     OE_TEST(errno == 0);
     free(ptr);
 
     /* Should NOT fail if size isn't a multiple of alignment. */
-    errno = EINVAL;
+    errno = 0;
     OE_TEST((ptr = memalign(16, 63)) != NULL);
     OE_TEST(errno == 0);
 }
