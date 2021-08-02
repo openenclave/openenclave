@@ -71,7 +71,7 @@ ninja package || exit 1
 
 mkdir expand
 pushd expand || exit 1
-7z x ../*.deb || exit 1
+7z x ../*.deb -aoa || exit 1
 tar xf data.tar || exit 1
 popd || exit 1
 popd || exit 1  # SDK Build Done
@@ -89,7 +89,7 @@ ninja package || exit 1
 
 mkdir expand
 pushd expand || exit 1
-7z x ../*.deb || exit 1
+7z x ../*.deb -aoa || exit 1
 tar xf data.tar || exit 1
 popd || exit 1
 popd || exit 1  # SDK Build Done
@@ -112,7 +112,7 @@ ninja package || exit 1
 
 mkdir expand
 pushd expand || exit 1
-7z x ../*.deb || exit 1
+7z x ../*.deb -aoa || exit 1
 tar xf data.tar || exit 1
 popd || exit 1
 popd || exit 1  # SDK Build Done
@@ -131,7 +131,7 @@ ninja package || exit 1
 
 mkdir expand
 pushd expand || exit 1
-7z x ../*.deb || exit 1
+7z x ../*.deb -aoa || exit 1
 tar xf data.tar || exit 1
 popd || exit 1
 popd || exit 1  # SDK Build Done
@@ -150,7 +150,7 @@ ninja package || exit 1
 
 mkdir expand
 pushd expand || exit 1
-7z x ../*.deb || exit 1
+7z x ../*.deb -aoa || exit 1
 tar xf data.tar || exit 1
 popd || exit 1
 popd || exit 1  # SDK Build Done
@@ -169,7 +169,7 @@ ninja package || exit 1
 
 mkdir expand
 pushd expand || exit 1
-7z x ../*.deb || exit 1
+7z x ../*.deb -aoa || exit 1
 tar xf data.tar || exit 1
 popd || exit 1
 popd || exit 1  # SDK Build Done
