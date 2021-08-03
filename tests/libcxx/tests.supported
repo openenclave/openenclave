@@ -17,16 +17,12 @@
 ../../3rdparty/libcxx/libcxx/test/libcxx/containers/container.adaptors/stack/version.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/containers/gnu_cxx/hash_map.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/containers/gnu_cxx/hash_set.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/containers/sequences/array/array.zero/db_back.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/containers/sequences/array/array.zero/db_front.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/containers/sequences/array/array.zero/db_indexing.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/containers/sequences/array/version.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/containers/sequences/deque/incomplete.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/containers/sequences/deque/pop_back_empty.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/containers/sequences/deque/version.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/containers/sequences/forwardlist/version.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/containers/sequences/list/list.cons/db_copy.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/containers/sequences/list/list.cons/db_move.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/containers/sequences/list/list.modifiers/emplace_db1.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/containers/sequences/list/list.modifiers/erase_iter_db1.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/containers/sequences/list/list.modifiers/erase_iter_db2.pass.cpp
@@ -73,9 +69,6 @@
 ../../3rdparty/libcxx/libcxx/test/libcxx/containers/unord/unord.map/version.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/containers/unord/unord.set/version.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/debug/containers/db_associative_container_tests.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/debug/containers/db_sequence_container_iterators.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/debug/containers/db_string.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/debug/containers/db_unord_container_tests.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/depr/depr.auto.ptr/auto.ptr/auto_ptr.cxx1z.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/depr/depr.c.headers/ciso646.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/depr/depr.c.headers/complex.h.pass.cpp
@@ -225,8 +218,6 @@
 ../../3rdparty/libcxx/libcxx/test/libcxx/strings/iterators.exceptions.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/strings/iterators.noexcept.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/strings/version.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/thread/futures/futures.promise/set_exception.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/thread/futures/futures.promise/set_exception_at_thread_exit.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/thread/futures/futures.task/types.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/thread/futures/version.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/thread/thread.condition/thread.condition.condvar/native_handle.pass.cpp
@@ -249,6 +240,8 @@
 ../../3rdparty/libcxx/libcxx/test/libcxx/utilities/function.objects/func.require/bullet_4_5_6.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/utilities/function.objects/func.require/bullet_7.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/utilities/function.objects/func.require/invoke.pass.cpp
+../../3rdparty/libcxx/libcxx/test/libcxx/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/move_reentrant.pass.cpp
+../../3rdparty/libcxx/libcxx/test/libcxx/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/nullptr_t_assign_reentrant.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/utilities/function.objects/refwrap/binary.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/utilities/function.objects/refwrap/unary.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/utilities/function.objects/unord.hash/murmur2_or_cityhash_ubsan_unsigned_overflow_ignored.pass.cpp
@@ -3521,7 +3514,6 @@
 ../../3rdparty/libcxx/libcxx/test/std/numerics/rand/rand.util/rand.util.seedseq/types.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/nothing_to_do.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/nothing_to_do.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.match/awk.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.match/egrep.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.match/exponential.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.match/grep.pass.cpp
@@ -4336,10 +4328,8 @@
 ../../3rdparty/libcxx/libcxx/test/std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/copy_assign.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/copy_move.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/default.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/move_reentrant.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/nullptr_t.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/nullptr_t_assign.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/nullptr_t_assign_reentrant.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.inv/invoke.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.mod/assign_F_alloc.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.mod/swap.pass.cpp
