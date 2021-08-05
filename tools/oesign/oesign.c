@@ -626,6 +626,28 @@ done:
     return result;
 }
 
+static uint64_t _map_attributes(const oe_sgx_enclave_properties_t* properties)
+{
+    /*
+     * This function maps the attributes set by oesign from
+     * SGX_FLAGS_* to OE_ENCLAVE_FLAG_* before calling into
+     * OE specific functions.
+     */
+    uint64_t attributes = 0;
+
+    if (properties->config.attributes & SGX_FLAGS_DEBUG)
+    {
+        attributes |= OE_ENCLAVE_FLAG_DEBUG;
+    }
+
+    if (properties->config.attributes & SGX_FLAGS_KSS)
+    {
+        attributes |= OE_ENCLAVE_FLAG_SGX_KSS;
+    }
+
+    return attributes;
+}
+
 oe_result_t _get_sgx_enclave_hash(
     const char* enclave,
     const oe_sgx_enclave_properties_t* properties,
@@ -638,7 +660,7 @@ oe_result_t _get_sgx_enclave_hash(
     /* Initialize the context parameters for measurement only */
     OE_CHECK_ERR(
         oe_sgx_initialize_load_context(
-            &context, OE_SGX_LOAD_TYPE_MEASURE, properties->config.attributes),
+            &context, OE_SGX_LOAD_TYPE_MEASURE, _map_attributes(properties)),
         "oe_sgx_initialize_load_context(): result=%s (%#x)",
         oe_result_str(result),
         result);
