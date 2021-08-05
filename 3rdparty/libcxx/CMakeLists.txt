@@ -44,6 +44,9 @@ add_enclave_library(
   libcxx/src/condition_variable_destructor.cpp
   libcxx/src/debug.cpp
   libcxx/src/exception.cpp
+  libcxx/src/filesystem/operations.cpp
+  libcxx/src/filesystem/int128_builtins.cpp
+  libcxx/src/filesystem/directory_iterator.cpp
   libcxx/src/functional.cpp
   libcxx/src/future.cpp
   libcxx/src/hash.cpp
@@ -87,6 +90,8 @@ enclave_compile_options(libcxx PRIVATE -Wno-error)
 enclave_compile_definitions(
   libcxx PRIVATE -DLIBCXXRT -D_LIBCPP_PROVIDES_DEFAULT_RUNE_TABLE
   -D_LIBCPP_BUILDING_LIBRARY -DOE_LIBC_SUPPRESS_DEPRECATIONS)
+
+enclave_include_directories(libcxx PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 enclave_link_libraries(libcxx PUBLIC oelibc)
 
