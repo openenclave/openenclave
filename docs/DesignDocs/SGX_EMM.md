@@ -72,7 +72,7 @@ and/or page type changes for pages in existing allocations.
 **Runtime Abstraction Layer**
 
 To make the EMM implementation portable across different SGX runtimes,
-e.g., OpenEnclave and Intel SGX SDKs, this document also proposes an abstraction
+e.g., Open Enclave and Intel SGX SDKs, this document also proposes an abstraction
 layer for the runtimes. The runtime abstraction layer APIs are invoked by the EMM
 to make necessary OCalls, register and receive callbacks on page faults. The EMM
 source code will be hosted and maintained in the [Intel SGX PSW and SDK repository](https://github.com/intel/linux-sgx)
@@ -83,7 +83,7 @@ abstraction layer APIs implemented.
 
 The enclave memory manager keeps track of memory allocation and layout info inside
 enclave address range (ELRANGE) using an internal structure called the Enclave Memory
-Area (EMA) List. The EMA and EMA list are considered private data structure of memory
+Area (EMA) List. The EMA and the EMA list are considered private data structures of the memory
 manager, and their internals are not exposed in client-facing APIs.
 - The EMA list tracks all memory regions in use (reserved, committed,
 commit-on-demand) in ELRANGE.
@@ -95,21 +95,21 @@ until the pending operation is finished.
 
 **Assumptions:**
 
-- When enclave is loaded, the OS reserves the whole address range covered by ELRANGE.
+- When an enclave is loaded, the OS reserves the whole address range covered by ELRANGE.
 It is assumed the host app will not remap any part of this reserved range.
-- When an enclave is loaded with base address at zero, only partial ELRANGE may be
-  reserved by the OS. In that case, the EMM will assume the partial ELRANGE as valid reserved
+- When an enclave is loaded with base address at zero, only a partial ELRANGE may be
+  reserved by the OS. In that case, the EMM will assume the partial ELRANGE as a valid reserved
   range for use inside the enclave.
-- Memory manager does not check EPC pressure, or proactively trim pages when EPC runs low.
+- The memory manager does not check EPC pressure, or proactively trim pages when EPC runs low.
 The OS can reclaim EPC pages when EPC running low or cgroups threshold reached
-- Memory manager does not maintain and recycle committed then freed pages
-  - Whenever a page is freed (via dealloc or uncommit API), it is trimmed from enclave
-  and need be re-allocated and committed before re-use.
-  - Owner of a region can re-purpose a sub-region of it by calling sgx_mm_modify_type/permissions
+- The memory manager does not maintain and recycle committed then freed pages
+  - Whenever a page is freed (via dealloc or uncommit API), it is trimmed from the enclave
+  and needs to be re-allocated and committed before re-use.
+  - The owner of a region can re-purpose a sub-region of it by calling sgx_mm_modify_type/permissions
   to split out the sub-region to be reused.
-- Memory manager does not call back client for #GP handling. Memory manager code will ensure
+- The memory manager does not call back into the client for #GP handling. Memory manager code will ensure that
 itself would not cause #GP, and only register a #PF handler with the enclave global exception
-handler registry through the runtime abstraction layer. Clients wish to handle #GP can register
+handler registry through the runtime abstraction layer. A client wishing to handle #GP can register
 its own exception handler with the global handler registry.
 
 Public APIs
@@ -154,7 +154,7 @@ typedef struct _sgx_pfinfo
  *
  * @param[in] pfinfo info reported in the SSA MISC region for page fault.
  * @param[in] private_data private data provided by handler in sgx_mm_alloc call.
- * @retval SGX_EXCEPTION_CONTINUE_EXECUTION  Success on handling the exception.
+ * @retval SGX_EXCEPTION_CONTINUE_EXECUTION Success on handling the exception.
  * @retval SGX_EXCEPTION_CONTINUE_SEARCH Exception not handled and should be passed to
  *         some other handler.
  *
@@ -224,7 +224,7 @@ typedef int (*sgx_enclave_fault_handler_t)(const sgx_pfinfo *pfinfo, void *priva
  *                  then the function will select the starting address.
  * @param[in] length size of the region in multiples of page size in bytes.
  * @param[in] flags a bitwise OR of flags describing committing mode, committing
- * order, address preference, page type
+ * order, address preference, and page type.
  *        Flags should include exactly one of following for committing mode:
  *            - SGX_EMA_RESERVE: just reserve an address range, no EPC committed.
  *                           To allocate memory on a reserved range, call this
@@ -271,7 +271,7 @@ int sgx_mm_alloc(void *addr, size_t length, int flags,
 **Remarks:**
 - Permissions of newly allocated regions are always SGX_EMA_PROT_READ|SGX_EMA_PROT_WRITE and of page
     type SGX_EMA_PAGE_TYPE_REG, except for SGX_EMA_RESERVE mode regions which will have SGX_EMA_PROT_NONE.
-- Once allocated by sgx_mm_alloc, a region will stay in allocated state and become
+- Once allocated by sgx_mm_alloc, a region will stay in the allocated state and become
     deallocated once sgx_mm_dealloc is called.
 - If sgx_mm_dealloc on a partial range of a previously allocated region, then the
     region is split, and the freed range is deallocated. The remainder of the
@@ -296,7 +296,7 @@ int sgx_mm_uncommit(void *addr, size_t length);
 /*
  * Deallocate the address range.
  * The pages in the allocation are freed and the address range is released for future allocation.
- * @param[in] addr page aligned start address of the region to be freed and released
+ * @param[in] addr page aligned start address of the region to be freed and released.
  * @param[in] length size in bytes of multiples of page size.
  * @retval 0 The operation was successful.
  * @retval EINVAL The address range is not allocated or outside enclave.
@@ -309,7 +309,7 @@ int sgx_mm_dealloc(void *addr, size_t length);
 
 ```
 /*
- * Change permissions and/or page type of a previously allocated region
+ * Change permissions and/or page type of a previously allocated region.
  * @param[in] addr start address of the region, must be page aligned
  * @param[in] length size in bytes of page multiples.
  * @param[in] prot permissions bitwise OR of following with:
@@ -346,7 +346,7 @@ int sgx_mm_modify_type(void *addr, size_t length, int type);
 ```
 **Remarks:**
 - The memory manager will track current permissions for each region, and can
-    determine whether new permissions require an OCall for EMODPR, e.g RW<->RX, RW->R.
+    determine whether new permissions require an OCall for EMODPR, e.g., RW<->RX, RW->R.
 - These APIs should not be used to change EPC page type to PT_TRIM. Trimming pages
     are done by sgx_mm_uncommit and sgx_mm_dealloc only.
 
@@ -395,7 +395,7 @@ int sgx_mm_commit_data(void *addr, size_t length, uint8_t *data, int prot);
 
 ```
 **Remarks:**
-- The memory manager decides whether OCalls are needed to request OS to make PTE
+- The memory manager decides whether OCalls are needed to ask the OS to make Page Table Entry (PTE)
 permissions changes. No separate sgx_mm_modify call is needed.
 
 Runtime Abstraction Layer
@@ -420,7 +420,7 @@ abstraction layer APIs.
 /*
  * The EMM page fault (#PF) handler
  *
- * @param[in] pfinfo info reported in the SSA MISC region for page fault
+ * @param[in] pfinfo info reported in the SSA MISC region for page fault.
  * @retval SGX_EXCEPTION_CONTINUE_EXECUTION Success handling the exception.
  * @retval SGX_EXCEPTION_CONTINUE_SEARCH The EMM does not handle the exception.
  */
@@ -438,7 +438,7 @@ typedef int (*sgx_enclave_pfhandler_t)(const sgx_pfinfo *pfinfo);
 bool sgx_register_pfhandler(sgx_enclave_pfhandler_t pfhandler);
 
 /**
- * Unregister the EMM handler with the global exception handler registry
+ * Unregister the EMM handler with the global exception handler registry.
  * @param[in] pfhandler the EMM page fault handler.
  * @retval true Success.
  * @retval false Failure.
@@ -451,11 +451,11 @@ bool sgx_unregister_pfhandler(sgx_enclave_pfhandler_t pfhandler);
 
 ```
 /*
- * Call OS to reserve region for EAUG, immediately or on-demand
+ * Call OS to reserve region for EAUG, immediately or on-demand.
  *
  * @param[in] addr desired page aligned start address, NULL if no desired address
  * @param[in] length size of the region in multiples of page size in bytes
- * @param[in] flags  a bitwise OR of flags describing committing mode, committing
+ * @param[in] flags a bitwise OR of flags describing committing mode, committing
  *                     order, address preference, page type. The untrusted side
  *    implementation should always invoke mmap syscall with MAP_SHARED|MAP_FIXED_NOREPLACE, and
  *    translate following additional bits to proper parameters invoking mmap or other SGX specific
@@ -486,7 +486,7 @@ bool sgx_unregister_pfhandler(sgx_enclave_pfhandler_t pfhandler);
 int sgx_mmap_ocall(void *addr, size_t length, int prot, int flags);
 
 /*
- * Call OS to change permissions, type, or notify EACCEPT done after TRIM
+ * Call OS to change permissions, type, or notify EACCEPT done after TRIM.
  *
  * @param[in] addr start address of the memory to change protections.
  * @param[in] length length of the area.  This must be a multiple of the page size.
@@ -498,7 +498,7 @@ int sgx_mmap_ocall(void *addr, size_t length, int prot, int flags);
  *            SGX_EMA_PAGE_TYPE_TCS: change the page type to PT_TCS
  *            SGX_EMA_PROT_NOACCESS: Signal the kernel EACCEPT is done for PT_TRIM pages.
  * @retval 0 The operation was successful.
- * @retval EINVAL if any parameter passed in is not valid.
+ * @retval EINVAL A parameter passed in is not valid.
  * @retval errno Error as reported by dependent syscalls, e.g., mprotect().
  */
 
@@ -553,16 +553,16 @@ bool sgx_is_within_enclave(const void *ptr, size_t size);
 In addition to implement the abstraction layer APIs, a runtime shall provide
 iniitial enclave memory layout information to the EMM during early
 initialization phase of the enclave.
-The memory manager must be initialized in first ECALL (ECMD_INIT_ENCLAVE in
+The memory manager must be initialized in the first ECALL (ECMD_INIT_ENCLAVE in
 Intel SGX SDK) before any other clients can use it. Therefore, code and data
 of the memory manager will be part of initial enclave image that are loaded
 with EADD before EINIT, and as a part of the trusted runtime.
 
 The trusted runtime should enumerate all initial committed regions (code,
-data, heap, stack, TCS, SSA), and call the EMM internal APIs to setup
+data, heap, stack, TCS, and SSA), and call the EMM internal APIs to set up
 initial entries in the EMA list to track existing regions and mark some
-of them not modifiable by EMM public APIs. Runtime also ensures there is
-enough reserved space on heap for EMM to create the initial EMA list and
+of them as not modifiable by EMM public APIs. The runtime also ensures there is
+enough reserved space on the heap for EMM to create the initial EMA list and
 the entries. Once initialized, the memory manager can reserve its own
 space for future expansion of the EMA list, and special EMAs to hold
 EMA objects. To keep it simple, the expansion can be done eagerly: commit
@@ -570,9 +570,9 @@ more pages for EMA list once unused committed space in the EMA List Region
 below certain threshold.
 
 Alternative option: At build time, the enclave signing tool can precalculate
-and fill in EMA entries that holds info of initial regions to be committed by
+and fill in EMA entries that hold info on initial regions to be committed by
 EADD during enclave load. The calculated start addresses in these EMAs can be
-relative to enclave secs->base. Runtime can patch those entries at
+relative to enclave secs->base. The runtime can patch those entries at
 initialization by adding secs->base. The EMM can directly use those EMAs as
 the initial entries of the EMA list. It only needs to reserve and commit
 a number of additional pages for future EMA list expansion.
@@ -612,8 +612,8 @@ int ema_modify_ex(void *addr, size_t length, int prot, int type);
 Internal APIs and Structures
 -------------------------------------
 
-Following are internal functions and structures to be used by EMM implementation.
-They can evolve over time, shown here for reference only.
+The following are internal functions and structures to be used by the EMM implementation.
+They can evolve over time, and are shown here for reference only.
 
 ### Enclave Memory Area (EMA) struct
 
@@ -641,7 +641,7 @@ typedef struct _ema_t {
 
 ```
  **Remarks:**
- - Access to the list (find, insert, remove EMAs) are synchronized for thread-safety.
+ - Accesses to the list (find, insert, remove EMAs) are synchronized for thread-safety.
  - Initial implementation will also have one lock per EMA to synchronize access and
  modifications to the same EMA. We may optimize this as needed.
 
@@ -667,7 +667,7 @@ int do_eacceptcopy(const sec_info_t* si, size_t dest, size_t src);
 Metadata,  File format
 ---------------------------------------
 
-Enclave metadata and file format are runtime specific. Detailed design is
+The enclave metadata and file format are runtime specific. A detailed design is
 out of scope of this document.
 
 It is required that the enclave file should include metadata of memory layout
