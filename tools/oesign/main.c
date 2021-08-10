@@ -64,11 +64,6 @@ static const char _usage_sign[] =
     "  -o, --output-file        [optional] file name (with path) where the\n"
     "                           signature of the enclave image will be\n"
     "                           written.\n"
-    "  -z, --zero-base          [optional] enable/disable creation of enclave\n"
-    "                           at address 0x0 by passing in 1/0\n"
-    "  -s, --start-address      [optional] if zero-base enclave is enabled,\n"
-    "                           the enclave image will be created with this\n"
-    "                           start address\n"
 #if HAS_ENGINE_SUPPORT
     "\n"
     "  OR\n"
@@ -82,22 +77,42 @@ static const char _usage_sign[] =
 #endif
     "\n"
     "Description:\n"
-    "  This option (1) injects runtime properties into an enclave image\n"
+    "  This command (1) injects runtime properties into an enclave image\n"
     "  and (2) digitally signs that image.\n"
     "\n"
     "  The properties are read from the CONFIG_FILE. They override any\n"
     "  properties that were already defined inside the enclave image\n"
-    "  through the use of the OE_SET_ENCLAVE_SGX macro. These properties\n"
-    "  include:\n"
+    "  through use of OE_SET_ENCLAVE_SGX or OE_SET_ENCLAVE_SGX2 macros.\n"
+    "  If a property is not explicitly set, the default values override\n"
+    "  the definitions set by SET_OE_ENCLAVE_SGX(2) macros.\n"
+    "  These properties include:\n"
     "\n"
-    "    Debug - whether enclave debug mode should be enabled (1) or not "
-    "(0)\n"
+    "    Debug - whether debug mode should be enabled (1) or not (0) in "
+    "enclave\n"
+    "    (default: 0)\n"
     "    ProductID - the product identified number\n"
     "    SecurityVersion - the security version number\n"
     "    NumHeapPages - the number of heap pages for this enclave\n"
     "    NumStackPages - the number of stack pages for this enclave\n"
     "    NumTCS - the number of thread control structures for this "
     "enclave\n"
+    "    ExtendedProductID - a 128-bit globally unique identifier for the\n"
+    "    enclave if the 16-bit ProductID proves too restrictive "
+    " (SGX2 feature)\n"
+    "    FamilyID - product family identity to group different enclaves\n"
+    "    under a common identity (SGX2 feature)\n"
+    "    CapturePFGPExceptions - whether in-enclave exception handler should\n"
+    "    be enabled (1) or not (0) to capture #PF and #GP exceptions\n"
+    "    (SGX2 feature, default: 0)\n"
+    "    CreateZeroBaseEnclave - whether the enclave creation should be\n"
+    "    enabled (1) or not (0) with base address 0x0 (default: 0).\n"
+    "    StartAddress -  the enclave image address when "
+    "CreateZeroBaseEnclave=1.\n"
+    "    The value should be a power of two and greater than\n"
+    "    /proc/sys/vm/mmap_min_addr\n"
+    "\n"
+    "  NOTE: If neither ExtendedProductID nor FamilyID is set, Key Separation\n"
+    "  and Sharing (KSS) is disabled by default.\n"
     "\n"
     "  The configuration file contains simple NAME=VALUE entries. For "
     "example:\n"
@@ -295,8 +310,6 @@ int sign_parser(int argc, const char* argv[])
     const char* keyfile = NULL;
     const char* digest_signature = NULL;
     const char* output_file = NULL;
-    const char* zero_base = NULL;
-    const char* start_address = NULL;
     const char* x509 = NULL;
     const char* engine_id = NULL;
     const char* engine_load_path = NULL;
@@ -310,8 +323,6 @@ int sign_parser(int argc, const char* argv[])
         {"digest-signature", required_argument, NULL, 'd'},
         {"output-file", required_argument, NULL, 'o'},
         {"x509", required_argument, NULL, 'x'},
-        {"zero-base", required_argument, NULL, 'z'},
-        {"start-address", required_argument, NULL, 's'},
 #if HAS_ENGINE_SUPPORT
         {"engine", required_argument, NULL, 'n'},
         {"load-path", required_argument, NULL, 'p'},
@@ -319,7 +330,7 @@ int sign_parser(int argc, const char* argv[])
 #endif
         {NULL, 0, NULL, 0},
     };
-    const char short_options[] = "he:c:k:n:p:i:d:o:x:z:s:";
+    const char short_options[] = "he:c:k:n:p:i:d:o:x:";
 
     int c;
 
@@ -363,11 +374,6 @@ int sign_parser(int argc, const char* argv[])
             case 'x':
                 x509 = optarg;
                 break;
-            case 'z':
-                zero_base = optarg;
-                break;
-            case 's':
-                start_address = optarg;
 #if HAS_ENGINE_SUPPORT
             case 'n':
                 engine_id = optarg;
