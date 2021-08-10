@@ -46,25 +46,29 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    fprintf(
-        stdout,
-        "\nTest 1: Create 0-base enclave in sim-mode\n"
-        "Expected result : OE_INVALID_PARAMETER\n");
-    result = oe_create_sgx_zerobase_enclave(
-        argv[1],
-        OE_ENCLAVE_TYPE_SGX,
-        OE_ENCLAVE_FLAG_SIMULATE,
-        NULL,
-        0,
-        &enclave);
-
-    if (result != OE_INVALID_PARAMETER)
+    if (strstr(argv[1], "_conf_") == NULL)
     {
         fprintf(
-            stderr,
-            "Unexpected error when creating enclave in sim-mode, result=%d\n",
-            result);
-        return 1;
+            stdout,
+            "\nTest 1: Create 0-base enclave in sim-mode\n"
+            "Expected result : OE_INVALID_PARAMETER\n");
+        result = oe_create_sgx_zerobase_enclave(
+            argv[1],
+            OE_ENCLAVE_TYPE_SGX,
+            OE_ENCLAVE_FLAG_SIMULATE,
+            NULL,
+            0,
+            &enclave);
+
+        if (result != OE_INVALID_PARAMETER)
+        {
+            fprintf(
+                stderr,
+                "Unexpected error when creating enclave in sim-mode,"
+                " result=%d\n",
+                result);
+            return 1;
+        }
     }
 
     const uint32_t flags = oe_get_create_flags();
@@ -96,7 +100,7 @@ int main(int argc, const char* argv[])
         "\nTest 3: Test ecall, ocall on 0-base enclave\n"
         "Expected result : OE_OK\n");
 
-    const char* input = "testing ecall\0";
+    const char* input = argv[1];
     int res = -1;
 
     OE_TEST(test_ecall(enclave, &res, input) == OE_OK);
@@ -105,6 +109,15 @@ int main(int argc, const char* argv[])
     {
         fprintf(stderr, "[host]: ecall/ocall failed %d\n", res);
         return 1;
+    }
+
+    if (strstr(argv[1], "_conf_disable_") != NULL)
+    {
+        fprintf(
+            stdout,
+            "Configuration file has disabled 0-base enclave creation."
+            " Skipping 0-base memory tests for this enclave.\n");
+        return 0;
     }
 
     fprintf(
