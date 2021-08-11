@@ -7,6 +7,7 @@
 # details.
 set(LIBCXX_INCLUDES ${OE_INCDIR}/openenclave/libcxx)
 
+add_subdirectory(compiler-rt)
 add_subdirectory(dlmalloc)
 add_subdirectory(libcxx)
 add_subdirectory(libcxxrt)

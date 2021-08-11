@@ -989,6 +989,7 @@ enclave_link_libraries(
   oesyscall
   oecore
   oelibc_includes
+  oecompiler-rt
   PRIVATE
   oelibasm)
 
