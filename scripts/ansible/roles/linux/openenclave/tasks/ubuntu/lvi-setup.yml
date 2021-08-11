@@ -64,7 +64,14 @@
     src: "{{ asldobjdump.dest }}"
     dest: '{{ local_lvi_directory }}/'
     remote_src: yes
+  when: asldobjdump.changed
 
+- name: Clean up as/ld tarball
+  file:
+    path: "{{ asldobjdump.dest }}"
+    state: absent
+  when: asldobjdump.changed
+  
 - name: Create symbolic link to as
   file:
     src: '{{ local_lvi_directory }}/external/toolset/ubuntu{{ ansible_distribution_version }}/as'

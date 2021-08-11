@@ -19,7 +19,7 @@
 #         --build-arg ubuntu_version=18.04 \
 #         --build-arg devkits_uri=https://tcpsbuild.blob.core.windows.net/tcsp-build/OE-CI-devkits-dd4c992d.tar.gz \
 #         -t oetools-18.04:1.x \
-#         -f .jenkins/Dockerfile \
+#         -f .jenkins/infrastructure/docker/dockerfiles/linux/Dockerfile \
 #         .
 #
 # Note that DNS forwarding in a VM can interfere with Docker
@@ -47,7 +47,7 @@
 # This image includes out-of-proc attestation using Intel SGX by default.
 # To allow this, the Intel SGX AESM Service will need to be made available by creating the container with the following parameter:
 #   --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket
-# 
+#
 
 ARG ubuntu_version=18.04
 
@@ -63,30 +63,38 @@ ARG devkits_uri
 RUN test ! -z ${devkits_uri+x}
 
 # Install essential packages
-RUN apt-get update
-RUN apt-get upgrade -y
-RUN apt-get -y install make build-essential git jq vim curl wget netcat apt-transport-https unzip
+RUN apt-get update && \
+    apt-get -y --no-install-recommends upgrade && \
+    apt-get -y install make build-essential git jq vim curl wget netcat apt-transport-https unzip && \
+    apt-get clean && \
+    rm -rf rm /var/lib/apt/lists/*
 
 # Add Microsoft repo
-RUN echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ bionic main" | tee /etc/apt/sources.list.d/azure-cli.list
-RUN wget https://packages.microsoft.com/keys/microsoft.asc
-RUN apt-key add microsoft.asc
-RUN apt-get update
+RUN echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ bionic main" | tee /etc/apt/sources.list.d/azure-cli.list && \
+    wget https://packages.microsoft.com/keys/microsoft.asc && \
+    apt-key add microsoft.asc
 
 # Install Azure CLI
-RUN apt-get -y install azure-cli
+RUN apt-get update && \
+    apt-get -y install azure-cli && \
+    apt-get clean && \
+    rm -rf rm /var/lib/apt/lists/*
 
 # Install packer
-RUN wget https://releases.hashicorp.com/packer/1.5.5/packer_1.5.5_linux_amd64.zip
-RUN unzip packer_1.5.5_linux_amd64.zip -d /usr/sbin
-RUN rm packer_1.5.5_linux_amd64.zip
+RUN wget https://releases.hashicorp.com/packer/1.5.5/packer_1.5.5_linux_amd64.zip && \
+    unzip packer_1.5.5_linux_amd64.zip -d /usr/sbin && \
+    rm packer_1.5.5_linux_amd64.zip
 
 # Run Ansible
-COPY ./ /oe
-RUN /oe/scripts/ansible/install-ansible.sh
-RUN ansible localhost --playbook-dir=/oe/scripts/ansible -m import_role -a "name=linux/docker tasks_from=ci-setup.yml" -vvv
-RUN /oe/scripts/ansible/remove-ansible.sh
-RUN rm -rf /oe
+COPY ./scripts/ansible /ansible
+COPY ./scripts/lvi-mitigation /lvi-mitigation
+RUN /ansible/install-ansible.sh && \
+    ansible localhost --playbook-dir=/ansible -m import_role -a "name=linux/docker tasks_from=ci-setup.yml" -vvv && \
+    /ansible/remove-ansible.sh && \
+    apt-get remove -y python3-pip && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /ansible /lvi-mitigation /root/.cache /root/.ansible /var/lib/apt/lists/*
 
 # Configure Git in target image to enable merge/rebase actions.
 RUN git config --global user.email "oeciteam@microsoft.com"
