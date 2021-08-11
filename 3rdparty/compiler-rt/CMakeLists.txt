@@ -222,7 +222,10 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR USE_CLANGW)
     -fno-stack-protector
     -std=c11
     -nostdinc
-    -fpic)
+    -fno-omit-frame-pointer
+    -fno-builtin
+    -fpic
+    -ffreestanding)
 else ()
   enclave_compile_options(
     oecompiler-rt
@@ -233,7 +236,10 @@ else ()
     -fno-stack-protector
     -std=c11
     -nostdinc
-    -fpic)
+    -fno-omit-frame-pointer
+    -fno-builtin
+    -fpic
+    -ffreestanding)
 endif ()
 
 enclave_link_libraries(oecompiler-rt PRIVATE oelibc_includes)
