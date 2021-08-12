@@ -139,8 +139,8 @@ within.  For each 0-base Enclave within a process, the ECALL/OCALL marshalling
 buffer and any shared memory an Enclave needs to access must be allocated above
 the Enclave's `SECS.SIZE` value.
 
-Running multiple instance of a single 0-base Enclave in a single process won't
-be possible, as each instance would has to be loaded at exactly the same
+Running multiple instances of a 0-base Enclave in a single process won't
+be possible, as each instance has to be loaded at exactly the same
 [`ENCLAVE_START`, `ENCLAVE_END`] range to maintain the Enclave measurement,
 which is not possible within a single process.
 
