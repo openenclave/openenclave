@@ -38,7 +38,7 @@ sudo apt update && sudo apt install -y android-tools-adb                       \
     libglib2.0-dev libhidapi-dev libncurses5-dev libpixman-1-dev libssl-dev    \
     libstdc++6 libtool libz1 make mtools netcat python-crypto                  \
     python-pyelftools python-serial python-wand python3-pyelftools repo unzip  \
-    uuid-dev xdg-utils xterm xz-utils zlib1g-dev
+    uuid-dev xdg-utils xterm xz-utils zlib1g-dev qemu-user-static
 ```
 
 ## Directory Structure

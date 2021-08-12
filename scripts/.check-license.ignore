@@ -28,6 +28,7 @@ tests/libcxxrt/tests\..*$
 tests/libunwind/tests\..*$
 tests/mbed/tests\..*$
 tests/openssl/tests\..*$
+tests/tools/oeapkman/zlib/enc/zpipe.c
 
 # Directories
 3rdparty/dlmalloc/dlmalloc/.*

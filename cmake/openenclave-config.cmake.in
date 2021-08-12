@@ -117,11 +117,26 @@ if(NOT TARGET openenclave::oeedger8r)
   set_target_properties(openenclave::oeedger8r PROPERTIES IMPORTED_LOCATION ${OE_BINDIR}/oeedger8r)
 endif ()
 
-# Similarly, this is a shell script.
-if(NOT TARGET openenclave::oegdb)
-  add_executable(openenclave::oegdb IMPORTED)
-  set_target_properties(openenclave::oegdb PROPERTIES IMPORTED_LOCATION ${OE_BINDIR}/oegdb)
+if (OE_SGX)
+  # Similarly, this is a shell script.
+  if(NOT TARGET openenclave::oegdb)
+    add_executable(openenclave::oegdb IMPORTED)
+    set_target_properties(openenclave::oegdb PROPERTIES IMPORTED_LOCATION ${OE_BINDIR}/oegdb)
+  endif ()
 endif ()
+
+# This target is an external project, so we have to manually
+# "export" it here for users of the package.
+if (UNIX)
+  if (NOT TARGET openenclave::oeapkman)
+    add_executable(openenclave::oeapkman IMPORTED)
+    set_target_properties(openenclave::oeapkman
+      PROPERTIES
+      IMPORTED_LOCATION ${OE_BINDIR}/oeapkman
+      ROOT "${APKMAN_ROOT}")
+  endif ()
+endif ()
+
 
 # Apply Spectre mitigations if available.
 set(OE_SPECTRE_MITIGATION_FLAGS "@SPECTRE_MITIGATION_FLAGS@")

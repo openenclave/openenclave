@@ -1057,6 +1057,17 @@ OE_WEAK OE_DEFINE_SYSCALL2(SYS_stat)
 }
 #endif
 
+OE_WEAK OE_DEFINE_SYSCALL5(SYS_statx)
+{
+    OE_UNUSED(arg1);
+    OE_UNUSED(arg2);
+    OE_UNUSED(arg3);
+    OE_UNUSED(arg4);
+    OE_UNUSED(arg5);
+    oe_errno = OE_ENOSYS;
+    return -1;
+}
+
 OE_WEAK OE_DEFINE_SYSCALL1(SYS_sysinfo)
 {
     OE_UNUSED(arg1);
