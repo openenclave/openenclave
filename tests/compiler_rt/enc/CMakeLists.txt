@@ -47,15 +47,26 @@ foreach (TEST IN LISTS TEST_FILES)
   #   - rename main to ${NAME}_main. This function will be called from
   #     generated test.c.
   #   - Prefix ${NAME} to identifiers that are also used in other test files.
-  set_source_files_properties(
-    ${TEST}
-    PROPERTIES
-      COMPILE_FLAGS
+  set(COMPILE_FLAGS
       "-Dmain=${NAME}_main -Dassumption_1=${NAME}_assumption_1 \
     -Dassumption_2=${NAME}_assumption_2 -Dassumption_3=${NAME}_assumption_3 \
     -Dclassify=${NAME}_classify -Dx=${NAME}_x -Dcases=${NAME}_cases \
     -Dtests=${NAME}_tests -Dnaive_popcount=${NAME}_naive_popcount \
     -Dnaive_parity=${NAME}_naive_parity")
+
+  if (${NAME} MATCHES "extendhfsf2")
+    # This testcase fails when compiled with optimizations.
+    # The same failure can be reproduced outside OE by doing:
+    #    clang-10 ../../../lib/builtins/extendhfsf2.c extendhfsf2_test.c
+    #          -fpic -O2 -fno-builtin -ffreestanding
+    #    ./a.out
+    # Therefore disable optimizations for this testcase.
+    # due to compiler optimizations.
+    string(APPEND COMPILE_FLAGS " -O0")
+  endif ()
+
+  set_source_files_properties(${TEST} PROPERTIES COMPILE_FLAGS
+                                                 "${COMPILE_FLAGS}")
 
   # Add test to list of supported tests.
   list(APPEND SUPPORTED_TESTS ${TEST})
