@@ -408,10 +408,6 @@ include(add_enclave_test)
 add_subdirectory(include)
 add_subdirectory(host)
 
-if (BUILD_TESTS)
-  add_subdirectory(tests)
-endif ()
-
 # Skip samples when enabling the code coverage test.
 # Otherwise, all the samples need to explicitly link against the libgcov library.
 if (NOT CODE_COVERAGE)
@@ -435,6 +431,10 @@ endif ()
 if (UNIX)
   add_subdirectory(docs/refman)
   add_subdirectory(pkgconfig)
+endif ()
+
+if (BUILD_TESTS)
+  add_subdirectory(tests)
 endif ()
 
 if (WIN32)
