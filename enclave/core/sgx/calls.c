@@ -398,6 +398,74 @@ void oe_virtual_exception_dispatcher(
 /*
 **==============================================================================
 **
+** _call_at_exit_functions()
+**
+**     Invoke atexit functions (e.g., registered by atexit() or the destructor
+**     attribute)
+**
+**==============================================================================
+*/
+static void _call_at_exit_functions(void)
+{
+    static bool _at_exit_functions_done = false;
+    static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
+
+    oe_spin_lock(&_lock);
+    if (!_at_exit_functions_done)
+    {
+        /* Call functions installed by oe_cxa_atexit() and oe_atexit()
+         */
+        oe_call_atexit_functions();
+
+        /* Call all finalization functions */
+        oe_call_fini_functions();
+
+        _at_exit_functions_done = true;
+    }
+    oe_spin_unlock(&_lock);
+}
+
+/*
+**==============================================================================
+**
+** _enclave_destructor()
+**
+**==============================================================================
+*/
+static oe_result_t _enclave_destructor(void)
+{
+    oe_result_t result = OE_FAILURE;
+    static bool _destructor_done = false;
+    static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
+
+    oe_spin_lock(&_lock);
+    if (!_destructor_done)
+    {
+        /* Cleanup attesters */
+        oe_attester_shutdown();
+
+        /* Cleanup verifiers */
+        oe_verifier_shutdown();
+
+        /* If memory still allocated, print a trace and return an error */
+        OE_CHECK(oe_check_memory_leaks());
+
+        /* Cleanup the allocator */
+        oe_allocator_cleanup();
+
+        _destructor_done = true;
+    }
+
+    result = OE_OK;
+
+done:
+    oe_spin_unlock(&_lock);
+    return result;
+}
+
+/*
+**==============================================================================
+**
 ** _handle_ecall()
 **
 **     Handle an ECALL.
@@ -475,25 +543,19 @@ static void _handle_ecall(
             arg_out = oe_handle_call_enclave_function(arg_in);
             break;
         }
+        case OE_ECALL_CALL_AT_EXIT_FUNCTIONS:
+        {
+            _call_at_exit_functions();
+            break;
+        }
         case OE_ECALL_DESTRUCTOR:
         {
-            /* Call functions installed by oe_cxa_atexit() and oe_atexit() */
-            oe_call_atexit_functions();
+            /* Invoke atexit functions in case the host does not invoke
+             * the CALL_AT_EXIT_FUNCTIONS ecall before the DESTRUCTOR ecall
+             * (retaining the previous behavior) */
+            _call_at_exit_functions();
 
-            /* Call all finalization functions */
-            oe_call_fini_functions();
-
-            /* Cleanup attesters */
-            oe_attester_shutdown();
-
-            /* Cleanup verifiers */
-            oe_verifier_shutdown();
-
-            /* If memory still allocated, print a trace and return an error */
-            OE_CHECK(oe_check_memory_leaks());
-
-            /* Cleanup the allocator */
-            oe_allocator_cleanup();
+            OE_CHECK(_enclave_destructor());
 
             break;
         }
