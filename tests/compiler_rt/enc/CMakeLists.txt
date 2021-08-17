@@ -17,6 +17,16 @@ file(GLOB TEST_FILES
      "../../../3rdparty/compiler-rt/compiler-rt/test/builtins/Unit/*.c"
      "../../../3rdparty/compiler-rt/compiler-rt/test/builtins/Unit/*.cxx")
 
+list(LENGTH TEST_FILES NUM_TEST_FILES)
+# Update the expected number of tests every time compiler-rt is updated.
+set(EXPECTED_NUM_TEST_FILES 182)
+if (NOT ${NUM_TEST_FILES} EQUAL ${EXPECTED_NUM_TEST_FILES})
+  message(
+    FATAL_ERROR
+      "Expecting ${EXPECTED_NUM_TEST_FILES} compiler-rt test files. Found ${NUM_TEST_FILES}"
+  )
+endif ()
+
 # List of tests that work within enclaves. Most do.
 set(SUPPORTED_TESTS "")
 
