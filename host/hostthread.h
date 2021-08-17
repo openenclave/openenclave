@@ -80,6 +80,15 @@ int oe_thread_create(oe_thread_t* thread, void* (*func)(void*), void* arg);
 int oe_thread_join(oe_thread_t thread);
 
 /**
+ * Detach a platform-specific thread.
+ *
+ * @param thread The thread to be detached.
+ *
+ * @returns Returns zero on success.
+ */
+int oe_thread_detach(oe_thread_t thread);
+
+/**
  * Returns the identifier of the current thread.
  *
  * This function returns the identifier of the calling thread. Two thread

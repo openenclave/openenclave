@@ -139,7 +139,8 @@ static __inline__ bool _queue_empty(Queue* queue)
 
 oe_thread_t oe_thread_self(void)
 {
-    return (oe_thread_t)oe_get_thread_data();
+    oe_sgx_td_t* td = oe_sgx_get_td();
+    return (oe_thread_t)td->pthread_id; // oe_get_thread_data();
 }
 
 bool oe_thread_equal(oe_thread_t thread1, oe_thread_t thread2)

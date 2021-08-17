@@ -24,4 +24,18 @@ enclave
             uint64_t waiter_tcs,
             uint64_t self_tcs);
     };
+
+
+    // pthread implementation.
+    trusted {
+        public void oe_enclave_thread_launch_ecall(uint64_t host_thread_id,
+	                                           [user_check] uint64_t* thread_started);
+    };
+
+    untrusted {
+        int oe_host_thread_create_ocall([user_check] oe_enclave_t* enc, bool detached);
+        int oe_host_thread_join_ocall(uint64_t host_thread_id);
+        int oe_host_thread_detach_ocall(uint64_t host_thread_id);
+    };
+
 };

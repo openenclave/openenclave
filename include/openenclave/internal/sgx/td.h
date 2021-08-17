@@ -81,7 +81,7 @@ oe_thread_data_t* oe_get_thread_data(void);
  * Due to the inability to use OE_OFFSETOF on a struct while defining its
  * members, this value is computed and hard-coded.
  */
-#define OE_THREAD_SPECIFIC_DATA_SIZE (3756)
+#define OE_THREAD_SPECIFIC_DATA_SIZE (3748)
 
 typedef struct _oe_callsite oe_callsite_t;
 
@@ -168,6 +168,9 @@ typedef struct _td
     /* The error code for PF and GP exceptions. */
     uint32_t error_code;
 
+    /* Enclave unique pthread id */
+    uint64_t pthread_id;
+
     /* Reserved for thread specific data. */
     uint8_t thread_specific_data[OE_THREAD_SPECIFIC_DATA_SIZE];
 } oe_sgx_td_t;
@@ -180,6 +183,9 @@ OE_STATIC_ASSERT(
 
 /* Get the thread data object for the current thread */
 oe_sgx_td_t* oe_sgx_get_td(void);
+
+/* Get next td */
+uint64_t oe_sgx_td_get_next_pthread_id();
 
 OE_EXTERNC_END
 

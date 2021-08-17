@@ -7,9 +7,9 @@
 #include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/defs.h>
-#include <openenclave/internal/pthreadhooks.h>
 #include <openenclave/internal/sgx/td.h>
 #include <openenclave/internal/thread.h>
+
 #include <pthread.h>
 
 #ifdef pthread_equal
@@ -62,46 +62,72 @@ pthread_t pthread_self()
     return &_pthread_self;
 }
 
-static oe_pthread_hooks_t* _pthread_hooks;
-
-void oe_register_pthread_hooks(oe_pthread_hooks_t* pthread_hooks)
-{
-    _pthread_hooks = pthread_hooks;
-}
-
 int pthread_create(
     pthread_t* thread,
     const pthread_attr_t* attr,
     void* (*start_routine)(void*),
     void* arg)
 {
-    if (!_pthread_hooks || !_pthread_hooks->create)
-    {
-        oe_assert("pthread_create(): panic" == NULL);
-        return -1;
-    }
-
-    return _pthread_hooks->create(thread, attr, start_routine, arg);
+    return oe_pthread_create(
+        (oe_pthread_t*)thread,
+        (const oe_pthread_attr_t*)attr,
+        start_routine,
+        arg);
 }
 
 int pthread_join(pthread_t thread, void** retval)
 {
-    if (!_pthread_hooks || !_pthread_hooks->join)
-    {
-        oe_assert("pthread_join(): panic" == NULL);
-        return -1;
-    }
-
-    return _pthread_hooks->join(thread, retval);
+    return oe_pthread_join((oe_pthread_t)thread, retval);
 }
 
 int pthread_detach(pthread_t thread)
 {
-    if (!_pthread_hooks || !_pthread_hooks->detach)
-    {
-        oe_assert("pthread_detach(): panic" == NULL);
-        return -1;
-    }
+    return oe_pthread_detach((oe_pthread_t)thread);
+}
 
-    return _pthread_hooks->detach(thread);
+OE_NO_RETURN
+void pthread_exit(void* retval)
+{
+    oe_pthread_exit(retval);
+    oe_abort();
+}
+
+int pthread_attr_init(pthread_attr_t* attr)
+{
+    return oe_pthread_attr_init((oe_pthread_attr_t*)attr);
+}
+
+int pthread_attr_destroy(pthread_attr_t* attr)
+{
+    return oe_pthread_attr_destroy((oe_pthread_attr_t*)attr);
+}
+
+int pthread_attr_setdetachstate(pthread_attr_t* attr, int detachstate)
+{
+    ((oe_pthread_attr_t*)attr)->detachstate =
+        (detachstate == PTHREAD_CREATE_DETACHED);
+    return 0;
+}
+
+OE_EXPORT int pthread_mutex_destroy(pthread_mutex_t* m)
+{
+    return oe_pthread_mutex_destroy((oe_pthread_mutex_t*)m);
+}
+
+OE_EXPORT
+int pthread_mutex_init(pthread_mutex_t* m, const pthread_mutexattr_t* attr)
+{
+    return oe_pthread_mutex_init(
+        (oe_pthread_mutex_t*)m, (const oe_pthread_mutexattr_t*)attr);
+}
+
+OE_EXPORT
+int pthread_mutex_lock(pthread_mutex_t* m)
+{
+    return oe_pthread_mutex_lock((oe_pthread_mutex_t*)m);
+}
+
+OE_EXPORT int pthread_mutex_unlock(pthread_mutex_t* m)
+{
+    return oe_pthread_mutex_unlock((oe_pthread_mutex_t*)m);
 }

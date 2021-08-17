@@ -235,6 +235,7 @@ if (OE_SGX)
     sgx/ocalls/debug.c
     sgx/ocalls/ocalls.c
     sgx/ocalls/thread.c
+    sgx/pthread.c
     sgx/quote.c
     sgx/registers.c
     sgx/report_common.c

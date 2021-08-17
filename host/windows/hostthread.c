@@ -34,6 +34,15 @@ int oe_thread_join(oe_thread_t thread)
     return OE_EINVAL;
 }
 
+int oe_thread_detach(oe_thread_t thread)
+{
+    // In Windows, closing a thread's handle does not kill the thread.
+    // It only detaches the thread from the handle.
+    if (CloseHandle((HANDLE)thread))
+        return 0;
+    return -1;
+}
+
 oe_thread_t oe_thread_self(void)
 {
     return (oe_thread_t)GetCurrentThreadId();

@@ -34,7 +34,14 @@ typedef uint32_t oe_pthread_key_t;
 
 typedef struct _oe_pthread_attr
 {
-    uint64_t __private[7];
+    union
+    {
+        uint64_t __private[7];
+        struct
+        {
+            bool detachstate;
+        };
+    };
 } oe_pthread_attr_t;
 
 typedef struct _oe_pthread_mutexattr
@@ -80,6 +87,15 @@ int oe_pthread_create(
 int oe_pthread_join(oe_pthread_t thread, void** retval);
 
 int oe_pthread_detach(oe_pthread_t thread);
+
+int oe_pthread_attr_init(oe_pthread_attr_t* attr);
+
+int oe_pthread_attr_destroy(oe_pthread_attr_t* attr);
+
+int oe_pthread_attr_setdetachstate(oe_pthread_attr_t* attr);
+
+OE_NO_RETURN
+void oe_pthread_exit(void* retval);
 
 int oe_pthread_once(oe_pthread_once_t* once, void (*func)(void));
 

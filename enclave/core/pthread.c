@@ -3,8 +3,14 @@
 
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/corelibc/pthread.h>
+#include <openenclave/corelibc/sched.h>
+#include <openenclave/corelibc/setjmp.h>
+#include <openenclave/corelibc/stdlib.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/atomic.h>
 #include <openenclave/internal/defs.h>
+#include <openenclave/internal/raise.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/thread.h>
 
 OE_STATIC_ASSERT(sizeof(oe_pthread_once_t) == sizeof(oe_once_t));
@@ -55,6 +61,8 @@ int oe_pthread_equal(oe_pthread_t thread1, oe_pthread_t thread2)
     return (int)oe_thread_equal((oe_thread_t)thread1, (oe_thread_t)thread2);
 }
 
+#ifdef __aarch64__
+
 int oe_pthread_create(
     oe_pthread_t* thread,
     const oe_pthread_attr_t* attr,
@@ -82,6 +90,36 @@ int oe_pthread_detach(oe_pthread_t thread)
     OE_UNUSED(thread);
     oe_assert("oe_pthread_detach(): panic" == NULL);
     return -1;
+}
+
+OE_NO_RETURN
+void oe_pthread_exit(void* retval)
+{
+    OE_UNUSED(retval);
+    oe_assert("oe_pthread_exit(): panic" == NULL);
+    oe_abort();
+}
+
+#endif
+
+/*
+**==============================================================================
+**
+** pthread_attr_t
+**
+**==============================================================================
+*/
+
+int oe_pthread_attr_init(oe_pthread_attr_t* attr)
+{
+    oe_memset_s(attr, sizeof(*attr), 0, sizeof(*attr));
+    return 0;
+}
+
+int oe_pthread_attr_destroy(oe_pthread_attr_t* attr)
+{
+    oe_memset_s(attr, sizeof(*attr), 0, sizeof(*attr));
+    return 0;
 }
 
 /*

@@ -124,7 +124,7 @@ int main(int argc, char** argv)
         oe_get_global_id(
             "oe_sgx_switchless_enclave_worker_thread_ecall",
             &last_system_ecall_id) == OE_OK);
-    OE_TEST(last_system_ecall_id == 8);
+    OE_TEST(last_system_ecall_id == 9);
 
     /*
      * Use the internal APIs to test the global and local ids.
@@ -141,7 +141,7 @@ int main(int argc, char** argv)
      * [global id 2]: 1
      * [global id 3]: ECALL_ID_NULL
      * ... (system ecalls)
-     * [global id 9]: 0
+     * [global id 10]: 0
      */
     OE_TEST(oe_get_global_id("enc_local_ecall1", &global_id) == OE_OK);
     OE_TEST(global_id == 0);
@@ -152,7 +152,7 @@ int main(int argc, char** argv)
     OE_TEST(oe_get_global_id("enc_ecall3", &global_id) == OE_OK);
     OE_TEST(global_id == 3);
     OE_TEST(oe_get_global_id("enc_local_ecall2", &global_id) == OE_OK);
-    OE_TEST(global_id == 9);
+    OE_TEST(global_id == 10);
 
     /*
      * Look up by global id. The name should not be NULL.
@@ -177,7 +177,7 @@ int main(int argc, char** argv)
         oe_get_ecall_ids(enc2, "enc_ecall3", &global_id, &local_id) ==
         OE_NOT_FOUND);
     OE_TEST(local_id == OE_ECALL_ID_NULL);
-    global_id = 9;
+    global_id = 10;
     OE_TEST(
         oe_get_ecall_ids(enc2, "enc_local_ecall2", &global_id, &local_id) ==
         OE_OK);
@@ -210,7 +210,7 @@ int main(int argc, char** argv)
     OE_TEST(
         oe_get_ecall_ids(enc2, "enc_local_ecall2", &global_id, &local_id) ==
         OE_OK);
-    OE_TEST(global_id == 9);
+    OE_TEST(global_id == 10);
     OE_TEST(local_id == 0);
 
     /* Make the normal ecalls. */

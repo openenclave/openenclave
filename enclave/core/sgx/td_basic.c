@@ -4,6 +4,7 @@
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/atomic.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/fault.h>
 #include <openenclave/internal/globals.h>
@@ -110,6 +111,8 @@ void td_init(oe_sgx_td_t* td)
         /* List of callsites is initially empty */
         td->callsites = NULL;
 
+        td->pthread_id = oe_sgx_td_get_next_pthread_id();
+
         oe_thread_local_init(td);
     }
 }
@@ -153,4 +156,11 @@ void td_clear(oe_sgx_td_t* td)
     td->magic = 0;
 
     /* Never clear oe_sgx_td_t.initialized nor host registers */
+}
+
+/* Get next td */
+uint64_t oe_sgx_td_get_next_pthread_id()
+{
+    static uint64_t _id = 1024;
+    return oe_atomic_increment(&_id);
 }

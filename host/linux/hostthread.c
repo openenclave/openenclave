@@ -3,9 +3,9 @@
 
 #include "../hostthread.h"
 #include <assert.h>
+#include <errno.h>
 #include <openenclave/host.h>
 #include <pthread.h>
-
 /*
 **==============================================================================
 **
@@ -21,6 +21,11 @@ int oe_thread_create(oe_thread_t* thread, void* (*func)(void*), void* arg)
 int oe_thread_join(oe_thread_t thread)
 {
     return pthread_join((pthread_t)thread, NULL);
+}
+
+int oe_thread_detach(oe_thread_t thread)
+{
+    return pthread_detach((pthread_t)thread);
 }
 
 oe_thread_t oe_thread_self(void)

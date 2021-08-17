@@ -1009,6 +1009,9 @@ enclave_include_directories(
   oelibc PRIVATE ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/include
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal)
 
+set_source_files_properties(
+  pthread.c PROPERTIES COMPILE_FLAGS "-I${PROJECT_BINARY_DIR}/enclave/core")
+
 if (OE_SGX)
   enclave_include_directories(
     oelibc PRIVATE ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/arch/x86_64)
