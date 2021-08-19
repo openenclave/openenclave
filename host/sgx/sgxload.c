@@ -415,8 +415,14 @@ oe_result_t oe_sgx_create_enclave(
 
     if (context->type == OE_SGX_LOAD_TYPE_MEASURE)
     {
-        /* Use this phony base address when signing enclaves */
-        image_base = (void*)0x0000ffff00000000;
+        /*
+         * Use the phony base address 0x0000ffff00000000 when signing enclaves.
+         * In case of zerobase enclaves, this value needs to be the desired
+         * start address.
+         */
+        image_base = context->create_zero_base_enclave
+                         ? start_address
+                         : (void*)0x0000ffff00000000;
     }
 #if !defined(OEHOSTMR)
     else if (oe_sgx_is_simulation_load_context(context))
