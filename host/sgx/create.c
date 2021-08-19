@@ -1378,7 +1378,22 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
     if (!enclave || enclave->magic != ENCLAVE_MAGIC)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Shut down the switchless manager */
+    /* Call the atexit functions (e.g., registered by atexit or the
+     * destructor attribute) */
+    result = oe_ecall(enclave, OE_ECALL_CALL_AT_EXIT_FUNCTIONS, 0, NULL);
+    /* The ECALL is expected to fail if running out the number of TCS (e.g.,
+     * when requesting too many host or enclave workers for switchless calls).
+     * Do not fall through in this case to continue the enclave termination and
+     * throw error messages. */
+    if (result == OE_OUT_OF_THREADS)
+        OE_TRACE_ERROR(
+            "invoking enclave atexit functions failed, please increase "
+            "the NumTCS value in the enclave configuration file\n");
+    else if (result != OE_OK)
+        OE_RAISE(result);
+
+    /* Shut down the switchless manager after calling exit functions, which
+     * allows the exit functions to use switchless OCALLs and ECALLs (nested) */
     OE_CHECK(oe_stop_switchless_manager(enclave));
 
     /* Call the enclave destructor */
