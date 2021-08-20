@@ -67,12 +67,62 @@ int test_enclave_memory_access(uint64_t address, bool* exception)
     return 0;
 }
 
+extern "C"
+{
+    const void* __oe_get_enclave_start_address(void);
+    const void* __oe_get_enclave_base_address(void);
+}
+
 int test_ecall(const char* message)
 {
     if (!message)
         return -1;
     else
-        fprintf(stdout, "[enclave] Message from host : %s\n", message);
+        fprintf(stdout, "[enclave] Enclave path: %s\n", message);
+
+    uint64_t start_address = (uint64_t)__oe_get_enclave_start_address();
+    uint64_t base_address = (uint64_t)__oe_get_enclave_base_address();
+
+    fprintf(
+        stdout,
+        "[enclave] testing start_address : 0x%lx and base_address : 0x%lx\n",
+        start_address,
+        base_address);
+
+    if (strstr(message, "_conf_disable") != NULL || /* not a 0-base enclave */
+        (start_address == 0x30000) || /* config file set start_address */
+        (start_address ==
+         0x21000)) /* OE_SET_ENCLAVE_SGX2 macro set start_address */
+    {
+        fprintf(
+            stdout,
+            "[enclave] start_address : 0x%lx is valid\n",
+            start_address);
+    }
+    else
+    {
+        fprintf(
+            stderr,
+            "[enclave] start_address has to be either the value set by "
+            "OE_SET_ENCLAVE_SGX2 or the value set by configuration file."
+            " The start_address 0x%lx does not match both.\n",
+            start_address);
+        return -1;
+    }
+
+    if ((strstr(message, "_conf_disable") != NULL && base_address != 0x0) ||
+        base_address == 0x0)
+    {
+        fprintf(
+            stdout, "[enclave] base_address : 0x%lx is valid\n", base_address);
+    }
+    else
+    {
+        fprintf(
+            stderr,
+            "[enclave] base_address should be 0x0 for a 0-base enclave.\n");
+        return -1;
+    }
 
     int res = -1;
     const char* input = "testing ocall\0";
@@ -82,17 +132,3 @@ int test_ecall(const char* message)
 
     return res;
 }
-
-OE_SET_ENCLAVE_SGX2(
-    1,       /* ProductID */
-    1,       /* SecurityVersion */
-    {0},     /* ExtendedProductID */
-    {0},     /* FamilyID */
-    true,    /* Debug */
-    true,    /* CapturePFGPExceptions */
-    false,   /* RequireKSS */
-    true,    /* CreateZeroBaseEnclave */
-    0x21000, /* StartAddress */
-    1024,    /* NumHeapPages */
-    1024,    /* NumStackPages */
-    4);      /* NumTCS */
