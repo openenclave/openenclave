@@ -23,6 +23,8 @@
 #include <sys/time.h>
 #include <time.h>
 
+#include "mman.h"
+
 static oe_syscall_hook_t _hook;
 static oe_spinlock_t _lock;
 
@@ -32,14 +34,20 @@ static const uint64_t _MSEC_TO_NSEC = 1000000UL;
 
 OE_WEAK OE_DEFINE_SYSCALL6(SYS_mmap)
 {
-    /* Always fail */
-    return EPERM;
+    void* addr = (void*)arg1;
+    size_t length = (size_t)arg2;
+    int prot = (int)arg3;
+    int flags = (int)arg4;
+    int fd = (int)arg5;
+    off_t offset = (off_t)arg6;
+    return (long)oe_mmap(addr, length, prot, flags, fd, offset);
 }
 
 OE_WEAK OE_DEFINE_SYSCALL2(SYS_munmap)
 {
-    /* Always fail */
-    return EPERM;
+    void* addr = (void*)arg1;
+    size_t length = (size_t)arg2;
+    return (long)oe_munmap(addr, length);
 }
 
 OE_WEAK OE_DEFINE_SYSCALL2(SYS_clock_gettime)
