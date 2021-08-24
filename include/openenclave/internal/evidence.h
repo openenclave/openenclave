@@ -29,6 +29,19 @@ OE_EXTERNC_BEGIN
     }
 #define X509_OID_FOR_NEW_OE_EVIDENCE_STRING "1.3.6.1.4.1.311.105.2"
 
+#define X509_OID_FOR_OE_EVIDENCE_WITH_INITTIME_CLAIMS_EXT          \
+    {                                                              \
+        0x2B, 0x06, 0x01, 0x04, 0x01, 0x82, 0x37, 0x69, 0x02, 0x01 \
+    }
+#define X509_OID_FOR_OE_EVIDENCE_WITH_INITTIME_CLAIMS_STRING \
+    "1.3.6.1.4.1.311.105.2.1"
+
+#define X509_OID_FOR_ATTESTATION_RESULT_EXT                        \
+    {                                                              \
+        0x2B, 0x06, 0x01, 0x04, 0x01, 0x82, 0x37, 0x69, 0x02, 0x02 \
+    }
+#define X509_OID_FOR_ATTESTATION_RESULT_STRING "1.3.6.1.4.1.311.105.2.2"
+
 OE_EXTERNC_END
 
 #endif /* _OE_INTERNAL_EVIDENCE_H */

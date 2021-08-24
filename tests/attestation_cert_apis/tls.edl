@@ -10,8 +10,29 @@ enclave {
     from "openenclave/edl/optee/platform.edl" import *;
 #endif
 
+    struct signed_certificate_t {
+        [size=size] unsigned char* data;
+        size_t size;
+    };
+
+    enum key_type_t {
+        KEY_TYPE_EC,
+        KEY_TYPE_RSA
+    };
+
+    enum attestation_type_t {
+        ATTESTATION_TYPE_LOCAL,
+        ATTESTATION_TYPE_REMOTE
+    };
+
     trusted {
-        public oe_result_t get_tls_cert_signed_with_ec_key([out] unsigned char** data, [out] size_t* data_size);
-        public oe_result_t get_tls_cert_signed_with_rsa_key([out] unsigned char** data, [out] size_t* data_size);
+        public oe_result_t get_attestation_certificate(key_type_t key_type, [out] signed_certificate_t* certificate);
+        public oe_result_t get_passport_certificate(key_type_t key_type, [out] signed_certificate_t* certificate);
+        public oe_result_t get_background_check_certificate(
+            attestation_type_t attestation_type,
+            key_type_t key_type,
+            [out] signed_certificate_t* certificate);
+        public oe_result_t test_passport_certificate_negative();
+        public oe_result_t test_background_check_certificate_negative();
     };
 };

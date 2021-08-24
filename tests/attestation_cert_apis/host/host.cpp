@@ -2,6 +2,8 @@
 // Licensed under the MIT License.
 
 #include <limits.h>
+#include <openenclave/attestation/relying_party.h>
+#include <openenclave/attestation/verifier.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/raise.h>
@@ -10,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../common.h"
 #include "tls_u.h"
 
 #if defined(_WIN32)
@@ -17,8 +20,6 @@
 #include <Windows.h>
 #endif
 
-#define TEST_EC_KEY 0
-#define TEST_RSA_KEY 1
 #define SKIP_RETURN_CODE 2
 
 #define FILENAME_LENGTH 80
@@ -64,69 +65,155 @@ done:
     return result;
 }
 
-void run_test(oe_enclave_t* enclave, int test_type)
+oe_result_t test_attestation_certificate(
+    oe_enclave_t* enclave,
+    key_type_t key_type)
 {
     oe_result_t result = OE_FAILURE;
-    oe_result_t ecall_result;
-    unsigned char* cert = NULL;
-    size_t cert_size = 0;
+    signed_certificate_t certificate = {0};
 
     OE_TRACE_INFO(
-        "Host: get tls certificate signed with %s key from an enclave \n",
-        test_type == TEST_RSA_KEY ? "a RSA" : "an EC");
-    if (test_type == TEST_EC_KEY)
-    {
-        result = get_tls_cert_signed_with_ec_key(
-            enclave, &ecall_result, &cert, &cert_size);
-    }
-    else if (test_type == TEST_RSA_KEY)
-    {
-        result = get_tls_cert_signed_with_rsa_key(
-            enclave, &ecall_result, &cert, &cert_size);
-    }
-
-    if ((result != OE_OK) || (ecall_result != OE_OK))
-        oe_put_err(
-            "get_tls_cert_signed_with_%s_key() failed: result=%u",
-            test_type == TEST_RSA_KEY ? "rsa" : "ec",
-            result);
-
-    fflush(stdout);
-
-    {
-        // for testing purpose, output the whole cer in DER format
-        char filename[FILENAME_LENGTH];
-        FILE* file = NULL;
-
-        sprintf_s(
-            filename,
-            sizeof(filename),
-            "./cert_%s.der",
-            test_type == TEST_RSA_KEY ? "rsa" : "ec");
-        OE_TRACE_INFO(
-            "Host: Log quote embedded certificate to file: [%s]\n", filename);
-#ifdef _WIN32
-        fopen_s(&file, filename, "wb");
-#else
-        file = fopen(filename, "wb");
-#endif
-        fwrite(cert, 1, cert_size, file);
-        fclose(file);
-    }
+        "Host: get the attestation certificate signed with %s key from an "
+        "enclave\n",
+        key_type == KEY_TYPE_RSA ? "a RSA" : "an EC");
+    OE_CHECK(
+        get_attestation_certificate(enclave, &result, key_type, &certificate));
+    OE_CHECK(result);
 
     // validate cert
-    OE_TRACE_INFO("Host: Verifying tls certificate\n");
-    OE_TRACE_INFO("Host: cert = %p cert_size = %d\n", cert, cert_size);
-    result = oe_verify_attestation_certificate(
-        cert, cert_size, enclave_identity_verifier, NULL);
+    OE_TRACE_INFO("Host: Verifying the attestation certificate\n");
     OE_TRACE_INFO(
-        "Host: Verifying the certificate from a host ... %s\n",
+        "Host: cert = %p cert_size = %zu\n",
+        certificate.data,
+        certificate.size);
+    result = oe_verify_attestation_certificate(
+        certificate.data, certificate.size, enclave_identity_verifier, NULL);
+    OE_TRACE_INFO(
+        "Host: Verifying the certificate from the host ... %s\n",
         result == OE_OK ? "Success" : "Fail");
-    fflush(stdout);
+
+done:
+    free(certificate.data);
+    return result;
+}
+
+oe_result_t test_passport_certificate(
+    oe_enclave_t* enclave,
+    key_type_t key_type)
+{
+    oe_result_t result = OE_FAILURE;
+    signed_certificate_t certificate = {0};
+    uint8_t* output_attestation_result = nullptr;
+    size_t output_attestation_result_size = 0;
+
+    OE_TRACE_INFO(
+        "Host: get the passport certificate signed with %s key from an enclave"
+        "\n",
+        key_type == KEY_TYPE_RSA ? "a RSA" : "an EC");
+    OE_CHECK(
+        get_passport_certificate(enclave, &result, key_type, &certificate));
+    OE_CHECK(result);
+
+    OE_TRACE_INFO("Host: Parsing the passport certificate\n");
+    OE_TRACE_INFO(
+        "Host: cert = %p cert_size = %zu\n",
+        certificate.data,
+        certificate.size);
+    result = oe_parse_passport_attestation_certificate_v1(
+        certificate.data,
+        certificate.size,
+        &output_attestation_result,
+        &output_attestation_result_size);
+    OE_TRACE_INFO(
+        "Host: Parsing the certificate from the host ... %s\n",
+        result == OE_OK ? "Success" : "Fail");
     OE_TEST(result == OE_OK);
 
-    OE_TRACE_INFO("free cert 0xx%p\n", cert);
-    free(cert);
+    OE_TEST(output_attestation_result_size == sizeof(attestation_result));
+    for (size_t i = 0; i < output_attestation_result_size; i++)
+        OE_TEST(output_attestation_result[i] == attestation_result[i]);
+
+done:
+    free(certificate.data);
+    free(output_attestation_result);
+    return result;
+}
+
+oe_result_t test_background_check_certificate(
+    oe_enclave_t* enclave,
+    attestation_type_t attestation_type,
+    key_type_t key_type)
+{
+    oe_result_t result = OE_FAILURE;
+    signed_certificate_t certificate = {0};
+
+    uint8_t* output_evidence = nullptr;
+    size_t output_evidence_size = 0;
+    uint8_t* output_inittime_claims = nullptr;
+    size_t output_inittime_claims_size = 0;
+    uint8_t* output_runtime_claims = nullptr;
+    size_t output_runtime_claims_size = 0;
+
+    OE_TRACE_INFO(
+        "Host: get the background-check certificate signed with %s key from an "
+        "enclave\n",
+        key_type == KEY_TYPE_RSA ? "a RSA" : "an EC");
+    OE_CHECK(get_background_check_certificate(
+        enclave, &result, attestation_type, key_type, &certificate));
+    OE_CHECK(result);
+
+    OE_TRACE_INFO("Host: Parsing the background-check certificate\n");
+    OE_TRACE_INFO(
+        "Host: cert = %p cert_size = %zu\n",
+        certificate.data,
+        certificate.size);
+
+    result = oe_parse_background_check_attestation_certificate_v1(
+        certificate.data,
+        certificate.size,
+        &output_evidence,
+        &output_evidence_size,
+        &output_inittime_claims,
+        &output_inittime_claims_size,
+        &output_runtime_claims,
+        &output_runtime_claims_size);
+    OE_TRACE_INFO(
+        "Host: Parsing the certificate from the host ... %s\n",
+        result == OE_OK ? "Success" : "Fail");
+    OE_TEST(result == OE_OK);
+
+    OE_TEST(output_inittime_claims_size == sizeof(inittime_claims));
+    for (size_t i = 0; i < output_inittime_claims_size; i++)
+        OE_TEST(output_inittime_claims[i] == inittime_claims[i]);
+
+    OE_TEST(output_runtime_claims_size == sizeof(runtime_claims));
+    for (size_t i = 0; i < output_runtime_claims_size; i++)
+        OE_TEST(output_runtime_claims[i] == runtime_claims[i]);
+
+    if (attestation_type == ATTESTATION_TYPE_REMOTE)
+    {
+        OE_CHECK(oe_verifier_initialize());
+        OE_CHECK(oe_verify_evidence(
+            nullptr,
+            output_evidence,
+            output_evidence_size,
+            nullptr,
+            0,
+            nullptr,
+            0,
+            nullptr,
+            nullptr));
+        oe_verifier_shutdown();
+    }
+
+    result = OE_OK;
+
+done:
+    free(certificate.data);
+    free(output_evidence);
+    free(output_inittime_claims);
+    free(output_runtime_claims);
+    return result;
 }
 
 int main(int argc, const char* argv[])
@@ -195,11 +282,32 @@ int main(int argc, const char* argv[])
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
         oe_put_err("oe_create_enclave(): result=%u", result);
 
-    run_test(enclave, TEST_EC_KEY);
-    run_test(enclave, TEST_RSA_KEY);
+    OE_TEST(test_attestation_certificate(enclave, KEY_TYPE_EC) == OE_OK);
+    OE_TEST(test_attestation_certificate(enclave, KEY_TYPE_RSA) == OE_OK);
+    OE_TEST(test_passport_certificate(enclave, KEY_TYPE_EC) == OE_OK);
+    OE_TEST(test_passport_certificate(enclave, KEY_TYPE_RSA) == OE_OK);
+    OE_TEST(
+        test_background_check_certificate(
+            enclave, ATTESTATION_TYPE_LOCAL, KEY_TYPE_EC) == OE_OK);
+    OE_TEST(
+        test_background_check_certificate(
+            enclave, ATTESTATION_TYPE_LOCAL, KEY_TYPE_RSA) == OE_OK);
+    OE_TEST(
+        test_background_check_certificate(
+            enclave, ATTESTATION_TYPE_REMOTE, KEY_TYPE_EC) == OE_OK);
+    OE_TEST(
+        test_background_check_certificate(
+            enclave, ATTESTATION_TYPE_REMOTE, KEY_TYPE_RSA) == OE_OK);
+
+    // Negative tests
+    OE_TEST(test_passport_certificate_negative(enclave, &result) == OE_OK);
+    OE_TEST(result == OE_OK);
+    OE_TEST(
+        test_background_check_certificate_negative(enclave, &result) == OE_OK);
+    OE_TEST(result == OE_OK);
 
     result = oe_terminate_enclave(enclave);
     OE_TEST(result == OE_OK);
-    OE_TRACE_INFO("=== passed all tests (tls)\n");
+    printf("=== passed all tests (attestation_cert_apis)\n");
     return 0;
 }

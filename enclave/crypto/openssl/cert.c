@@ -119,7 +119,7 @@ done:
  * Reuse the mbedtls_oid_get_numeric_string in Mbed TLS to decode the OID from
  * its BER format (byte-encoding) into a dot-notation string.
  */
-static char* _decode_oid_to_str(char* oid, size_t oid_size)
+static char* _decode_oid_to_str(const char* oid, size_t oid_size)
 {
     mbedtls_x509_buf buf;
     char* oid_str = NULL;

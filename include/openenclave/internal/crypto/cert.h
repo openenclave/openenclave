@@ -361,17 +361,17 @@ oe_result_t oe_cert_get_validity_dates(
 
 typedef struct _oe_cert_config
 {
-    uint8_t* private_key_buf;
+    const uint8_t* private_key_buf;
     size_t private_key_buf_size;
-    uint8_t* public_key_buf;
+    const uint8_t* public_key_buf;
     size_t public_key_buf_size;
     const unsigned char* subject_name;
     const unsigned char* issuer_name;
     unsigned char* date_not_valid_before;
     unsigned char* date_not_valid_after;
-    uint8_t* ext_data_buf;
+    const uint8_t* ext_data_buf;
     size_t ext_data_buf_size;
-    char* ext_oid;
+    const char* ext_oid;
     size_t ext_oid_size;
 } oe_cert_config_t;
 

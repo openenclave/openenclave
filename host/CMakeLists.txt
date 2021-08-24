@@ -206,6 +206,7 @@ if (OE_SGX)
     ${PROJECT_SOURCE_DIR}/common/sgx/sgxcertextensions.c
     ${PROJECT_SOURCE_DIR}/common/sgx/sgxmeasure.c
     ${PROJECT_SOURCE_DIR}/common/sgx/tcbinfo.c
+    ${PROJECT_SOURCE_DIR}/common/sgx/tlsparser.c
     ${PROJECT_SOURCE_DIR}/common/sgx/tlsverifier.c
     ${PROJECT_SOURCE_DIR}/common/sgx/verifier.c
     sgx/hostverify_report.c
@@ -279,7 +280,8 @@ if (OE_SGX)
 
   set(PLATFORM_FLAGS "-m64")
 elseif (OE_TRUSTZONE)
-  list(APPEND PLATFORM_SDK_ONLY_SRC optee/log.c)
+  list(APPEND PLATFORM_SDK_ONLY_SRC
+       ${PROJECT_SOURCE_DIR}/common/optee/tlsparser.c optee/log.c)
 
   if (UNIX)
     list(APPEND PLATFORM_SDK_ONLY_SRC optee/linux/enclave.c)
@@ -305,6 +307,7 @@ list(
   ${PROJECT_SOURCE_DIR}/common/datetime.c
   ${PROJECT_SOURCE_DIR}/common/safecrt.c
   ${PROJECT_SOURCE_DIR}/common/sha.c
+  ${PROJECT_SOURCE_DIR}/common/tlsparser.c
   memalign.c
   hexdump.c
   dupenv.c

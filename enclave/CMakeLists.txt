@@ -7,17 +7,18 @@ add_subdirectory(sealing)
 
 if (OE_SGX)
   set(PLATFORM_SRC
-      ../common/sgx/endorsements.c
-      ../common/sgx/qeidentity.c
-      ../common/sgx/quote.c
-      ../common/sgx/report.c
-      ../common/sgx/report_helper.c
-      ../common/sgx/collateral.c
-      ../common/sgx/sgxcertextensions.c
-      ../common/sgx/sgxmeasure.c
-      ../common/sgx/tcbinfo.c
-      ../common/sgx/tlsverifier.c
-      ../common/sgx/verifier.c
+      ${PROJECT_SOURCE_DIR}/common/sgx/endorsements.c
+      ${PROJECT_SOURCE_DIR}/common/sgx/qeidentity.c
+      ${PROJECT_SOURCE_DIR}/common/sgx/quote.c
+      ${PROJECT_SOURCE_DIR}/common/sgx/report.c
+      ${PROJECT_SOURCE_DIR}/common/sgx/report_helper.c
+      ${PROJECT_SOURCE_DIR}/common/sgx/collateral.c
+      ${PROJECT_SOURCE_DIR}/common/sgx/sgxcertextensions.c
+      ${PROJECT_SOURCE_DIR}/common/sgx/sgxmeasure.c
+      ${PROJECT_SOURCE_DIR}/common/sgx/tcbinfo.c
+      ${PROJECT_SOURCE_DIR}/common/sgx/tlsparser.c
+      ${PROJECT_SOURCE_DIR}/common/sgx/tlsverifier.c
+      ${PROJECT_SOURCE_DIR}/common/sgx/verifier.c
       sgx/attester.c
       sgx/report.c
       sgx/verifier.c
@@ -28,7 +29,8 @@ if (OE_SGX)
          sgx/eeid_attester.c)
   endif ()
 elseif (OE_TRUSTZONE)
-  set(PLATFORM_SRC optee/report.c optee/start.S)
+  set(PLATFORM_SRC ${PROJECT_SOURCE_DIR}/common/optee/tlsparser.c
+                   optee/report.c optee/start.S)
   message("TODO: ADD ARM files.")
 endif ()
 
@@ -36,10 +38,11 @@ add_enclave_library(
   oeenclave
   STATIC
   attest_plugin.c
-  ../common/attest_plugin.c
-  ../common/custom_claims.c
-  ../common/datetime.c
-  ../common/sha.c
+  ${PROJECT_SOURCE_DIR}/common/attest_plugin.c
+  ${PROJECT_SOURCE_DIR}/common/custom_claims.c
+  ${PROJECT_SOURCE_DIR}/common/datetime.c
+  ${PROJECT_SOURCE_DIR}/common/sha.c
+  ${PROJECT_SOURCE_DIR}/common/tlsparser.c
   asym_keys.c
   link.c
   tls_cert.c
