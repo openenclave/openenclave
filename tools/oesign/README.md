@@ -33,9 +33,11 @@ Description:
         NumStackPages - the number of stack pages for this enclave
         NumTCS - the number of thread control structures for this enclave
         ExtendedProductID - a 128-bit globally unique identifier for the
-        enclave if the 16-bit ProductID proves too restrictive  (SGX2 feature)
+        enclave if the 16-bit ProductID proves too restrictive  (SGX2 feature).
+        Defaults to zero value if property is not included in CONFIG_FILE.
         FamilyID - product family identity to group different enclaves
-        under a common identity (SGX2 feature)
+        under a common identity (SGX2 feature). Defaults to zero value if property
+        is not included in CONFIG_FILE.
         CapturePFGPExceptions - whether in-enclave exception handler should
         be enabled (1) or not (0) to capture #PF and #GP exceptions
         (SGX2 feature, default: 0)

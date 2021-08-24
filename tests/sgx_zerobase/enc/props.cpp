@@ -6,8 +6,8 @@
 OE_SET_ENCLAVE_SGX2(
     1,       /* ProductID */
     1,       /* SecurityVersion */
-    {0},     /* ExtendedProductID */
-    {0},     /* FamilyID */
+    ({0}),   /* ExtendedProductID */
+    ({0}),   /* FamilyID */
     true,    /* Debug */
     true,    /* CapturePFGPExceptions */
     false,   /* RequireKSS */

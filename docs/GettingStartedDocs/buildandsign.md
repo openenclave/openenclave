@@ -120,14 +120,17 @@ FamilyID=47183823-2574-4bfd-b411-99ed177d3e43
 ExtendedProductID=2768c720-1e28-11eb-adc1-0242ac120002
 ```
 
-As a convenience, you can specify the enclave properties in code using the `OE_SET_ENCLAVE_SGX2` macro to leverage SGX2 properties and enable KSS using RequireKSS argument in the macro. For example, the equivalent properties could be defined in any .c or .cpp file compiled into the enclave:
+On SGX2 machines, developers can also specify whether to handle in-enclave exceptions or not using `CapturePFGPExceptions` field.
+- **CapturePFGPExceptions**: Whether in-enclave exception handler should be enabled (1) or not (0) to capture #PF and #GP exceptions (SGX2 feature, default value: 0)
+
+Also as a convenience, developers can specify the enclave properties in code using the `OE_SET_ENCLAVE_SGX2` macro to leverage SGX2 properties and enable KSS using `RequireKSS` field in the macro. Note that to set `FamilyID` and `ExtendedProductID` through `OE_SET_ENCLAVE_SGX2` macro, the corresponding fields should be enclosed in the parenthesis as shown below. For example, the equivalent properties could be defined in any .c or .cpp file compiled into the enclave:
 
 ```c
 OE_SET_ENCLAVE_SGX2(
     1,     /* ProductID */
     1,     /* SecurityVersion */
-    {0},   /* ExtendedProductID */
-    {0},   /* FamilyID */
+    ({0x47, 0x18, 0x38, 0x23, 0x25, 0x74, 0x4b, 0xfd, 0xb4, 0x11, 0x99, 0xed, 0x17, 0x7d, 0x3e, 0x43}),   /* ExtendedProductID */
+    ({0x27, 0x68, 0xc7, 0x20, 0x1e, 0x28, 0x11, 0xeb, 0xad, 0xc1, 0x02, 0x42, 0xac, 0x12, 0x00, 0x02}),   /* FamilyID */
     true,  /* Debug */
     true,  /* CapturePFGPExceptions */
     true   /* RequireKSS */
@@ -157,10 +160,6 @@ to run an enclave in debug mode without signing it first. In this case, the encl
 is treated as having the standard signer ID (MRSIGNER) value of:
 
 > CA9AD7331448980AA28890CE73E433638377F179AB4456B2FE237193193A8D0A
-
-Any properties set in the code also serve as default values when the enclave is
-signed using oesign, so the signing `CONFFILE` only needs to specify override
-parameters during signing.
 
 **Since enclaves that run in debug mode are not confidential, you should disable
 the ability to run the enclave in debug mode before deploying it into production.**
