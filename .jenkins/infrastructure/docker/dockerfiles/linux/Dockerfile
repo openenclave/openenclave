@@ -58,25 +58,10 @@ ARG GNAME=jenkins
 ARG UID=1000
 ARG GID=1000
 
-ARG devkits_uri
-# Check to make sure devkits_uri is defined as build arg
-RUN test ! -z ${devkits_uri+x}
-
 # Install essential packages
 RUN apt-get update && \
     apt-get -y --no-install-recommends upgrade && \
     apt-get -y install make build-essential git jq vim curl wget netcat apt-transport-https unzip && \
-    apt-get clean && \
-    rm -rf rm /var/lib/apt/lists/*
-
-# Add Microsoft repo
-RUN echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ bionic main" | tee /etc/apt/sources.list.d/azure-cli.list && \
-    wget https://packages.microsoft.com/keys/microsoft.asc && \
-    apt-key add microsoft.asc
-
-# Install Azure CLI
-RUN apt-get update && \
-    apt-get -y install azure-cli && \
     apt-get clean && \
     rm -rf rm /var/lib/apt/lists/*
 
@@ -104,10 +89,6 @@ RUN git config --global user.name "OE CI Team"
 RUN groupadd --gid ${GID} ${GNAME}
 RUN useradd --create-home --uid ${UID} --gid ${GID} --shell /bin/bash ${UNAME}
 RUN echo "${UNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-
-# Setup devkit
-RUN curl ${devkits_uri} | tar xvz --no-same-permissions --no-same-owner
-RUN echo ${devkits_uri##*/} > /devkits/TARBALL
 
 # Set up out-of-proc attestation
 ENV SGX_AESM_ADDR=1
