@@ -83,28 +83,94 @@ typedef enum _oe_enclave_setting_type
      *  reflected in TEE-produced enclave identity evidence. Currently only
      *  supported by SGX Enclaves with KSS feature enabled.
      */
-    OE_SGX_CONFIGURATION_DATA = 0x78b5b41d
+    OE_SGX_ENCLAVE_CONFIG_DATA = 0x78b5b41d
 } oe_enclave_setting_type_t;
 
-typedef struct _oe_sgx_configuration_data
+typedef struct _oe_sgx_enclave_setting_configuration_data
 {
-    uint8_t config_id[8];
+    uint8_t config_id[64];
     uint16_t config_svn;
+    bool ignore_if_unsupported;
+
 }
-oe_sgx_configuration_data_t;
+oe_sgx_enclave_setting_configuration_data;
 ```
 
-For SGX, based on whether `OE_SGX_CONFIGURATION_DATA` is provided and whether
+For SGX, based on whether the `OE_SGX_ENCLAVE_CONFIG_DATA` setting is provided and whether
 SGX-KSS feature is supported, the SGX enclave loader sets `SECS.CONFIGID` and
-`SECS.CONFIGSVN` according to the table below.
+`SECS.CONFIGSVN` according to the table below. Developer can set the `ignore_if_unsupported`
+field to `true` to ignore the provided configuration data if the SGX-KSS feature is
+not supported.
 
-| CONFIGURATION_DATA | Behavior
-|-------|-----------------------------------
-|   -   | On systems where SGX-KSS feature is not available or disabled: No Action; On systems with SGX-KSS enabled: loader sets `SECS.CONFIGID` and `SECS.CONFIGSVN` as 0
-|   x   | On systems where SGX-KSS feature is not available or disabled: Invalid;  On systems with SGX-KSS enabled: loader copies _oe_sgx_configuration_data to `SECS.CONFIGID` and `SECS.CONFIGSVN`
+| SGX KSS Feature | OE_SGX_ENCLAVE_CONFIG_DATA| ignore_if_unsupported | Behavior
+|-------|------|----------|----------------
+| Supported | Provided   | true/false | The enclave loader sets `SECS.CONFIGID` and `SECS.CONFIGSVN` to `config_id` and `config_svn`
+| Supported | Not Provided   | - | No action
+| Not supported | Provided   | true | Enclave creation fails
+| Not supported | Provided   | false | No action (the enclave loader ignores the provided `config_id` and `config_svn`)
+| Not supported | Not Provided   | - | No action
 
 The enclave developer is responsible for the host side code that produces the
-Enclave Configuration Data and pass the data to the enclave loader. The enclave
+Enclave Configuration Data and pass the data to the enclave loader. The code snippet below
+demonstrates an example of how a developer can provide configuration data and pass it to an enclave.
+
+```C
+    const uint8_t configuration_id_data[64] = {
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,  12,  13,  143, 153,
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,  12,  134, 14,  154,
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,  125, 13,  14,  155,
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 116, 12,  13,  14,  156};
+
+    const uint16_t configuration_svn = 65535;
+    oe_sgx_enclave_setting_config_data mandatory_configuration_data_setting = {
+        {0}, configuration_svn, false /* ignore_if_unsupported */};
+    memcpy(
+        mandatory_configuration_data_setting.config_id,
+        configuration_id_data,
+        sizeof(mandatory_configuration_data_setting.config_id));
+    oe_enclave_setting_t mandatory_settings;
+    mandatory_settings.setting_type = OE_SGX_ENCLAVE_CONFIG_DATA;
+    mandatory_settings.u.configuration_data = &mandatory_configuration_data_setting;
+    result = oe_create_config_id_enclave(
+            argv[1],
+            OE_ENCLAVE_TYPE_SGX,
+            flags,
+            &mandatory_settings,
+            1,
+            &enclave);
+    OE_TEST(result == OE_OK);
+```
+
+As KSS feature is not avaiable on CoffeeLake machines, user can make config_id/configsv setting as optional as shown below.
+
+```C
+    const uint8_t configuration_id_data[64] = {
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,  12,  13,  143, 153,
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,  12,  134, 14,  154,
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,  125, 13,  14,  155,
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 116, 12,  13,  14,  156};
+
+    const uint16_t configuration_svn = 65535;
+    oe_sgx_enclave_setting_config_data optional_configuration_data_setting  = {
+        {0}, configuration_svn, true /* ignore_if_unsupported */};
+    memcpy(
+        optional_configuration_data_setting.config_id,
+        configuration_id_data,
+        sizeof(optional_configuration_data_setting.config_id));
+    oe_enclave_setting_t optional_settings;
+    optional_settings.setting_type = OE_SGX_ENCLAVE_CONFIG_DATA;
+    optional_settings.u.configuration_data = &optional_configuration_data_setting;
+    result = oe_create_config_id_enclave(
+            argv[1],
+            OE_ENCLAVE_TYPE_SGX,
+            flags,
+            &optional_settings,
+            1,
+            &enclave);
+    OE_TEST(result == OE_OK);
+```
+
+The enclave
 developer should also implement an explicit function to load the additional
 content into the enclave memory post enclave initialization, and to verify the
 loaded content against the Enclave Configuration Data, if the Configuration Data
@@ -114,7 +180,60 @@ enclave developer.
 
 On SGX CPUs supporting the KSS feature, `CONFIGID` and `CONFIGSVN` are available
 in the SGX `REPORT`. The OE SDK libs will provide an API to retrieve config_id
-and config_svn within the enclave.
+and config_svn within the enclave. Below code snippet demonstrates how users can
+retrieve `CONFIGID` and `CONFIGSVN` on enclave side.
+
+```C
+    uint8_t* evidence = NULL;
+    size_t evidence_size = 0;
+    oe_claim_t* claims = NULL;
+    size_t claims_length = 0;
+
+    OE_CHECK(oe_attester_initialize());
+    oe_uuid_t selected_format;
+    oe_attester_select_format(&_ecdsa_uuid, 1, &selected_format);
+
+    OE_CHECK(oe_get_evidence(
+        &selected_format,
+        OE_EVIDENCE_FLAGS_EMBED_FORMAT_ID,
+        NULL,
+        0,
+        NULL,
+        0,
+        &evidence,
+        &evidence_size,
+        NULL,
+        0));
+
+    OE_CHECK(oe_verifier_initialize());
+
+    OE_CHECK(oe_verify_evidence(
+        NULL,
+        evidence,
+        evidence_size,
+        NULL,
+        0,
+        NULL,
+        0,
+        &claims,
+        &claims_length));
+
+    uint8_t* configuration_id;
+    uint16_t* configuration_svn;
+
+    configuration_id =
+        (uint8_t*)_find_claim(claims, claims_length, OE_CLAIM_SGX_CONFIG_ID);
+
+    configuration_svn =
+        (uint16_t*)_find_claim(claims, claims_length, OE_CLAIM_SGX_CONFIG_SVN);
+
+    oe_free_evidence(evidence);
+    oe_free_claims(claims, claims_length);
+    oe_attester_shutdown();
+    oe_verifier_shutdown();
+
+```
+
 
 In the future, when more TEEs support Init-time Configuration Data, the
 interface might be expanded to support TEE-agnostic Init-time Configuration
@@ -255,16 +374,17 @@ The following pseudocode demonstrates how the proposed interface can be used.
 
     // Set up extra content and config_id
     rsa3072_public_key_t  pubkey = {...};
-    oe_sgx_configuration_data_t configdata=
+    oe_sgx_enclave_setting_config_data configuration_data =
     {
         SHA256(pubkey), // config_id
-        0
+        0, // config_svn
+        false //ignore if unspported
     };
     oe_enclave_setting_t settings[] =
     {
         {
-            setting_type = OE_SGX_CONFIGURATION_DATA,
-            u.oe_sgx_configuration_data_t = &configdata
+            setting_type = OE_SGX_ENCLAVE_CONFIG_DATA,
+            u.oe_sgx_configuration_data_t = &configuration_data
         }
     };
     // Create enclave
@@ -333,11 +453,11 @@ The following pseudocode demonstrates how the proposed interface can be used.
                                    evidence_buffer_size);
         inittime_claims_buffer_size = _find_init_time_claim_buffer_size(
                                         evidence_buffer, evidence_buffer_size);
-        config_id = _find_config_id(evidence_buffer, evidence_buffer_size);
+        configuration_id = _find_config_id(evidence_buffer, evidence_buffer_size);
         if (inittime_claim_buffer.integrity_algorithm_id ! = 0 )
             return error;
         if (SHA256(inittime_claim_buffer.buffer, inittime_claims_buffer_size)
-              != config_id)
+              != configuration_id)
             return error;
         //output init_time claims
         ...
@@ -428,16 +548,17 @@ The following pseudocode demonstrates how the proposed interface can be used.
 
     // Set up extra content and config_id
     rsa3072_public_key_t  pubkey = {...};
-    oe_sgx_configuration_data_t configdata =
+    oe_sgx_enclave_setting_config_data configuration_data =
     {
         SHA256(pubkey), // config_id
-        0
+        0, // config_svn
+        false //ignore if unspported
     };
     oe_enclave_setting_t settings[] =
     {
         {
-            setting_type = OE_SGX_CONFIGURATION_DATA,
-            u.oe_sgx_configuration_data_t = &configdata
+            setting_type = OE_SGX_ENCLAVE_CONFIG_DATA,
+            u.oe_sgx_configuration_data_t = &configuration_data
         }
     };
     // Create enclave
@@ -544,14 +665,14 @@ The following pseudocode demonstrates how the proposed interface can be used.
     // Check claims provided by Verifier Plugin against policy,
     ...
     // Verifier has to validate init-time claims buffer
-    config_id = _find_claim(claims, claims_length, OE_SGX_CONFIG_ID);
+    configuration_id = _find_claim(claims, claims_length, OE_SGX_CONFIG_ID);
     // check init-time claim  
     p_init_time_custom_claims_buffer = data_buffer->data + evidence_buffer_size;
     if (p_inittime_claim_buffer->integrity_algorithm_id ! = 0 )
             return error;
     if (SHA256(p_inittime_claim_buffer->buffer,
         data_buffer->inittime_claims_buffer_size -
-        sizeof(p_inittime_claim_buffer->integrity_algorithm_id)) != config_id)
+        sizeof(p_inittime_claim_buffer->integrity_algorithm_id)) != configuration_id)
             return error;
     ...
     // Check p_inittime_claim_buffer->buffer against policy.
@@ -567,16 +688,17 @@ In the alternative design, the caller of `oe_get_evidence` is not supposed to in
 
     // Set up extra content and config_id
     rsa3072_public_key_t  pubkey = {...};
-    oe_sgx_configuration_data_t configdata =
+    oe_sgx_enclave_setting_config_data configuration_data =
     {
-        SHA256(pubkey), // configid
-        0
+        SHA256(pubkey), // config_id
+        0, // config_svn
+        false //ignore if unspported
     };
     oe_enclave_setting_t settings[] =
     {
         {
-            setting_type = OE_SGX_CONFIGURATION_DATA,
-            u.oe_sgx_configuration_data_t = &configdata
+            setting_type = OE_SGX_ENCLAVE_CONFIG_DATA,
+            u.oe_sgx_configuration_data_t = &configuration_data
         }
     };
 
@@ -605,7 +727,7 @@ In the alternative design, the caller of `oe_get_evidence` is not supposed to in
     // Generate evidence #1
     //Assemble the runtime claim and initime claim into a single custom claim buffer
     ...
-    claim_buffer->runtime_claims_buffer_size= runtime_custom_claims_buffer_size_1;
+    claim_buffer->runtime_claims_buffer_size = runtime_custom_claims_buffer_size_1;
     claim_buffer->inittime_claims_buffer_size = inittime_custom_claims_buffer_size;
     memcpy(claim_buffer->data, runtime_custom_claims_buffer_1,
            runtime_custom_claims_buffer_size_1);
@@ -627,7 +749,7 @@ In the alternative design, the caller of `oe_get_evidence` is not supposed to in
     // Generate evidence #2
     //Assemble the runtime claim and initime claim into a single custom claim buffer
     ...
-    claim_buffer->runtime_claims_buffer_size= runtime_custom_claims_buffer_size_2;
+    claim_buffer->runtime_claims_buffer_size = runtime_custom_claims_buffer_size_2;
     claim_buffer->inittime_claims_buffer_size = inittime_custom_claims_buffer_size;
     memcpy(claim_buffer->data, runtime_custom_claims_buffer_2,
            runtime_custom_claims_buffer_size_2);
@@ -689,7 +811,7 @@ In the alternative design, the caller of `oe_get_evidence` is not supposed to in
     ...
     // Verifier has to validate init-time claims buffer within the
     // OE_SGX_CUSTOM_CLAIM_BUFFER claim
-    config_id = _find_claim(claims, claims_length, OE_SGX_CONFIG_ID);
+    configuration_id = _find_claim(claims, claims_length, OE_SGX_CONFIG_ID);
     data_buffer = _find_claim(claims, claims_length, OE_SGX_CUSTOM_CLAIM_BUFFER);
     // check init-time claim buffer within the data_buffer
     p_init_time_custom_claims_buffer = data_buffer->data +
@@ -699,7 +821,7 @@ In the alternative design, the caller of `oe_get_evidence` is not supposed to in
     if (SHA256(p_inittime_claim_buffer->buffer,
                data_buffer->inittime_claims_buffer_size
                  - sizeof(p_inittime_claim_buffer->integrity_algorithm_id))
-        != config_id)
+        != configuration_id)
             return error;
     ...
     // Check p_inittime_claim_buffer->buffer against policy.
