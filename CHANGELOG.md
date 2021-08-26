@@ -20,6 +20,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - This enables applications to adopt NullPointerException/ NullReferenceException in their program logic and/or use other application stacks that do (Example, .NET runtime).
   - Developers can create an 0-base enclave by setting the oesign tool configuration option 'CreateZeroBaseEnclave' to 1 or by passing in argument CREATE_ZERO_BASE_ENCLAVE=1 in OE_SET_ENCLAVE_SGX2().
   - If the 0-base enclave creation is chosen, enclave image start address should be provided by setting the oesign tool configuration option 'StartAddress' or pass in the argument ENCLAVE_START_ADDRESS in OE_SET_ENCLAVE_SGX2().
+<<<<<<< HEAD
+=======
+- `oeapkman` is a Linux tool for installing and using Alpine Linux static libraries within enclaves.
+  - The command `oeapkman add package` can be used to install the specified package.
+    Typically `-static` and `-dev` (e.g.: sqlite-static, sqlite-dev) packages need to be installed.
+  - The command `oeapkman root` prints out the path to the Alpine Linux distribution maintained by `oeapkman`.
+    The root path is useful for providing paths to header files and static libraries to the compiler and linker respectively.
+  - The command `oeapkman exec` can be used to execute commands within the Alpine Linux environment.
+    For example, after executing `oeapkman add clang build-base cmake` to install development tools,
+	running `oeapkman exec clang -c file.c` would compile `file.c` in current folder using the clang compiler that
+	has been installed in the Alpine Linux environment. `oeapkman exec bash` would launch a bash shell in the current folder.
+  - The `--optee` prefix can be applied to the commands to target OP-TEE.
+    `oeapkman --optee add sqlite-static` installs aarch64 sqlite static library.
+	`oeapkman --optee exec gcc -c file.c` cross-compile `file.c` to target OP-TEE.
+  - See [samples/apkman](samples/apkman) for a complete example demonstrating use of the `sqlite` database library within enclaves.
+- Support for `compiler-rt`. `oelibc` includes LLVM's `compiler-rt-10.0.1`.
+
+## Changed
+- Updated libcxx to version 10.0.1
+
+### Security
+- Updated openssl to version 1.1.1l. Please refer to release log to find list of CVEs addressed by this version.
+>>>>>>> f15dd7cc1... upgrading to openssl 1.1.1l
 
 [v0.17.0][v0.17.0_log]
 --------------
