@@ -463,7 +463,7 @@ bool sgx_unregister_pfhandler(sgx_enclave_pfhandler_t pfhandler);
  * @param[in] length Size of the region in bytes of multiples of page size.
  * @param[in] flags A bitwise OR of flags describing committing mode, committing
  *                     order, address preference, page type. The untrusted side.
- *    implementation should always invoke mmap syscall with MAP_SHARED|MAP_FIXED_NOREPLACE, and
+ *    implementation should always invoke mmap syscall with MAP_SHARED|MAP_FIXED, and
  *    translate following additional bits to proper parameters invoking mmap or other SGX specific
  *    syscall(s) provided by the kernel.
  *        The flags param of this interface should include exactly one of following for committing mode:
@@ -476,11 +476,6 @@ bool sgx_unregister_pfhandler(sgx_enclave_pfhandler_t pfhandler);
  *                              to lower addresses, no gaps in addresses above the last committed.
  *            - SGX_EMA_GROWSUP: if supported, a hint given for the kernel to EAUG pages from lower
  *                              to higher addresses, no gaps in addresses below the last committed.
- *        Optionally ORed with
- *            -  SGX_EMA_ALIGNED(n):	Align the region on a requested	boundary.
- *                           Fail if a suitable region cannot be found,
- *                           The argument n specifies the binary logarithm of
- *                           the desired alignmentand must be at least 12.
  *        Optionally ORed with one of following page types:
  *             - SGX_EMA_PAGE_TYPE_REG: regular page type. This is the default if not specified.
  *             - SGX_EMA_PAGE_TYPE_SS_FIRST: the first page in shadow stack.
@@ -489,35 +484,34 @@ bool sgx_unregister_pfhandler(sgx_enclave_pfhandler_t pfhandler);
  * @retval EINVAL Any parameter passed in is not valid.
  * @retval errno Error as reported by dependent syscalls, e.g., mmap().
  */
-int sgx_mmap_ocall(void *addr, size_t length, int prot, int flags);
+int sgx_alloc_ocall(void *addr, size_t length, int flags);
 
 /*
  * Call OS to change permissions, type, or notify EACCEPT done after TRIM.
  *
  * @param[in] addr Start address of the memory to change protections.
  * @param[in] length Length of the area.  This must be a multiple of the page size.
- * @param[in] flags This must be OR'ed of following:
+ * @param[in] flags_from The original EPCM flags of the EPC pages to be modified.
+ *              Must be bitwise OR of following:
  *            SGX_EMA_PROT_READ
  *            SGX_EMA_PROT_WRITE
  *            SGX_EMA_PROT_EXEC
- *            SGX_EMA_PAGE_TYPE_TRIM: change the page type to PT_TRIM, implies RW.
+ *            SGX_EMA_PAGE_TYPE_REG: regular page, changeable to TRIM and TCS
+ *            SGX_EMA_PAGE_TYPE_TRIM: signal to the kernel EACCEPT is done for TRIM pages.
+ * @param[in] flags_to The target EPCM flags. This must be bitwise OR of following:
+ *            SGX_EMA_PROT_READ
+ *            SGX_EMA_PROT_WRITE
+ *            SGX_EMA_PROT_EXEC
+ *            SGX_EMA_PAGE_TYPE_TRIM: change the page type to PT_TRIM. Note the address
+ *                      range for trimmed pages may still be reserved by enclave with
+ *                      proper permissions.
  *            SGX_EMA_PAGE_TYPE_TCS: change the page type to PT_TCS
- *            SGX_EMA_PROT_NOACCESS: Signal the kernel EACCEPT is done for PT_TRIM pages.
  * @retval 0 The operation was successful.
  * @retval EINVAL A parameter passed in is not valid.
  * @retval errno Error as reported by dependent syscalls, e.g., mprotect().
  */
 
-int sgx_mprotect_ocall(void *addr, size_t length, int flags);
-
-/*
- * OCall to make regular munmap syscall.
- * @param[in] addr Start address of the memory to unmap.
- * @param[in] length Length of the area.  This must be a multiple of the page size.
- * @retval 0 The operation was successful.
- * @retval errno Error as reported by munmap syscall.
- */
-int sgx_munmap_ocall(void *addr, size_t length);
+int sgx_modify_ocall(void *addr, size_t length, int flags_from, int flags_to);
 
 ```
 
