@@ -1,0 +1,31 @@
+ARG ubuntu_version=18.04
+
+FROM ubuntu:${ubuntu_version}
+
+ARG UNAME=jenkins
+ARG GNAME=jenkins
+ARG UID=1001
+ARG GID=1001
+
+RUN echo "http_proxy=http://proxy-mu.intel.com:911/" >> /etc/environment && \
+    echo "https_proxy=http://proxy-mu.intel.com:912/" >> /etc/environment && \
+    export http_proxy=http://proxy-mu.intel.com:911 && \
+    export https_proxy=http://proxy-mu.intel.com:912 && \
+    
+RUN apt update && \
+    apt upgrade -y && \
+    apt install -y linux-headers-$(uname -r) && \
+    apt install sudo -y && \
+    
+# Run Ansible
+COPY ./scripts/ansible /ansible
+COPY ./scripts/lvi-mitigation /lvi-mitigation
+RUN /ansible/install-ansible.sh && \
+    sudo ansible-playbook ./oe-contributors-setup-sgx1.yml -vvvv && \
+    /ansible/remove-ansible.sh && \
+    apt-get remove -y python3-pip && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /ansible /lvi-mitigation /root/.cache /root/.ansible /var/lib/apt/lists/*
+    
+RUN echo "${UNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
