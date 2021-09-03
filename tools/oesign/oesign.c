@@ -537,12 +537,16 @@ void _merge_config_file_options(
             properties->config.family_id,
             &options->family_id.value,
             sizeof(options->family_id.value));
+    else
+        memset(properties->config.family_id, 0, sizeof(oe_uuid_t));
 
     if (options->extended_product_id.has_value)
         memcpy(
             properties->config.extended_product_id,
             &options->extended_product_id.value,
             sizeof(options->extended_product_id.value));
+    else
+        memset(properties->config.extended_product_id, 0, sizeof(oe_uuid_t));
 
     if (options->family_id.has_value || options->extended_product_id.has_value)
         properties->config.attributes |= SGX_FLAGS_KSS;

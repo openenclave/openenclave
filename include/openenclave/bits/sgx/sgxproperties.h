@@ -100,6 +100,8 @@ typedef struct _oe_sgx_enclave_properties
 #define OE_SGX_ENCLAVE_CREATE_EX_EL_RANGE \
     (1 << OE_SGX_ENCLAVE_CREATE_EX_EL_RANGE_BIT_IDX)
 
+#define REMOVE_PARENTHESES(...) __VA_ARGS__
+
 // This macro initializes and injects an oe_sgx_enclave_properties_t struct
 // into the .oeinfo section.
 
@@ -178,8 +180,8 @@ typedef struct _oe_sgx_enclave_properties
                 .create_zero_base_enclave = CREATE_ZERO_BASE_ENCLAVE,     \
                 .reserved = 0                                             \
             },                                                            \
-            .family_id = FAMILY_ID,                                       \
-            .extended_product_id = EXTENDED_PRODUCT_ID,                   \
+            .family_id = REMOVE_PARENTHESES FAMILY_ID,                                       \
+            .extended_product_id = REMOVE_PARENTHESES EXTENDED_PRODUCT_ID,                   \
             .attributes = OE_MAKE_ATTRIBUTES(ALLOW_DEBUG, REQUIRE_KSS),   \
             .start_address =                                              \
                 CREATE_ZERO_BASE_ENCLAVE ? ENCLAVE_START_ADDRESS : 0,     \
@@ -223,8 +225,8 @@ typedef struct _oe_sgx_enclave_properties
  _OE_SET_ENCLAVE_SGX_IMPL(                                                \
     PRODUCT_ID,                                                           \
     SECURITY_VERSION,                                                     \
-    {0},                                                                  \
-    {0},                                                                  \
+    ({0}),                                                                  \
+    ({0}),                                                                  \
     ALLOW_DEBUG,                                                          \
     false,                                                                \
     0,                                                                    \
