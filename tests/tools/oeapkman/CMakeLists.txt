@@ -29,11 +29,17 @@ endif ()
 # Fetch the location of oeapkman binary.
 get_target_property(OEAPKMAN oeapkman LOCATION)
 
+if (OE_TRUSTZONE)
+  set(APKMAN_ARCH "--optee")
+else ()
+  set(APKMAN_ARCH "")
+endif ()
+
 # Execute oeapkman once so that it is initialized.
-execute_process(COMMAND "${OEAPKMAN}")
+execute_process(COMMAND "${OEAPKMAN}" ${APKMAN_ARCH})
 
 # Execute oeapkman again to fetch the root folder.
-execute_process(COMMAND "${OEAPKMAN}" root
+execute_process(COMMAND "${OEAPKMAN}" ${APKMAN_ARCH} root
                 OUTPUT_VARIABLE APKMAN_ROOT OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 message("APKMAN_ROOT is ${APKMAN_ROOT}")
