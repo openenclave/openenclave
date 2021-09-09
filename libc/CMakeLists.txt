@@ -504,13 +504,26 @@ add_enclave_library(
   ${MUSLSRC}/math/trunc.c
   ${MUSLSRC}/math/truncf.c
   ${MUSLSRC}/math/truncl.c
+  ${MUSLSRC}/misc/a64l.c
   ${MUSLSRC}/misc/basename.c
   ${MUSLSRC}/misc/dirname.c
+  ${MUSLSRC}/misc/ffs.c
+  ${MUSLSRC}/misc/ffsl.c
+  ${MUSLSRC}/misc/ffsll.c
+  ${MUSLSRC}/misc/get_current_dir_name.c
+  ${MUSLSRC}/misc/getauxval.c
   ${MUSLSRC}/misc/getdomainname.c
+  ${MUSLSRC}/misc/gethostid.c
+  ${MUSLSRC}/misc/getopt.c
+  ${MUSLSRC}/misc/getopt_long.c
   ${MUSLSRC}/misc/getrlimit.c
+  ${MUSLSRC}/misc/getsubopt.c
+  ${MUSLSRC}/misc/issetugid.c
   ${MUSLSRC}/misc/ioctl.c
+  ${MUSLSRC}/misc/mntent.c
   ${MUSLSRC}/misc/nftw.c
   ${MUSLSRC}/misc/uname.c
+  ${MUSLSRC}/misc/wordexp.c
   ${MUSLSRC}/multibyte/btowc.c
   ${MUSLSRC}/multibyte/c16rtomb.c
   ${MUSLSRC}/multibyte/c32rtomb.c
