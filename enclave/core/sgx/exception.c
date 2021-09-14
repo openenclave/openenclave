@@ -259,6 +259,22 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
     // mode
     td->host_ecall_context = td->host_previous_ecall_context;
 
+    /* If the exception handler stack is prpoerly set, restore rsp and rbp from
+     * td. Note that the case of _emulate_illegal_instruction always bypasses
+     * this logic (last_ssa_rsp and last_ssa_rbp will not be set) */
+    if (td->exception_handler_stack_size &&
+        oe_is_within_enclave(
+            (void*)td->exception_handler_stack,
+            td->exception_handler_stack_size) &&
+        oe_is_within_enclave(
+            (void*)td->last_ssa_rsp,
+            sizeof(uint64_t) && oe_is_within_enclave(
+                                    (void*)td->last_ssa_rbp, sizeof(uint64_t))))
+    {
+        oe_exception_record.context->rsp = td->last_ssa_rsp;
+        oe_exception_record.context->rbp = td->last_ssa_rbp;
+    }
+
     // Traverse the existing exception handlers, stop when
     // OE_EXCEPTION_CONTINUE_EXECUTION is found.
     uint64_t handler_ret = OE_EXCEPTION_CONTINUE_SEARCH;
@@ -277,6 +293,8 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
     td->exception_address = 0;
     td->faulting_address = 0;
     td->error_code = 0;
+    td->last_ssa_rsp = 0;
+    td->last_ssa_rbp = 0;
 
     // Jump to the point where oe_context refers to and continue.
     if (handler_ret == OE_EXCEPTION_CONTINUE_EXECUTION)
@@ -284,6 +302,11 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
         oe_continue_execution(oe_exception_record.context);
 
         // Code should never run to here.
+        oe_abort();
+        return;
+    }
+    else if (handler_ret == OE_EXCEPTION_ABORT_EXECUTION)
+    {
         oe_abort();
         return;
     }
@@ -385,6 +408,21 @@ void oe_virtual_exception_dispatcher(
         // Modify the ssa_gpr so that e_resume will go to second pass exception
         // handler.
         ssa_gpr->rip = (uint64_t)oe_exception_dispatcher;
+
+        /* If the exception handler stack is properly set, update the rsp in the
+         * SSA to the bottom of the stack. Also, save the rsp and rbp in the SSA
+         * before the assignment, which are used to resume the execution after
+         * exception handling. */
+        if (td->exception_handler_stack_size &&
+            oe_is_within_enclave(
+                (void*)td->exception_handler_stack,
+                td->exception_handler_stack_size))
+        {
+            td->last_ssa_rsp = ssa_gpr->rsp;
+            td->last_ssa_rbp = ssa_gpr->rbp;
+            ssa_gpr->rsp =
+                td->exception_handler_stack + td->exception_handler_stack_size;
+        }
     }
 
     // Cleanup the exception flag to avoid the exception handler is called

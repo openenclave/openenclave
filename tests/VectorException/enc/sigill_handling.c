@@ -1,12 +1,20 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
+
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/print.h>
+#include <openenclave/internal/tests.h>
+#include <stdlib.h>
 #include "VectorException_t.h"
 
+#include "exception_handler_stack.h"
+
 #define OE_CPUID_TRACE_ENUM_LEAF 0x14
+
+static void* _stack;
+static uint64_t _stack_size;
 
 // Wrapper over the CPUID instruction.
 void get_cpuid(
@@ -43,6 +51,17 @@ uint64_t enc_test_sigill_handler(oe_exception_record_t* exception)
 {
     if (exception->code == OE_EXCEPTION_ILLEGAL_INSTRUCTION)
     {
+        uint64_t rsp;
+        asm volatile("mov %%rsp, %0" : "=r"(rsp));
+
+        oe_host_printf(
+            "Check rsp (0x%lx) against stack [0x%lx, 0x%lx]\n",
+            rsp,
+            (uint64_t)_stack,
+            (uint64_t)_stack + _stack_size);
+        if (rsp < (uint64_t)_stack || rsp > (uint64_t)_stack + _stack_size)
+            return OE_EXCEPTION_ABORT_EXECUTION;
+
         switch (*((uint16_t*)exception->context->rip))
         {
             case OE_CPUID_OPCODE:
@@ -147,6 +166,7 @@ bool test_unsupported_cpuid_leaf(uint32_t leaf)
 }
 
 int enc_test_sigill_handling(
+    int use_exception_handler_stack,
     uint32_t cpuid_table[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT])
 {
     oe_result_t result;
@@ -158,6 +178,10 @@ int enc_test_sigill_handling(
         oe_host_printf("Failed to register enc_test_sigill_handler.\n");
         return -1;
     }
+
+    OE_TEST(
+        initialize_exception_handler_stack(
+            &_stack, &_stack_size, use_exception_handler_stack) == 0);
 
     // Test illegal SGX instruction that is not emulated (GETSEC)
     if (!test_getsec_instruction())
@@ -200,6 +224,9 @@ int enc_test_sigill_handling(
     }
 
     oe_host_printf("test_sigill_handling: completed successfully.\n");
+
+    cleaup_exception_handler_stack(
+        &_stack, &_stack_size, use_exception_handler_stack);
 
     return 0;
 }

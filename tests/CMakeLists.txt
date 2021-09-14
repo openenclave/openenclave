@@ -152,6 +152,7 @@ if (UNIX
     add_subdirectory(thread_local_large)
     add_subdirectory(thread_local_no_tdata)
     add_subdirectory(VectorException)
+    add_subdirectory(stack_overflow_exception)
     add_subdirectory(stack_smashing_protector)
     add_subdirectory(stress)
 

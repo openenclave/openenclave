@@ -105,15 +105,44 @@ oe_enter:
 
     // Abort if SSA[0].GPRSGX.URSP is within the enclave memory range
     cmp %r12, %r9
-    jb .exception_check_pass
+    jb .exception_handler_stack_check
     cmp %r13, %r9
-    jae .exception_check_pass
+    jae .exception_handler_stack_check
     jmp .abort
 
     // Reaching this point implies SSA[0].GPRSGX.RSP is within the enclave
     // memory range so we do not need additional checks.
 
-.exception_check_pass:
+.exception_handler_stack_check:
+    // Stop speculative execution at target of conditional jump
+    lfence
+
+    // Get the exception_handler_stack_check range
+    mov td_exception_handler_stack(%r11), %r14
+    mov td_exception_handler_stack_size(%r11), %r15
+    test %r15, %r15
+    jz .exception_stack_setup // check if size is zero
+    add %r14, %r15
+    jc .exception_stack_setup // check for overflow
+
+    // Check if the stack range is within the enclave memory range
+    // If the check fails, fallback to the default behavior (i.e.,
+    // re-using the stack pointer saved in the SSA)
+    cmp %r12, %r14
+    jb .exception_stack_setup
+    cmp %r13, %r15
+    ja .exception_stack_setup
+
+    // Check passes, use the exception handler stack
+    mov %r15, %r8
+
+    // Align the stack
+    and $-16, %r8
+
+    // Proceed without the red zone
+    jmp .call_function
+
+.exception_stack_setup:
     // Stop speculative execution at target of conditional jump
     lfence
 
@@ -149,6 +178,9 @@ oe_enter:
     sub $PAGE_SIZE, %r8
 
 .call_function:
+    // Stop speculative execution for the fallthrough cases
+    lfence
+
     // Set the rsp to the in-enclave stack
     mov %r8, %rsp
 
