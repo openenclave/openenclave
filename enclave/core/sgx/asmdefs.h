@@ -37,6 +37,8 @@
 #define td_simulate (td_callsites + 8)
 #define td_host_ecall_context (td_simulate + 8)
 #define td_host_previous_ecall_context (td_host_ecall_context + 8)
+#define td_exception_handler_stack (td_host_previous_ecall_context + 8)
+#define td_exception_handler_stack_size (td_exception_handler_stack + 8)
 
 #define oe_exit_enclave __morestack
 #ifndef __ASSEMBLER__
