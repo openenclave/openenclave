@@ -24,6 +24,10 @@ OE_EXTERNC_BEGIN
  *  to the dispatcher that it should stop searching and continue execution. */
 #define OE_EXCEPTION_CONTINUE_EXECUTION 0xFFFFFFFF
 
+/** Return value used by an enclave vectored exception handler to indicate
+ *  to the dispatcher that it should stop searching and abort the execution. */
+#define OE_EXCEPTION_ABORT_EXECUTION 0xFFFFFFF0
+
 /**
  * Divider exception code, used by vectored exception handler.
  */

@@ -81,7 +81,7 @@ oe_thread_data_t* oe_get_thread_data(void);
  * Due to the inability to use OE_OFFSETOF on a struct while defining its
  * members, this value is computed and hard-coded.
  */
-#define OE_THREAD_SPECIFIC_DATA_SIZE (3756)
+#define OE_THREAD_SPECIFIC_DATA_SIZE (3724)
 
 typedef struct _oe_callsite oe_callsite_t;
 
@@ -136,14 +136,23 @@ typedef struct _td
     struct _oe_ecall_context* host_ecall_context;
     struct _oe_ecall_context* host_previous_ecall_context;
 
+    /* The optional stack area setup by the runtime to handle the exceptions */
+    uint64_t exception_handler_stack;
+    uint64_t exception_handler_stack_size;
+
+    /* Save the rsp and rbp values in the SSA when the exception handler
+     * stack is set */
+    uint64_t last_ssa_rsp;
+    uint64_t last_ssa_rbp;
+
     /* The last stack pointer (set by enclave when making an OCALL) */
     uint64_t last_sp;
 
-    // The exception code.
+    /* The exception code */
     uint32_t exception_code;
-    // The exception flags.
+    /* The exception flags */
     uint32_t exception_flags;
-    // The rip when exception happened.
+    /* The rip when exception happened */
     uint64_t exception_address;
 
     /* The threads implementations uses this to put threads on queues */
@@ -180,6 +189,8 @@ OE_STATIC_ASSERT(
 
 /* Get the thread data object for the current thread */
 oe_sgx_td_t* oe_sgx_get_td(void);
+
+bool oe_sgx_set_td_exception_handler_stack(void* stack, uint64_t size);
 
 OE_EXTERNC_END
 

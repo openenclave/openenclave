@@ -13,6 +13,51 @@
 #include <openenclave/internal/trace.h>
 #include "VectorException_t.h"
 
+#include "exception_handler_stack.h"
+
+static void* _stack;
+static uint64_t _stack_size;
+
+int initialize_exception_handler_stack(
+    void** stack,
+    uint64_t* stack_size,
+    int use_exception_handler_stack)
+{
+    if (use_exception_handler_stack)
+    {
+        *stack_size = EXCEPTION_HANDLER_STACK_SIZE;
+        *stack = malloc(*stack_size);
+        if (!*stack)
+            return -1;
+        if (!oe_sgx_set_td_exception_handler_stack(*stack, *stack_size))
+            return -1;
+    }
+    else
+    {
+        oe_sgx_td_t* td = oe_sgx_get_td();
+        void* tcs = td_to_tcs(td);
+        *stack_size = STACK_SIZE;
+        *stack = (void*)((uint64_t)tcs - PAGE_SIZE - STACK_SIZE);
+    }
+
+    return 0;
+}
+
+void cleaup_exception_handler_stack(
+    void** stack,
+    uint64_t* stack_size,
+    int use_exception_handler_stack)
+{
+    if (use_exception_handler_stack)
+    {
+        oe_sgx_set_td_exception_handler_stack(NULL, 0);
+        free(*stack);
+    }
+
+    *stack = NULL;
+    *stack_size = 0;
+}
+
 // This function will generate the divide by zero function.
 // The handler will catch this exception and fix it, and continue execute.
 // It will return 0 if success.
@@ -53,6 +98,17 @@ uint64_t test_divide_by_zero_handler(oe_exception_record_t* exception_record)
     {
         return OE_EXCEPTION_CONTINUE_SEARCH;
     }
+
+    uint64_t rsp;
+    asm volatile("mov %%rsp, %0" : "=r"(rsp));
+
+    oe_host_printf(
+        "Check rsp (0x%lx) against stack [0x%lx, 0x%lx]\n",
+        rsp,
+        (uint64_t)_stack,
+        (uint64_t)_stack + _stack_size);
+    if (rsp < (uint64_t)_stack || rsp > (uint64_t)_stack + _stack_size)
+        return OE_EXCEPTION_ABORT_EXECUTION;
 
     // Skip the idiv instruction - 2 is tied to the size of the idiv instruction
     // and can change with a different compiler/build. Minimizing this with the
@@ -259,7 +315,7 @@ int vector_exception_cleanup()
     return 0;
 }
 
-int enc_test_vector_exception()
+int enc_test_vector_exception(int use_exception_handler_stack)
 {
     if (vector_exception_setup() != 0)
     {
@@ -269,6 +325,10 @@ int enc_test_vector_exception()
     oe_host_printf(
         "enc_test_vector_exception: will generate a hardware exception inside "
         "enclave!\n");
+
+    OE_TEST(
+        initialize_exception_handler_stack(
+            &_stack, &_stack_size, use_exception_handler_stack) == 0);
 
     if (divide_by_zero_exception_function() != 0)
     {
@@ -282,6 +342,9 @@ int enc_test_vector_exception()
     {
         return -1;
     }
+
+    cleaup_exception_handler_stack(
+        &_stack, &_stack_size, use_exception_handler_stack);
 
     return 0;
 }
@@ -305,7 +368,7 @@ uint64_t test_sigill_handler_with_ocall(oe_exception_record_t* exception_record)
     return OE_EXCEPTION_CONTINUE_EXECUTION;
 }
 
-int enc_test_ocall_in_handler()
+int enc_test_ocall_in_handler(int use_exception_handler_stack)
 {
     long long rbx;
     long long rbp;
@@ -313,12 +376,17 @@ int enc_test_ocall_in_handler()
     long long r12;
     long long r13;
     long long r14;
+
     oe_result_t result = oe_add_vectored_exception_handler(
         false, test_sigill_handler_with_ocall);
     if (result != OE_OK)
     {
         return -1;
     }
+
+    OE_TEST(
+        initialize_exception_handler_stack(
+            &_stack, &_stack_size, use_exception_handler_stack) == 0);
 
     oe_host_printf(
         "enc_test_ocall_in_handler: will generate a hardware exception inside "
@@ -376,6 +444,9 @@ int enc_test_ocall_in_handler()
     {
         return -1;
     }
+
+    cleaup_exception_handler_stack(
+        &_stack, &_stack_size, use_exception_handler_stack);
 
     return 0;
 }
