@@ -293,6 +293,7 @@ class ModuleLoadedBreakpoint(gdb.Breakpoint):
         debug_module = oe_debug_module_t(module_addr)
         load_enclave_symbol(debug_module.path, debug_module.base_address)
         print ("oegdb: Loaded enclave module %s" % debug_module.path)
+        oe_module_loaded_hook(debug_module)
         return False
 
 class ModuleUnloadedBreakpoint(gdb.Breakpoint):
@@ -315,6 +316,7 @@ class LibraryLoadBreakpoint(gdb.Breakpoint):
         debug_module = oe_debug_module_t(module_addr)
         load_enclave_symbol(debug_module.path, debug_module.base_address)
         print ("oegdb: Loaded enclave module %s" % debug_module.path)
+        oe_module_loaded_hook(debug_module)
         return False
 
 class LibraryUnloadBreakpoint(gdb.Breakpoint):
@@ -393,6 +395,7 @@ def oe_debugger_init():
     ModuleUnloadedBreakpoint()
     LibraryLoadBreakpoint()
     LibraryUnloadBreakpoint()
+    oe_debugger_init_hook()
     return
 
 def oe_debugger_cleanup():
@@ -404,11 +407,85 @@ def oe_debugger_cleanup():
         gdb.execute("remove-symbol-file -a %s" % (oe_enclave_addr), False, True)
     g_loaded_oe_enclave_addrs.clear()
     g_enclave_list_parsed = False
+    oe_debugger_cleanup_hook()
     return
 
 def exit_handler(event):
     oe_debugger_cleanup()
     return
+
+# Figure out missing symbols within enclaves.
+import shutil
+import subprocess
+
+class MissingSymbolAnalyzer:
+    def __init__(self):
+        self.libs = {}
+        # objdump is used to figure out imports and exports of
+        # a module.
+        self.enabled = shutil.which('objdump') is not None
+        if not self.enabled:
+            self.message('objdump not available. Missing symbols cannot be analyzed.')
+        else:
+            print('oegdb: objdump found. Mising symbols will be analyzed.')
+
+    def message(self, m):
+        # unresolved_color = '\033[1;38;5;170m'
+        unresolved_color = '\033[0;31m'
+        colorize = lambda str, c: ('%s%s\033[0m' % (c, str))
+        print(colorize('oegdb: ' + m, unresolved_color))
+
+
+    def find_missing_symbols(self, lib):
+        for sym in lib['imports']:
+            found = False
+            for l in self.libs.values():
+                if sym in l['exports']:
+                    found = True
+                    break
+            if not found:
+                self.message('unresolved symbol: %s' % sym)
+
+    def process(self, libname):
+        if not self.enabled:
+            return
+
+        print('oegdb: analyzing symbols for module %s' % libname)
+        output = subprocess.run(['objdump', '-T', libname], stdout=subprocess.PIPE)
+
+        imports = set()
+        exports = set()
+        for l in output.stdout.decode('utf-8').split('\n'):
+            und = "*UND*" in l
+            words = l.split()
+            if words:
+                name = words[-1]
+                if und:
+                    imports.add(name)
+                else:
+                    exports.add(name)
+        lib = {
+             name:libname,
+                'imports':imports,
+                'exports':exports
+             }
+        self.libs[libname] = lib
+        self.find_missing_symbols(lib)
+
+
+missing_symbol_analyzer = None
+
+def oe_debugger_init_hook():
+    global missing_symbol_analyzer
+    missing_symbol_analyzer = MissingSymbolAnalyzer()
+
+def oe_debugger_cleanup_hook():
+    global missing_symbol_analyzer
+    missing_symbol_analyzer = None
+
+def oe_module_loaded_hook(debug_module):
+    if missing_symbol_analyzer:
+        missing_symbol_analyzer.process(debug_module.path)
 
 if __name__ == "__main__":
     gdb.events.exited.connect(exit_handler)
