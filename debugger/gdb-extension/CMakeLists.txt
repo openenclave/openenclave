@@ -11,6 +11,9 @@ configure_file(
 configure_file(
   readelf.py ${OE_LIBDIR}/openenclave/debugger/gdb-sgx-plugin/readelf.py
   COPYONLY)
+configure_file(
+  mprotect.py ${OE_LIBDIR}/openenclave/debugger/gdb-sgx-plugin/mprotect.py
+  COPYONLY)
 
 # Installation
 install(
@@ -21,4 +24,7 @@ install(
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/debugger/gdb-sgx-plugin/)
 install(
   FILES readelf.py
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/debugger/gdb-sgx-plugin/)
+install(
+  FILES mprotect.py
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/debugger/gdb-sgx-plugin/)
