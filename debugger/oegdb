@@ -19,4 +19,10 @@ OE_GDB_PLUGIN_DIR=$OE_GDB_LIB_DIR/gdb-sgx-plugin
 OE_GDB_PTRACE_PATH=$OE_GDB_LIB_DIR/liboe_ptrace.so
 
 export PYTHONPATH=$OE_GDB_PLUGIN_DIR
-LD_PRELOAD=$OE_GDB_PTRACE_PATH gdb -iex "directory $OE_GDB_PLUGIN_DIR" -iex "source $OE_GDB_PLUGIN_DIR/gdb_sgx_plugin.py" -iex "set environment LD_PRELOAD" -iex "add-auto-load-safe-path /usr/lib" "$@"
+LD_PRELOAD=$OE_GDB_PTRACE_PATH gdb \
+	  -iex "directory $OE_GDB_PLUGIN_DIR" \
+	  -iex "source $OE_GDB_PLUGIN_DIR/gdb_sgx_plugin.py" \
+	  -iex "source $OE_GDB_PLUGIN_DIR/mprotect.py" \
+	  -iex "set environment LD_PRELOAD" \
+	  -iex "add-auto-load-safe-path /usr/lib" \
+	  "$@"
