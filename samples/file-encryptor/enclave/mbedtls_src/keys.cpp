@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include <mbedtls/aes.h>
-#include <mbedtls/config.h>
+#include <mbedtls/mbedtls_config.h>
 #include <mbedtls/ctr_drbg.h>
 #include <mbedtls/entropy.h>
 #include <mbedtls/error.h>
