@@ -38,6 +38,7 @@ Param(
     [Parameter(mandatory=$true)][ValidateSet("SGX1FLC", "SGX1", "SGX1FLC-NoIntelDrivers", "SGX1-NoIntelDrivers")][string]$LaunchConfiguration,
     [Parameter(mandatory=$true)][ValidateSet("None", "Azure")][string]$DCAPClientType,
     [Parameter(mandatory=$false)][switch]$InstallDocker=$false,
+    [Parameter(mandatory=$false)][switch]$SkipVSInstall=$false,
     [Parameter(mandatory=$false)][switch]$VerificationOnly=$false
 )
 
@@ -613,7 +614,9 @@ try {
     Install-7Zip
     Install-Nuget
     Install-Python3
-    Install-VisualStudio
+    if (!$SkipVSInstall) {
+        Install-VisualStudio
+    }
     Install-LLVM
     Install-Git
     Install-Shellcheck

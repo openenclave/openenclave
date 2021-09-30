@@ -206,7 +206,7 @@ def ninjaBuildCommand(String cmake_arguments = "", String build_directory = "${W
  * @param container_name          Name of the Azure Storage Container to download from
  * @param file_pattern            File pattern to match (Ant glob syntax)
  * @param storage_credentials_id  Jenkins credentials id to use to authenticate with Azure Storage
-*/
+ */
 def azureContainerDownload(String container_name, String file_pattern, String storage_credentials_id) {
     azureDownload(
         containerName: container_name,
@@ -215,6 +215,38 @@ def azureContainerDownload(String container_name, String file_pattern, String st
         includeFilesPattern: file_pattern,
         storageCredentialId: storage_credentials_id
     )
+}
+
+/**
+ * Install Open Enclave dependencies on host machine
+ *
+ * @param dcap_url      URL of DCAP package, leave blank to use default
+ * @param psw_url       URL of PSW package, leave blank to use default
+ * @param install_flags Linux: set Ansible environment variables,
+ *                      Windows: set additional args for install-windows-prereqs.ps1 script
+ * @param build_dir     String that is a path to the directory that contains CMakeList.txt
+ *                      Can be relative to current working directory or an absolute path
+ */
+def dependenciesInstall(String dcap_url = "", String psw_url = "", String install_flags = "", String build_dir = "${WORKSPACE}") {
+    if(isUnix()) {
+        sh """
+            sudo bash ${build_dir}/scripts/ansible/install-ansible.sh
+            ansible-playbook ${build_dir}/scripts/ansible/oe-contributors-acc-setup.yml --extra-vars "intel_sgx_w_flc_driver_url=${dcap_url} intel_sgx1_driver_url=${psw_url} ${install_flags}"
+
+            ${WaitForAptLock()}
+            sudo apt install -y dkms
+        """
+    } else {
+        if (dcap_url == "" || psw_url == "") {
+            powershell """
+                ${build_dir}\\scripts\\install-windows-prereqs.ps1 -InstallPath C:\\oe_prereqs -LaunchConfiguration SGX1FLC -DCAPClientType None ${install_flags}
+            """
+        } else {
+            powershell """
+                ${build_dir}\\scripts\\install-windows-prereqs.ps1 -IntelPSWURL ${psw_url} -IntelPSWHash "" -IntelDCAPURL ${dcap_url} -IntelDCAPHash "" -InstallPath C:\\oe_prereqs -LaunchConfiguration SGX1FLC -DCAPClientType None ${install_flags}
+            """
+        }
+    }
 }
 
 /**
