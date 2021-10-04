@@ -393,6 +393,20 @@ def OEReleaseTest(String label, String release_version, String oe_package = "ope
     }
 }
 
+def TestIntelRCs(String label, String release_version, String oe_package = "open-enclave", String source = "Github", boolean lvi_mitigation = false, String dcap_url, String psw_url, String install_flags = "") {
+    stage("Test Intel Drivers RCs ${label}") {
+        node(label) {
+            timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
+                cleanWs()
+                checkout scm
+                helpers.dependenciesInstall(dcap_url, psw_url, install_flags)
+                helpers.releaseInstall(release_version, oe_package, source)
+                helpers.TestSamplesCommand(lvi_mitigation, oe_package)
+            }
+        }
+    }
+}
+
 // Azure Windows
 
 def windowsPrereqsVerify(String label) {
