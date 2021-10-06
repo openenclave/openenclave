@@ -289,17 +289,45 @@ oe_result_t oe_validate_revocation_list(
                 "Failed to read CRL. %s",
                 oe_result_str(result));
         }
-        // Otherwise, CRL should have v3 structure which is DER encoded
+        // Otherwise, CRL should have v3 or v3.1 structure
+        //    v3 is hex encoded DER
+        //    v3.1 is DER
         else
         {
             size_t der_data_size = sgx_endorsements->items[i].size;
             if (der_data_size == 0)
                 OE_RAISE(OE_INVALID_PARAMETER);
 
-            // If DER CRL buffer has null terminator, need to remove it before
+            // If CRL buffer has null terminator, need to remove it before
             // send the DER data to crypto API for reading.
             if (sgx_endorsements->items[i].data[der_data_size - 1] == 0)
                 der_data_size -= 1;
+
+            // If the CRL is only composed of hex digits we need to manually
+            // convert to DER
+            bool ishex = true;
+            for (size_t l = 0; l < der_data_size; ++l)
+            {
+                const uint8_t c = sgx_endorsements->items[i].data[l];
+                if (!((c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f') ||
+                      (c >= '0' && c <= '9')))
+                {
+                    ishex = false;
+                    break;
+                }
+            }
+            if (ishex)
+            {
+                OE_CHECK_MSG(
+                    oe_hex_to_buf(
+                        (const char*)sgx_endorsements->items[i].data,
+                        der_data_size,
+                        sgx_endorsements->items[i].data,
+                        der_data_size),
+                    "Failed to convert to DER. %s",
+                    oe_result_str(result));
+                der_data_size /= 2;
+            }
 
             OE_CHECK_MSG(
                 oe_crl_read_der(

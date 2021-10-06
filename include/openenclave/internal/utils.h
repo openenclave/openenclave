@@ -228,6 +228,33 @@ OE_INLINE void oe_mem_reverse_inplace(void* mem, size_t n)
     }
 }
 
+OE_INLINE unsigned char oe_hex_digit_to_num(char c)
+{
+    if (c >= '0' && c <= '9')
+        return (unsigned char)(c - '0');
+
+    if (c >= 'A' && c <= 'F')
+        return (unsigned char)(10 + (c - 'A'));
+
+    return (unsigned char)(10 + (c - 'a'));
+}
+
+OE_INLINE oe_result_t
+oe_hex_to_buf(const char* str, size_t strsize, uint8_t* buf, size_t bufsize)
+{
+    if (bufsize * 2 < strsize)
+    {
+        return OE_BUFFER_TOO_SMALL;
+    }
+    for (size_t i = 0; i < strsize; i += 2)
+    {
+        unsigned char v =
+            (unsigned char)(16 * oe_hex_digit_to_num(str[i]) + oe_hex_digit_to_num(str[i + 1]));
+        buf[i / 2] = v;
+    }
+    return OE_OK;
+}
+
 OE_EXTERNC_END
 
 #endif /* _OE_UTILS_H */
