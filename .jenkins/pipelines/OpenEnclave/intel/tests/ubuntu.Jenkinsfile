@@ -16,12 +16,14 @@ properties(
         [$class: 'JobRestrictionProperty'],
         parameters(
             [
+                string(name: "REPOSITORY", defaultValue: "openenclave/openenclave"),
+                string(name: "BRANCH_NAME", defaultValue: "master"),
                 string(name: "DCAP_URL", description: "Intel DCAP Package URL"),
                 string(name: "PSW_URL", description: "Intel PSW Package URL"),
                 string(name: "OECI_LIB_VERSION", defaultValue: "master", description: 'Version of OE Libraries to use'),
                 string(name: "OE_RELEASE_VERSION", description: "Open Enclave Release Version"),
                 choice(name: "OE_PACKAGE", choices: ["open-enclave", "open-enclave-hostverify"], description: "Open Enclave package type to install"),
-                choice(name: "RELEASE_SOURCE", choices: ["Github", "Azure"], description: "Source to download the OE Release from")
+                choice(name: "RELEASE_SOURCE", choices: ["GitHub", "Azure"], description: "Source to download the OE Release from")
             ]
         )
     ]

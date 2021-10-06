@@ -393,7 +393,7 @@ def OEReleaseTest(String label, String release_version, String oe_package = "ope
     }
 }
 
-def TestIntelRCs(String label, String release_version, String oe_package = "open-enclave", String source = "Github", boolean lvi_mitigation = false, String dcap_url, String psw_url, String install_flags = "") {
+def TestIntelRCs(String label, String release_version, String oe_package = "open-enclave", String source = "GitHub", boolean lvi_mitigation = false, String dcap_url, String psw_url, String install_flags = "") {
     stage("Test Intel Drivers RCs ${label}") {
         node(label) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
