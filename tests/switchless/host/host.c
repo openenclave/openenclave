@@ -322,6 +322,12 @@ void* launch_host_thread(void* a)
     return NULL;
 }
 
+void host_large_ocall_switchless(uint8_t* buffer, uint64_t count)
+{
+    OE_UNUSED(buffer);
+    OE_UNUSED(count);
+}
+
 void test_switchless_ecalls(
     oe_enclave_t* enclave_switchless,
     oe_enclave_t* enclave_normal,
@@ -502,6 +508,8 @@ int main(int argc, const char* argv[])
     else
         test_switchless_ocalls(
             enclave_switchless, enclave_normal, num_enclave_threads);
+
+    OE_TEST(enc_test_large_switchless_ocall(enclave_switchless) == OE_OK);
 
     result = oe_terminate_enclave(enclave_switchless);
     OE_TEST(result == OE_OK);
