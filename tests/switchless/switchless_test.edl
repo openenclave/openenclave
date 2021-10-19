@@ -41,6 +41,8 @@ enclave {
             [out] char out[100],
             [string, in] const char* str1,
             [in] char str2[100]);
+
+	public void enc_test_large_switchless_ocall();
     };
 
     untrusted {
@@ -58,5 +60,10 @@ enclave {
             [out] char out[100],
             [string, in] const char* str1,
             [in] char str2[100]);
+
+        void host_large_ocall_switchless(
+	    [count=count, in] uint8_t* buffer,
+	    size_t count)
+	    transition_using_threads;
     };
 };

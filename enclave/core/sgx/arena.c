@@ -46,6 +46,11 @@ void* oe_arena_malloc(size_t size)
     if (arena->buffer == NULL)
     {
         arena->capacity = __atomic_load_n(&_capacity, __ATOMIC_SEQ_CST);
+        if (size > arena->capacity)
+        {
+            arena->capacity = oe_round_up_to_multiple(size, OE_PAGE_SIZE);
+        }
+
         void* buffer = oe_allocate_arena(arena->capacity);
         if (buffer == NULL)
         {
@@ -73,6 +78,28 @@ void* oe_arena_malloc(size_t size)
         uint8_t* addr = arena->buffer + arena->used;
         arena->used = used_after;
         return addr;
+    }
+    else
+    {
+        // If the arena does not contain any objects, then
+        // it is safe to resize the arena.
+        if (arena->used == 0)
+        {
+            void* buffer = arena->buffer;
+            arena->buffer = NULL;
+            oe_deallocate_arena(buffer);
+            arena->capacity = 0;
+            return oe_arena_malloc(size);
+        }
+        else
+        {
+            // Currently there are no scenarios where multiple objects are
+            // allocated in the arena. Hence, control will not reach here.
+            // In case, in future, the area is used for allocating multiple
+            // objects, the control can reach here. In such a case, the current
+            // behavior is preserved and the switchless call will fail.
+            // This can be handled in the future.
+        }
     }
 
 done:
