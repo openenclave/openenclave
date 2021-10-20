@@ -416,9 +416,10 @@ def releaseInstall(String release_version = null, String oe_package = "open-encl
         // Download Open Enclave package
         releaseDownloadLinux(release_version, oe_package, source, os_id, os_release)
         // Install Open Enclave package
+        def package_name = source == "GitHub" ? "${os_id}_${os_release}_${oe_package}_${release_version}" : "${oe_package}_${release_version}"
         sh """
             ${WaitForAptLock()}
-            sudo dpkg -i "${release_version}/${os_id} ${os_release}/${os_id}_${os_release}_${oe_package}_${release_version}_amd64.deb"
+            sudo dpkg -i "${release_version}/${os_id} ${os_release}/${package_name}_amd64.deb"
         """
     // For Windows
     } else {
