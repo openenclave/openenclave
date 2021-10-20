@@ -1,0 +1,140 @@
+diff --git a/crypto/asn1/a_verify.c b/crypto/asn1/a_verify.c
+index 4b5f54234f..709b574c8d 100644
+--- a/crypto/asn1/a_verify.c
++++ b/crypto/asn1/a_verify.c
+@@ -21,6 +21,8 @@
+ #include "crypto/asn1.h"
+ #include "crypto/evp.h"
+ 
++int oe_host_printf(const char* fmt, ...);
++
+ #ifndef NO_ASN1_OLD
+ 
+ int ASN1_verify(i2d_of_void *i2d, X509_ALGOR *a, ASN1_BIT_STRING *signature,
+@@ -32,28 +34,33 @@ int ASN1_verify(i2d_of_void *i2d, X509_ALGOR *a, ASN1_BIT_STRING *signature,
+     int ret = -1, i, inl;
+ 
+     if (ctx == NULL) {
++        oe_host_printf("ASN1_verify(): Memory allocation failed.\n");
+         ASN1err(ASN1_F_ASN1_VERIFY, ERR_R_MALLOC_FAILURE);
+         goto err;
+     }
+     i = OBJ_obj2nid(a->algorithm);
+     type = EVP_get_digestbyname(OBJ_nid2sn(i));
+     if (type == NULL) {
++        oe_host_printf("ASN1_verify(): Unknown message returned from digest algorithm.\n");
+         ASN1err(ASN1_F_ASN1_VERIFY, ASN1_R_UNKNOWN_MESSAGE_DIGEST_ALGORITHM);
+         goto err;
+     }
+ 
+     if (signature->type == V_ASN1_BIT_STRING && signature->flags & 0x7) {
++        oe_host_printf("ASN1_verify(): Invalid bits in the string.\n");
+         ASN1err(ASN1_F_ASN1_VERIFY, ASN1_R_INVALID_BIT_STRING_BITS_LEFT);
+         goto err;
+     }
+ 
+     inl = i2d(data, NULL);
+     if (inl <= 0) {
++        oe_host_printf("ASN1_verify(): Internal error.\n");
+         ASN1err(ASN1_F_ASN1_VERIFY, ERR_R_INTERNAL_ERROR);
+         goto err;
+     }
+     buf_in = OPENSSL_malloc((unsigned int)inl);
+     if (buf_in == NULL) {
++        oe_host_printf("ASN1_verify(): Memory allocation failed.\n");
+         ASN1err(ASN1_F_ASN1_VERIFY, ERR_R_MALLOC_FAILURE);
+         goto err;
+     }
+@@ -66,6 +73,7 @@ int ASN1_verify(i2d_of_void *i2d, X509_ALGOR *a, ASN1_BIT_STRING *signature,
+     OPENSSL_clear_free(buf_in, (unsigned int)inl);
+ 
+     if (!ret) {
++        oe_host_printf("ASN1_verify(): ERR_R_EVP_LIB.\n");
+         ASN1err(ASN1_F_ASN1_VERIFY, ERR_R_EVP_LIB);
+         goto err;
+     }
+@@ -73,6 +81,7 @@ int ASN1_verify(i2d_of_void *i2d, X509_ALGOR *a, ASN1_BIT_STRING *signature,
+ 
+     if (EVP_VerifyFinal(ctx, (unsigned char *)signature->data,
+                         (unsigned int)signature->length, pkey) <= 0) {
++        oe_host_printf("ASN1_verify(): ERR_R_EVP_LIB.\n");
+         ASN1err(ASN1_F_ASN1_VERIFY, ERR_R_EVP_LIB);
+         ret = 0;
+         goto err;
+@@ -95,28 +104,33 @@ int ASN1_item_verify(const ASN1_ITEM *it, X509_ALGOR *a,
+     size_t inll = 0;
+ 
+     if (!pkey) {
++        oe_host_printf("ASN1_item_verify(): NULL parameter has been passed.\n");
+         ASN1err(ASN1_F_ASN1_ITEM_VERIFY, ERR_R_PASSED_NULL_PARAMETER);
+         return -1;
+     }
+ 
+     if (signature->type == V_ASN1_BIT_STRING && signature->flags & 0x7) {
++        oe_host_printf("ASN1_item_verify(): Invalid bits in the string.\n");
+         ASN1err(ASN1_F_ASN1_ITEM_VERIFY, ASN1_R_INVALID_BIT_STRING_BITS_LEFT);
+         return -1;
+     }
+ 
+     ctx = EVP_MD_CTX_new();
+     if (ctx == NULL) {
++        oe_host_printf("ASN1_item_verify(): Memory allocation failed.\n");
+         ASN1err(ASN1_F_ASN1_ITEM_VERIFY, ERR_R_MALLOC_FAILURE);
+         goto err;
+     }
+ 
+     /* Convert signature OID into digest and public key OIDs */
+     if (!OBJ_find_sigid_algs(OBJ_obj2nid(a->algorithm), &mdnid, &pknid)) {
++        oe_host_printf("ASN1_item_verify(): Unknown signature algorithm.\n");
+         ASN1err(ASN1_F_ASN1_ITEM_VERIFY, ASN1_R_UNKNOWN_SIGNATURE_ALGORITHM);
+         goto err;
+     }
+     if (mdnid == NID_undef) {
+         if (!pkey->ameth || !pkey->ameth->item_verify) {
++            oe_host_printf("ASN1_item_verify(): Unknown signature algorithm.\n");
+             ASN1err(ASN1_F_ASN1_ITEM_VERIFY,
+                     ASN1_R_UNKNOWN_SIGNATURE_ALGORITHM);
+             goto err;
+@@ -134,6 +148,7 @@ int ASN1_item_verify(const ASN1_ITEM *it, X509_ALGOR *a,
+         const EVP_MD *type = EVP_get_digestbynid(mdnid);
+ 
+         if (type == NULL) {
++            oe_host_printf("ASN1_item_verify(): Unknown message returned from digest algorithm.\n");
+             ASN1err(ASN1_F_ASN1_ITEM_VERIFY,
+                     ASN1_R_UNKNOWN_MESSAGE_DIGEST_ALGORITHM);
+             goto err;
+@@ -141,11 +156,13 @@ int ASN1_item_verify(const ASN1_ITEM *it, X509_ALGOR *a,
+ 
+         /* Check public key OID matches public key type */
+         if (EVP_PKEY_type(pknid) != pkey->ameth->pkey_id) {
++            oe_host_printf("ASN1_item_verify(): Wrong public key type.\n");
+             ASN1err(ASN1_F_ASN1_ITEM_VERIFY, ASN1_R_WRONG_PUBLIC_KEY_TYPE);
+             goto err;
+         }
+ 
+         if (!EVP_DigestVerifyInit(ctx, NULL, type, NULL, pkey)) {
++            oe_host_printf("ASN1_item_verify(): ERR_R_EVP_LIB.\n");
+             ASN1err(ASN1_F_ASN1_ITEM_VERIFY, ERR_R_EVP_LIB);
+             ret = 0;
+             goto err;
+@@ -155,10 +172,12 @@ int ASN1_item_verify(const ASN1_ITEM *it, X509_ALGOR *a,
+ 
+     inl = ASN1_item_i2d(asn, &buf_in, it);
+     if (inl <= 0) {
++        oe_host_printf("ASN1_item_verify(): Internal error.\n");
+         ASN1err(ASN1_F_ASN1_ITEM_VERIFY, ERR_R_INTERNAL_ERROR);
+         goto err;
+     }
+     if (buf_in == NULL) {
++        oe_host_printf("ASN1_item_verify(): Internal error.\n");
+         ASN1err(ASN1_F_ASN1_ITEM_VERIFY, ERR_R_MALLOC_FAILURE);
+         goto err;
+     }
+@@ -167,6 +186,7 @@ int ASN1_item_verify(const ASN1_ITEM *it, X509_ALGOR *a,
+     ret = EVP_DigestVerify(ctx, signature->data, (size_t)signature->length,
+                            buf_in, inl);
+     if (ret <= 0) {
++        oe_host_printf("ASN1_item_verify(): ERR_R_EVP_LIB.\n");
+         ASN1err(ASN1_F_ASN1_ITEM_VERIFY, ERR_R_EVP_LIB);
+         goto err;
+     }

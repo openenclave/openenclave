@@ -1,0 +1,56 @@
+diff --git a/crypto/x509/x509_vfy.c b/crypto/x509/x509_vfy.c
+index 20a36e763c..500abedb90 100644
+--- a/crypto/x509/x509_vfy.c
++++ b/crypto/x509/x509_vfy.c
+@@ -63,6 +63,8 @@
+ 
+ #define CRL_SCORE_TIME_DELTA    0x002
+ 
++int oe_host_printf(const char* fmt, ...);
++
+ static int build_chain(X509_STORE_CTX *ctx);
+ static int verify_chain(X509_STORE_CTX *ctx);
+ static int dane_verify(X509_STORE_CTX *ctx);
+@@ -1745,9 +1747,9 @@ static int internal_verify(X509_STORE_CTX *ctx)
+         goto check_cert_time;
+     }
+ 
+-    if (ctx->check_issued(ctx, xi, xi))
++    if (ctx->check_issued(ctx, xi, xi)) {
+         xs = xi; /* the typical case: last cert in the chain is self-issued */
+-    else {
++    } else {
+         if (ctx->param->flags & X509_V_FLAG_PARTIAL_CHAIN) {
+             xs = xi;
+             goto check_cert_time;
+@@ -1806,16 +1808,28 @@ static int internal_verify(X509_STORE_CTX *ctx)
+             int ret = xs == xi && (xi->ex_flags & EXFLAG_CA) == 0
+                 ? X509_V_OK : x509_signing_allowed(xi, xs);
+ 
++            if (ret == X509_V_OK) {
++                oe_host_printf("X509_verify(): ret=X509_V_OK.\n");
++            } else {
++                oe_host_printf("X509_verify(): ret!=X509_V_OK.\n");
++            }
++
+             if (ret != X509_V_OK && !verify_cb_cert(ctx, xi, issuer_depth, ret))
+                 return 0;
+             if ((pkey = X509_get0_pubkey(xi)) == NULL) {
+                 ret = X509_V_ERR_UNABLE_TO_DECODE_ISSUER_PUBLIC_KEY;
+-                if (!verify_cb_cert(ctx, xi, issuer_depth, ret))
++                if (!verify_cb_cert(ctx, xi, issuer_depth, ret)) {
+                     return 0;
++                } else {
++                    oe_host_printf("X509_verify(): ret=X509_V_ERR_UNABLE_TO_DECODE_ISSUER_PUBLIC_KEY.\n");
++                }
+             } else if (X509_verify(xs, pkey) <= 0) {
+                 ret = X509_V_ERR_CERT_SIGNATURE_FAILURE;
+-                if (!verify_cb_cert(ctx, xs, n, ret))
++                if (!verify_cb_cert(ctx, xs, n, ret)) {
+                     return 0;
++                } else {
++                    oe_host_printf("X509_verify(): ret=X509_V_ERR_CERT_SIGNATURE_FAILURE.\n");
++                }
+             }
+         }
+ 
