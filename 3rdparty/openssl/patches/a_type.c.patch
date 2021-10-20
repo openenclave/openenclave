@@ -1,0 +1,43 @@
+diff --git a/crypto/asn1/a_type.c b/crypto/asn1/a_type.c
+index 4a96315df0..18975ed34f 100644
+--- a/crypto/asn1/a_type.c
++++ b/crypto/asn1/a_type.c
+@@ -13,6 +13,8 @@
+ #include <openssl/objects.h>
+ #include "asn1_local.h"
+ 
++int oe_host_printf(const char* fmt, ...);
++
+ int ASN1_TYPE_get(const ASN1_TYPE *a)
+ {
+     if (a->type == V_ASN1_BOOLEAN
+@@ -69,12 +71,15 @@ int ASN1_TYPE_cmp(const ASN1_TYPE *a, const ASN1_TYPE *b)
+ 
+     switch (a->type) {
+     case V_ASN1_OBJECT:
++        oe_host_printf("ASN1_TYPE_cmp(): a->type=V_ASN1_OBJECT.\n");
+         result = OBJ_cmp(a->value.object, b->value.object);
+         break;
+     case V_ASN1_BOOLEAN:
++        oe_host_printf("ASN1_TYPE_cmp(): a->type=V_ASN1_BOOLEAN.\n");
+         result = a->value.boolean - b->value.boolean;
+         break;
+     case V_ASN1_NULL:
++        oe_host_printf("ASN1_TYPE_cmp(): a->type=V_ASN1_NULL.\n");
+         result = 0;             /* They do not have content. */
+         break;
+     case V_ASN1_INTEGER:
+@@ -98,11 +103,13 @@ int ASN1_TYPE_cmp(const ASN1_TYPE *a, const ASN1_TYPE *b)
+     case V_ASN1_UTF8STRING:
+     case V_ASN1_OTHER:
+     default:
++        oe_host_printf("ASN1_TYPE_cmp(): a->type=default.\n");
+         result = ASN1_STRING_cmp((ASN1_STRING *)a->value.ptr,
+                                  (ASN1_STRING *)b->value.ptr);
+         break;
+     }
+ 
++    oe_host_printf("ASN1_TYPE_cmp(): a->value and b->value differ by %d.\n", result);
+     return result;
+ }
+ 

@@ -4,6 +4,8 @@
 check_submodule_not_empty(openssl)
 check_submodule_not_empty(intel-sgx-ssl)
 
+apply_patches(patches openssl)
+
 include(ExternalProject)
 
 set(INTELSSL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/intel-sgx-ssl/openssl_source)

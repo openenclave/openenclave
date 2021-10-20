@@ -1,0 +1,25 @@
+diff --git a/crypto/o_str.c b/crypto/o_str.c
+index eb9f21cc0c..046599a4e3 100644
+--- a/crypto/o_str.c
++++ b/crypto/o_str.c
+@@ -13,6 +13,8 @@
+ #include "internal/cryptlib.h"
+ #include "internal/o_str.h"
+ 
++int oe_host_printf(const char* fmt, ...);
++
+ int OPENSSL_memcmp(const void *v1, const void *v2, size_t n)
+ {
+     const unsigned char *c1 = v1, *c2 = v2;
+@@ -21,6 +23,11 @@ int OPENSSL_memcmp(const void *v1, const void *v2, size_t n)
+     while (n && (ret = *c1 - *c2) == 0)
+         n--, c1++, c2++;
+ 
++    if (ret)
++        oe_host_printf("OPENSSL_memcmp(): two characters at position %d differ by %d.\n", n, ret);
++    else
++        oe_host_printf("OPENSSL_memcmp(): success.\n");
++
+     return ret;
+ }
+ 
