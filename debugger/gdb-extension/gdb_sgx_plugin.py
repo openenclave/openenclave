@@ -429,6 +429,30 @@ class MissingSymbolAnalyzer:
         else:
             print('oegdb: objdump found. Mising symbols will be analyzed.')
 
+        # Missing symbols in the following modules can be ignored
+        self.ignored_libs = [
+            # dotnet fails to load one of the dependencies of this module.
+            # But that seems to be expected behavior.
+            'libcoreclrtraceptprovider.so'
+        ]
+        # Symbols with the following name can be ignored
+        self.ignored_symbols = [
+            # Many shared libraries are compiled for gprof and take a weak dependency
+            # on this symbol.
+            '__gmon_start__'
+        ]
+
+    def ignore(self, symbol):
+        # Ignore transactional memory functions
+        if symbol.startswith('_ITM_'):
+            return True
+        # ITM new/delete
+        if symbol in ['_ZGTtnam', '_ZGTtdlPv']:
+            return True
+        if symbol in self.ignored_symbols:
+            return True
+
+
     def message(self, m):
         # unresolved_color = '\033[1;38;5;170m'
         unresolved_color = '\033[0;31m'
@@ -436,8 +460,16 @@ class MissingSymbolAnalyzer:
         print(colorize('oegdb: ' + m, unresolved_color))
 
 
-    def find_missing_symbols(self, lib):
+    def find_missing_symbols(self, libname, lib):
+        for ig in self.ignored_libs:
+            if libname.endswith(ig):
+                self.message('skipping symbol analysis for module %s' % libname)
+                return
+
         for sym in lib['imports']:
+            if self.ignore(sym):
+                continue
+
             found = False
             for l in self.libs.values():
                 if sym in l['exports']:
@@ -470,7 +502,7 @@ class MissingSymbolAnalyzer:
                 'exports':exports
              }
         self.libs[libname] = lib
-        self.find_missing_symbols(lib)
+        self.find_missing_symbols(libname, lib)
 
 
 missing_symbol_analyzer = None
