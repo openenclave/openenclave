@@ -57,6 +57,10 @@ ARG GNAME=jenkins
 ARG UID=1000
 ARG GID=1000
 
+# Workaround for https://githubmemory.com/repo/pypa/pip/issues/10219
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
+
 # Install essential packages
 RUN apt-get update && \
     apt-get -y --no-install-recommends upgrade && \
