@@ -47,6 +47,10 @@ Current Expectations
 However, it is up to each committer to determine who should review which PR, and
 when to merge it. It is up to each committer to decide [when to accept a contribution](Governance.md#Accepting-Contributions).
 
+It is recommended that each committer take the Linux Foundation course
+[Inclusive Open Source Community Orientation](https://training.linuxfoundation.org/training/inclusive-open-source-community-orientation-lfc102/)
+and follow its principles to ensure that Open Enclave has an open and inclusive community.
+
 Current Challenges
 ------------------
 
