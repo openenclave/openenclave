@@ -105,15 +105,37 @@ def testSamplesLinux(boolean lvi_mitigation, String oe_package) {
         cp -r /opt/openenclave/share/openenclave/samples ~/
         cd ~/samples
         . /opt/openenclave/share/openenclave/openenclaverc
+        if hash cmake 2> /dev/null; then
+            echo "INFO: Using cmake to build"
+            export BUILD_SYSTEM=CMAKE
+        elif hash make 2> /dev/null; then
+            echo "INFO: Using make to build"
+            export BUILD_SYSTEM=MAKE
+        fi
+        if [[ -z \${BUILD_SYSTEM+x} ]]; then
+            echo "Error: cmake and make not found. Please install either one to proceed"
+            exit 1
+        fi
         for i in *; do
-            if [[ -d \${i} ]] && [[ -f \${i}/CMakeLists.txt ]]; then
-                cd \${i}
-                mkdir build
-                cd build
-                cmake .. ${lvi_args}
-                make
-                make run
-                cd ~/samples
+            if [[ \${BUILD_SYSTEM} == "CMAKE" ]]; then
+                if [[ -d \${i} ]] && [[ -f \${i}/CMakeLists.txt ]]; then
+                    cd \${i}
+                    mkdir build
+                    cd build
+                    cmake .. ${lvi_args}
+                    make
+                    make run
+                    cd ~/samples
+                fi
+            elif [[ \${BUILD_SYSTEM} == "MAKE" ]]; then
+                if [[ -d \${i} ]] && [[ -f \${i}/Makefile ]]; then
+                    cd \${i}
+                    make build
+                    make run
+                fi
+            else
+                echo "Error: unrecognized build system. Either cmake or make must be installed."
+                exit 1
             fi
         done
         cd ~
