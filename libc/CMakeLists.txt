@@ -47,8 +47,14 @@ endif ()
 set(PLATFORM_SRC "")
 
 if (OE_SGX)
-  list(APPEND PLATFORM_SRC sgx/arc4random.c ${MUSLSRC}/math/x86_64/sqrt.c
-       ${MUSLSRC}/math/x86_64/sqrtl.c ${MUSLSRC}/math/x86_64/sqrtf.c)
+  list(
+    APPEND
+    PLATFORM_SRC
+    sgx/arc4random.c
+    ${MUSLSRC}/math/x86_64/sqrt.c
+    ${MUSLSRC}/math/x86_64/sqrtl.c
+    ${MUSLSRC}/math/x86_64/sqrtf.c
+    sgx/init.c)
 else ()
   list(
     APPEND
@@ -59,6 +65,7 @@ else ()
     ${MUSLSRC}/string/memset.c
     optee/abort.c
     optee/arc4random.c
+    optee/init.c
     optee/trace.c)
 endif ()
 
