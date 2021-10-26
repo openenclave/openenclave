@@ -6,6 +6,7 @@
 #include <libgen.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/constants_x64.h>
+#include <openenclave/internal/libc/init.h>
 #include <openenclave/internal/tests.h>
 #include <search.h>
 #include <stdarg.h>
@@ -148,6 +149,8 @@ int run_test(const char* test_name)
     device_init();
     libc_test_function_t test = get_test_case(test_name);
 
+    OE_TEST(oe_test_libc_is_initialized());
+
     if (test)
     {
         return run_test_helper(test_name, test);
@@ -162,6 +165,8 @@ int run_all_tests()
     int ret;
 
     device_init();
+
+    OE_TEST(oe_test_libc_is_initialized());
 
     ret = 0;
     for (int i = 0; i < sizeof(libc_tests) / sizeof(libc_test_entry_t); i++)
