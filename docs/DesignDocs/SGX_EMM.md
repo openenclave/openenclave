@@ -78,8 +78,8 @@ they belong to is deallocated by sgx_mm_dealloc.
 
 **Modify Page Attributes**
 
-The EMM clients may call sgx_mm_modify/sgx_mm_modify_ex to request permissions
-and/or page type changes for pages in existing allocations.
+The EMM clients may call sgx_mm_modify_permissions/sgx_mm_modify_type to request permissions
+or page type changes for pages in existing allocations.
 
 ## Notes on Internal Design ##
 
@@ -147,7 +147,18 @@ typedef struct _sgx_pfinfo
     uint32_t reserved;
 } sgx_pfinfo;
 
-/**
+/* Return value used by the EMM #PF handler to indicate
+ *  to the dispatcher that it should continue searching for the next handler.
+ */
+#define SGX_MM_EXCEPTION_CONTINUE_SEARCH 0
+
+/* Return value used by the EMM #PF handler to indicate
+ *  to the dispatcher that it should stop searching and continue execution.
+ */
+#define SGX_MM_EXCEPTION_CONTINUE_EXECUTION -1
+
+
+/*
  * Custom page fault (#PF) handler, do usage specific processing upon #PF,
  * e.g., loading data and verify its trustworthiness, then call sgx_mm_commit_data
  * to explicitly EACCEPTCOPY data.
@@ -159,8 +170,8 @@ typedef struct _sgx_pfinfo
  *
  * @param[in] pfinfo info reported in the SSA MISC region for page fault.
  * @param[in] private_data private data provided by handler in sgx_mm_alloc call.
- * @retval SGX_EXCEPTION_CONTINUE_EXECUTION Success on handling the exception.
- * @retval SGX_EXCEPTION_CONTINUE_SEARCH Exception not handled and should be passed to
+ * @retval SGX_MM_EXCEPTION_CONTINUE_EXECUTION Success on handling the exception.
+ * @retval SGX_MM_EXCEPTION_CONTINUE_SEARCH Exception not handled and should be passed to
  *         some other handler.
  *
  */
@@ -183,7 +194,7 @@ typedef int (*sgx_enclave_fault_handler_t)(const sgx_pfinfo *pfinfo, void *priva
 /* Always commit pages from higher to lower addresses,
  *  no gaps in addresses above the last committed.
  */
-#define SGX_EMA_GROWSDOWN           SGX_EMA_ALLOC_FLAGS(10)
+#define SGX_EMA_GROWSDOWN           SGX_EMA_ALLOC_FLAGS(0x10)
 
 /* Always commit pages from lower to higher addresses,
  * no gaps in addresses below the last committed.
@@ -191,11 +202,11 @@ typedef int (*sgx_enclave_fault_handler_t)(const sgx_pfinfo *pfinfo, void *priva
 #define SGX_EMA_GROWSUP  SGX_EMA_ALLOC_FLAGS(0x20)
 
 /* Map addr must be exactly as requested. */
-#define SGX_EMA_FIXED SGX_EMA_ALLOC_FLAGS(0x40UL)
+#define SGX_EMA_FIXED SGX_EMA_ALLOC_FLAGS(0x40)
 
 /* bit 8 - 15 are page types. */
 #define SGX_EMA_PAGE_TYPE_SHIFT 8
-#define SGX_EMA_PAGE_TYPE(n) (((unsigned int)(n) << SGX_EMA_PAGE_TYPE_SHIFT))
+#define SGX_EMA_PAGE_TYPE(n) ((n) << SGX_EMA_PAGE_TYPE_SHIFT)
 #define SGX_EMA_PAGE_TYPE_MASK      SGX_EMA_PAGE_TYPE(0xFF)
 #define SGX_EMA_PAGE_TYPE_TCS       SGX_EMA_PAGE_TYPE(0x1)  /* TCS page type. */
 #define SGX_EMA_PAGE_TYPE_REG       SGX_EMA_PAGE_TYPE(0x2)  /* regular page type, default if not specified. */
@@ -203,7 +214,7 @@ typedef int (*sgx_enclave_fault_handler_t)(const sgx_pfinfo *pfinfo, void *priva
 #define SGX_EMA_PAGE_TYPE_SS_FIRST  SGX_EMA_PAGE_TYPE(0x5)  /* the first page in shadow stack. */
 #define SGX_EMA_PAGE_TYPE_SS_REST   SGX_EMA_PAGE_TYPE(0x6)  /* the rest pages in shadow stack. */
 
-/* Use bit 24-32 for alignment masks. */
+/* Use bit 24-31 for alignment masks. */
 #define SGX_EMA_ALIGNMENT_SHIFT 24
 /*
  * Alignment (expressed in log2).  Must be >= log2(PAGE_SIZE) and
@@ -216,13 +227,13 @@ typedef int (*sgx_enclave_fault_handler_t)(const sgx_pfinfo *pfinfo, void *priva
 #define SGX_EMA_ALIGNMENT_4GB SGX_EMA_ALIGNED(32UL)
 
 /* Permissions flags */
-#define SGX_EMA_PROT_NOACCESS   0x0UL
-#define SGX_EMA_PROT_READ       0x1UL
-#define SGX_EMA_PROT_WRITE      0x2UL
-#define SGX_EMA_PROT_EXECUTE    0x4UL
+#define SGX_EMA_PROT_NONE   0x0
+#define SGX_EMA_PROT_READ       0x1
+#define SGX_EMA_PROT_WRITE      0x2
+#define SGX_EMA_PROT_EXEC       0x4
 #define SGX_EMA_PROT_READ_WRITE (SGX_EMA_PROT_READ|SGX_EMA_PROT_WRITE)
-#define SGX_EMA_PROT_READ_EXECUTE (SGX_EMA_PROT_READ|SGX_EMA_PROT_EXECUTE)
-#define SGX_EMA_PROT_READ_WRITE_EXECUTE (SGX_EMA_PROT_READ_WRITE|SGX_EMA_PROT_EXECUTE)
+#define SGX_EMA_PROT_READ_EXEC (SGX_EMA_PROT_READ|SGX_EMA_PROT_EXEC)
+#define SGX_EMA_PROT_READ_WRITE_EXEC (SGX_EMA_PROT_READ_WRITE|SGX_EMA_PROT_EXEC)
 /*
  * Allocate a new memory region in enclave address space (ELRANGE).
  * @param[in] addr Starting address of the region, page aligned. If NULL is provided,
@@ -310,41 +321,38 @@ int sgx_mm_dealloc(void *addr, size_t length);
 
 ```
 
-### sgx_mm_modify_type, sgx_mm_modify_permissions and sgx_mm_modify_ex
+### sgx_mm_modify_type, sgx_mm_modify_permissions
 
 ```
 /*
- * Change permissions and/or page type of a previously allocated region.
+ * Change permissions of an allocated region.
  * @param[in] addr Start address of the region, must be page aligned.
  * @param[in] length Size in bytes of multiples of page size.
  * @param[in] prot permissions bitwise OR of following with:
  *        - SGX_EMA_PROT_READ: Pages may be read.
  *        - SGX_EMA_PROT_WRITE: Pages may be written.
- *        - SGX_EMA_PROT_EXECUTE: Pages may be executed.
- *
- * @param[in] type page type, one of the following:
- *       - SGX_EMA_PAGE_TYPE_TCS: TCS page.
- *       - -1: no page type change, keep the original type.
- *
+ *        - SGX_EMA_PROT_EXEC: Pages may be executed.
  * @retval 0 The operation was successful.
  * @retval EACCES Original page type can not be changed to target type.
  * @retval EINVAL The memory region was not allocated or outside enclave
  *                or other invalid parameters that are not supported.
  * @retval EPERM The request permissions are not allowed, e.g., by target page type or
- *               SELinux policy, or target page type is no allowed by this API, e.g., PT_TRIM,
- *               PT_SS_FIRST, PT_SS_REST.
- */
-int sgx_mm_modify_ex(void *addr, size_t length, int prot, int type);
-
-/*
- * Change permissions of an allocated region.
- * Equivalent to sgx_mm_modify_ex(addr, length, prot, -1).
+ *               SELinux policy.
  */
 int sgx_mm_modify_permissions(void *addr, size_t length, int prot);
 
 /*
  * Change the page type of an allocated region.
- * Equivalent to sgx_mm_modify_ex(addr, length, -1, type).
+ * @param[in] addr Start address of the region, must be page aligned.
+ * @param[in] length Size in bytes of multiples of page size.
+ * @param[in] type page type, only SGX_EMA_PAGE_TYPE_TCS is supported.
+ *
+ * @retval 0 The operation was successful.
+ * @retval EACCES Original page type can not be changed to target type.
+ * @retval EINVAL The memory region was not allocated or outside enclave
+ *                or other invalid parameters that are not supported.
+ * @retval EPERM  Target page type is no allowed by this API, e.g., PT_TRIM,
+ *               PT_SS_FIRST, PT_SS_REST.
  */
 int sgx_mm_modify_type(void *addr, size_t length, int type);
 
@@ -402,7 +410,7 @@ int sgx_mm_commit_data(void *addr, size_t length, uint8_t *data, int prot);
 ```
 **Remarks:**
 - The memory manager decides whether OCalls are needed to ask the OS to make Page Table Entry (PTE)
-permissions changes. No separate sgx_mm_modify call is needed.
+permissions changes. No separate sgx_mm_modify_permissions call is needed.
 
 Runtime Abstraction Layer
 ----------------------------------
@@ -413,16 +421,6 @@ abstraction layer APIs.
 ### Exception Handler Registration
 
 ```
-/* Return value used by the EMM #PF handler to indicate
- *  to the dispatcher that it should continue searching for the next handler.
- */
-#define SGX_EXCEPTION_CONTINUE_SEARCH 0x0
-
-/* Return value used by the EMM #PF handler to indicate
- *  to the dispatcher that it should stop searching and continue execution.
- */
-#define SGX_EXCEPTION_CONTINUE_EXECUTION 0xFFFFFFFF
-
 /*
  * The EMM page fault (#PF) handler.
  *
@@ -430,7 +428,7 @@ abstraction layer APIs.
  * @retval SGX_EXCEPTION_CONTINUE_EXECUTION Success handling the exception.
  * @retval SGX_EXCEPTION_CONTINUE_SEARCH The EMM does not handle the exception.
  */
-typedef int (*sgx_enclave_pfhandler_t)(const sgx_pfinfo *pfinfo);
+typedef int (*sgx_mm_pfhandler_t)(const sgx_pfinfo *pfinfo);
 
 /*
  * Register the EMM handler with the global exception handler registry
@@ -441,15 +439,15 @@ typedef int (*sgx_enclave_pfhandler_t)(const sgx_pfinfo *pfinfo);
  * @retval true Success.
  * @retval false Failure.
  */
-bool sgx_register_pfhandler(sgx_enclave_pfhandler_t pfhandler);
+bool sgx_mm_register_pfhandler(sgx_mm_pfhandler_t pfhandler);
 
-/**
+/*
  * Unregister the EMM handler with the global exception handler registry.
  * @param[in] pfhandler The EMM page fault handler.
  * @retval true Success.
  * @retval false Failure.
  */
-bool sgx_unregister_pfhandler(sgx_enclave_pfhandler_t pfhandler);
+bool sgx_mm_unregister_pfhandler(sgx_mm_pfhandler_t pfhandler);
 
 ```
 
@@ -467,7 +465,6 @@ bool sgx_unregister_pfhandler(sgx_enclave_pfhandler_t pfhandler);
  *    translate following additional bits to proper parameters invoking mmap or other SGX specific
  *    syscall(s) provided by the kernel.
  *        The flags param of this interface should include exactly one of following for committing mode:
- *            - SGX_EMA_RESERVE: kernel map an address range with PROT_NONE, no EPC EAUGed.
  *            - SGX_EMA_COMMIT_NOW: reserves memory range with SGX_EMA_PROT_READ|SGX_EMA_PROT_WRITE, if supported,
  *                   kernel is given a hint to EAUG EPC pages for the area as soon as possible.
  *            - SGX_EMA_COMMIT_ON_DEMAND: reserves memory range, EPC pages can be EAUGed upon #PF.
@@ -484,7 +481,7 @@ bool sgx_unregister_pfhandler(sgx_enclave_pfhandler_t pfhandler);
  * @retval EINVAL Any parameter passed in is not valid.
  * @retval errno Error as reported by dependent syscalls, e.g., mmap().
  */
-int sgx_alloc_ocall(void *addr, size_t length, int flags);
+int sgx_mm_alloc_ocall(uint64_t addr, size_t length, int flags);
 
 /*
  * Call OS to change permissions, type, or notify EACCEPT done after TRIM.
@@ -511,7 +508,7 @@ int sgx_alloc_ocall(void *addr, size_t length, int flags);
  * @retval errno Error as reported by dependent syscalls, e.g., mprotect().
  */
 
-int sgx_modify_ocall(void *addr, size_t length, int flags_from, int flags_to);
+int sgx_mm_modify_ocall(uint64_t addr, size_t length, int flags_from, int flags_to);
 
 ```
 
@@ -519,13 +516,13 @@ int sgx_modify_ocall(void *addr, size_t length, int flags_from, int flags_to);
 
 ```
 /*
- * Define a mutex and init/lock/unlock/destroy functions.
+ * Define a mutex and create/lock/unlock/destroy functions.
  */
-typedef struct sgx_mutex_t;
-int sgx_mutex_init(sgx_mutex_t* mutex);
-int sgx_mutex_lock(sgx_mutex_t* mutex);
-int sgx_mutex_unlock(sgx_mutex_t* mutex);
-int sgx_mutex_destroy(sgx_mutex_t* mutex);
+typedef struct _sgx_mm_mutex sgx_mm_mutex;
+sgx_mm_mutex *sgx_mm_mutex_create(void);
+int sgx_mm_mutex_lock(sgx_mm_mutex *mutex);
+int sgx_mm_mutex_unlock(sgx_mm_mutex *mutex);
+int sgx_mm_mutex_destroy(sgx_mm_mutex *mutex);
 
 /*
  * Check whether the given buffer is strictly within the enclave.
@@ -543,7 +540,7 @@ int sgx_mutex_destroy(sgx_mutex_t* mutex);
  * causes arithmetic operations to wrap.
  *
  */
-bool sgx_is_within_enclave(const void *ptr, size_t size);
+bool sgx_mm_is_within_enclave(const void *ptr, size_t size);
 
 ```
 
@@ -587,12 +584,13 @@ SGX_EMA_SYSTEM passed in.
 ```
 
 #define SGX_EMA_SYSTEM SGX_EMA_ALLOC_FLAGS(0x80) /* EMA reserved by system */
+
 /*
  * Initialize an EMA. This can be used to setup EMAs to account regions that
- * are loaded and initialized with EADD before EINIT.  
+ * are loaded and initialized with EADD before EINIT.
  * @param[in] addr Starting address of the region, page aligned. If NULL is provided,
  *                  then the function will select the starting address.
- * @param[in] length Size of the region in multiples of page size in bytes.
+ * @param[in] size Size of the region in multiples of page size in bytes.
  * @param[in] flags SGX_EMA_SYSTEM, or SGX_EMA_SYSTEM | SGX_EMA_RESERVE
  *           bitwise ORed with one of following page types:
  *             - SGX_EMA_PAGE_TYPE_REG: regular page type. This is the default if not specified.
@@ -602,7 +600,7 @@ SGX_EMA_SYSTEM passed in.
  * @param[in] prot permissions, either SGX_EMA_PROT_NONE or a bitwise OR of following with:
  *        - SGX_EMA_PROT_READ: Pages may be read.
  *        - SGX_EMA_PROT_WRITE: Pages may be written.
- *        - SGX_EMA_PROT_EXECUTE: Pages may be executed.
+ *        - SGX_EMA_PROT_EXEC: Pages may be executed.
  * @param[in] handler A custom handler for page faults in this region, NULL if
  *                     no custom handling needed.
  * @param[in] handler_private Private data for the @handler, which will be passed
@@ -611,28 +609,22 @@ SGX_EMA_SYSTEM passed in.
  * @retval EACCES Region is outside enclave address space.
  * @retval EEXIST Any page in range requested is in use.
  * @retval EINVAL Invalid page type, flags, or addr and length are not page aligned.
- */ 
-int ema_init(void *addr, size_t length, int flags, int prot,
-              sgx_enclave_fault_handler_t handler,
-              void *handler_private);
+ */
+int mm_init_ema(void *addr, size_t size, int flags, int prot,
+                  sgx_enclave_fault_handler_t handler,
+                  void *handler_private);
 /**
  * Same as sgx_mm_alloc, SGX_EMA_SYSTEM can be OR'ed with flags to indicate
  * that the EMA can not be modified thru public APIs.
  */
-int ema_alloc(void *addr, size_t length, int flags,
-              sgx_enclave_fault_handler_t handler,
-              void *handler_private,
-              void **out_addr);
-
-int ema_dealloc(void *addr, size_t length);
-
-int ema_uncommit(void *addr, size_t length);
-
-int ema_commit(void *addr, size_t length);
-
-int ema_commit_data(void *addr, size_t length, uint8_t *data, int prot);
-
-int ema_modify_ex(void *addr, size_t length, int prot, int type);
+int mm_alloc(void *addr, size_t size, uint32_t flags,
+              sgx_enclave_fault_handler_t handler, void *private_data, void** out_addr);
+int mm_dealloc(void *addr, size_t size);
+int mm_uncommit(void *addr, size_t size);
+int mm_commit(void *addr, size_t size);
+int mm_commit_data(void *addr, size_t size, uint8_t *data, int prot);
+int mm_modify_type(void *addr, size_t size, int type);
+int mm_modify_permissions(void *addr, size_t size, int prot);
 
 ```
 
@@ -653,7 +645,7 @@ typedef struct _ema_t {
     size_t              size;           // in bytes of multiples of page size.
     uint32_t            alloc_flags;    // SGX_EMA_RESERVE, SGX_EMA_COMMIT_NOW, SGX_EMA_COMMIT_ON_DEMAND,
                                         // OR'ed with SGX_EMA_SYSTEM, SGX_EMA_GROWSDOWN, ENA_GROWSUP.
-    uint64_t            si_flags;       // SGX_EMA_PROT_NOACCESS, SGX_EMA_PROT_READ |{SGX_EMA_PROT_WRITE, SGX_EMA_PROT_EXECUTE}.
+    uint64_t            si_flags;       // SGX_EMA_PROT_NONE, SGX_EMA_PROT_READ |{SGX_EMA_PROT_WRITE, SGX_EMA_PROT_EXEC}.
                                         // Or'd with one of SGX_EMA_PAGE_TYPE_REG, SGX_EMA_PAGE_TYPE_TCS, SGX_EMA_PAGE_TYPE_TRIM.
     ema_bit_array*      eaccept_map;    // bitmap for EACCEPT status, bit 0 in eaccept_map[0] for the page at start address.
                                         // bit i in eaccept_map[j] for page at start_address+(i+j<<3)<<12.
