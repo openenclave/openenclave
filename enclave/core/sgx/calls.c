@@ -137,6 +137,18 @@ uint8_t __oe_initialized = 0;
 
 /*
 **==============================================================================
+** oe_libc_initialize()
+**
+**   Weak implementation of libc initialization function.
+**
+**==============================================================================
+*/
+OE_WEAK void oe_libc_initialize(void)
+{
+}
+
+/*
+**==============================================================================
 **
 ** _handle_init_enclave()
 **
@@ -174,6 +186,9 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
             /* Initialize the xstate settings
              * Depends on TD and sgx_create_report, so can't happen earlier */
             OE_CHECK(oe_set_is_xsave_supported());
+
+            /* Initialize libc */
+            oe_libc_initialize();
 
             /* Initialize the OE crypto library. */
             oe_crypto_initialize();

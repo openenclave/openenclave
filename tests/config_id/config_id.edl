@@ -4,6 +4,7 @@
 enclave {
     from "openenclave/edl/logging.edl" import *;
     from "openenclave/edl/sgx/platform.edl" import *;
+    from "openenclave/edl/fcntl.edl" import *;
     trusted {
         public oe_result_t enclave_test_config_id_non_kss();
         public oe_result_t enclave_test_config_id();
