@@ -12,11 +12,16 @@ extern char** __environ;
 
 extern int main(int argc, char* argv[]);
 
+void register_pthread_hooks(void);
+
 int enc_test(int argc, char** argv, char** env)
 {
     int ret = 1;
     ENGINE* eng = NULL;
     const BIO_METHOD* tap = NULL;
+
+    /* Register pthread hooks. Used only by threadstest */
+    register_pthread_hooks();
 
     /* Directly use environ from host. */
     __environ = env;
@@ -96,4 +101,4 @@ OE_SET_ENCLAVE_SGX(
     true, /* AllowDebug */
     6144, /* HeapPageCount */
     128,  /* StackPageCount */
-    1);   /* TCSCount */
+    8);   /* TCSCount */

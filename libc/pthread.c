@@ -105,3 +105,17 @@ int pthread_detach(pthread_t thread)
 
     return _pthread_hooks->detach(thread);
 }
+
+// OpenSSL when configured with thread support (default) installs
+// fork handlers. Open Enclave does not support fork and any installed
+// handlers would never get called.
+int pthread_atfork(
+    void (*prepare)(void),
+    void (*parent)(void),
+    void (*child)(void))
+{
+    OE_UNUSED(prepare);
+    OE_UNUSED(parent);
+    OE_UNUSED(child);
+    return 0;
+}

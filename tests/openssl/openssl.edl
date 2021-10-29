@@ -16,6 +16,23 @@ enclave {
             int argc,
             [user_check] char** argv,
             [user_check] char** env);
+
+        public void enc_enclave_thread (
+            uint64_t enc_key);
     };
 
+    untrusted {
+        void host_exit(
+            int arg);
+
+        void host_create_thread(
+            uint64_t enc_key,
+            [user_check] oe_enclave_t* enc);
+
+        int host_join_thread(
+            uint64_t enc_key);
+
+        int host_detach_thread(
+            uint64_t enc_key);
+    };
 };
