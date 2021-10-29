@@ -24,15 +24,20 @@ add_enclave_library(
   ${OPENSSL_DIR}/test/testutil/tap_bio.c
   ${OPENSSL_DIR}/test/testutil/test_cleanup.c
   ${OPENSSL_DIR}/test/testutil/tests.c
-  ${OPENSSL_DIR}/test/testutil/testutil_init.c)
+  ${OPENSSL_DIR}/test/testutil/testutil_init.c
+  thread.cpp
+  # Ensure that openssl_t.h is generated.
+  openssl_t.h)
 
 enclave_compile_options(
   openssl-support PRIVATE -Wno-shorten-64-to-32 -Wno-sign-conversion
   -Wno-conversion -Wno-unused-parameter)
 
-enclave_link_libraries(openssl-support PRIVATE oelibc oe_includes)
-enclave_include_directories(openssl-support PRIVATE ${OPENSSL_DIR}/include
-                            ${CMAKE_BINARY_DIR}/3rdparty/openssl/build/include)
+enclave_link_libraries(openssl-support PRIVATE oelibcxx oelibc oe_includes)
+enclave_include_directories(
+  openssl-support PRIVATE ${OPENSSL_DIR}/include
+  ${CMAKE_BINARY_DIR}/3rdparty/openssl/build/include
+  ${CMAKE_CURRENT_BINARY_DIR})
 
 # Create an object library to avoid recompiling these files.
 # These cannot be added to openssl-support since they'd result in multiple
@@ -115,8 +120,13 @@ function (add_openssl_test_enc NAME BUILDTEST)
     ${OPENSSL_DIR}/include ${CMAKE_BINARY_DIR}/3rdparty/openssl/build/include)
 
   enclave_compile_options(
-    openssl-${NAME}_enc PRIVATE -Wno-shorten-64-to-32 -Wno-sign-conversion
-    -Wno-conversion -Wno-unused-parameter)
+    openssl-${NAME}_enc
+    PRIVATE
+    -Wno-shorten-64-to-32
+    -Wno-sign-conversion
+    -Wno-conversion
+    -Wno-unused-parameter
+    -Wno-deprecated-declarations)
 
   enclave_compile_definitions(openssl-${NAME}_enc PRIVATE OPENSSL_NO_AFALGENG
                               __STDC_NO_ATOMICS__)
