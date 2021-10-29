@@ -15,6 +15,7 @@ pipeline {
         string(name: "REPOSITORY_NAME", defaultValue: "openenclave/openenclave", description: "GitHub repository to checkout")
         string(name: "BRANCH_NAME", defaultValue: "master", description: "The branch used to checkout the repository")
         string(name: "DOCKER_TAG", defaultValue: "standalone-linux-build", description: "The tag for the new Docker images")
+        string(name: "BASE_DOCKER_TAG", defaultValue: "SGX-${params.SGX_VERSION}", description: "The tag for the new Base Docker images. Use SGX-<version> for releases. Example: SGX-2.15.100")
         string(name: "INTERNAL_REPO", defaultValue: "https://oejenkinscidockerregistry.azurecr.io", description: "Url for internal Docker repository")
         string(name: "OECI_LIB_VERSION", defaultValue: 'master', description: 'Version of OE Libraries to use')
         booleanParam(name: "PUBLISH_DOCKER_HUB", defaultValue: false, description: "Publish container to OECITeam Docker Hub?")
@@ -22,6 +23,7 @@ pipeline {
     }
     environment {
         INTERNAL_REPO_CREDS = 'oejenkinscidockerregistry'
+        // Docker plugin cannot seem to use credentials from Azure Key Vault
         DOCKERHUB_REPO_CREDS = 'oeciteamdockerhub'
         BASE_DOCKERFILE_DIR = ".jenkins/infrastructure/docker/dockerfiles/linux/base/"
         LINUX_DOCKERFILE = ".jenkins/infrastructure/docker/dockerfiles/linux/Dockerfile"
@@ -45,8 +47,8 @@ pipeline {
                                 chmod +x ./build.sh
                                 mkdir build
                                 cd build
-                                ../build.sh -v "${params.SGX_VERSION}" -u "18.04" -t "${params.DOCKER_TAG}"
-                                ../build.sh -v "${params.SGX_VERSION}" -u "20.04" -t "${params.DOCKER_TAG}"
+                                ../build.sh -v "${params.SGX_VERSION}" -u "18.04" -t "${params.BASE_DOCKER_TAG}"
+                                ../build.sh -v "${params.SGX_VERSION}" -u "20.04" -t "${params.BASE_DOCKER_TAG}"
                             """
                         }
                     }
@@ -56,8 +58,8 @@ pipeline {
                         stage("Test Base - 18.04") {
                             steps {
                                 script {
-                                    def image = docker.image("openenclave-bionic:${params.DOCKER_TAG}")
-                                    image.inside("--user root:root --cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
+                                    base_1804_image = docker.image("oeciteam/openenclave-base-ubuntu-18.04:${params.BASE_DOCKER_TAG}")
+                                    base_1804_image.inside("--user root:root --cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
                                         sh """
                                             apt update
                                             apt install -y build-essential open-enclave libssl-dev
@@ -70,8 +72,8 @@ pipeline {
                         stage("Test Base - 20.04") {
                             steps {
                                 script {
-                                    def image = docker.image("openenclave-focal:${params.DOCKER_TAG}")
-                                    image.inside("--user root:root --cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
+                                    base_2004_image = docker.image("oeciteam/openenclave-base-ubuntu-20.04:${params.BASE_DOCKER_TAG}")
+                                    base_2004_image.inside("--user root:root --cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
                                         sh """
                                             apt update
                                             apt install -y build-essential open-enclave libssl-dev
@@ -80,6 +82,41 @@ pipeline {
                                     }
                                 }
                             }
+                        }
+                    }
+                }
+                stage('Push to internal repository') {
+                    steps {
+                        script {
+                            docker.withRegistry(params.INTERNAL_REPO, env.INTERNAL_REPO_CREDS) {
+                                base_1804_image.push()
+                                base_2004_image.push()
+                                if ( params.TAG_LATEST ) {
+                                    base_1804_image.push('latest')
+                                    base_2004_image.push('latest')
+                                }
+                            }
+                            sh "docker logout"
+                        }
+                    }
+                }
+                stage("Push to Docker Hub") {
+                    when {
+                        expression {
+                            return params.PUBLISH_DOCKER_HUB
+                        }
+                    }
+                    steps {
+                        script {
+                            docker.withRegistry('', DOCKERHUB_REPO_CREDS) {
+                                base_1804_image.push()
+                                base_2004_image.push()
+                                if ( params.TAG_LATEST ) {
+                                    base_1804_image.push('latest')
+                                    base_2004_image.push('latest')
+                                }
+                            }
+                            sh "docker logout"
                         }
                     }
                 }
@@ -134,15 +171,6 @@ pipeline {
                     }
                 }
             }
-        }
-    }
-    post {
-        always {
-            emailext(
-                subject: "Jenkins: ${env.JOB_NAME} [#${env.BUILD_NUMBER}] status is ${currentBuild.currentResult}",
-                body: "See build log for details: ${env.BUILD_URL}", 
-                recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
-            )
         }
     }
 }
