@@ -66,6 +66,11 @@ if [[ ! -z "${1}" ]]; then
     exit 1
 fi
 
+# Check SGX version
+if [[ -z ${SGX_VERSION+x} ]]; then
+    usage
+fi
+
 # Set Ubuntu Codename
 case "${UBUNTU_VERSION}" in
     18.04) UBUNTU_CODENAME="bionic"
@@ -73,6 +78,11 @@ case "${UBUNTU_VERSION}" in
     20.04) UBUNTU_CODENAME="focal"
            ;;
 esac
+
+# Default image tag
+if [[ -z "${IMAGE_TAG+x}" ]]; then
+    IMAGE_TAG="SGX-${SGX_VERSION}"
+fi
 
 # Download Intel SGX package preferences to pin to a specific Intel SGX version
 echo "Checking for Intel SGX version ${SGX_VERSION} for Ubuntu ${UBUNTU_CODENAME}..."
@@ -109,5 +119,5 @@ DOCKER_BUILDKIT=1 docker build \
   --build-arg UBUNTU_CODENAME="${UBUNTU_CODENAME}" \
   --no-cache \
   --file "${SOURCE_DIR}/Dockerfile" \
-  --tag "openenclave-${UBUNTU_CODENAME}:${IMAGE_TAG}" \
+  --tag "oeciteam/openenclave-base-ubuntu-${UBUNTU_VERSION}:${IMAGE_TAG}" \
   "${BUILD_DIR}"
