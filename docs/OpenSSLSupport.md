@@ -65,7 +65,6 @@ The OpenSSL on OE is configured with following options
 - no-ssl3
 - no-whirlpool
   - Disable Whirlpool hash.
-- no-threads
 - no-ui-console
   - Disable support for the openssl command-line tool that is not required by OE.
 - no-zlib
@@ -86,6 +85,19 @@ In addition, OpenSSL by default disables the following algorithms/features
 - EGD (Entropy Gathering Daemon)
 - Heartbeats extension
 - SCTP (Stream Control Transimission Protocol) protocol
+
+# Threads Support
+
+*Note:* Only the version after v0.17.2 has the `threads` support. Previous versions of
+OpenSSL are not built with this support and therefore are not suitable for multi-threaded
+applications.
+
+OE SDK configures the OpenSSL with `threads` support, which uses OE's thread lock
+primitives, to ensure thread-safe when accessing internal objects. Note that the lock
+primitives are based on internal OCALLS (`OE_OCALL_THREAD_WAIT` and `OE_OCALL_THREAD_WAKE`)
+given that SGX does not support such mechanisms. This support allows the developers
+to use the library in multi-threaded enclave applications. Note that the thread saftey
+holds only if the host is not compromised.
 
 # How to use RAND APIs
 
