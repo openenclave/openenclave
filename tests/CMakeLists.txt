@@ -60,6 +60,13 @@ if (WIN32)
 endif ()
 
 if (OE_SGX)
+  # Include newly added SGX-specific tests
+  # The task to restructure existing tests is tracked
+  # in https://github.com/openenclave/openenclave/issues/4281
+  add_subdirectory(sgx)
+endif ()
+
+if (OE_SGX)
   add_subdirectory(debugger)
   add_subdirectory(host_verify)
   add_subdirectory(invalid_image)

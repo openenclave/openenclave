@@ -725,7 +725,7 @@ static void _exit_enclave(uint64_t arg1, uint64_t arg2)
             host_ecall_context->debug_eexit_rip = frame[1];
         }
     }
-    oe_asm_exit(arg1, arg2, td, 0 /* aborting */);
+    oe_asm_exit(arg1, arg2, td, 0 /* direct_return */);
 }
 
 /*
@@ -813,6 +813,15 @@ oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out)
 
         if (arg_out)
             *arg_out = td->oret_arg;
+
+        if (td->state != OE_TD_STATE_SECOND_LEVEL_EXCEPTION_HANDLING)
+        {
+            /* State machine check */
+            if (td->state != OE_TD_STATE_ENTERED)
+                oe_abort();
+
+            td->state = OE_TD_STATE_RUNNING;
+        }
 
         /* ORET here */
     }
@@ -1166,6 +1175,14 @@ void __oe_handle_main(
                 if (func == OE_ECALL_VIRTUAL_EXCEPTION_HANDLER)
                     oe_abort();
 
+                /* State machine check */
+                if (td->state != OE_TD_STATE_ENTERED)
+                    oe_abort();
+
+                /* At this point, we are ready to execute the ecall.
+                 * Update the state to RUNNING */
+                td->state = OE_TD_STATE_RUNNING;
+
                 _handle_ecall(td, func, arg_in, output_arg1, output_arg2);
                 break;
             }
@@ -1204,6 +1221,10 @@ void __oe_handle_main(
 
 void oe_abort(void)
 {
+    oe_sgx_td_t* td = oe_sgx_get_td();
+
+    td->state = OE_TD_STATE_ABORTED;
+
     // Once it starts to crash, the state can only transit forward, not
     // backward.
     if (__oe_enclave_status < OE_ENCLAVE_ABORTING)

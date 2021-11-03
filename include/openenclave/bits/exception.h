@@ -214,6 +214,12 @@ typedef struct _oe_exception_record
     uint64_t faulting_address;
     uint32_t error_code;
 
+    /* The signal number passed by the host. Some applications might
+     * want to implement special exception handling logic based
+     * on this information. However, please use with caution as the
+     * host-passed information is untrusted in the SGX threat model. */
+    uint16_t host_signal_number;
+
     oe_context_t* context; /**< Exception context */
 } oe_exception_record_t;
 /**< typedef struct _oe_exception_record oe_exception_record_t*/
