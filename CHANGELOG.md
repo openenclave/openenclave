@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Changed
 - Updated libcxx to version 10.0.1
+- Now the OpenSSL is built with threads support (with the dependency on the host). Note that the previous versions of OpenSSL are not suitable for multi-threaded applications.
 
 [v0.17.2][v0.17.2_log]
 --------------
