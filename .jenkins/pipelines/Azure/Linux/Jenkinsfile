@@ -1,7 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-library "OpenEnclaveJenkinsLibrary@${params.OECI_LIB_VERSION}"
+library "OpenEnclaveJenkinsLibraryCyan@${params.OECI_LIB_VERSION}"
 GLOBAL_ERROR = globalvars.GLOBAL_ERROR
 
 properties(
@@ -83,7 +83,10 @@ try{
                 "ACC2004 clang-10 RelWithDebInfo LVI e2e snmalloc": { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04-vanilla"], 'clang-10', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON'], [], true) },
                 "ACC1804 clang-10 Debug LVI e2e snmalloc":          { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-18.04-vanilla"], 'clang-10', 'Debug',          ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON'], [], true) },
                 "ACC1804 clang-10 RelWithDebInfo LVI e2e snmalloc": { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-18.04-vanilla"], 'clang-10', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON'], [], true) },
-                "ACC2004 clang-10 RelWithDebInfo LVI snmalloc":     { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04"],         'clang-10', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) }
+                "ACC2004 clang-10 RelWithDebInfo LVI snmalloc":     { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04"],         'clang-10', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) },
+
+                "ACC2004ICX clang-10 RelWithDebInfo LVI":           { tests.ACCTest(globalvars.AGENTS_LABELS["acc-v3-ubuntu-20.04"],   'clang-10', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=OFF']) },
+                "ACC1804ICX clang-10 RelWithDebInfo LVI snmalloc":  { tests.ACCTest(globalvars.AGENTS_LABELS["acc-v3-ubuntu-18.04"],   'clang-10', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) }
             ]
             parallel testing_stages
         }

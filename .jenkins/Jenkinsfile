@@ -65,7 +65,7 @@ try {
                                  string(name: 'DOCKER_TAG', value: DOCKER_TAG),
                                  string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["ubuntu-nonsgx"]),
                                  string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
-                                 booleanParam(name: 'FULL_TEST_SUITE',value: FULL_TEST_SUITE)]
+                                 booleanParam(name: 'FULL_TEST_SUITE', value: FULL_TEST_SUITE)]
            },
            "Azure Linux" : {
                build job: '/pipelines/Azure-Linux',
@@ -77,11 +77,11 @@ try {
                                   string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["ubuntu-nonsgx"]),
                                   string(name: 'WINDOWS_NONSGX_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["windows-nonsgx"]),
                                   string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
-                                  booleanParam(name: 'FULL_TEST_SUITE',value: FULL_TEST_SUITE)]
+                                  booleanParam(name: 'FULL_TEST_SUITE', value: FULL_TEST_SUITE)]
            },
            "Intel Linux" : {
                build job: '/pipelines/Intel-Agnostic',
-                     parameters: [booleanParam(name: 'FULL_TEST_SUITE',value: FULL_TEST_SUITE)]
+                     parameters: [booleanParam(name: 'FULL_TEST_SUITE', value: FULL_TEST_SUITE)]
            },
            "Azure Windows" : {
                build job: '/pipelines/Azure-Windows',
@@ -92,7 +92,7 @@ try {
                                   string(name: 'WINDOWS_2019_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["acc-win2019"]),
                                   string(name: 'WINDOWS_2019_DCAP_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["acc-win2019-dcap"]),
                                   string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
-                                  booleanParam(name: 'FULL_TEST_SUITE',value: FULL_TEST_SUITE)]
+                                  booleanParam(name: 'FULL_TEST_SUITE', value: FULL_TEST_SUITE)]
            }
         )
     }
