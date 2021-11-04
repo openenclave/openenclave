@@ -9,12 +9,14 @@
 #include <stdlib.h>
 #include "VectorException_t.h"
 
-#include "exception_handler_stack.h"
+#include "page_fault_handler_stack.h"
 
 #define OE_CPUID_TRACE_ENUM_LEAF 0x14
 
 static void* _stack;
 static uint64_t _stack_size;
+static void* _page_fault_handler_stack;
+static uint64_t _page_fault_handler_stack_size;
 
 // Wrapper over the CPUID instruction.
 void get_cpuid(
@@ -166,7 +168,7 @@ bool test_unsupported_cpuid_leaf(uint32_t leaf)
 }
 
 int enc_test_sigill_handling(
-    int use_exception_handler_stack,
+    int use_page_fault_handler_stack,
     uint32_t cpuid_table[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT])
 {
     oe_result_t result;
@@ -179,9 +181,15 @@ int enc_test_sigill_handling(
         return -1;
     }
 
-    OE_TEST(
-        initialize_exception_handler_stack(
-            &_stack, &_stack_size, use_exception_handler_stack) == 0);
+    get_stack(&_stack, &_stack_size);
+
+    if (use_page_fault_handler_stack)
+    {
+        OE_TEST(
+            initialize_page_fault_handler_stack(
+                &_page_fault_handler_stack, &_page_fault_handler_stack_size) ==
+            0);
+    }
 
     // Test illegal SGX instruction that is not emulated (GETSEC)
     if (!test_getsec_instruction())
@@ -225,8 +233,11 @@ int enc_test_sigill_handling(
 
     oe_host_printf("test_sigill_handling: completed successfully.\n");
 
-    cleaup_exception_handler_stack(
-        &_stack, &_stack_size, use_exception_handler_stack);
+    if (use_page_fault_handler_stack)
+    {
+        cleaup_page_fault_handler_stack(
+            &_page_fault_handler_stack, &_page_fault_handler_stack_size);
+    }
 
     return 0;
 }

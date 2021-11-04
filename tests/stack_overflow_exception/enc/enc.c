@@ -11,13 +11,12 @@
 #include "stack_overflow_exception_t.h"
 
 #define PAGE_SIZE 4096
-#define EXCEPTION_HANDLER_STACK_SIZE 8192
+#define PAGE_FAULT_HANDLER_STACK_SIZE 8192
 #define STACK_PAGE_NUMBER 2
 #define STACK_SIZE (STACK_PAGE_NUMER * PAGE_SIZE)
-bool oe_sgx_set_td_exception_handler_stack(void* stack, uint64_t size);
 void* td_to_tcs(const oe_sgx_td_t* td);
 
-uint8_t exception_handler_stack[EXCEPTION_HANDLER_STACK_SIZE];
+uint8_t page_fault_handler_stack[PAGE_FAULT_HANDLER_STACK_SIZE];
 
 uint64_t test_stack_overflow_handler(oe_exception_record_t* exception_record)
 {
@@ -38,8 +37,8 @@ oe_result_t enc_initialize_exception_handler()
 {
     oe_result_t result = OE_FAILURE;
 
-    if (!oe_sgx_set_td_exception_handler_stack(
-            exception_handler_stack, EXCEPTION_HANDLER_STACK_SIZE))
+    if (!oe_sgx_td_set_page_fault_handler_stack(
+            page_fault_handler_stack, PAGE_FAULT_HANDLER_STACK_SIZE))
         goto done;
 
     OE_CHECK(

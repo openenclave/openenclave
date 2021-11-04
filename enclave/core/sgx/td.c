@@ -171,14 +171,14 @@ oe_sgx_td_t* oe_sgx_get_td()
 /*
 **==============================================================================
 **
-** oe_sgx_set_td_exception_handler_stack()
+** oe_sgx_td_set_page_fault_handler_stack()
 **
 **     Internal API that allows an enclave to setup stack area for
-**     exception handlers to use.
+**     page fault handlers to use.
 **
 **==============================================================================
 */
-bool oe_sgx_set_td_exception_handler_stack(void* stack, uint64_t size)
+bool oe_sgx_td_set_page_fault_handler_stack(void* stack, uint64_t size)
 {
     oe_sgx_td_t* td = oe_sgx_get_td();
 
@@ -186,8 +186,8 @@ bool oe_sgx_set_td_exception_handler_stack(void* stack, uint64_t size)
     if (((uint64_t)stack + size) % 16)
         return false;
 
-    td->exception_handler_stack_size = size;
-    td->exception_handler_stack = (uint64_t)stack;
+    td->page_fault_handler_stack_size = size;
+    td->page_fault_handler_stack = (uint64_t)stack;
 
     return true;
 }

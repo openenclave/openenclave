@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include "VectorException_t.h"
 
-#include "exception_handler_stack.h"
+#include "page_fault_handler_stack.h"
 
 // Defined in sigill_handling.c
 extern "C" void get_cpuid(
@@ -26,9 +26,9 @@ static int hits2[2];
 
 #define AESNI_INSTRUCTIONS 0x02000000u
 
-int test_cpuid_instruction(unsigned int what, int use_exception_handler_stack)
+int test_cpuid_instruction(unsigned int what, int use_page_fault_handler_stack)
 {
-    int index = (use_exception_handler_stack) ? 1 : 0;
+    int index = (use_page_fault_handler_stack) ? 1 : 0;
     if (!done[index])
     {
         unsigned int a, b, d;
@@ -55,15 +55,16 @@ __attribute__((constructor)) void test_cpuid_constructor()
     test_cpuid_instruction(600, 0);
     test_cpuid_instruction(AESNI_INSTRUCTIONS, 0);
 
-    void* stack = malloc(EXCEPTION_HANDLER_STACK_SIZE);
+    void* stack = malloc(PAGE_FAULT_HANDLER_STACK_SIZE);
     if (!stack)
         return;
-    oe_sgx_set_td_exception_handler_stack(stack, EXCEPTION_HANDLER_STACK_SIZE);
+    oe_sgx_td_set_page_fault_handler_stack(
+        stack, PAGE_FAULT_HANDLER_STACK_SIZE);
     test_cpuid_instruction(500, 1);
     test_cpuid_instruction(600, 1);
     test_cpuid_instruction(AESNI_INSTRUCTIONS, 1);
 
-    oe_sgx_set_td_exception_handler_stack(NULL, 0);
+    oe_sgx_td_set_page_fault_handler_stack(NULL, 0);
     free(stack);
 }
 

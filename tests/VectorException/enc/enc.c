@@ -13,46 +13,37 @@
 #include <openenclave/internal/trace.h>
 #include "VectorException_t.h"
 
-#include "exception_handler_stack.h"
+#include "page_fault_handler_stack.h"
 
 static void* _stack;
 static uint64_t _stack_size;
+static void* _page_fault_handler_stack;
+static uint64_t _page_fault_handler_stack_size;
 
-int initialize_exception_handler_stack(
-    void** stack,
-    uint64_t* stack_size,
-    int use_exception_handler_stack)
+void get_stack(void** stack, uint64_t* stack_size)
 {
-    if (use_exception_handler_stack)
-    {
-        *stack_size = EXCEPTION_HANDLER_STACK_SIZE;
-        *stack = malloc(*stack_size);
-        if (!*stack)
-            return -1;
-        if (!oe_sgx_set_td_exception_handler_stack(*stack, *stack_size))
-            return -1;
-    }
-    else
-    {
-        oe_sgx_td_t* td = oe_sgx_get_td();
-        void* tcs = td_to_tcs(td);
-        *stack_size = STACK_SIZE;
-        *stack = (void*)((uint64_t)tcs - PAGE_SIZE - STACK_SIZE);
-    }
+    oe_sgx_td_t* td = oe_sgx_get_td();
+    void* tcs = td_to_tcs(td);
+    *stack_size = STACK_SIZE;
+    *stack = (void*)((uint64_t)tcs - PAGE_SIZE - STACK_SIZE);
+}
+
+int initialize_page_fault_handler_stack(void** stack, uint64_t* stack_size)
+{
+    *stack_size = PAGE_FAULT_HANDLER_STACK_SIZE;
+    *stack = malloc(*stack_size);
+    if (!*stack)
+        return -1;
+    if (!oe_sgx_td_set_page_fault_handler_stack(*stack, *stack_size))
+        return -1;
 
     return 0;
 }
 
-void cleaup_exception_handler_stack(
-    void** stack,
-    uint64_t* stack_size,
-    int use_exception_handler_stack)
+void cleaup_page_fault_handler_stack(void** stack, uint64_t* stack_size)
 {
-    if (use_exception_handler_stack)
-    {
-        oe_sgx_set_td_exception_handler_stack(NULL, 0);
-        free(*stack);
-    }
+    oe_sgx_td_set_page_fault_handler_stack(NULL, 0);
+    free(*stack);
 
     *stack = NULL;
     *stack_size = 0;
@@ -107,6 +98,7 @@ uint64_t test_divide_by_zero_handler(oe_exception_record_t* exception_record)
         rsp,
         (uint64_t)_stack,
         (uint64_t)_stack + _stack_size);
+
     if (rsp < (uint64_t)_stack || rsp > (uint64_t)_stack + _stack_size)
         return OE_EXCEPTION_ABORT_EXECUTION;
 
@@ -315,7 +307,7 @@ int vector_exception_cleanup()
     return 0;
 }
 
-int enc_test_vector_exception(int use_exception_handler_stack)
+int enc_test_vector_exception(int use_page_fault_handler_stack)
 {
     if (vector_exception_setup() != 0)
     {
@@ -326,9 +318,15 @@ int enc_test_vector_exception(int use_exception_handler_stack)
         "enc_test_vector_exception: will generate a hardware exception inside "
         "enclave!\n");
 
-    OE_TEST(
-        initialize_exception_handler_stack(
-            &_stack, &_stack_size, use_exception_handler_stack) == 0);
+    get_stack(&_stack, &_stack_size);
+
+    if (use_page_fault_handler_stack)
+    {
+        OE_TEST(
+            initialize_page_fault_handler_stack(
+                &_page_fault_handler_stack, &_page_fault_handler_stack_size) ==
+            0);
+    }
 
     if (divide_by_zero_exception_function() != 0)
     {
@@ -343,8 +341,11 @@ int enc_test_vector_exception(int use_exception_handler_stack)
         return -1;
     }
 
-    cleaup_exception_handler_stack(
-        &_stack, &_stack_size, use_exception_handler_stack);
+    if (use_page_fault_handler_stack)
+    {
+        cleaup_page_fault_handler_stack(
+            &_page_fault_handler_stack, &_page_fault_handler_stack_size);
+    }
 
     return 0;
 }
@@ -368,7 +369,7 @@ uint64_t test_sigill_handler_with_ocall(oe_exception_record_t* exception_record)
     return OE_EXCEPTION_CONTINUE_EXECUTION;
 }
 
-int enc_test_ocall_in_handler(int use_exception_handler_stack)
+int enc_test_ocall_in_handler(int use_page_fault_handler_stack)
 {
     long long rbx;
     long long rbp;
@@ -384,9 +385,15 @@ int enc_test_ocall_in_handler(int use_exception_handler_stack)
         return -1;
     }
 
-    OE_TEST(
-        initialize_exception_handler_stack(
-            &_stack, &_stack_size, use_exception_handler_stack) == 0);
+    get_stack(&_stack, &_stack_size);
+
+    if (use_page_fault_handler_stack)
+    {
+        OE_TEST(
+            initialize_page_fault_handler_stack(
+                &_page_fault_handler_stack, &_page_fault_handler_stack_size) ==
+            0);
+    }
 
     oe_host_printf(
         "enc_test_ocall_in_handler: will generate a hardware exception inside "
@@ -445,8 +452,11 @@ int enc_test_ocall_in_handler(int use_exception_handler_stack)
         return -1;
     }
 
-    cleaup_exception_handler_stack(
-        &_stack, &_stack_size, use_exception_handler_stack);
+    if (use_page_fault_handler_stack)
+    {
+        cleaup_page_fault_handler_stack(
+            &_page_fault_handler_stack, &_page_fault_handler_stack_size);
+    }
 
     return 0;
 }

@@ -259,13 +259,13 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
     // mode
     td->host_ecall_context = td->host_previous_ecall_context;
 
-    /* If the exception handler stack is prpoerly set, restore rsp and rbp from
-     * td. Note that the case of _emulate_illegal_instruction always bypasses
-     * this logic (last_ssa_rsp and last_ssa_rbp will not be set) */
-    if (td->exception_handler_stack_size &&
+    /* If the page fault handler stack is prpoerly set, restore rsp and rbp from
+     * td. */
+    if (td->exception_code == OE_EXCEPTION_PAGE_FAULT &&
+        td->page_fault_handler_stack_size &&
         oe_is_within_enclave(
-            (void*)td->exception_handler_stack,
-            td->exception_handler_stack_size) &&
+            (void*)td->page_fault_handler_stack,
+            td->page_fault_handler_stack_size) &&
         oe_is_within_enclave(
             (void*)td->last_ssa_rsp,
             sizeof(uint64_t) && oe_is_within_enclave(
@@ -413,15 +413,16 @@ void oe_virtual_exception_dispatcher(
          * SSA to the bottom of the stack. Also, save the rsp and rbp in the SSA
          * before the assignment, which are used to resume the execution after
          * exception handling. */
-        if (td->exception_handler_stack_size &&
+        if (td->exception_code == OE_EXCEPTION_PAGE_FAULT &&
+            td->page_fault_handler_stack_size &&
             oe_is_within_enclave(
-                (void*)td->exception_handler_stack,
-                td->exception_handler_stack_size))
+                (void*)td->page_fault_handler_stack,
+                td->page_fault_handler_stack_size))
         {
             td->last_ssa_rsp = ssa_gpr->rsp;
             td->last_ssa_rbp = ssa_gpr->rbp;
-            ssa_gpr->rsp =
-                td->exception_handler_stack + td->exception_handler_stack_size;
+            ssa_gpr->rsp = td->page_fault_handler_stack +
+                           td->page_fault_handler_stack_size;
         }
     }
 

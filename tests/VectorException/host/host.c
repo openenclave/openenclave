@@ -21,11 +21,11 @@ void host_set_was_ocall_called()
 
 void test_vector_exception(
     oe_enclave_t* enclave,
-    int use_exception_handler_stack)
+    int use_page_fault_handler_stack)
 {
     int ret = -1;
     oe_result_t result =
-        enc_test_vector_exception(enclave, &ret, use_exception_handler_stack);
+        enc_test_vector_exception(enclave, &ret, use_page_fault_handler_stack);
 
     if (result != OE_OK)
     {
@@ -42,11 +42,11 @@ void test_vector_exception(
 
 void test_ocall_in_handler(
     oe_enclave_t* enclave,
-    int use_exception_handler_stack)
+    int use_page_fault_handler_stack)
 {
     int ret = -1;
     oe_result_t result =
-        enc_test_ocall_in_handler(enclave, &ret, use_exception_handler_stack);
+        enc_test_ocall_in_handler(enclave, &ret, use_page_fault_handler_stack);
 
     if (result != OE_OK)
     {
@@ -60,14 +60,14 @@ void test_ocall_in_handler(
 
 void test_sigill_handling(
     oe_enclave_t* enclave,
-    int use_exception_handler_stack)
+    int use_page_fault_handler_stack)
 {
     uint32_t cpuid_table[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
     memset(&cpuid_table, 0, sizeof(cpuid_table));
     int ret = -1;
 
     oe_result_t result = enc_test_sigill_handling(
-        enclave, &ret, use_exception_handler_stack, cpuid_table);
+        enclave, &ret, use_page_fault_handler_stack, cpuid_table);
     if (result != OE_OK)
     {
         oe_put_err("enc_test_sigill_handling() failed: result=%u", result);
@@ -178,7 +178,7 @@ int main(int argc, const char* argv[])
     test_sigill_handling(enclave, 0);
     test_ocall_in_handler(enclave, 0);
 
-    /* Test with setting an exception handler stack */
+    /* Test with setting page fault handler stack */
     test_vector_exception(enclave, 1);
     test_sigill_handling(enclave, 1);
     test_ocall_in_handler(enclave, 1);

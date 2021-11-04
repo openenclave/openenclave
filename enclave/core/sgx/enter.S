@@ -105,21 +105,21 @@ oe_enter:
 
     // Abort if SSA[0].GPRSGX.URSP is within the enclave memory range
     cmp %r12, %r9
-    jb .exception_handler_stack_check
+    jb .page_fault_handler_stack_check
     cmp %r13, %r9
-    jae .exception_handler_stack_check
+    jae .page_fault_handler_stack_check
     jmp .abort
 
     // Reaching this point implies SSA[0].GPRSGX.RSP is within the enclave
     // memory range so we do not need additional checks.
 
-.exception_handler_stack_check:
+.page_fault_handler_stack_check:
     // Stop speculative execution at target of conditional jump
     lfence
 
-    // Get the exception_handler_stack_check range
-    mov td_exception_handler_stack(%r11), %r14
-    mov td_exception_handler_stack_size(%r11), %r15
+    // Get the page_fault_handler_stack_check range
+    mov td_page_fault_handler_stack(%r11), %r14
+    mov td_page_fault_handler_stack_size(%r11), %r15
     test %r15, %r15
     jz .exception_stack_setup // check if size is zero
     add %r14, %r15

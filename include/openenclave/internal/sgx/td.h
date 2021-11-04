@@ -136,9 +136,10 @@ typedef struct _td
     struct _oe_ecall_context* host_ecall_context;
     struct _oe_ecall_context* host_previous_ecall_context;
 
-    /* The optional stack area setup by the runtime to handle the exceptions */
-    uint64_t exception_handler_stack;
-    uint64_t exception_handler_stack_size;
+    /* The alternative stack area setup by the runtime to handle the page faults
+     */
+    uint64_t page_fault_handler_stack;
+    uint64_t page_fault_handler_stack_size;
 
     /* Save the rsp and rbp values in the SSA when the exception handler
      * stack is set */
@@ -190,7 +191,7 @@ OE_STATIC_ASSERT(
 /* Get the thread data object for the current thread */
 oe_sgx_td_t* oe_sgx_get_td(void);
 
-bool oe_sgx_set_td_exception_handler_stack(void* stack, uint64_t size);
+bool oe_sgx_td_set_page_fault_handler_stack(void* stack, uint64_t size);
 
 OE_EXTERNC_END
 
