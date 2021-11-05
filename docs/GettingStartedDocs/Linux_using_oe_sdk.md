@@ -28,7 +28,7 @@ On Linux, the Open Enclave SDK installation also contains the following folder:
 ## Configure environment variables for Open Enclave SDK for Linux
 For ease of development, we recommend adding:
 - Open Enclave SDK `bin` folder to `PATH`, for use of our tools (such as `oegdb` and `oeedger8r`).
-- Open Enclave SDK `install` folder to `CMAKE_PREFIX_PATH`, for use of the [CMake package](/cmake/sdk_cmake_targets_readme.md).
+- Open Enclave SDK `cmake` folder to `CMAKE_PREFIX_PATH`, for use of the [CMake package](/cmake/sdk_cmake_targets_readme.md).
 - Open Enclave SDK `pkgconfig` folder to `PKG_CONFIG_PATH`, for use of `pkg-config`.
 
 You can do this by sourcing the `openenclaverc` file that is distributed with the SDK:
