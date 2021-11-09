@@ -7,13 +7,13 @@
 
 //==============================================================================
 //
-// void oe_asm_exit(uint64_t arg1, uint64_t arg2, oe_sgx_td_t* td, uint64_t aborting)
+// void oe_asm_exit(uint64_t arg1, uint64_t arg2, oe_sgx_td_t* td, uint64_t direct_return)
 //
 // Registers:
 //     RDI - arg1
 //     RSI - arg2
 //     RDX - td
-//     RCX - aborting
+//     RCX - direct_return
 //
 // Purpose:
 //     Restores user registers and executes the EEXIT instruction to leave the
@@ -58,9 +58,9 @@ oe_asm_exit:
     mov %rdx, %r11
 
 .determine_exit_type:
-    // Check if the argument aborting is set
+    // Check if the argument direct_return is set
     cmp $1, %rcx
-    je .clean_exit
+    je .return
 
     // Check the depth of the ECALL stack (zero for clean exit)
     // exit-type-check.
@@ -83,6 +83,14 @@ oe_asm_exit:
 
     // Clear the oe_sgx_td_t.last_sp field (force oe_enter to calculate stack pointer)
     movq $0, td_last_sp(%r11)
+    jmp .prepare_eexit
+
+.return:
+    lfence
+
+    // Restore host ecall context
+    mov td_host_previous_ecall_context(%r11), %r8
+    mov %r8, td_host_ecall_context(%r11)
 
 .prepare_eexit:
     mov _td_from_tcs_offset(%rip), %r8
@@ -100,19 +108,32 @@ oe_asm_exit:
     lfence
 
     add $PAGE_SIZE, %r12
-    xor %r8, %r8
     // Reset the saved cssa to zero to match the value on
     // the previous oe_enter (which ERESUME will return to)
-    mov %r8, td_eenter_rax(%r11)
+    movq $0, td_eenter_rax(%r11)
 
 .restore_host_registers:
     mov td_host_rcx(%r11), %rcx
     mov SGX_SSA_URSP_OFFSET(%r12), %rsp
     mov SGX_SSA_URBP_OFFSET(%r12), %rbp
 
+    // Do not update the state if the enclave exits in the middle
+    // the exception handling (e.g., exiting from the first-level
+    // exception handler) or exits after an illegal instruction
+    // emulation
+    cmpq $TD_STATE_SECOND_LEVEL_EXCEPTION_HANDLING, td_state(%r11)
+    je .execute_eexit
+    cmpq $TD_STATE_FIRST_LEVEL_EXCEPTION_HANDLING, td_previous_state(%r11)
+    je .execute_eexit
+
+    // Update the state to indicate that the enclave is returning
+    // to the host
+    movq $TD_STATE_EXITED, td_state(%r11)
+
     oe_cleanup_registers
 
 .execute_eexit:
+    lfence
     // Check oe_sgx_td_t.simulate flag
     // simulate-flag-check.
     mov td_simulate(%r11), %rax
