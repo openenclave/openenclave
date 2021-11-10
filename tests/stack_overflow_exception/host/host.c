@@ -68,7 +68,7 @@ int main(int argc, const char* argv[])
          * therefore an internal buffer on the heap is not freed  */
         OE_TEST(result == OE_MEMORY_LEAK);
 #else
-        OE_TEST(result == OE_OK);
+        OE_TEST_CODE(result, OE_OK);
 #endif
     }
     else
