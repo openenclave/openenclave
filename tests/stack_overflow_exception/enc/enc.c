@@ -53,10 +53,13 @@ done:
 
 void enc_stack_overflow_exception()
 {
-    uint8_t data[8192]; // Over-allocate stack
+    uint8_t data[1024];
 
+    // Force stack allocation and do the recursive call untill
+    // the stack overflows
     asm volatile("leaq %0, %%r8\n\t"
-                 "movw $0, 8191(%%r8)\n\t"
+                 "movw $1, 1023(%%r8)\n\t"
+                 "call enc_stack_overflow_exception\n\t"
                  :
                  : "m"(data)
                  : "r8");
