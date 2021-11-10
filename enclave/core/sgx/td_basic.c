@@ -110,6 +110,9 @@ void td_init(oe_sgx_td_t* td)
         /* List of callsites is initially empty */
         td->callsites = NULL;
 
+        /* Set the exception handler stack to NULL */
+        oe_sgx_td_set_exception_handler_stack(td, NULL, 0);
+
         oe_thread_local_init(td);
     }
 }
@@ -151,6 +154,9 @@ void td_clear(oe_sgx_td_t* td)
 
     /* Clear the magic number */
     td->magic = 0;
+
+    /* Clear td states */
+    oe_sgx_td_clear_states(td);
 
     /* Never clear oe_sgx_td_t.initialized nor host registers */
 }

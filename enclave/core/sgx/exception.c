@@ -301,6 +301,14 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
 {
     oe_sgx_td_t* td = oe_sgx_get_td();
 
+    /* Validate the td state, which ensures the function
+     * is only invoked after oe_virtual_exception_dispatcher */
+    if (td->state != OE_TD_STATE_SECOND_LEVEL_EXCEPTION_HANDLING)
+    {
+        oe_abort();
+        return;
+    }
+
     // Change the rip of oe_context to the real exception address.
     oe_context->rip = td->exception_address;
 
@@ -314,6 +322,11 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
     oe_exception_record.faulting_address = td->faulting_address;
     oe_exception_record.error_code = td->error_code;
     oe_exception_record.context = oe_context;
+    /* Only pass the host signal for non-nested exceptions */
+    if (td->exception_nesting_level == 1)
+        oe_exception_record.host_signal_number = (uint16_t)td->host_signal;
+    else
+        oe_exception_record.host_signal_number = 0;
 
     // Refer to oe_enter in host/sgx/enter.c.
     // Restore host_ecall_context from the first EENTER (cssa=0) that allows for
@@ -358,6 +371,31 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
     td->last_ssa_rsp = 0;
     td->last_ssa_rbp = 0;
 
+    /* Validate and decrease the nesting level (increased by enter.S)
+     * after all the handlers finish */
+    if (td->exception_nesting_level == 0)
+    {
+        oe_abort();
+        return;
+    }
+    td->exception_nesting_level--;
+
+    if (td->exception_nesting_level == 0)
+    {
+        /* Clear the flag if it is set after non-nested exception handling
+         * is done */
+        if (td->is_handling_host_signal == 1)
+        {
+            td->is_handling_host_signal = 0;
+        }
+
+        td->host_signal = 0;
+
+        /* Retore the state */
+        td->state = OE_TD_STATE_RUNNING;
+    }
+    td->previous_state = OE_TD_STATE_NULL;
+
     // Jump to the point where oe_context refers to and continue.
     if (handler_ret == OE_EXCEPTION_CONTINUE_EXECUTION)
     {
@@ -399,7 +437,16 @@ void oe_virtual_exception_dispatcher(
     uint64_t* arg_out)
 {
     SSA_Info ssa_info = {0};
-    oe_exception_record_t* oe_exception_record = (oe_exception_record_t*)arg_in;
+    oe_exception_record_t* oe_exception_record = NULL;
+
+    /* Validate the td state, which ensures the function
+     * is only invoked by the exception entry code path (see enter.S) */
+    if (td->state != OE_TD_STATE_FIRST_LEVEL_EXCEPTION_HANDLING)
+    {
+        td->state = OE_TD_STATE_ABORTED;
+        *arg_out = OE_EXCEPTION_CONTINUE_SEARCH;
+        return;
+    }
 
     // Verify if the first SSA has valid exception info.
     if (_get_enclave_thread_first_ssa_info(td, &ssa_info) != 0)
@@ -408,35 +455,29 @@ void oe_virtual_exception_dispatcher(
         return;
     }
 
+    if (td->exception_nesting_level == 1 && arg_in <= MAX_SIGNAL_NUMBER)
+    {
+        /* Only keep the host signal for non-nested exceptions */
+        td->host_signal = arg_in;
+    }
+    else if (
+        is_enclave_debug_allowed() &&
+        oe_is_outside_enclave((void*)arg_in, sizeof(uint64_t)))
+    {
+        oe_exception_record = (oe_exception_record_t*)arg_in;
+    }
+
     uint64_t gprsgx_offset = (uint64_t)ssa_info.base_address +
                              ssa_info.frame_byte_size - OE_SGX_GPR_BYTE_SIZE;
     sgx_ssa_gpr_t* ssa_gpr = (sgx_ssa_gpr_t*)gprsgx_offset;
-    if (!ssa_gpr->exit_info.as_fields.valid)
-    {
-        // Only allow the simulated #PF in debug mode
-        if (is_enclave_debug_allowed() && oe_exception_record)
-        {
-            td->exception_address = ssa_gpr->rip;
 
-            td->exception_code = OE_EXCEPTION_PAGE_FAULT;
-            td->exception_flags |= OE_EXCEPTION_FLAGS_HARDWARE;
+    td->exception_address = ssa_gpr->rip;
+    td->exception_code = OE_EXCEPTION_UNKNOWN;
 
-            /* We expect the host to pass in the faulting address of #PF */
-            td->faulting_address = oe_exception_record->faulting_address;
-            td->error_code = OE_SGX_PAGE_FAULT_US_FLAG;
-        }
-        else
-        {
-            // Not a valid/expected enclave exception;
-            *arg_out = OE_EXCEPTION_CONTINUE_SEARCH;
-            return;
-        }
-    }
-    else
+    /* Get the exception code and flags only if the exception type
+     * is recognized by the SGX hardware */
+    if (ssa_gpr->exit_info.as_fields.valid)
     {
-        // Get the exception address, code, and flags.
-        td->exception_address = ssa_gpr->rip;
-        td->exception_code = OE_EXCEPTION_UNKNOWN;
         for (uint32_t i = 0; i < OE_COUNTOF(g_vector_to_exception_code_mapping);
              i++)
         {
@@ -454,20 +495,60 @@ void oe_virtual_exception_dispatcher(
         {
             td->exception_flags |= OE_EXCEPTION_FLAGS_HARDWARE;
         }
-        else if (ssa_gpr->exit_info.as_fields.exit_type == SGX_EXIT_TYPE_SOFTWARE)
+        else if (
+            ssa_gpr->exit_info.as_fields.exit_type == SGX_EXIT_TYPE_SOFTWARE)
         {
             td->exception_flags |= OE_EXCEPTION_FLAGS_SOFTWARE;
+        }
+    }
+    else
+    {
+        if (is_enclave_debug_allowed() && oe_exception_record)
+        {
+            td->exception_code = OE_EXCEPTION_PAGE_FAULT;
+            td->exception_flags |= OE_EXCEPTION_FLAGS_HARDWARE;
+
+            /* We expect the host to pass in the faulting address of #PF */
+            td->faulting_address = oe_exception_record->faulting_address;
+            td->error_code = OE_SGX_PAGE_FAULT_US_FLAG;
+        }
+        else if (
+            !oe_sgx_td_host_signal_registered(td, (int)td->host_signal) ||
+            td->exception_nesting_level != 1 ||
+            td->is_handling_host_signal != 1)
+        {
+            /* Do not allow unkown exception types if the thread is not in
+             * the RUNNING_NONBLOCKING state or the is_interrupted flag is
+             * not set */
+            *arg_out = OE_EXCEPTION_CONTINUE_SEARCH;
+            return;
         }
     }
 
     if (td->exception_code == OE_EXCEPTION_ILLEGAL_INSTRUCTION &&
         _emulate_illegal_instruction(ssa_gpr) == 0)
     {
-        // Refer to oe_enter in host/sgx/enter.c.
-        // Restore host_ecall_context from the first EENTER (cssa=0) that allows
-        // for correctly stitching the stack on EEXIT when the enclave is in the
-        // debug mode
+        /* Refer to oe_enter in host/sgx/enter.c.
+         * Restore host_ecall_context from the first EENTER (cssa=0) that allows
+         * for correctly stitching the stack on EEXIT when the enclave is in the
+         * debug mode */
         td->host_ecall_context = td->host_previous_ecall_context;
+
+        /* Restore the state using the previous_state and update
+         * the previous_state. The latter allows the exiting flow
+         * to skip updating the state. */
+        td->state = td->previous_state;
+        td->previous_state = OE_TD_STATE_FIRST_LEVEL_EXCEPTION_HANDLING;
+
+        /* Validate and decrease the nesting level (increased by enter.S)
+         * after all the handlers finish */
+        if (td->exception_nesting_level == 0)
+        {
+            td->state = OE_TD_STATE_ABORTED;
+            *arg_out = OE_EXCEPTION_CONTINUE_SEARCH;
+            return;
+        }
+        td->exception_nesting_level--;
     }
     else
     {
@@ -475,13 +556,20 @@ void oe_virtual_exception_dispatcher(
          * MISCSELECT[0] bit is set to 1. */
         if (ssa_gpr->exit_info.as_fields.valid &&
             (td->exception_code == OE_EXCEPTION_PAGE_FAULT ||
-            td->exception_code == OE_EXCEPTION_ACCESS_VIOLATION))
+             td->exception_code == OE_EXCEPTION_ACCESS_VIOLATION))
         {
             sgx_exinfo_t* exinfo =
                 (sgx_exinfo_t*)(gprsgx_offset - OE_SGX_MISC_BYTE_SIZE);
             td->faulting_address = exinfo->maddr;
             td->error_code = exinfo->errcd;
         }
+
+        /* Update the state here to indicate the second-level exception
+         * handler is running next. This allows both exiting and the following
+         * entering flows to skip updating the state; i.e., the second-level
+         * exception handler can run with this state. */
+        td->state = OE_TD_STATE_SECOND_LEVEL_EXCEPTION_HANDLING;
+
         // Modify the ssa_gpr so that e_resume will go to second pass exception
         // handler.
         ssa_gpr->rip = (uint64_t)oe_exception_dispatcher;

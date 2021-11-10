@@ -14,7 +14,7 @@ add_executable(stack_overflow_exception_host host.c
                                              stack_overflow_exception_u.c)
 
 string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE_UPPER)
-if (BUILD_TYPE_UPPER STREQUAL "DEBUG")
+if (BUILD_TYPE_UPPER STREQUAL "DEBUG" OR USE_DEBUG_MALLOC)
   target_compile_definitions(stack_overflow_exception_host PRIVATE DEBUG_BUILD)
 endif ()
 
