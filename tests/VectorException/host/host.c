@@ -121,9 +121,13 @@ void test_sigill_handling(
 
         for (uint32_t j = 0; j < OE_CPUID_REG_COUNT; j++)
         {
-            if (i == 1 && j == 1)
+            if (leaf == 0 && j == OE_CPUID_RAX)
             {
-                // Leaf 1. EBX register.
+                // The enclave sets this to the highest emulated leaf.
+                OE_TEST(OE_CPUID_MAX_BASIC == cpuid_table[i][j]);
+            }
+            else if (leaf == 1 && j == OE_CPUID_RBX)
+            {
                 // The highest 8 bits indicates the current executing processor
                 // id.
                 // There is no guarantee that the value is the same across
@@ -134,6 +138,11 @@ void test_sigill_handling(
                 OE_TEST(
                     (cpuid_info[j] & 0x00FFFFFF) ==
                     (cpuid_table[i][j] & 0x00FFFFFF));
+            }
+            else if (leaf == 0x80000000 && j == OE_CPUID_RAX)
+            {
+                // The enclave sets this to the highest emulated leaf.
+                OE_TEST(OE_CPUID_MAX_EXTENDED == cpuid_table[i][j]);
             }
             else
             {
