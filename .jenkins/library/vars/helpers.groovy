@@ -87,6 +87,7 @@ def getWindowsCwd() {
             returnStdout: true
         ).trim()
 }
+
 /**
  * Tests Open Enclave samples on *nix systems
  *
@@ -513,3 +514,43 @@ def get_date(String delimiter = "") {
         return "Canonical:UbuntuServer:18_04-lts-gen2:latest"
     }
  }
+
+/*
+ * Determine correct Intel SGX devices to mount for Docker
+ * Returns in the format of --device=<DEVICE1> --device=<DEVICE2>...
+ *   Note: This is really only necessary as Ubuntu 20.04 has SGX 
+ *   driver 1.41 and Ubuntu 18.04 has an older version
+ *
+ * @param os_type     Host Operating System Distribution (e.g. Ubuntu)
+ * @param os_version  Host Operating System Version (e.g. 20.04)
+ */
+def getDockerSGXDevices(String os_type, String os_version) {
+    def devices = []
+    if ( os_type.equalsIgnoreCase('ubuntu') && os_version.equals('20.04') ) {
+        devices.add('/dev/sgx/provision')
+        devices.add('/dev/sgx/enclave')
+    }
+    else if ( os_type.equalsIgnoreCase('ubuntu') && os_version.equals('18.04') ) {
+        devices.add('/dev/sgx')
+    }
+    else {
+        error("getDockerSGXDevices(): Unknown OS (${os_type}) or version (${os_version})")
+    }
+    String returnDevices = ""
+    for (device in devices) {
+        if ( fileExists("${device}") ) {
+            returnDevices += " --device=${device}:${device} "
+        }
+    }
+    return returnDevices
+}
+
+/**
+ * Returns the Ubuntu release version (E.g. "18.04")
+ */
+def getUbuntuReleaseVer() {
+    sh(
+        returnStdout: true,
+        script: 'lsb_release -rs'
+    ).trim()
+}
