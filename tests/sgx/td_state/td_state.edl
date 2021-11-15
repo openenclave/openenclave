@@ -9,11 +9,16 @@ enclave {
     trusted {
         public void enc_td_state(uint64_t lock_state);
         public void enc_run_thread(int tid);
+        public void enc_td_state_handler_no_return();
+        public void enc_run_thread_handler_no_return(int tid);
+        public void enc_run_thread_reuse_tcs(int tid);
     };
 
     untrusted {
         void host_send_interrupt(int tid, int signal_number);
         void host_create_thread();
+        void host_create_thread_handler_no_return();
+        void host_create_thread_reuse_tcs();
         void host_join_thread();
         void host_spin();
         int host_get_tid();

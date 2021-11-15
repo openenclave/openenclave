@@ -23,18 +23,19 @@ int initialize_exception_handler_stack(
     uint64_t* stack_size,
     int use_exception_handler_stack)
 {
+    oe_sgx_td_t* td = oe_sgx_get_td();
+
     if (use_exception_handler_stack)
     {
         *stack_size = EXCEPTION_HANDLER_STACK_SIZE;
         *stack = malloc(*stack_size);
         if (!*stack)
             return -1;
-        if (!oe_sgx_set_td_exception_handler_stack(*stack, *stack_size))
+        if (!oe_sgx_td_set_exception_handler_stack(td, *stack, *stack_size))
             return -1;
     }
     else
     {
-        oe_sgx_td_t* td = oe_sgx_get_td();
         void* tcs = td_to_tcs(td);
         *stack_size = STACK_SIZE;
         *stack = (void*)((uint64_t)tcs - PAGE_SIZE - STACK_SIZE);
@@ -48,9 +49,11 @@ void cleaup_exception_handler_stack(
     uint64_t* stack_size,
     int use_exception_handler_stack)
 {
+    oe_sgx_td_t* td = oe_sgx_get_td();
+
     if (use_exception_handler_stack)
     {
-        oe_sgx_set_td_exception_handler_stack(NULL, 0);
+        oe_sgx_td_set_exception_handler_stack(td, NULL, 0);
         free(*stack);
     }
 

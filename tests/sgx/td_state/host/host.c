@@ -65,6 +65,42 @@ void host_create_thread()
     pthread_attr_destroy(&attr);
 }
 
+static void* _thread_function_handler_no_return()
+{
+    pid_t tid = (pid_t)syscall(SYS_gettid);
+
+    enc_run_thread_handler_no_return(enclave, tid);
+
+    return NULL;
+}
+
+void host_create_thread_handler_no_return()
+{
+    pthread_attr_t attr;
+
+    pthread_attr_init(&attr);
+    pthread_create(&_thread, &attr, _thread_function_handler_no_return, NULL);
+    pthread_attr_destroy(&attr);
+}
+
+static void* _thread_function_reuse_tcs()
+{
+    pid_t tid = (pid_t)syscall(SYS_gettid);
+
+    enc_run_thread_reuse_tcs(enclave, tid);
+
+    return NULL;
+}
+
+void host_create_thread_reuse_tcs()
+{
+    pthread_attr_t attr;
+
+    pthread_attr_init(&attr);
+    pthread_create(&_thread, &attr, _thread_function_reuse_tcs, NULL);
+    pthread_attr_destroy(&attr);
+}
+
 void host_join_thread()
 {
     pthread_join(_thread, NULL);
@@ -102,7 +138,15 @@ int main(int argc, const char* argv[])
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
         oe_put_err("oe_create_enclave(): result=%u", result);
 
+    printf("=== test the td state on a thread\n");
+
     result = enc_td_state(enclave, (uint64_t)&_lock_state);
+    if (result != OE_OK)
+        oe_put_err("oe_call_enclave() failed: result=%u", result);
+
+    printf("=== test the handler no return\n");
+
+    result = enc_td_state_handler_no_return(enclave);
     if (result != OE_OK)
         oe_put_err("oe_call_enclave() failed: result=%u", result);
 

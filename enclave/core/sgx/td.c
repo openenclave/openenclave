@@ -172,16 +172,55 @@ oe_sgx_td_t* oe_sgx_get_td()
 /*
 **==============================================================================
 **
-** oe_sgx_set_td_exception_handler_stack()
+** oe_sgx_clear_td_states()
+**
+**     Internal API that allows an enclave to clear the td states.
+**
+**==============================================================================
+*/
+
+void oe_sgx_td_clear_states(oe_sgx_td_t* td)
+{
+    /* Mask host signals by default */
+    oe_sgx_td_mask_host_signal(td);
+
+    /* Clear exception-related information */
+    td->exception_code = 0;
+    td->exception_flags = 0;
+    td->exception_address = 0;
+    td->faulting_address = 0;
+    td->error_code = 0;
+    td->last_ssa_rsp = 0;
+    td->last_ssa_rbp = 0;
+
+    /* Clear states related host signal handling */
+    td->exception_nesting_level = 0;
+    td->is_handling_host_signal = 0;
+    td->host_signal_bitmask = 0;
+    td->host_signal = 0;
+
+    /* Clear the states of the state machine */
+    td->previous_state = OE_TD_STATE_NULL;
+    td->state = OE_TD_STATE_RUNNING; // the default state during the runtime
+}
+
+/*
+**==============================================================================
+**
+** oe_sgx_td_set_exception_handler_stack()
 **
 **     Internal API that allows an enclave to setup stack area for
 **     exception handlers to use.
 **
 **==============================================================================
 */
-bool oe_sgx_set_td_exception_handler_stack(void* stack, uint64_t size)
+bool oe_sgx_td_set_exception_handler_stack(
+    oe_sgx_td_t* td,
+    void* stack,
+    uint64_t size)
 {
-    oe_sgx_td_t* td = oe_sgx_get_td();
+    if (!td)
+        return false;
 
     /* ensure stack + size is 16-byte aligned */
     if (((uint64_t)stack + size) % 16)
@@ -204,21 +243,22 @@ bool oe_sgx_set_td_exception_handler_stack(void* stack, uint64_t size)
 **==============================================================================
 */
 
-OE_INLINE void _set_td_host_signal_unmasked(uint64_t value)
+OE_INLINE void _set_td_host_signal_unmasked(oe_sgx_td_t* td, uint64_t value)
 {
-    oe_sgx_td_t* td = oe_sgx_get_td();
+    if (!td)
+        return;
 
     td->host_signal_unmasked = value;
 }
 
-void oe_sgx_td_mask_host_signal()
+void oe_sgx_td_mask_host_signal(oe_sgx_td_t* td)
 {
-    _set_td_host_signal_unmasked(0);
+    _set_td_host_signal_unmasked(td, 0);
 }
 
-void oe_sgx_td_unmask_host_signal()
+void oe_sgx_td_unmask_host_signal(oe_sgx_td_t* td)
 {
-    _set_td_host_signal_unmasked(1);
+    _set_td_host_signal_unmasked(td, 1);
 }
 
 /*
@@ -257,12 +297,12 @@ OE_INLINE bool _set_td_host_signal_bitmask(
     return true;
 }
 
-bool oe_sgx_register_td_host_signal(oe_sgx_td_t* td, int signal_number)
+bool oe_sgx_td_register_host_signal(oe_sgx_td_t* td, int signal_number)
 {
     return _set_td_host_signal_bitmask(td, signal_number, 1 /* set */);
 }
 
-bool oe_sgx_unregister_td_host_signal(oe_sgx_td_t* td, int signal_number)
+bool oe_sgx_td_unregister_host_signal(oe_sgx_td_t* td, int signal_number)
 {
     return _set_td_host_signal_bitmask(td, signal_number, 0 /* clear */);
 }
