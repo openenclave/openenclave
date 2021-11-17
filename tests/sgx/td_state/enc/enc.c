@@ -3,6 +3,7 @@
 
 #include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/jump.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgx/td.h>
@@ -11,6 +12,7 @@
 
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #define OE_EXPECT(a, b)                                              \
     do                                                               \
@@ -30,11 +32,7 @@
         }                                                            \
     } while (0)
 
-bool oe_sgx_register_target_td_host_signal(
-    oe_sgx_td_t* target_td,
-    int signal_number);
-
-typedef struct _thread_info_nonblocking_t
+typedef struct _thread_info_t
 {
     int tid;
     oe_sgx_td_t* td;
@@ -43,6 +41,9 @@ typedef struct _thread_info_nonblocking_t
 static thread_info_t _thread_info;
 static volatile int _handler_done;
 static volatile int* _host_lock_state;
+
+static thread_info_t _thread_handler_no_return_info;
+static oe_jmpbuf_t jump_buffer;
 
 static void cpuid(
     unsigned int leaf,
@@ -163,7 +164,7 @@ static uint64_t td_state_handler(oe_exception_record_t* exception_record)
         OE_TEST(oe_sgx_td_is_handling_host_signal(_thread_info.td));
 
         OE_TEST(
-            oe_sgx_unregister_td_host_signal(_thread_info.td, SIGUSR1) == true);
+            oe_sgx_td_unregister_host_signal(_thread_info.td, SIGUSR1) == true);
 
         __atomic_store_n(_host_lock_state, 2, __ATOMIC_RELEASE);
 
@@ -221,7 +222,7 @@ void enc_run_thread(int tid)
     OE_CHECK(oe_add_vectored_exception_handler(false, td_state_handler));
 
     // Invoke the internal API to unmask host signals
-    oe_sgx_td_unmask_host_signal();
+    oe_sgx_td_unmask_host_signal(_thread_info.td);
 
     // Ensure the order of setting the lock
     asm volatile("" ::: "memory");
@@ -273,6 +274,8 @@ void enc_run_thread(int tid)
     // Expect the state to be persisted after an exception.
     OE_EXPECT(_thread_info.td->state, OE_TD_STATE_RUNNING);
 
+    OE_CHECK(oe_remove_vectored_exception_handler(td_state_handler));
+
     printf("(tid=%d) thread is exiting...\n", self_tid);
 done:
     return;
@@ -308,7 +311,7 @@ void enc_td_state(uint64_t lock_state)
     OE_TEST(_thread_info.tid != 0);
     host_sleep_msec(30);
 
-    OE_TEST(oe_sgx_register_td_host_signal(_thread_info.td, SIGUSR1) == true);
+    OE_TEST(oe_sgx_td_register_host_signal(_thread_info.td, SIGUSR1) == true);
 
     printf(
         "(tid=%d) Sending interrupt to (td=0x%lx, tid=%d) inside the "
@@ -344,6 +347,82 @@ void enc_td_state(uint64_t lock_state)
 
     // Expect the target td's state to be EXITED
     OE_EXPECT(_thread_info.td->state, OE_TD_STATE_EXITED);
+}
+
+static uint64_t td_state_handler_no_return(
+    oe_exception_record_t* exception_record)
+{
+    if (exception_record->code == OE_EXCEPTION_DIVIDE_BY_ZERO)
+    {
+        oe_longjmp(&jump_buffer, 1);
+    }
+
+    return OE_EXCEPTION_ABORT_EXECUTION;
+}
+
+void enc_run_thread_handler_no_return(int tid)
+{
+    oe_result_t result = OE_OK;
+
+    _thread_handler_no_return_info.tid = tid;
+    _thread_handler_no_return_info.td = oe_sgx_get_td();
+
+    printf(
+        "(tid=%d) thread is created td=0x%lx\n",
+        _thread_handler_no_return_info.tid,
+        (uint64_t)_thread_handler_no_return_info.td);
+
+    OE_CHECK(
+        oe_add_vectored_exception_handler(false, td_state_handler_no_return));
+
+    if (oe_setjmp(&jump_buffer) == 0)
+        divide_by_zero_exception_function();
+
+    // Expect the state is still OE_TD_STATE_SECOND_LEVEL_EXCEPTION_HANDLING
+    // (the handler does not return)
+    OE_EXPECT(
+        _thread_handler_no_return_info.td->state,
+        OE_TD_STATE_SECOND_LEVEL_EXCEPTION_HANDLING);
+
+done:
+    return;
+}
+
+void enc_run_thread_reuse_tcs(int tid)
+{
+    oe_sgx_td_t* td = oe_sgx_get_td();
+
+    // Expect the tcs is re-used
+    OE_EXPECT(td, _thread_handler_no_return_info.td);
+
+    OE_EXPECT(_thread_handler_no_return_info.td->state, OE_TD_STATE_RUNNING);
+
+    printf("(tid=%d) thread is created td=0x%lx\n", tid, (uint64_t)td);
+}
+
+void enc_td_state_handler_no_return()
+{
+    oe_result_t result;
+    int tid = 0;
+
+    host_get_tid(&tid);
+    OE_TEST(tid != 0);
+
+    printf("(tid=%d) Create a thread...\n", tid);
+
+    result = host_create_thread_handler_no_return();
+    if (result != OE_OK)
+        return;
+
+    host_join_thread();
+
+    printf("(tid=%d) Create a thread...\n", tid);
+
+    result = host_create_thread_reuse_tcs();
+    if (result != OE_OK)
+        return;
+
+    host_join_thread();
 }
 
 OE_SET_ENCLAVE_SGX(

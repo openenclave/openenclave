@@ -1223,7 +1223,9 @@ void oe_abort(void)
 {
     oe_sgx_td_t* td = oe_sgx_get_td();
 
-    td->state = OE_TD_STATE_ABORTED;
+    /* only update the state if td is initialized */
+    if (td)
+        td->state = OE_TD_STATE_ABORTED;
 
     // Once it starts to crash, the state can only transit forward, not
     // backward.

@@ -227,20 +227,20 @@ OE_STATIC_ASSERT(
 /* Get the thread data object for the current thread */
 oe_sgx_td_t* oe_sgx_get_td(void);
 
-/* The following APIs are expected to be used only by the thread itself. */
+void oe_sgx_td_clear_states(oe_sgx_td_t* td);
 
-bool oe_sgx_set_td_exception_handler_stack(void* stack, uint64_t size);
+bool oe_sgx_td_set_exception_handler_stack(
+    oe_sgx_td_t* td,
+    void* stack,
+    uint64_t size);
 
-void oe_sgx_td_mask_host_signal();
+void oe_sgx_td_mask_host_signal(oe_sgx_td_t* td);
 
-void oe_sgx_td_unmask_host_signal();
+void oe_sgx_td_unmask_host_signal(oe_sgx_td_t* td);
 
-/* The following APIs are expected to be used by both the thread itself
- * and other threads. */
+bool oe_sgx_td_register_host_signal(oe_sgx_td_t* td, int signal_number);
 
-bool oe_sgx_register_td_host_signal(oe_sgx_td_t* td, int signal_number);
-
-bool oe_sgx_unregister_td_host_signal(oe_sgx_td_t* td, int signal_number);
+bool oe_sgx_td_unregister_host_signal(oe_sgx_td_t* td, int signal_number);
 
 bool oe_sgx_td_host_signal_registered(oe_sgx_td_t* td, int signal_number);
 

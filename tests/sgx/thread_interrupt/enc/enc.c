@@ -76,7 +76,7 @@ void enc_run_thread_nonblocking(int tid)
     OE_TEST(_thread_info_nonblocking.td->state == OE_TD_STATE_RUNNING);
 
     // Invoke the internal API to unmask host signals
-    oe_sgx_td_unmask_host_signal();
+    oe_sgx_td_unmask_host_signal(_thread_info_nonblocking.td);
 
     // Ensure the order of setting the lock
     asm volatile("" ::: "memory");
@@ -104,7 +104,7 @@ void enc_run_thread_nonblocking(int tid)
     // Test unregistering signals
     for (size_t i = 0; i < SIGNAL_NUMBER; i++)
     {
-        OE_TEST(oe_sgx_unregister_td_host_signal(
+        OE_TEST(oe_sgx_td_unregister_host_signal(
             _thread_info_nonblocking.td, _signal_list[i]));
     }
     __atomic_store_n(&_thread_info_nonblocking.lock, 4, __ATOMIC_RELEASE);
@@ -165,7 +165,7 @@ void enc_thread_interrupt_nonblocking(void)
 
         // Signal registration
         OE_TEST(
-            oe_sgx_register_td_host_signal(
+            oe_sgx_td_register_host_signal(
                 _thread_info_nonblocking.td, _current_signal) == true);
 
         printf(
@@ -205,7 +205,7 @@ void enc_thread_interrupt_nonblocking(void)
 
     // Register SIGUSR1 again
     OE_TEST(
-        oe_sgx_register_td_host_signal(
+        oe_sgx_td_register_host_signal(
             _thread_info_nonblocking.td, _current_signal) == true);
 
     // Sending the same signal multiple times
@@ -251,7 +251,7 @@ void enc_run_thread_blocking(int tid)
     OE_TEST(_thread_info_blocking.td->state == OE_TD_STATE_RUNNING);
 
     // Mask host signals (the default behavior)
-    oe_sgx_td_mask_host_signal();
+    oe_sgx_td_mask_host_signal(_thread_info_blocking.td);
 
     // Ensure the order of setting the lock
     asm volatile("" ::: "memory");
@@ -296,7 +296,7 @@ void enc_thread_interrupt_blocking(void)
     while (!_handler_entered)
     {
         OE_TEST(
-            oe_sgx_register_td_host_signal(_thread_info_blocking.td, SIGUSR1) ==
+            oe_sgx_td_register_host_signal(_thread_info_blocking.td, SIGUSR1) ==
             true);
 
         printf(
@@ -325,9 +325,9 @@ void enc_thread_interrupt_blocking(void)
     retry = 0;
     _handler_entered = 0;
 
-    // The oe_sgx_td_unmask_host_signal API is only expected to be used
-    // by the thread itself. Set the flag direclty for the testing purposes.
-    _thread_info_blocking.td->host_signal_unmasked = 1;
+    // The oe_sgx_td_unmask_host_signal API is usually expected to be used
+    // by the thread itself. Use here for testing purposes.
+    oe_sgx_td_unmask_host_signal(_thread_info_blocking.td);
 
     while (!_handler_entered)
     {
