@@ -12,15 +12,16 @@
 
 OE_EXTERNC_BEGIN
 
-bool oe_sgx_set_td_exception_handler_stack(void* stack, uint64_t size);
 void* td_to_tcs(const oe_sgx_td_t* td);
+
+void get_stack(void** stack, uint64_t* stack_size);
+
 int initialize_exception_handler_stack(
     void** stack,
     uint64_t* stack_size,
-    int use_exception_handler_stack);
-void cleaup_exception_handler_stack(
-    void** stack,
-    uint64_t* stack_size,
-    int use_exception_handler_stack);
+    uint64_t exception_type,
+    int register_exception_type);
+
+void cleaup_exception_handler_stack(void** stack, uint64_t* stack_size);
 
 OE_EXTERNC_END

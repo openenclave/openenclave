@@ -13,7 +13,7 @@
 #define PAGE_SIZE 4096
 #define EXCEPTION_HANDLER_STACK_SIZE 8192
 #define STACK_PAGE_NUMBER 2
-#define STACK_SIZE (STACK_PAGE_NUMER * PAGE_SIZE)
+#define STACK_SIZE (STACK_PAGE_NUMBER * PAGE_SIZE)
 void* td_to_tcs(const oe_sgx_td_t* td);
 
 uint8_t exception_handler_stack[EXCEPTION_HANDLER_STACK_SIZE];
@@ -22,11 +22,29 @@ uint64_t test_stack_overflow_handler(oe_exception_record_t* exception_record)
 {
     OE_TEST(exception_record->code == OE_EXCEPTION_PAGE_FAULT);
 
+    uint64_t rsp;
+    asm volatile("mov %%rsp, %0" : "=r"(rsp));
+
     /* Calculate the stack boundary based on OE enclave memory layout */
     oe_sgx_td_t* td = oe_sgx_get_td();
     void* tcs = td_to_tcs(td);
     uint64_t stack_base = (uint64_t)tcs - PAGE_SIZE;
-    OE_TEST(exception_record->context->rsp < (stack_base - STACK_PAGE_NUMBER));
+
+    /* Verify that the stack is overflowed */
+    OE_TEST(exception_record->context->rsp < (stack_base - STACK_SIZE));
+
+    uint64_t stack = (uint64_t)exception_handler_stack;
+    uint64_t stack_end = stack + EXCEPTION_HANDLER_STACK_SIZE;
+
+    oe_host_printf(
+        "Check current rsp (0x%lx) against exception handler stack [0x%lx, "
+        "0x%lx]\n",
+        rsp,
+        stack,
+        stack_end);
+
+    /* Verify that rsp points to the exception handler stack */
+    OE_TEST(rsp >= stack && rsp < stack_end);
 
     host_notify_stack_overflowed();
 
@@ -44,6 +62,9 @@ static oe_result_t _initialize_exception_handler()
 
     OE_CHECK(
         oe_add_vectored_exception_handler(false, test_stack_overflow_handler));
+
+    OE_TEST(oe_sgx_td_register_exception_handler_stack(
+        td, OE_EXCEPTION_PAGE_FAULT));
 
     result = OE_OK;
 
