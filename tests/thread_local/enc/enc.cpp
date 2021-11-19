@@ -17,6 +17,9 @@
 VISIBILITY_SPEC __thread volatile int __thread_int = 1;
 VISIBILITY_SPEC __thread volatile int g_x[10] = {8};
 
+// Will be put in .tbss
+__thread void* ptr;
+
 struct thread_local_struct
 {
     bool initialized;
@@ -173,6 +176,8 @@ void enclave_thread(int thread_num, int iters, int step)
     OE_TEST(total == (2 * step * iters) + start_value1 + start_value2);
 
     wait_for_test_completion();
+    // Avoid being optimised out
+    ptr = nullptr;
 }
 
 #define NUM_TCS 16
