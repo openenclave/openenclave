@@ -83,12 +83,6 @@
  * Then the aligned size of the section is 12 bytes and the compiler
  * uses the offset %FS:-12 to access g instead of %FS:-10.
  *
- * Note: Both .tdata and .tbss sections can have different alignments.
- * In such cases, the larger of the alignments is used to align both the
- * sections. In x86-64, as observed by doing 'objdump -h' on an elf file, all
- * sections are aligned to a power of two. This implies that the alignment of
- * one section must be a multiple of the alignment of the other.
- *
  * Initializing variables with complex initializers:
  * Consider
  *       thread_local int x = random();
@@ -215,13 +209,12 @@ static uint8_t* _get_fs_from_td(oe_sgx_td_t* td)
 }
 
 /**
- * Return aligned size.
+ * Return aligned pointer.
  */
-static uint64_t _get_aligned_size(uint64_t size, uint64_t align)
+static uint8_t* _get_aligned_ptr(uint8_t* ptr, uint64_t align)
 {
-    return align ? oe_round_up_to_multiple(size, align) : size;
+    return (uint8_t*)((uint64_t)ptr & ~(align - 1));
 }
-
 /*
  * Call oe_allocator_init with heap start and end addresses.
  */
@@ -250,36 +243,16 @@ static uint8_t* _get_thread_local_data_start(oe_sgx_td_t* td)
         return NULL;
 
     uint8_t* fs = _get_fs_from_td(td);
-    uint64_t alignment = 0;
 
     // Alignments must be non-zero.
     if (!_tdata_align || !_tbss_align)
         oe_abort();
 
-    // Choose the largest of the two alignments to align both the sections.
-    // Assert that one alignment is a multiple of the other.
-    if (_tdata_align >= _tbss_align)
-    {
-        alignment = _tdata_align;
-        if (alignment % _tbss_align)
-            oe_abort();
-    }
-    else
-    {
-        alignment = _tbss_align;
-        if (alignment % _tdata_align)
-            oe_abort();
-    }
+    uint8_t* tbss_start = _get_aligned_ptr(fs - _tbss_size, _tbss_align);
+    uint8_t* tdata_start =
+        _get_aligned_ptr(tbss_start - _tdata_size, _tdata_align);
 
-    // Alignment must be a power of two.
-    if (alignment & (alignment - 1))
-        oe_abort();
-
-    // Align both the sections.
-    fs -= _get_aligned_size(_tbss_size, alignment);
-    fs -= _get_aligned_size(_tdata_size, alignment);
-
-    return fs;
+    return tdata_start;
 }
 
 /**
