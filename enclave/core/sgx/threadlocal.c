@@ -420,7 +420,11 @@ oe_result_t oe_thread_local_cleanup(oe_sgx_td_t* td)
     // (i.e., tls_start is NULL when tdata and tbss are zero).
     oe_allocator_thread_cleanup();
     if (tls_start)
-        oe_memset_s(tls_start, (uint64_t)(fs - tls_start), 0, 0);
+        oe_memset_s(
+            tls_start,
+            (uint64_t)(fs - tls_start),
+            0,
+            (uint64_t)(fs - tls_start));
 
     return OE_OK;
 }
