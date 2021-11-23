@@ -98,11 +98,13 @@ def ACCContainerTest(String label, String version, List extra_cmake_args = []) {
                 cleanWs()
                 checkout scm
                 def cmakeArgs = helpers.CmakeArgs("RelWithDebInfo","OFF","ON","-DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin",extra_cmake_args.join(' '))
+                def devices = helpers.getDockerSGXDevices("ubuntu", helpers.getUbuntuReleaseVer())
+                println("${label} running Docker container with ${devices}")
                 def task = """
                            ${helpers.ninjaBuildCommand(cmakeArgs)}
                            ${helpers.TestCommand()}
                            """
-                common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", "clang-10", task, "--cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket")
+                common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", "clang-10", task, "--cap-add=SYS_PTRACE ${devices} --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket")
             }
         }
     }
@@ -115,6 +117,8 @@ def ACCPackageTest(String label, String version, List extra_cmake_args = []) {
                 cleanWs()
                 checkout scm
                 def cmakeArgs = helpers.CmakeArgs("RelWithDebInfo","OFF","ON","-DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin",extra_cmake_args.join(' '))
+                def devices = helpers.getDockerSGXDevices("ubuntu", helpers.getUbuntuReleaseVer())
+                println("${label} running Docker container with ${devices}")
                 common.ContainerTasks(
                     "oetools-${version}:${params.DOCKER_TAG}",
                     globalvars.COMPILER,
@@ -128,7 +132,7 @@ def ACCPackageTest(String label, String version, List extra_cmake_args = []) {
                     ),
                     helpers.TestSamplesCommand()
                     ],
-                    "--cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket"
+                    "--cap-add=SYS_PTRACE ${devices} --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket"
                 )
             }
         }
@@ -145,6 +149,8 @@ def ACCHostVerificationTest(String version, String build_type) {
                 cleanWs()
                 checkout scm
                 def cmakeArgs = "-G Ninja -DCMAKE_BUILD_TYPE=${build_type} -Wdev"
+                def devices = helpers.getDockerSGXDevices("ubuntu", helpers.getUbuntuReleaseVer())
+                println("ACC-1804 running Docker container with ${devices}")
                 println("Generating certificates and reports ...")
                 def task = """
                            ${helpers.ninjaBuildCommand(cmakeArgs)}
@@ -161,7 +167,7 @@ def ACCHostVerificationTest(String version, String build_type) {
                            ../../../output/bin/oeutil gen --format sgx_ecdsa --quote-proc out --verify
                            popd
                            """
-                common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", "clang-10", task, "--cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket")
+                common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", "clang-10", task, "--cap-add=SYS_PTRACE ${devices} --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket")
 
                 def ec_cert_created = fileExists 'build/tests/host_verify/host/sgx_cert_ec.der'
                 def rsa_cert_created = fileExists 'build/tests/host_verify/host/sgx_cert_rsa.der'
@@ -245,6 +251,8 @@ def ACCHostVerificationPackageTest(String version, String build_type) {
                 cleanWs()
                 checkout scm
                 def cmakeArgs = "-G Ninja -DCMAKE_BUILD_TYPE=${build_type} -Wdev"
+                def devices = helpers.getDockerSGXDevices("ubuntu", helpers.getUbuntuReleaseVer())
+                println("ACC-1804 running Docker container with ${devices}")
                 println("Generating certificates and reports ...")
                 def task = """
                            ${helpers.ninjaBuildCommand(cmakeArgs)}
@@ -261,7 +269,7 @@ def ACCHostVerificationPackageTest(String version, String build_type) {
                            ../../../output/bin/oeutil gen --format sgx_ecdsa --quote-proc out --verify
                            popd
                            """
-                common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", "clang-10", task, "--cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket")
+                common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", "clang-10", task, "--cap-add=SYS_PTRACE ${devices} --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket")
 
                 def ec_cert_created = fileExists 'build/tests/host_verify/host/sgx_cert_ec.der'
                 def rsa_cert_created = fileExists 'build/tests/host_verify/host/sgx_cert_rsa.der'
