@@ -93,7 +93,7 @@ list(
   dupenv.c
   fopen.c
   result.c
-  traceh.c)
+  ${PROJECT_SOURCE_DIR}/common/traceh.c)
 
 # Common files that are used in the OE SDK only.
 list(APPEND PLATFORM_HOST_MR_SRC memalign.c strings.c)

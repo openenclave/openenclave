@@ -311,7 +311,7 @@ list(
   fopen.c
   tests.c
   result.c
-  traceh.c)
+  ${PROJECT_SOURCE_DIR}/common/traceh.c)
 
 # Common files that are used in the OE SDK only.
 list(

@@ -9,7 +9,7 @@
 
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/tests.h>
-#include "../host/traceh.c"
+#include "../common/traceh.c"
 
 void test_escaped_msg(const char* msg, const char* expected, bool expect_ok)
 {
