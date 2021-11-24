@@ -307,7 +307,7 @@ list(
   ${PROJECT_SOURCE_DIR}/common/sha.c
   memalign.c
   hexdump.c
-  dupenv.c
+  ${PROJECT_SOURCE_DIR}/common/dupenv.c
   fopen.c
   tests.c
   result.c

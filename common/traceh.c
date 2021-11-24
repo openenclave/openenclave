@@ -18,9 +18,9 @@
 #include <sys/time.h>
 #endif
 #include <time.h>
-#include "../host/dupenv.h"
 #include "../host/fopen.h"
 #include "../host/hostthread.h"
+#include "dupenv.h"
 
 #define LOGGING_FORMAT_STRING "%s.%06ldZ [(%s)%s] tid(0x%llx) | %s"
 

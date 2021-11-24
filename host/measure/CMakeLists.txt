@@ -90,7 +90,7 @@ list(
   ${PROJECT_SOURCE_DIR}/common/safecrt.c
   ${PROJECT_SOURCE_DIR}/common/sha.c
   hexdump.c
-  dupenv.c
+  ${PROJECT_SOURCE_DIR}/common/dupenv.c
   fopen.c
   result.c
   ${PROJECT_SOURCE_DIR}/common/traceh.c)

@@ -5,7 +5,7 @@
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "dupenv.h"
+#include "../common/dupenv.h"
 
 uint32_t oe_get_create_flags(void)
 {

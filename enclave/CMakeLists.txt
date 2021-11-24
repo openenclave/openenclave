@@ -40,6 +40,8 @@ add_enclave_library(
   ../common/custom_claims.c
   ../common/datetime.c
   ../common/sha.c
+  ../common/dupenv.c
+  ../common/traceh.c
   asym_keys.c
   link.c
   tls_cert.c
