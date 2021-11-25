@@ -9,17 +9,20 @@
 #include "../tracee.h"
 #include "report.h"
 
+static volatile int _is_enclave_debug_allowed = -1;
+
 // Read an enclave's identity attribute to see to if it was signed as an debug
 // enclave
 bool is_enclave_debug_allowed()
 {
-    bool ret = false;
-    oe_sgx_td_t* td = oe_sgx_get_td();
+    if (_is_enclave_debug_allowed != -1)
+        goto done;
 
+    oe_sgx_td_t* td = oe_sgx_get_td();
     if (td->simulate)
     {
         // enclave in simulate mode is treated as debug_allowed
-        ret = true;
+        _is_enclave_debug_allowed = 1;
     }
     else
     {
@@ -27,10 +30,15 @@ bool is_enclave_debug_allowed()
         sgx_report_t sgx_report;
         oe_result_t result = sgx_create_report(NULL, 0, NULL, 0, &sgx_report);
         if (result != OE_OK)
+        {
+            _is_enclave_debug_allowed = 0;
             goto done;
+        }
 
-        ret = (sgx_report.body.attributes.flags & SGX_FLAGS_DEBUG) != 0;
+        _is_enclave_debug_allowed =
+            (sgx_report.body.attributes.flags & SGX_FLAGS_DEBUG) != 0;
     }
+
 done:
-    return ret;
+    return _is_enclave_debug_allowed == 1 ? true : false;
 }
