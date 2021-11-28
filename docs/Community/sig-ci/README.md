@@ -13,7 +13,6 @@ No regular meetings are scheduled.
 SIG Chair
 ---------
 
-Brett McLaren ([brmclaren](https://github.com/brmclaren))
 
 SIG Approvers
 -------------

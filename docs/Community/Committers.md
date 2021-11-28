@@ -19,27 +19,19 @@ therefore should usually be consulted for changes relating to that area.
 |-----------------------|---------------------|--------------------------------|
 | Amaury Chamayou       | achamayou           | Build, CCF Integration         |
 | Anand Krishnamoorthi  | anakrish            | Debugging, SGX, EDL, Dev Tools |
-| Andrew Schwartzmeyer  | andschwa            | EDL, CMake, Dev Tools, Website |
-| Brett McLaren         | BRMcLaren           | Build, CMake, CI               |
 | Brian Telfer          | Britel              | TrustZone, Attestation         |
 | Dave Thaler           | dthaler             | TrustZone, APIs, Dev Tools     |
-| Emil Alexandru Stoica | EmilAlexandruStoica | Build, CMake, CI, Ansible      |
 | Akash Gupta           | gupta-ak            | SGX, Attestation, APIs         |
 | Hernan Gatta          | HernanGatta         | TrustZone                      |
 | Sergio Wong           | jazzybluesea        | Attestation, SGX               |
-| Jiri Appl             | jiria               | Attestation, TrustZone         |
-| John Kordich          | johnkord            | Build, CI, Dev Tools, Release  |
-| Jordan Hand           | jhand2              | Windows, Build, SGX            |
 | Xuejun Yang           | jxyang              | SGX                            |
 | Mike Brasher          | mikbras             | SGX, APIs, EDL                 |
 | Ming-Wei Shih         | mingweishih         | SGX, Dev tools, EDL            |
-| Marius Oprin          | oprinmarius         | Build, CMake, CI, Ansible      |
 | Paul Allen            | paulcallen          | TrustZone                      |
 | Radhika Jandhyala     | radhikaj            | SGX, APIs, Website             |
 | Shanwei Cen           | shnwc               | Attestation, SGX               |
 | Shruti Ratnam         | shruti25ratnam      | Attestation                    |
 | Cheng-mean Liu        | soccerGB            | Attestation, SGX               |
-| Bruce Campbell        | yakman2020          | Windows, SGX                   |
 
 Current Expectations
 --------------------
