@@ -18,6 +18,7 @@ pipeline {
         string(name: "BASE_DOCKER_TAG", defaultValue: "SGX-${params.SGX_VERSION}", description: "The tag for the new Base Docker images. Use SGX-<version> for releases. Example: SGX-2.15.100")
         string(name: "INTERNAL_REPO", defaultValue: "https://oejenkinscidockerregistry.azurecr.io", description: "Url for internal Docker repository")
         string(name: "OECI_LIB_VERSION", defaultValue: 'master', description: 'Version of OE Libraries to use')
+        string(name: "DEVKITS_URI", defaultValue: 'https://oejenkins.blob.core.windows.net/oejenkins/OE-CI-devkits-6be0dbca.tar.gz', description: "Uri for downloading the OECI Devkit")
         booleanParam(name: "PUBLISH_DOCKER_HUB", defaultValue: false, description: "Publish container to OECITeam Docker Hub?")
         booleanParam(name: "TAG_LATEST", defaultValue: false, description: "Update the latest tag to the currently built DOCKER_TAG")
     }
@@ -127,16 +128,24 @@ pipeline {
                 stage("Build Ubuntu 18.04 Docker Image") {
                     steps {
                         script {
-                            oe1804 = common.dockerImage("oetools-18.04:${DOCKER_TAG}", LINUX_DOCKERFILE, "--build-arg ubuntu_version=18.04")
-                            puboe1804 = common.dockerImage("oeciteam/oetools-18.04:${DOCKER_TAG}", LINUX_DOCKERFILE, "--build-arg ubuntu_version=18.04")
+                            buildArgs = common.dockerBuildArgs("UID=\$(id -u)", "UNAME=\$(id -un)",
+                                                               "GID=\$(id -g)", "GNAME=\$(id -gn)")
+                            oe1804 = common.dockerImage("oetools-18.04:${DOCKER_TAG}", LINUX_DOCKERFILE, "${buildArgs} --build-arg ubuntu_version=18.04 --build-arg devkits_uri=${params.DEVKITS_URI}")
+                            if ( PUBLISH_DOCKER_HUB ) {
+                                puboe1804 = common.dockerImage("oeciteam/oetools-18.04:${DOCKER_TAG}", LINUX_DOCKERFILE, "${buildArgs} --build-arg ubuntu_version=18.04 --build-arg devkits_uri=${params.DEVKITS_URI}")
+                            }
                         }
                     }
                 }
                 stage("Build Ubuntu 20.04 Docker Image") {
                     steps {
                         script {
-                            oe2004 = common.dockerImage("oetools-20.04:${DOCKER_TAG}",LINUX_DOCKERFILE, "--build-arg ubuntu_version=20.04")
-                            puboe2004 = common.dockerImage("oeciteam/oetools-20.04:${DOCKER_TAG}", LINUX_DOCKERFILE, "--build-arg ubuntu_version=20.04")
+                            buildArgs = common.dockerBuildArgs("UID=\$(id -u)", "UNAME=\$(id -un)",
+                                                               "GID=\$(id -g)", "GNAME=\$(id -gn)")
+                            oe2004 = common.dockerImage("oetools-20.04:${DOCKER_TAG}", LINUX_DOCKERFILE, "${buildArgs} --build-arg ubuntu_version=20.04 --build-arg devkits_uri=${params.DEVKITS_URI}")
+                            if ( PUBLISH_DOCKER_HUB ) {
+                                puboe2004 = common.dockerImage("oeciteam/oetools-20.04:${DOCKER_TAG}", LINUX_DOCKERFILE, "${buildArgs} --build-arg ubuntu_version=20.04 --build-arg devkits_uri=${params.DEVKITS_URI}")
+                            }
                         }
                     }
                 }
@@ -148,7 +157,7 @@ pipeline {
                     docker.withRegistry(params.INTERNAL_REPO, env.INTERNAL_REPO_CREDS) {
                         common.exec_with_retry { oe1804.push() }
                         common.exec_with_retry { oe2004.push() }
-                        if(params.TAG_LATEST == "true") {
+                        if ( params.TAG_LATEST ) {
                             common.exec_with_retry { oe1804.push('latest') }
                             common.exec_with_retry { oe2004.push('latest') }
                         }
@@ -157,16 +166,19 @@ pipeline {
             }
         }
         stage("Push to OE Docker Hub Registry") {
+            when {
+                expression {
+                    return params.PUBLISH_DOCKER_HUB
+                }
+            }
             steps {
                 script {
                     docker.withRegistry('', DOCKERHUB_REPO_CREDS) {
-                        if(PUBLISH_DOCKER_HUB == "true") {
-                            common.exec_with_retry { puboe1804.push() }
-                            common.exec_with_retry { puboe2004.push() }
-                            if(TAG_LATEST == "true") {
-                                common.exec_with_retry { puboe1804.push('latest') }
-                                common.exec_with_retry { puboe2004.push('latest') }
-                            }
+                        common.exec_with_retry { puboe1804.push() }
+                        common.exec_with_retry { puboe2004.push() }
+                        if ( TAG_LATEST ) {
+                            common.exec_with_retry { puboe1804.push('latest') }
+                            common.exec_with_retry { puboe2004.push('latest') }
                         }
                     }
                 }
