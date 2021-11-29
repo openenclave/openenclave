@@ -59,6 +59,9 @@ def ACCTest(String label, String compiler, String build_type, List extra_cmake_a
                         done
                         """
                 }
+                sh """
+                    sudo apt list --installed | grep sgx
+                """
                 def cmakeArgs = helpers.CmakeArgs(build_type,"OFF","ON","-DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin",extra_cmake_args.join(' '))
                 def task = """
                            ${helpers.ninjaBuildCommand(cmakeArgs)}

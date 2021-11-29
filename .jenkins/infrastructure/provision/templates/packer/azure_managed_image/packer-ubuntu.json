@@ -82,7 +82,7 @@
       "playbook_file": "{{ user `ansible_dir` }}/jenkins-packer.yml",
       "extra_arguments": [
         "--extra-vars",
-        "docker_registry={{ user `docker_registry` }} docker_user_name={{ user `docker_user_name` }} docker_user_password={{ user `docker_user_password` }} docker_tag={{ user `docker_tag` }}"
+        "docker_registry={{ user `docker_registry` }} docker_user_name={{ user `docker_user_name` }} docker_user_password={{ user `docker_user_password` }} docker_tag={{ user `docker_tag` }} jenkins_admin_name={{ user `ssh_username` }}"
       ],
       "ansible_env_vars": [
         "ANSIBLE_ROLES_PATH={{ user `ansible_dir` }}/roles",
