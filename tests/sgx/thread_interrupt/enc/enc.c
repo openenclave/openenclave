@@ -232,6 +232,26 @@ void enc_thread_interrupt_nonblocking(void)
     host_join_thread();
 }
 
+uint64_t thread_terminate_handler(oe_exception_record_t* exception_record)
+{
+    int self_tid = 0;
+
+    OE_TEST(exception_record->code == OE_EXCEPTION_UNKNOWN);
+
+    host_get_tid(&self_tid);
+    OE_TEST(_thread_info_blocking.tid == self_tid);
+
+    printf("(tid=%d) thread is interrupted...\n", self_tid);
+
+    OE_TEST(
+        _thread_info_blocking.td->state ==
+        OE_TD_STATE_SECOND_LEVEL_EXCEPTION_HANDLING);
+
+    __atomic_store_n(&_thread_info_blocking.lock, 2, __ATOMIC_RELEASE);
+
+    return OE_EXCEPTION_CONTINUE_EXECUTION;
+}
+
 void enc_run_thread_blocking(int tid)
 {
     oe_result_t result = OE_OK;
@@ -242,7 +262,7 @@ void enc_run_thread_blocking(int tid)
     printf("(tid=%d) blocking thread is running...\n", self_tid);
 
     OE_CHECK(
-        oe_add_vectored_exception_handler(false, thread_interrupt_handler));
+        oe_add_vectored_exception_handler(false, thread_terminate_handler));
 
     _thread_info_blocking.tid = tid;
     _thread_info_blocking.td = oe_sgx_get_td();
@@ -268,7 +288,7 @@ done:
     return;
 }
 
-void enc_thread_interrupt_blocking(void)
+void enc_thread_interrupt_blocking(int* ret)
 {
     oe_result_t result;
     int tid = 0;
@@ -295,9 +315,9 @@ void enc_thread_interrupt_blocking(void)
     _handler_entered = 0;
     while (!_handler_entered)
     {
-        OE_TEST(
-            oe_sgx_td_register_host_signal(_thread_info_blocking.td, SIGUSR1) ==
-            true);
+        if (oe_sgx_td_register_host_signal(_thread_info_blocking.td, SIGUSR1) !=
+            true)
+            break;
 
         printf(
             "(tid=%d) Sending registered signal (SIGUSR1) to (td=0x%lx, "
@@ -306,6 +326,9 @@ void enc_thread_interrupt_blocking(void)
             (uint64_t)_thread_info_blocking.td,
             _thread_info_blocking.tid,
             ++retry);
+
+        if (_thread_info_blocking.td->state != OE_TD_STATE_RUNNING)
+            break;
 
         host_send_interrupt(_thread_info_blocking.tid, SIGUSR1);
 
@@ -320,7 +343,8 @@ void enc_thread_interrupt_blocking(void)
         host_sleep_msec(30);
     }
 
-    OE_TEST(retry == 10);
+    if (retry != 10)
+        goto done;
 
     retry = 0;
     _handler_entered = 0;
@@ -339,6 +363,9 @@ void enc_thread_interrupt_blocking(void)
             _thread_info_blocking.tid,
             ++retry);
 
+        if (_thread_info_blocking.td->state != OE_TD_STATE_RUNNING)
+            break;
+
         host_send_interrupt(_thread_info_blocking.tid, SIGUSR2);
 
         if (retry == 10)
@@ -352,9 +379,27 @@ void enc_thread_interrupt_blocking(void)
         host_sleep_msec(30);
     }
 
-    OE_TEST(retry == 10);
+    if (retry != 10)
+        goto done;
 
-    oe_abort();
+    *ret = 1;
+
+done:
+    /* unblock and shutdown the thread */
+    OE_TEST(
+        oe_sgx_td_register_host_signal(_thread_info_blocking.td, SIGUSR2) ==
+        true);
+
+    printf(
+        "(tid=%d) Shutting down (td=0x%lx, "
+        "tid=%d)\n",
+        tid,
+        (uint64_t)_thread_info_blocking.td,
+        _thread_info_blocking.tid);
+
+    host_send_interrupt(_thread_info_blocking.tid, SIGUSR2);
+
+    host_join_thread();
 }
 
 OE_SET_ENCLAVE_SGX(
