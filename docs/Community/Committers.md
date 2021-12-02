@@ -20,6 +20,7 @@ therefore should usually be consulted for changes relating to that area.
 | Amaury Chamayou       | achamayou           | Build, CCF Integration         |
 | Anand Krishnamoorthi  | anakrish            | Debugging, SGX, EDL, Dev Tools |
 | Brian Telfer          | Britel              | TrustZone, Attestation         |
+| Chris Yan             | cyandevs            | Build, CI, Scripts             |
 | Dave Thaler           | dthaler             | TrustZone, APIs, Dev Tools     |
 | Akash Gupta           | gupta-ak            | SGX, Attestation, APIs         |
 | Hernan Gatta          | HernanGatta         | TrustZone                      |
@@ -29,6 +30,7 @@ therefore should usually be consulted for changes relating to that area.
 | Ming-Wei Shih         | mingweishih         | SGX, Dev tools, EDL            |
 | Paul Allen            | paulcallen          | TrustZone                      |
 | Radhika Jandhyala     | radhikaj            | SGX, APIs, Website             |
+| Rob Sanchez           | rs--                | Build, CI, Scripts             |
 | Shanwei Cen           | shnwc               | Attestation, SGX               |
 | Shruti Ratnam         | shruti25ratnam      | Attestation                    |
 | Cheng-mean Liu        | soccerGB            | Attestation, SGX               |
