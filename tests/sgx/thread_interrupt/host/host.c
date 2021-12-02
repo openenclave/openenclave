@@ -98,9 +98,7 @@ int main(int argc, const char* argv[])
     }
     else if (!strcmp(argv[2], "blocking"))
     {
-        int ret = 0;
-        result = enc_thread_interrupt_blocking(enclave, &ret);
-        OE_TEST(ret == 1);
+        result = enc_thread_interrupt_blocking(enclave);
         if (result != OE_OK)
             oe_put_err("oe_call_enclave() failed: result=%u", result);
         OE_TEST(oe_terminate_enclave(enclave) == OE_OK);

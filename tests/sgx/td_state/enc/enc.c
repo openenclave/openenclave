@@ -14,24 +14,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define OE_EXPECT(a, b)                                              \
-    do                                                               \
-    {                                                                \
-        uint64_t value = (uint64_t)(a);                              \
-        uint64_t expected = (uint64_t)(b);                           \
-        if (value != expected)                                       \
-        {                                                            \
-            printf(                                                  \
-                "Test failed: %s(%u): %s expected: %lu, got: %lu\n", \
-                __FILE__,                                            \
-                __LINE__,                                            \
-                __FUNCTION__,                                        \
-                expected,                                            \
-                value);                                              \
-            oe_abort();                                              \
-        }                                                            \
-    } while (0)
-
 typedef struct _thread_info_t
 {
     int tid;
