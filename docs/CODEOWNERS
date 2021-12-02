@@ -10,17 +10,17 @@
 * @openenclave/committers
 
 /3rdparty/ @mikbras @anakrish @mingweishih
-/cmake/ @andschwa @BRMcLaren
+/cmake/ @mingweishi @anakrish
 /common/ @anakrish @gupta-ak @mikbras
-/docs/refman @andschwa @radhikaj
+/docs/refman @cyandevs @radhikaj @rs--
 /debugger/ @anakrish @jxyang
 /enclave/ @anakrish @gupta-ak @mikbras @mingweishih
 /host/ @anakrish @gupta-ak @mikbras @mingweishih
 # TODO: Break this folder out?
 /include/ @achamayou @dthaler @mikbras @anakrish
 /libc/ @mikbras @anakrish
-/scripts/ @achamayou @andschwa @johnkord @mingweishih
-/samples/ @andschwa @dthaler @yentsanglee @anakrish
+/scripts/ @achamayou @cyandevs @rs-- @mingweishih
+/samples/ @dthaler @yentsanglee @anakrish
 /syscall/ @mikbras @anakrish @mingweishih
 # TODO: Break this folder out?
 /tests/ @anakrish @radhikaj
@@ -38,11 +38,11 @@ windows/ @anakrish @mingweishih
 crypto/ @mingweishih @gupta-ak
 
 # Match all CMake, anywhere.
-CMakeLists.txt @andschwa @BRMcLaren
-*.cmake @andschwa @BRMcLaren
+CMakeLists.txt @anakrish @mingweishih
+*.cmake @anakrish @mingweishih
 
 # Match all Markdown, anywhere.
-*.md @johnkord @andschwa @radhikaj
+*.md @radhikaj
 
 # Except design reviews, which should be everyone.
 /docs/DesignDocs/ @openenclave/committers

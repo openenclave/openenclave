@@ -13,7 +13,7 @@ Regular SIG-Architecture meeting: TBD
 SIG Chair
 ---------
 
-TBD [Mark Shanahan (MWShan) nominated]
+Mark Shanahan (MWShan)
 
 SIG Approvers
 -------------

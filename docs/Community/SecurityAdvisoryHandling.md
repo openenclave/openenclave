@@ -43,7 +43,7 @@ If OE SDK needs to issue a Security Advisory to address the reported concern, on
 3. [Assign the appropriate collaborators](https://docs.github.com/en/github/managing-security-vulnerabilities/adding-a-collaborator-to-a-security-advisory) to the SA, which includes:
    1. The assignee(s) responsible for fixing the issue.
    2. Any area owners or subject matter experts needed for review.
-   3. CI/CD coordinators for private testing and integration with the release. (e.g., [@brmclaren](https://github.com/brmclaren)).
+   3. CI/CD coordinators for private testing and integration with the release. (e.g., [@cyandevs](https://github.com/cyandevs)).
 4. [Create a temporary private fork](https://docs.github.com/en/github/managing-security-vulnerabilities/collaborating-in-a-temporary-private-fork-to-resolve-a-security-vulnerability#creating-a-temporary-private-fork)
    to implement the code changes as part of the SA.
    1. The assignee should follow the GitHub instructions and create an `advisory-fix` branch for their code changes.
