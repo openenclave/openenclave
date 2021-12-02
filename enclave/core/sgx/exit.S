@@ -58,8 +58,9 @@ oe_asm_exit:
     mov %rdx, %r11
 
 .determine_exit_type:
-    // Check if the argument direct_return is set
-    cmp $1, %rcx
+    // Save the direct_return argument in r13 and check if it is set
+    mov %rcx, %r13
+    cmp $1, %r13
     je .return
 
     // Check the depth of the ECALL stack (zero for clean exit)
@@ -117,23 +118,33 @@ oe_asm_exit:
     mov SGX_SSA_URSP_OFFSET(%r12), %rsp
     mov SGX_SSA_URBP_OFFSET(%r12), %rbp
 
+    // Bypass update_td_state if direct_return is set
+    cmp $1, %r13
+    je .execute_eexit
+
+.update_td_state:
+    lfence
+
     // Do not update the state if the enclave exits in the middle
     // the exception handling (e.g., exiting from the first-level
-    // exception handler) or exits after an illegal instruction
-    // emulation
+    // exception handler), exits after an illegal instruction
+    // emulation, or the enclave is aborted
     cmpq $TD_STATE_SECOND_LEVEL_EXCEPTION_HANDLING, td_state(%r11)
     je .execute_eexit
     cmpq $TD_STATE_FIRST_LEVEL_EXCEPTION_HANDLING, td_previous_state(%r11)
     je .execute_eexit
+    cmpq $TD_STATE_ABORTED, td_state(%r11)
+    je .execute_eexit
+
+    lfence
 
     // Update the state to indicate that the enclave is returning
     // to the host
     movq $TD_STATE_EXITED, td_state(%r11)
 
+.execute_eexit:
     oe_cleanup_registers
 
-.execute_eexit:
-    lfence
     // Check oe_sgx_td_t.simulate flag
     // simulate-flag-check.
     mov td_simulate(%r11), %rax
