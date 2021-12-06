@@ -12,7 +12,7 @@
 
 #define PAGE_SIZE 4096
 #define EXCEPTION_HANDLER_STACK_SIZE 8192
-#define STACK_PAGE_NUMBER 2
+#define STACK_PAGE_NUMBER 4
 #define STACK_SIZE (STACK_PAGE_NUMER * PAGE_SIZE)
 void* td_to_tcs(const oe_sgx_td_t* td);
 
