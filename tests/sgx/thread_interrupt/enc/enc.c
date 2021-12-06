@@ -135,7 +135,6 @@ done:
 
 void enc_thread_interrupt_nonblocking(void)
 {
-    oe_result_t result;
     int tid = 0;
 
     host_get_tid(&tid);
@@ -144,9 +143,7 @@ void enc_thread_interrupt_nonblocking(void)
     // Test interrupting a non-blocking thread
     printf("(tid=%d) Create a non-blocking thread...\n", tid);
 
-    result = host_create_thread(0 /* blocking */);
-    if (result != OE_OK)
-        return;
+    OE_TEST(host_create_thread(0 /* blocking */) == OE_OK);
 
     while (__atomic_load_n(&_thread_info_nonblocking.lock, __ATOMIC_ACQUIRE) !=
            1)
@@ -236,7 +233,9 @@ uint64_t thread_terminate_handler(oe_exception_record_t* exception_record)
 {
     int self_tid = 0;
 
-    OE_TEST(exception_record->code == OE_EXCEPTION_UNKNOWN);
+    OE_EXPECT(exception_record->code, OE_EXCEPTION_UNKNOWN);
+
+    OE_EXPECT(exception_record->host_signal_number, SIGUSR2);
 
     host_get_tid(&self_tid);
     OE_TEST(_thread_info_blocking.tid == self_tid);
@@ -288,9 +287,8 @@ done:
     return;
 }
 
-void enc_thread_interrupt_blocking(int* ret)
+void enc_thread_interrupt_blocking()
 {
-    oe_result_t result;
     int tid = 0;
     int retry = 0;
 
@@ -299,9 +297,8 @@ void enc_thread_interrupt_blocking(int* ret)
 
     // Test interrupting a blocking thread
     printf("(tid=%d) Create a blocking thread...\n", tid);
-    result = host_create_thread(1 /* blocking */);
-    if (result != OE_OK)
-        return;
+
+    OE_TEST(host_create_thread(1 /* blocking */) == OE_OK);
 
     while (!_thread_info_blocking.lock)
     {
@@ -312,13 +309,13 @@ void enc_thread_interrupt_blocking(int* ret)
 
     host_sleep_msec(30);
 
+    OE_TEST(
+        oe_sgx_td_register_host_signal(_thread_info_blocking.td, SIGUSR1) ==
+        true);
+
     _handler_entered = 0;
     while (!_handler_entered)
     {
-        if (oe_sgx_td_register_host_signal(_thread_info_blocking.td, SIGUSR1) !=
-            true)
-            break;
-
         printf(
             "(tid=%d) Sending registered signal (SIGUSR1) to (td=0x%lx, "
             "tid=%d)...%d\n",
@@ -327,8 +324,7 @@ void enc_thread_interrupt_blocking(int* ret)
             _thread_info_blocking.tid,
             ++retry);
 
-        if (_thread_info_blocking.td->state != OE_TD_STATE_RUNNING)
-            break;
+        OE_EXPECT(_thread_info_blocking.td->state, OE_TD_STATE_RUNNING);
 
         host_send_interrupt(_thread_info_blocking.tid, SIGUSR1);
 
@@ -343,15 +339,22 @@ void enc_thread_interrupt_blocking(int* ret)
         host_sleep_msec(30);
     }
 
-    if (retry != 10)
-        goto done;
+    OE_TEST(retry == 10);
 
     retry = 0;
     _handler_entered = 0;
 
+    OE_TEST(
+        oe_sgx_td_unregister_host_signal(_thread_info_blocking.td, SIGUSR1) ==
+        true);
+
     // The oe_sgx_td_unmask_host_signal API is usually expected to be used
     // by the thread itself. Use here for testing purposes.
     oe_sgx_td_unmask_host_signal(_thread_info_blocking.td);
+
+    OE_TEST(
+        oe_sgx_td_host_signal_registered(_thread_info_blocking.td, SIGUSR2) ==
+        false);
 
     while (!_handler_entered)
     {
@@ -363,8 +366,7 @@ void enc_thread_interrupt_blocking(int* ret)
             _thread_info_blocking.tid,
             ++retry);
 
-        if (_thread_info_blocking.td->state != OE_TD_STATE_RUNNING)
-            break;
+        OE_EXPECT(_thread_info_blocking.td->state, OE_TD_STATE_RUNNING);
 
         host_send_interrupt(_thread_info_blocking.tid, SIGUSR2);
 
@@ -379,20 +381,15 @@ void enc_thread_interrupt_blocking(int* ret)
         host_sleep_msec(30);
     }
 
-    if (retry != 10)
-        goto done;
+    OE_TEST(retry == 10);
 
-    *ret = 1;
-
-done:
     /* unblock and shutdown the thread */
     OE_TEST(
         oe_sgx_td_register_host_signal(_thread_info_blocking.td, SIGUSR2) ==
         true);
 
     printf(
-        "(tid=%d) Shutting down (td=0x%lx, "
-        "tid=%d)\n",
+        "(tid=%d) Shutting down (td=0x%lx, tid=%d)\n",
         tid,
         (uint64_t)_thread_info_blocking.td,
         _thread_info_blocking.tid);
