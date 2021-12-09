@@ -16,7 +16,7 @@ library "OpenEnclaveJenkinsLibrary@${params.OECI_LIB_VERSION}"
 /**
  * Publish OpenEnclave Ubuntu packages to the Microsoft APT repository
  *
- * @param release_version  The version of the Open Enclave release to install
+ * @param release_version  The version of the Open Enclave release to publish
  * @param os_release       The distribution version without "." (e.g. 1804)
  */
 
@@ -24,51 +24,34 @@ def ubuntuPublishRelease(String release_version, String os_release) {
 
     helpers.WaitForAptLock()
     withCredentials([file(credentialsId: 'azure-repoapi-client', variable: 'repoapiclient'),
-                     string(credentialsId: 'msft-apt-repo-pem', variable: 'repoclientpem'),
-                     string(credentialsId: 'ReleaseAADClientId', variable: 'AADClientId'),
-                     string(credentialsId: 'ReleaseAADResource', variable: 'AADResource'),
-                     string(credentialsId: 'ReleaseAADTenant', variable: 'AADTenant'),
-                     string(credentialsId: "MicrosoftAptRepositoryUbuntu${os_release}", variable: "Ubuntu${os_release}repoid")]) {
+                     file(credentialsId: "ubuntu-${os_release}-repo-config", variable: 'aptconfig'),
+                     string(credentialsId: 'msft-apt-repo-pem', variable: 'repoclientpem')]) {
         sh '''#!/bin/bash
             set +x
-            echo Ubuntu${os_release}
+            echo Ubuntu $os_release
             sudo apt-get update
             sudo apt-get -y --no-install-recommends install python3-adal jq
 
             if ! apt list --installed | grep azure-repoapi-client; then
-                sudo apt -y install ${repoapiclient}
+                sudo apt -y install $repoapiclient
             fi
 
             # Install repoclient.pem
-            if [[ -f ${WORKSPACE}/repoclient.pem ]]; then
-                rm ${WORKSPACE}/repoclient.pem
+            if [[ -f $WORKSPACE/repoclient.pem ]]; then
+                rm $WORKSPACE/repoclient.pem
             fi
             touch ~/.ssh/repoclient.pem
             chmod 600 ~/.ssh/repoclient.pem
-            echo ${repoclientpem} | awk 'NF {gsub(/- /, "-\\n"); gsub(/ -/, "\\n-"); printf \$0;}' &>> ${WORKSPACE}/repoclient.pem
+            echo "$repoclientpem" >> $WORKSPACE/repoclient.pem
 
             # Install repoclient configuration
-            if [[ -f ${WORKSPACE}/config-Ubuntu${os_release}.json ]]; then
-                echo "Old config-Ubuntu${os_release}.json detected. Removing..."
-                rm ${WORKSPACE}/config-Ubuntu${os_release}.json
-            fi
-            touch ${WORKSPACE}/config-Ubuntu${os_release}.json
-            chmod 600 ${WORKSPACE}/config-Ubuntu${os_release}.json
-            jq '.' <<EOF >>${WORKSPACE}/config-Ubuntu${os_release}.json
-{
-    "server": "azure-apt-cat.cloudapp.net",
-    "port": "443",
-    "AADClientId": "${AADClientId}",
-    "AADClientCertificate": "${WORKSPACE}/repoclient.pem",
-    "AADResource": "${AADResource}",
-    "AADTenant": "${AADTenant}",
-    "AADAuthorityUrl": "https://login.microsoftonline.com",
-    "repositoryId": "Ubuntu${os_release}repoid"
-}
-EOF
+            cp $aptconfig $WORKSPACE/apt-config.json
+            chmod 777 $WORKSPACE/apt-config.json
+            sed -i "s|<PEM_FILE>|$WORKSPACE/repoclient.pem|g" $WORKSPACE/apt-config.json
+            chmod 600 $WORKSPACE/apt-config.json
 
             # Test repoclient
-            repoclient -c ${WORKSPACE}/config-Ubuntu${os_release}.json repo list
+            repoclient -c $WORKSPACE/apt-config.json repo list
         '''
         script {
             // Download and publish open-enclave and open-enclave-hostverify packages if PUBLISH_RELEASE is true
@@ -77,12 +60,43 @@ EOF
                 helpers.releaseDownloadLinux(release_version, "open-enclave-hostverify", 'GitHub', 'Ubuntu', os_release)
                 sh """#!/bin/bash
                     echo "Publishing OpenEnclave ${release_version}"
-                    repoclient -c ${WORKSPACE}/config-Ubuntu${os_release}.json package add open-enclave"
-                    repoclient -c ${WORKSPACE}/config-Ubuntu${os_release}.json package add open-enclave-hostverify"
+                    mv "0.17.5/Ubuntu ${os_release}/Ubuntu_${os_release}_open-enclave_${release_version}_amd64.deb" open-enclave_${release_version}_amd64.deb
+                    mv "0.17.5/Ubuntu ${os_release}/Ubuntu_${os_release}_open-enclave-hostverify_${release_version}_amd64.deb" open-enclave-hostverify_${release_version}_amd64.deb
+                    repoclient -c ${WORKSPACE}/apt-config.json package add open-enclave_${release_version}_amd64.deb
+                    repoclient -c ${WORKSPACE}/apt-config.json package add open-enclave-hostverify_${release_version}_amd64.deb
                 """
             }
         }
         cleanWs()
+    }
+}
+
+/**
+ * Publish OpenEnclave Windows packages to NuGet
+ *
+ * @param release_version  The version of the Open Enclave release to publish
+ */
+
+def windowsPublishRelease(String release_version) {
+    withCredentials([string(credentialsId: "openenclave-nuget-key", variable: "nugetkey")]) {
+        def windows_version = bat(
+            script: """
+                @echo off
+                wmic os get caption | find /v "Caption"
+                """,
+            returnStdout: true
+        ).trim()
+
+        helpers.releaseDownloadWindows(release_version, 'open-enclave', 'GitHub', windows_version)
+        helpers.releaseDownloadWindows(release_version, 'open-enclave.OEHOSTVERIFY', 'GitHub', windows_version)
+        script {
+            if (params.PUBLISH_RELEASE) {
+                powershell '''
+                    nuget.exe update -self
+                    nuget.exe push *.nupkg -ApiKey $nugetkey -Source nuget.org
+                '''
+            }
+        }
     }
 }
 
@@ -107,7 +121,7 @@ pipeline {
             parallel {
                 stage('Publish Ubuntu 20.04') { steps { node('nonsgx-ubuntu-2004') { ubuntuPublishRelease(OE_RELEASE_VERSION, '2004') } }}
                 stage('Publish Ubuntu 18.04') { steps { node('nonsgx-ubuntu-1804') { ubuntuPublishRelease(OE_RELEASE_VERSION, '1804') } }}
-                // Todo: Add NuGet stage and function
+                stage('Publish Windows 2019') { steps { node('nonsgx-windows') { windowsPublishRelease(OE_RELEASE_VERSION) } }}
             }
         }
     }
