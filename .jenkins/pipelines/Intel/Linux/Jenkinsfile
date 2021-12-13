@@ -1,22 +1,22 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
-
-GLOBAL_ERROR = null
-
-AGENTS_LABELS = [
-    "ubuntu-nonsgx":            env.UBUNTU_NONSGX_CUSTOM_LABEL ?: "nonSGX-ubuntu-2004",
-]
-
+//
 // This job uses a backend API to call and trigger jobs behind Intel's firewall through a webpoller, 
 // test logic is not located here. This trigger uses a versioned docker image to call the webpoller. 
 // Script is https://github.com/openenclave/test-infra/blob/master/scripts/intel/jenkins_trigger.py
-// Jenkinsfiles and actual testing logic located <TBD>
+
+if ( params.OECI_LIB_VERSION ) {
+    library "OpenEnclaveJenkinsLibrary@${params.OECI_LIB_VERSION}"
+} else {
+    library "OpenEnclaveJenkinsLibrary@master"
+    OECI_LIB_VERSION = "master"
+}
+
 def TriggerIntelJob(String jobname) {
     stage("${jobname}") {
         withCredentials([
                 usernamePassword(credentialsId: 'intel-jenkins-builder', passwordVariable: 'INTEL_TOKEN', usernameVariable: 'JENKINS_USER'),
                 string(credentialsId: 'intel-jenkins-url', variable: 'INTEL_URL')]) {
-            
             // This image contains tools for interacting with webpollers and does not impact the logic of the testing enforced. As different parties 
             // have different IT and infrastracture requirements, this was easier to version and maintain via containers that are publicly accessible and debuggable.
             def image = docker.image('openenclave/jenkinsoperator:intel')
@@ -25,7 +25,7 @@ def TriggerIntelJob(String jobname) {
                 withEnv(["JOBNAME=${jobname}"]) {
                     dir("${WORKSPACE}") {
                         sh '''
-                        echo $JOBNAME && python3 /scripts/intel/jenkins_trigger.py --job Pipelines/job/$JOBNAME --jenkins-user $JENKINS_USER --url $INTEL_URL --jenkins-password $INTEL_TOKEN --sleep 60
+                        /usr/bin/env python3 /scripts/intel/jenkins_trigger.py --job OpenEnclave/job/$JOBNAME --jenkins-user $JENKINS_USER --url $INTEL_URL --jenkins-password $INTEL_TOKEN --sleep 60
                         '''
                     }
                 }
@@ -34,35 +34,28 @@ def TriggerIntelJob(String jobname) {
     }
 }
 
-node("ubuntu-nonsgx") {
-    properties(
-        [
-            parameters(
-                [
-                    string(name: 'PULL_NUMBER', defaultValue: 'master'),
-                    booleanParam(name: 'FULL_TEST_SUITE', defaultValue: 'false')
-                ]
-            )
-        ]
-    )
-    stage('Trigger') {
-        try{
-            // We only test against the Intel infrastructure if full test is enabled. As the Intel CI 
-            // Jenkinsfiles are not integrated yet we have no sanity check, no need to not block PR's.
-            if("${FULL_TEST_SUITE}" == "true") {
-                def testing_stages = [
-                "Intel Agnostic-SGX-FLC-Linux ": { TriggerIntelJob('Agnostic-SGX-FLC-Linux')},
-                "Intel Agnostic-SGX1-Linux ":    { TriggerIntelJob('Agnostic-SGX1-Linux')},
-                "Intel OpenEnclave-TestInfra":   { TriggerIntelJob('OpenEnclave-TestInfra')}
-                ]
-                parallel testing_stages
+pipeline {
+    parameters {
+        string(name: 'PULL_NUMBER', defaultValue: 'master')
+        booleanParam(name: 'FULL_TEST_SUITE', defaultValue: 'false')
+    }
+    agent {
+        label globalvars.AGENTS_LABELS["ubuntu-nonsgx"]
+    }
+    stages {
+        stage("Jenkins trigger") {
+            when {
+                expression { return params.FULL_TEST_SUITE }
             }
-        } catch(Exception e) {
-            println "Caught global pipeline exception: " + e
-            GLOBAL_ERROR = e
-            throw e
-        } finally {
-            currentBuild.result = (GLOBAL_ERROR != null) ? 'FAILURE' : "SUCCESS"
+            steps {
+                script {
+                    parallel ([
+                        "SGX1-LLC":     { TriggerIntelJob('SGX1-LLC')},
+                        "SGX1-FLC":     { TriggerIntelJob('SGX1-FLC')},
+                        "SGX1-FLC-KSS": { TriggerIntelJob('SGX1-FLC-KSS')}
+                    ])
+                }
+            }
         }
     }
 }
