@@ -12,7 +12,7 @@ int _is_symcrypt_engine_available = 0;
 #define HOST_ENTROPY_TEST_SIZE 16
 
 /* Forward declarations */
-int SC_OSSL_ENGINE_Initialize();
+int SCOSSL_ENGINE_Initialize();
 int oe_sgx_get_additional_host_entropy(uint8_t*, size_t);
 
 static void _finalize(void)
@@ -62,7 +62,7 @@ static int _initialize_symcrypt_engine()
 {
     int result;
 
-    result = SC_OSSL_ENGINE_Initialize();
+    result = SCOSSL_ENGINE_Initialize();
     if (result != OE_SYMCRYPT_ENGINE_SUCCESS)
         goto done;
 

@@ -10,7 +10,7 @@
 #include "core_t.h"
 
 /* Forward declarartion for the symcrypt engine initializer */
-int SC_OSSL_ENGINE_Initialize();
+int SCOSSL_ENGINE_Initialize();
 
 //
 // start.S (the compilation unit containing the entry point) contains a
@@ -36,7 +36,7 @@ const void* oe_link_enclave(void)
         oe_debug_malloc_tracking_start,
         oe_crypto_initialize,
         oe_libc_initialize,
-        SC_OSSL_ENGINE_Initialize,
+        SCOSSL_ENGINE_Initialize,
 #if defined(OE_USE_DEBUG_MALLOC)
         oe_debug_malloc_check,
 #endif /* defined(OE_USE_DEBUG_MALLOC) */

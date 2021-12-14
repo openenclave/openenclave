@@ -9,8 +9,8 @@
  * Note that we have to put the function in a separated source file from
  * init.c to prevent the linker pulls in the symbol along with the
  * oe_crypto_initialize function. */
-int _oe_sc_ossl_engine_initialize()
+int _oe_scossl_engine_initialize()
 {
     return OE_SYMCRYPT_ENGINE_NOT_LINKED;
 }
-OE_WEAK_ALIAS(_oe_sc_ossl_engine_initialize, SC_OSSL_ENGINE_Initialize);
+OE_WEAK_ALIAS(_oe_scossl_engine_initialize, SCOSSL_ENGINE_Initialize);
