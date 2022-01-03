@@ -15,6 +15,7 @@ FULL_TEST_SUITE = env.FULL_TEST_SUITE ?: false
 // Regex that includes directory you want to ignore for CI builds.
 String IGNORED_DIRS = "^(docs|\\.jenkins/infrastructure)|\\.md\$"
 
+
 AGENTS_LABELS = [
     "acc-ubuntu-20.04": env.UBUNTU_2004_CUSTOM_LABEL ?: "ACC-2004",
     "acc-ubuntu-18.04": env.UBUNTU_1804_CUSTOM_LABEL ?: "ACC-1804",
