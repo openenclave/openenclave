@@ -1,20 +1,28 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-if ( params.OECI_LIB_VERSION ) {
-    library "OpenEnclaveJenkinsLibrary@${params.OECI_LIB_VERSION}"
-} else {
-    library "OpenEnclaveJenkinsLibrary@master"
-    OECI_LIB_VERSION = "master"
-}
-GLOBAL_ERROR = null
-
+// Global variables
 REPOSITORY_NAME = env.REPOSITORY_NAME ?: "openenclave/openenclave"
 BRANCH_NAME = env.BRANCH_NAME ?: "master"
 DOCKER_TAG = env.DOCKER_TAG ?: "latest"
 FULL_TEST_SUITE = env.FULL_TEST_SUITE ?: false
 // Regex that includes directory you want to ignore for CI builds.
 String IGNORED_DIRS = "^(docs|\\.jenkins/infrastructure)|\\.md\$"
+GLOBAL_ERROR = null
+
+// Load OpenEnclaveJenkinsLibrary version to use in this priority:
+//     1. If this is a bors run, use the bors branch
+//     2. Use params.OECI_LIB_VERSION if it is specified
+//     3. If none of the above, default to master
+if ( REPOSITORY_NAME == 'openenclave/openenclave' && BRANCH_NAME ==~ /^(trying|staging)$/ ) {
+    OECI_LIB_VERSION = BRANCH_NAME
+} else if ( params.OECI_LIB_VERSION ) {
+    // Use regex to match bors branches to include any changes to OpenEnclaveJenkinsLibrary
+    OECI_LIB_VERSION = params.OECI_LIB_VERSION
+} else {
+    OECI_LIB_VERSION = "master"
+}
+library "OpenEnclaveJenkinsLibrary@${OECI_LIB_VERSION}"
 
 properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '90',
                                       artifactNumToKeepStr: '180',
