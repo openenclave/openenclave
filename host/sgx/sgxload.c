@@ -114,9 +114,13 @@ static int _make_memory_protect_param(uint64_t inflags, bool simulate)
 static uint64_t _detect_xfrm()
 {
     uint64_t xfrm = SGX_ATTRIBUTES_DEFAULT_XFRM;
+    const uint64_t os_xfrm = oe_get_xfrm();
+
     // Enable AVX in the enclave if supported by the OS
-    if ((oe_get_xfrm() & SGX_XFRM_AVX) == SGX_XFRM_AVX)
+    if ((os_xfrm & SGX_XFRM_AVX) == SGX_XFRM_AVX)
         xfrm |= SGX_XFRM_AVX;
+    if ((os_xfrm & SGX_XFRM_AVX512) == SGX_XFRM_AVX512)
+        xfrm |= SGX_XFRM_AVX512;
 
     OE_TRACE_INFO("Value of XFRM to be set in enclave is %d\n", xfrm);
     return xfrm;
