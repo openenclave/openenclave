@@ -3,6 +3,36 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
+# -------------------------------------
+# Requirements
+# -------------------------------------
+#
+# OP-TEE Trusted OS from https://github.com/OP-TEE/optee_os
+#
+# See https://optee.readthedocs.io/en/latest/building/prerequisites.html
+# for prerequisites.
+#
+# Additional following packages are required:
+#  - binutils-arm-linux-gnueabihf
+#  - gcc-arm-linux-gnueabihf
+#  - binutils-aarch64-linux-gnu
+#  - gcc-aarch64-linux-gnu
+#  - gcc-arm-linux-gnueabi
+#
+# Additional python packages are required:
+#  - pycryptodome
+#  - pyelftools or python3-elftools
+#
+# -------------------------------------
+# Instructions
+# -------------------------------------
+# 
+# 1. Clone a release tag from OP-TEE GitHub repository
+# 2. Install prerequisites
+# 3. From the OP-TEE directory, run this script with the working
+#    directory as the script argument.
+#    Example: script/generate-devkits optee_os/
+
 OPTEE_OS_PATH=$1
 
 # -------------------------------------
@@ -37,9 +67,6 @@ if [ ! -d optee/vexpress-qemu_virt ]; then
 fi
 if [ ! -d optee/vexpress-qemu_armv8a ]; then
     mkdir optee/vexpress-qemu_armv8a
-fi
-if [ ! -d optee/ls-ls1012grapeboard ]; then
-    mkdir optee/ls-ls1012grapeboard
 fi
 
 # Use CCACHE, if available.
@@ -107,32 +134,6 @@ ARCH=arm make -j$NPROC -C "$OPTEE_OS_PATH"         \
     CFG_ARM64_core=y                               \
     || exit 1
 
-# Build for the LS-1012.
-# shellcheck disable=SC2086
-ARCH=arm make -j$NPROC -C "$OPTEE_OS_PATH"         \
-    PLATFORM=ls-ls1012grapeboard                   \
-    O="$PWD/optee/ls-ls1012grapeboard"             \
-    platform-cflags-optimization=-Os               \
-    CFG_CRYPTO_SIZE_OPTIMIZATION=y                 \
-    CFG_PAGED_USER_TA=n                            \
-    CFG_REE_FS=n                                   \
-    CFG_RPMB_FS=y                                  \
-    CFG_RPMB_TESTKEY=y                             \
-    CFG_RPMB_WRITE_KEY=n                           \
-    CFG_RPMB_RESET_FAT=n                           \
-    CFG_TEE_CORE_DEBUG=y                           \
-    CFG_TEE_CORE_LOG_LEVEL=2                       \
-    CFG_TEE_TA_LOG_LEVEL=4                         \
-    CFG_UNWIND=n                                   \
-    CFG_WITH_PAGER=n                               \
-    CFG_WITH_USER_TA=y                             \
-    CROSS_COMPILE="$CROSS_COMPILE"                 \
-    CROSS_COMPILE_core="$CROSS_COMPILE"            \
-    CROSS_COMPILE_ta_arm64="$TA_CROSS_COMPILE"     \
-    CROSS_COMPILE_ta_arm32="$TA_CROSS_COMPILE_32"  \
-    CFG_ARM64_core=y                               \
-    || exit 1
-
 # -------------------------------------
 # Create Tarball
 # -------------------------------------
@@ -147,14 +148,10 @@ fi
 if [ ! -d devkits/vexpress-qemu_armv8a ]; then
     mkdir devkits/vexpress-qemu_armv8a
 fi
-if [ ! -d devkits/ls-ls1012grapeboard ]; then
-    mkdir devkits/ls-ls1012grapeboard
-fi
 
 mv optee/vexpress-qemu_virt/export-ta_arm32   devkits/vexpress-qemu_virt/
 mv optee/vexpress-qemu_armv8a/export-ta_arm32 devkits/vexpress-qemu_armv8a/
 mv optee/vexpress-qemu_armv8a/export-ta_arm64 devkits/vexpress-qemu_armv8a/
-mv optee/ls-ls1012grapeboard/export-ta_arm64  devkits/ls-ls1012grapeboard/
 
 # Tag the tarball with the revision of OP-TEE being built.
 pushd "$OPTEE_OS_PATH"

@@ -36,6 +36,19 @@
     groups: docker
     append: yes
 
+- name: Determine if sgx_prv group exists
+  getent:
+    database: group
+    key: sgx_prv
+
+# This task may not be useful if the same user is removed during VM generalization and deprovisioning.
+- name: Add user to sgx_prv group
+  user:
+    name: "{{ jenkins_admin_name }}"
+    groups: sgx_prv
+    append: yes
+  when: "'sgx_prv' in ansible_facts.getent_group"
+
 - name: Jenkins | Pre-pull CI/CD Docker images
   shell: |
     set -o errexit
