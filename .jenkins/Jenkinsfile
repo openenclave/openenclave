@@ -23,35 +23,59 @@ properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '90',
             [$class: 'JobRestrictionProperty']])
 
 stage("Compare changes") {
-    node(globalvars.AGENTS_LABELS["nonsgx"]) {
-        cleanWs()
-        checkout([
-            $class: 'GitSCM',
-            branches: scm.branches + [[name: '*/master']],
-            doGenerateSubmoduleConfigurations: false,
-            extensions: [[$class: 'SubmoduleOption',
-                            disableSubmodules: true,
-                            recursiveSubmodules: false,
-                            trackingSubmodules: false]], 
-            submoduleCfg: [],
-            userRemoteConfigs: scm.userRemoteConfigs
-        ])
-        // Check if git diff vs origin/master contains changes outside of ignored directories
-        gitChanges = sh (
-            script: """
-                    git diff --name-only HEAD origin/master | grep --invert-match --extended-regexp \'${IGNORED_DIRS}\' || true
-                    """,
-            returnStdout: true
-        ).trim()
-    }
-}
+    if ( ! params.FORCE_TEST ) {
+        node(globalvars.AGENTS_LABELS["nonsgx"]) {
+            cleanWs()
+            checkout([
+                $class: 'GitSCM',
+                branches: [
+                    [
+                        name: "origin/master"
+                    ],
+                    [
+                        name: "testremote/${BRANCH_NAME}"
+                    ]
+                ],
+                doGenerateSubmoduleConfigurations: false,
+                extensions: [
+                    [
+                        $class: 'SubmoduleOption',
+                        disableSubmodules: true,
+                        recursiveSubmodules: false,
+                        trackingSubmodules: false
+                    ]
+                ], 
+                submoduleCfg: [],
+                userRemoteConfigs: [
+                    [
+                        url: "https://github.com/openenclave/openenclave.git",
+                        name: "origin",
+                        refspec: "+refs/heads/master:refs/remotes/origin/master",
 
-// Skip build with a success if gitChanges is defined and empty (no changes outside of ignored directories).
-if (gitChanges != null && gitChanges == '') {
-    currentBuild.result = 'SUCCESS'
-    return
-} else {
-    println("Detected the follow file changes: " + gitChanges)
+                    ],
+                    [
+                        url: "https://github.com/${REPOSITORY_NAME}.git",
+                        name: "testremote",
+                        refspec: "+refs/heads/${BRANCH_NAME}:refs/remotes/testremote/${BRANCH_NAME}"
+                    ]
+                ]
+            ])
+            // Check if git diff vs origin/master contains changes outside of ignored directories
+            gitChanges = sh (
+                script: """
+                        git diff --name-only testremote/${BRANCH_NAME} origin/master | grep --invert-match --extended-regexp \'${IGNORED_DIRS}\'  --no-messages
+                        """,
+                returnStdout: true,
+            ).trim()
+        }
+        // Skip build with a success if gitChanges is defined and empty (no changes outside of ignored directories).
+        if (gitChanges != null && gitChanges == '') {
+            currentBuild.result = 'SUCCESS'
+            return
+        } else {
+            println("Detected the follow file changes: " + gitChanges)
+        }
+    }
 }
 
 try {
