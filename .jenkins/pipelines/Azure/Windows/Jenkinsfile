@@ -53,7 +53,7 @@ try{
                 "Win2019 RelWithDebInfo Cross Compile with DCAP libs":            { tests.windowsCrossCompile('acc-win2019', 'RelWithDebInfo') },
                 "Win2019 Debug Cross Compile DCAP LVI":                           { tests.windowsCrossCompile('acc-win2019', 'Debug',          'ControlFlow') },
                 "Win2019 RelWithDebInfo Cross Compile DCAP LVI":                  { tests.windowsCrossCompile('acc-win2019', 'RelWithDebInfo', 'ControlFlow') },
-
+                "Win2019ICX RelWithDebInfo Cross Compile DCAP LVI":               { tests.windowsCrossCompile('acc-v3-win2019', 'RelWithDebInfo', 'ControlFlow') },
                 "Win2019 Sim Debug Cross Compile LVI snmalloc":                   { tests.windowsCrossCompile('acc-win2019', 'Debug',          'ControlFlow', '1', 'OFF', ['-DUSE_SNMALLOC=ON']) },
                 "Win2019 RelWithDebInfo Cross Compile DCAP LVI snmalloc":         { tests.windowsCrossCompile('acc-win2019', 'RelWithDebInfo', 'ControlFlow', '0', 'OFF', ['-DUSE_SNMALLOC=ON']) },
                 "Win2019 Cross Platform":                                         { tests.windowsCrossPlatform('acc-win2019-dcap') }
