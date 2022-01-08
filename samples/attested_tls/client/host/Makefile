@@ -8,13 +8,20 @@ CXXFLAGS=$(shell pkg-config oehost-$(CXX_COMPILER) --cflags)
 LDFLAGS=$(shell pkg-config oehost-$(CXX_COMPILER) --libs)
 INCDIR=$(shell pkg-config oehost-$(C_COMPILER) --variable=includedir)
 
+EDL_USE_HOST_ENTROPY =
+
+ifeq (${OE_CRYPTO_LIB}, openssl_symcrypt_fips)
+	EDL_USE_HOST_ENTROPY = -DEDL_USE_HOST_ENTROPY
+endif
+
 all: build
 
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
 	oeedger8r ../tls_client.edl --untrusted \
 		--search-path $(INCDIR) \
-		--search-path $(INCDIR)/openenclave/edl/sgx
+		--search-path $(INCDIR)/openenclave/edl/sgx \
+		$(EDL_USE_HOST_ENTROPY)
 	$(CC) -c $(CFLAGS) $(CINCLUDES) tls_client_u.c
 	$(CXX) -c $(CXXFLAGS) $(INCLUDES) host.cpp
 	$(CXX) -o tls_client_host host.o tls_client_u.o $(LDFLAGS)

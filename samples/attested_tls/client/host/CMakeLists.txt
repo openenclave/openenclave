@@ -7,7 +7,7 @@ add_custom_command(
   COMMAND
     openenclave::oeedger8r --untrusted
     ${CMAKE_SOURCE_DIR}/client/tls_client.edl --search-path ${OE_INCLUDEDIR}
-    --search-path ${OE_INCLUDEDIR}/openenclave/edl/sgx)
+    --search-path ${OE_INCLUDEDIR}/openenclave/edl/sgx ${EDL_USE_HOST_ENTROPY})
 
 add_executable(tls_client_host host.cpp
                                ${CMAKE_CURRENT_BINARY_DIR}/tls_client_u.c)

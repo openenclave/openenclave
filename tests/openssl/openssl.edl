@@ -7,6 +7,7 @@ enclave {
     from "openenclave/edl/socket.edl" import *;
 #ifdef OE_SGX
     from "openenclave/edl/sgx/platform.edl" import *;
+    from "openenclave/edl/sgx/entropy.edl" import *;
 #else
     from "openenclave/edl/optee/platform.edl" import *;
 #endif

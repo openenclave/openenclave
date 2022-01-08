@@ -4,6 +4,9 @@
 enclave {
     from "openenclave/edl/syscall.edl" import *;
     from "platform.edl" import *;
+#ifdef EDL_USE_HOST_ENTROPY
+    from "openenclave/edl/sgx/entropy.edl" import *;
+#endif
 
     trusted {
         public int launch_tls_client(

@@ -80,10 +80,11 @@ function (enclave_link_libraries NAME)
     endif ()
     target_link_libraries(${NAME} ${type} ${lib})
     if (TARGET ${NAME}-lvi-cfg)
-      # Directly apply compiler options and interface or lvi-mitigated libraries.
+      # Directly apply compiler options and interface, lvi-mitigated, or shared libraries
       if (lib MATCHES "^-"
           OR lib MATCHES "include"
-          OR lib MATCHES "-lvi-cfg")
+          OR lib MATCHES "-lvi-cfg"
+          OR lib MATCHES "\.so")
         target_link_libraries(${NAME}-lvi-cfg ${type} ${lib})
         continue()
       endif ()

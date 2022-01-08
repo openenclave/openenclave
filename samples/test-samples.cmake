@@ -76,6 +76,7 @@ else ()
         SAMPLES_LIST
         attested_tls
         attested_tls
+        attested_tls
         attestation
         file-encryptor
         file-encryptor)
@@ -84,6 +85,7 @@ else ()
         CRYPTO_LIB_LIST
         mbedtls
         openssl
+        openssl_symcrypt_fips
         mbedtls
         mbedtls
         openssl)

@@ -9,6 +9,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased][Unreleased_log]
 --------------
+<<<<<<< HEAD
+=======
+### Added
+- Enabled creation of enclaves with base address 0x0 in SGX on Linux.
+  - This feature requires PSW version 2.14.1 or above.
+  - In 0-base enclaves a page fault is thrown on NULL pointer dereference.
+  - This enables applications to adopt NullPointerException/ NullReferenceException in their program logic and/or use other application stacks that do (Example, .NET runtime).
+  - Developers can create an 0-base enclave by setting the oesign tool configuration option 'CreateZeroBaseEnclave' to 1 or by passing in argument CREATE_ZERO_BASE_ENCLAVE=1 in OE_SET_ENCLAVE_SGX2().
+  - If the 0-base enclave creation is chosen, enclave image start address should be provided by setting the oesign tool configuration option 'StartAddress' or pass in the argument ENCLAVE_START_ADDRESS in OE_SET_ENCLAVE_SGX2().
+- `oeapkman` is a Linux tool for installing and using Alpine Linux static libraries within enclaves.
+  - The command `oeapkman add package` can be used to install the specified package.
+    Typically `-static` and `-dev` (e.g.: sqlite-static, sqlite-dev) packages need to be installed.
+  - The command `oeapkman root` prints out the path to the Alpine Linux distribution maintained by `oeapkman`.
+    The root path is useful for providing paths to header files and static libraries to the compiler and linker respectively.
+  - The command `oeapkman exec` can be used to execute commands within the Alpine Linux environment.
+    For example, after executing `oeapkman add clang build-base cmake` to install development tools,
+	running `oeapkman exec clang -c file.c` would compile `file.c` in current folder using the clang compiler that
+	has been installed in the Alpine Linux environment. `oeapkman exec bash` would launch a bash shell in the current folder.
+  - The `--optee` prefix can be applied to the commands to target OP-TEE.
+    `oeapkman --optee add sqlite-static` installs aarch64 sqlite static library.
+	`oeapkman --optee exec gcc -c file.c` cross-compile `file.c` to target OP-TEE.
+  - See [samples/apkman](samples/apkman) for a complete example demonstrating use of the `sqlite` database library within enclaves.
+- Support for `compiler-rt`. `oelibc` includes LLVM's `compiler-rt-10.0.1`.
+- Support FIPS-enabled OpenSSL based on [SymCrypt](https://github.com/Microsoft/SymCrypt)
+  - Add a new library `oesymcryptengine`, which is a customized build of [SymCrypt OpenSSL engine](https://github.com/Microsoft/SymCrypt-OpenSSL).
+  - To use FIPS-enabled OpenSSL with SymCrypt, users need to link their enclave against
+    both `oesymcryptengine` and `libsymcrypt.so` (part of [SymCrypt](https://github.com/Microsoft/SymCrypt) release packages) in addition to OpenSSL libraries, and include `entropy.edl` in the edl file. Note that `libsymcrypt.so` needs to be placed under the same directory with the enclave binary.
+  - See the [attested_tls sample](samples/attested_tls#build-and-run) for an example of building enclaves with FIPS-enabled OpenSSL based on SymCrypt (set `OE_CRYPTO_LIB` to `openssl_symcrypt_fips`).
+
+## Changed
+- Updated libcxx to version 10.0.1
+- Now the OpenSSL is built with threads support (with the dependency on the host). Note that the previous versions of OpenSSL are not suitable for multi-threaded applications.
+>>>>>>> f61d74c2d... Enable SymCrypt-OpenSSL test
 
 [v0.17.2][v0.17.2_log]
 --------------
