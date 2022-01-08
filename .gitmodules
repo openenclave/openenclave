@@ -34,3 +34,6 @@
 [submodule "3rdparty/musl/libc-test"]
 	path = 3rdparty/musl/libc-test
 	url = https://repo.or.cz/libc-test.git
+[submodule "3rdparty/symcrypt_engine/SymCrypt-OpenSSL"]
+	path = 3rdparty/symcrypt_engine/SymCrypt-OpenSSL
+	url = https://github.com/microsoft/SymCrypt-OpenSSL
