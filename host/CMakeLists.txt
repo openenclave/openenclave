@@ -208,6 +208,7 @@ if (OE_SGX)
     ${PROJECT_SOURCE_DIR}/common/sgx/tcbinfo.c
     ${PROJECT_SOURCE_DIR}/common/sgx/tlsverifier.c
     ${PROJECT_SOURCE_DIR}/common/sgx/verifier.c
+    ${PROJECT_SOURCE_DIR}/enclave/core/ctype.c
     sgx/hostverify_report.c
     sgx/report_common.c
     sgx/sgxquoteprovider.c

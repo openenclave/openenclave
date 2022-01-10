@@ -3,6 +3,7 @@
 
 #include "collateral.h"
 #include <openenclave/bits/attestation.h>
+#include <openenclave/corelibc/ctype.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/crypto/cert.h>
 #include <openenclave/internal/crypto/crl.h>
@@ -309,8 +310,7 @@ oe_result_t oe_validate_revocation_list(
             for (size_t l = 0; l < der_data_size; ++l)
             {
                 const uint8_t c = sgx_endorsements->items[i].data[l];
-                if (!((c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f') ||
-                      (c >= '0' && c <= '9')))
+                if (!oe_isxdigit(c))
                 {
                     ishex = false;
                     break;
@@ -319,7 +319,7 @@ oe_result_t oe_validate_revocation_list(
             if (ishex)
             {
                 OE_CHECK_MSG(
-                    oe_hex_to_buf(
+                    oe_hex_to_buffer(
                         (const char*)sgx_endorsements->items[i].data,
                         der_data_size,
                         sgx_endorsements->items[i].data,
