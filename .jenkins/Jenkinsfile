@@ -71,7 +71,7 @@ stage("Compare changes") {
             // Check if git diff vs origin/master contains changes outside of ignored directories
             gitChanges = sh (
                 script: """
-                        git diff --name-only testremote/${BRANCH_NAME} origin/master | grep --invert-match --extended-regexp \'${IGNORED_DIRS}\'  --no-messages
+                        git diff --name-only testremote/${BRANCH_NAME} origin/master | grep --invert-match --extended-regexp \'${IGNORED_DIRS}\'  --no-messages || [[ \$? == 1 ]]
                         """,
                 returnStdout: true,
             ).trim()
