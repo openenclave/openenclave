@@ -9,8 +9,7 @@ Integration Partners
 
 Agnostic Cloud Provider
 
-[![Build Status](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/pipelines/job/Agnostic-Linux-Badge/badge/icon?subject=Provider%20Agnostic%20Regession)](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/pipelines/job/Agnostic-Linux-Badge/)
-[![Build Status](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/pipelines/job/Agnostic-Linux-Badge/badge/icon?subject=Agnostic-Linux)](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/pipelines/job/Agnostic-Linux-Badge/)
+[![Provider Agnostic Regression Linux](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/OpenEnclave/job/Agnostic-Linux-Badge/badge/icon?subject=Provider%20Agnostic%20Regession)](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/OpenEnclave/job/Agnostic-Linux-Badge/)
 
 Azure
 
