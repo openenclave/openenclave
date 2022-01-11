@@ -76,14 +76,17 @@ stage("Compare changes") {
                 returnStdout: true,
             ).trim()
         }
-        // Skip build with a success if gitChanges is defined and empty (no changes outside of ignored directories).
-        if (gitChanges != null && gitChanges == '') {
-            currentBuild.result = 'SUCCESS'
-            return
-        } else {
-            println("Detected the follow file changes: " + gitChanges)
-        }
     }
+}
+
+// Skip build with a success if gitChanges is defined and empty (no changes outside of ignored directories).
+// Note: this step must be ran outside of a stage in order to exit the entire build.
+if (gitChanges != null && gitChanges == '') {
+    println("No significant changes detected. Testing is not necessary.")
+    currentBuild.result = 'SUCCESS'
+    return
+} else {
+    println("Detected the follow file changes: " + gitChanges)
 }
 
 try {
