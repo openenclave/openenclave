@@ -30,8 +30,8 @@ properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '90',
                                       numToKeepStr: '180')),
             [$class: 'JobRestrictionProperty']])
 
-stage("Compare changes") {
-    if ( ! params.FORCE_TEST ) {
+if ( ! params.FORCE_TEST ) {
+    stage("Compare changes") {
         node(globalvars.AGENTS_LABELS["nonsgx"]) {
             cleanWs()
             checkout([
@@ -77,16 +77,16 @@ stage("Compare changes") {
             ).trim()
         }
     }
-}
 
-// Skip build with a success if gitChanges is defined and empty (no changes outside of ignored directories).
-// Note: this step must be ran outside of a stage in order to exit the entire build.
-if (gitChanges != null && gitChanges == '') {
-    println("No significant changes detected. Testing is not necessary.")
-    currentBuild.result = 'SUCCESS'
-    return
-} else {
-    println("Detected the follow file changes: " + gitChanges)
+    // Skip build with a success if gitChanges is defined and empty (no changes outside of ignored directories).
+    // Note: this step must be ran outside of a stage in order to exit the entire build.
+    if (gitChanges != null && gitChanges == '') {
+        println("No significant changes detected. Testing is not necessary.")
+        currentBuild.result = 'SUCCESS'
+        return
+    } else {
+        println("Detected the follow file changes: " + gitChanges)
+    }
 }
 
 try {
