@@ -700,13 +700,7 @@ OE_NEVER_INLINE
 OE_NO_RETURN
 static void _exit_enclave(uint64_t arg1, uint64_t arg2)
 {
-    static bool _initialized = false;
     oe_sgx_td_t* td = oe_sgx_get_td();
-
-    // Since determining whether an enclave supports debugging is a stateless
-    // idempotent operation, there is no need to lock.
-    if (!_initialized)
-        _initialized = true;
 
     if (is_enclave_debug_allowed())
     {

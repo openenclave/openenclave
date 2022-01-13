@@ -15,11 +15,14 @@ static volatile int _is_enclave_debug_allowed = -1;
 // enclave
 bool is_enclave_debug_allowed()
 {
+    oe_sgx_td_t* td = NULL;
+
     if (_is_enclave_debug_allowed != -1)
         goto done;
 
-    oe_sgx_td_t* td = oe_sgx_get_td();
-    if (td->simulate)
+    td = oe_sgx_get_td();
+
+    if (td && td->simulate)
     {
         // Enclave in simulate mode is treated as debug_allowed
         _is_enclave_debug_allowed = 1;
@@ -29,6 +32,7 @@ bool is_enclave_debug_allowed()
         // Get a report on the enclave itself for enclave identity information
         sgx_report_t sgx_report;
         oe_result_t result = sgx_create_report(NULL, 0, NULL, 0, &sgx_report);
+
         if (result != OE_OK)
         {
             _is_enclave_debug_allowed = 0;
@@ -36,7 +40,7 @@ bool is_enclave_debug_allowed()
         }
 
         _is_enclave_debug_allowed =
-            (sgx_report.body.attributes.flags & SGX_FLAGS_DEBUG) != 0;
+            (sgx_report.body.attributes.flags & SGX_FLAGS_DEBUG) ? 1 : 0;
     }
 
 done:
