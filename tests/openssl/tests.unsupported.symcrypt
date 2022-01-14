@@ -1,0 +1,14 @@
+# Memory leak
+dhtest
+# The test relies on OpenSSL default implementation
+ecdsatest
+# Use an AES-GCM IV which is not 12-bytes (192-bits)
+evp_extra_test
+# Use unsupported RSA version
+rsa_mp_test
+# Use an AES-GCM IV which is not 12-bytes (192-bits)
+evp_test-evpciph
+# Inconsistent implementation between OpenSSL and SymCrypt
+evp_test-evppkey
+# Memory leak
+ssl_test-cert-select

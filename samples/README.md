@@ -58,7 +58,8 @@ The following samples demonstrate how to develop enclave applications using OE A
 - Demonstrate an implementation for how to establish an Attested TLS channel
   - between two enclaves
   - between one non-enclave client and an enclave
-- Deomnstrate how to build the sample with either Mbed TLS or OpenSSL libraries
+- Demonstrate how to build the sample with either Mbed TLS or OpenSSL libraries
+- Demonstrate how to build the sample with FIPS-enabled OpenSSL based on [SymCrypt](https://github.com/microsoft/SymCrypt) and [SymCrypt OpenSSL engine](https://github.com/microsoft/SymCrypt-OpenSSL)
 
 #### [Switchless Calls](switchless/README.md)
 

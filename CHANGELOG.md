@@ -30,6 +30,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 	`oeapkman --optee exec gcc -c file.c` cross-compile `file.c` to target OP-TEE.
   - See [samples/apkman](samples/apkman) for a complete example demonstrating use of the `sqlite` database library within enclaves.
 - Support for `compiler-rt`. `oelibc` includes LLVM's `compiler-rt-10.0.1`.
+- Support FIPS-enabled OpenSSL based on [SymCrypt](https://github.com/Microsoft/SymCrypt)
+  - Add a new library `oesymcryptengine`, which is a customized build of [SymCrypt OpenSSL engine](https://github.com/Microsoft/SymCrypt-OpenSSL).
+  - To use FIPS-enabled OpenSSL with SymCrypt, users need to link their enclave against
+    both `oesymcryptengine` and `libsymcrypt.so` (part of [SymCrypt](https://github.com/Microsoft/SymCrypt) release packages) in addition to OpenSSL libraries, and include `entropy.edl` in the edl file. Note that `libsymcrypt.so` needs to be placed under the same directory with the enclave binary.
+  - See the [attested_tls sample](samples/attested_tls#build-and-run) for an example of building enclaves with FIPS-enabled OpenSSL based on SymCrypt (set `OE_CRYPTO_LIB` to `openssl_symcrypt_fips`).
 
 ## Changed
 - Updated libcxx to version 10.0.1
