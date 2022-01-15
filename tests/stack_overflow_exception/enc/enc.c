@@ -65,6 +65,9 @@ static oe_result_t _initialize_exception_handler()
     OE_CHECK(
         oe_add_vectored_exception_handler(false, test_stack_overflow_handler));
 
+    OE_TEST(oe_sgx_td_register_exception_handler_stack(
+        td, OE_EXCEPTION_PAGE_FAULT));
+
     result = OE_OK;
 
 done:
