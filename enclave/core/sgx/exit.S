@@ -125,14 +125,18 @@ oe_asm_exit:
 .update_td_state:
     lfence
 
-    // Do not update the state if the enclave exits in the middle
-    // the exception handling (e.g., exiting from the first-level
-    // exception handler), exits after an illegal instruction
-    // emulation, or the enclave is aborted
+    // Do not update the state in the following cases:
+    // a. The enclave exists from the first-level exception handler
+    cmpq $TD_STATE_FIRST_LEVEL_EXCEPTION_HANDLING, td_state(%r11)
+    je .execute_eexit
+    // b. The enclave exists in the middle of second-level exception handler
+    // (e.g., making an OCALL)
     cmpq $TD_STATE_SECOND_LEVEL_EXCEPTION_HANDLING, td_state(%r11)
     je .execute_eexit
+    // c. The enclave exists after an illegal instruction (e.g., cpuid) emulation
     cmpq $TD_STATE_FIRST_LEVEL_EXCEPTION_HANDLING, td_previous_state(%r11)
     je .execute_eexit
+    // d. The enclave exists while it is aborted
     cmpq $TD_STATE_ABORTED, td_state(%r11)
     je .execute_eexit
 
