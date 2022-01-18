@@ -303,7 +303,7 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
 
     /* Validate the td state, which ensures the function
      * is only invoked after oe_virtual_exception_dispatcher */
-    if (td->state != OE_TD_STATE_SECOND_LEVEL_EXCEPTION_HANDLING)
+    if (td->state != OE_TD_STATE_FIRST_LEVEL_EXCEPTION_HANDLING)
     {
         oe_abort();
         return;
@@ -350,6 +350,17 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
         oe_exception_record.context->rbp = td->last_ssa_rbp;
     }
 
+    /* Compiler barrier to enfore the memory ordering */
+    asm volatile("" ::: "memory");
+
+    /* Update the state to prevent nested exceptions prior to this point
+     * that could cause oe_context on the stack and td states overwritten.
+     * That is, any exception occurs prior to this point will cause the
+     * following oe_enter performs the early return flow (i.e., oe_enter will
+     * early return if state is not OE_TD_STATE_SECOND_LEVEL_EXCEPTION_HANDLING
+     * for the case of nested exceptions) */
+    td->state = OE_TD_STATE_SECOND_LEVEL_EXCEPTION_HANDLING;
+
     // Traverse the existing exception handlers, stop when
     // OE_EXCEPTION_CONTINUE_EXECUTION is found.
     uint64_t handler_ret = OE_EXCEPTION_CONTINUE_SEARCH;
@@ -390,6 +401,9 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
         }
 
         td->host_signal = 0;
+
+        /* Compiler barrier to enforce the memory ordering */
+        asm volatile("" ::: "memory");
 
         /* Retore the state */
         td->state = OE_TD_STATE_RUNNING;
@@ -563,12 +577,6 @@ void oe_virtual_exception_dispatcher(
             td->faulting_address = exinfo->maddr;
             td->error_code = exinfo->errcd;
         }
-
-        /* Update the state here to indicate the second-level exception
-         * handler is running next. This allows both exiting and the following
-         * entering flows to skip updating the state; i.e., the second-level
-         * exception handler can run with this state. */
-        td->state = OE_TD_STATE_SECOND_LEVEL_EXCEPTION_HANDLING;
 
         // Modify the ssa_gpr so that e_resume will go to second pass exception
         // handler.
