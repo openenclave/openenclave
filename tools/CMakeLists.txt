@@ -23,8 +23,18 @@ else ()
   # cross-compilers, and ought not be used. Determine host compilers to use.
   # Prefer clang, but fallback to GCC since, unlike SGX, we cannot be sure that
   # clang exists in the build environment for OPTEE.
-  find_program(EDGER8R_C_COMPILER clang-10 clang gcc)
-  find_program(EDGER8R_CXX_COMPILER clang++-10 clang++ g++)
+  find_program(EDGER8R_C_COMPILER clang-11 clang gcc)
+  find_program(EDGER8R_CXX_COMPILER clang++-11 clang++ g++)
+
+  if (NOT EDGER8R_C_COMPILER)
+    message(WARNING "clang-11 not found. Selecting clang-10 for oeedger8r")
+    set(EDGER8R_C_COMPILER clang-10)
+  endif ()
+  if (NOT EDGER8R_CXX_COMPILER)
+    message(WARNING "clang++-11 not found. Selecting clang++-10 for oeedger8r")
+    set(EDGER8R_CXX_COMPILER clang++-10)
+  endif ()
+
 endif ()
 
 ExternalProject_Add(

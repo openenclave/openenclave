@@ -38,7 +38,7 @@ commands.
 ```
 cflags=`pkg-config oeenclave-clang --cflags`
 libs=`pkg-config oeenclave-clang --libs`
-$ clang-10 ${cflags} -o enc enc.c ${libs}
+$ clang-11 ${cflags} -o enc enc.c ${libs}
 ```
 
 To build an enclave application with the Clang C++ compiler, use these commands.
@@ -46,7 +46,7 @@ To build an enclave application with the Clang C++ compiler, use these commands.
 ```
 cxxflags=`pkg-config oeenclave-clang++ --cflags`
 libs=`pkg-config oeenclave-clang++ --libs`
-$ clang++-10 ${cxxflags} -o enc enc.cpp ${libs}
+$ clang++-11 ${cxxflags} -o enc enc.cpp ${libs}
 ```
 
 Building host applications:
