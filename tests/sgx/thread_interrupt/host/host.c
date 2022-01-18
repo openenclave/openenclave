@@ -98,11 +98,12 @@ int main(int argc, const char* argv[])
     }
     else if (!strcmp(argv[2], "blocking"))
     {
-        result = enc_thread_interrupt_blocking(enclave);
-        OE_TEST(result == OE_ENCLAVE_ABORTING);
-        /* Expcet a non-OE_OK result. The error code may be different
-         * between debug and release build. */
-        OE_TEST(oe_terminate_enclave(enclave) != OE_OK);
+        int ret = 0;
+        result = enc_thread_interrupt_blocking(enclave, &ret);
+        OE_TEST(ret == 1);
+        if (result != OE_OK)
+            oe_put_err("oe_call_enclave() failed: result=%u", result);
+        OE_TEST(oe_terminate_enclave(enclave) == OE_OK);
     }
     else
     {

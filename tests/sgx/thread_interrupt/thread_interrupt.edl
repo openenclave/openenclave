@@ -8,7 +8,7 @@ enclave {
 
     trusted {
         public void enc_thread_interrupt_nonblocking();
-        public void enc_thread_interrupt_blocking();
+        public void enc_thread_interrupt_blocking([in, out] int* ret);
         public void enc_run_thread_nonblocking(int tid);
         public void enc_run_thread_blocking(int tid);
     };
