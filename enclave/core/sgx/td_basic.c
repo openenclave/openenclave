@@ -112,6 +112,7 @@ void td_init(oe_sgx_td_t* td)
 
         /* Set the exception handler stack to NULL */
         oe_sgx_td_set_exception_handler_stack(td, NULL, 0);
+        td->exception_handler_stack_bitmask = 0;
 
         oe_thread_local_init(td);
     }

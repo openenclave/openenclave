@@ -21,11 +21,12 @@ void host_set_was_ocall_called()
 
 void test_vector_exception(
     oe_enclave_t* enclave,
-    int use_exception_handler_stack)
+    int use_exception_handler_stack,
+    int regiser_exception_type)
 {
     int ret = -1;
-    oe_result_t result =
-        enc_test_vector_exception(enclave, &ret, use_exception_handler_stack);
+    oe_result_t result = enc_test_vector_exception(
+        enclave, &ret, use_exception_handler_stack, regiser_exception_type);
 
     if (result != OE_OK)
     {
@@ -42,11 +43,12 @@ void test_vector_exception(
 
 void test_ocall_in_handler(
     oe_enclave_t* enclave,
-    int use_exception_handler_stack)
+    int use_exception_handler_stack,
+    int register_exception_type)
 {
     int ret = -1;
-    oe_result_t result =
-        enc_test_ocall_in_handler(enclave, &ret, use_exception_handler_stack);
+    oe_result_t result = enc_test_ocall_in_handler(
+        enclave, &ret, use_exception_handler_stack, register_exception_type);
 
     if (result != OE_OK)
     {
@@ -60,14 +62,19 @@ void test_ocall_in_handler(
 
 void test_sigill_handling(
     oe_enclave_t* enclave,
-    int use_exception_handler_stack)
+    int use_exception_handler_stack,
+    int register_exception_type)
 {
     uint32_t cpuid_table[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
     memset(&cpuid_table, 0, sizeof(cpuid_table));
     int ret = -1;
 
     oe_result_t result = enc_test_sigill_handling(
-        enclave, &ret, use_exception_handler_stack, cpuid_table);
+        enclave,
+        &ret,
+        use_exception_handler_stack,
+        register_exception_type,
+        cpuid_table);
     if (result != OE_OK)
     {
         oe_put_err("enc_test_sigill_handling() failed: result=%u", result);
@@ -152,6 +159,28 @@ void test_sigill_handling(
     }
 }
 
+void test_nested_exception(
+    oe_enclave_t* enclave,
+    int use_exception_handler_stack,
+    int regiser_exception_type)
+{
+    int ret = -1;
+    oe_result_t result = enc_test_nested_exception(
+        enclave, &ret, use_exception_handler_stack, regiser_exception_type);
+
+    if (result != OE_OK)
+    {
+        oe_put_err("enc_test_nested_exception() failed: result=%u", result);
+    }
+
+    if (ret != 0)
+    {
+        oe_put_err("enc_test_nested_exception failed ret=%d", ret);
+    }
+
+    OE_TEST(ret == 0);
+}
+
 int main(int argc, const char* argv[])
 {
     oe_result_t result;
@@ -183,14 +212,27 @@ int main(int argc, const char* argv[])
     OE_TEST(enc_test_cpuid_in_global_constructors(enclave) == OE_OK);
 
     /* Test with the default behavior (using stack pointer stored in SSA) */
-    test_vector_exception(enclave, 0);
-    test_sigill_handling(enclave, 0);
-    test_ocall_in_handler(enclave, 0);
+    printf("=== test with default stack\n");
+    test_vector_exception(enclave, 0, 0);
+    test_sigill_handling(enclave, 0, 0);
+    test_ocall_in_handler(enclave, 0, 0);
+    test_nested_exception(enclave, 0, 0);
 
-    /* Test with setting an exception handler stack */
-    test_vector_exception(enclave, 1);
-    test_sigill_handling(enclave, 1);
-    test_ocall_in_handler(enclave, 1);
+    /* Test with setting an exception handler stack with registering the
+     * exception */
+    printf("=== test with alternative stack with registration\n");
+    test_vector_exception(enclave, 1, 1);
+    test_sigill_handling(enclave, 1, 1);
+    test_ocall_in_handler(enclave, 1, 1);
+    test_nested_exception(enclave, 1, 1);
+
+    /* Test with setting an exception handler stack without registering the
+     * exception */
+    printf("=== test with alternative stack without registration\n");
+    test_vector_exception(enclave, 1, 0);
+    test_sigill_handling(enclave, 1, 0);
+    test_ocall_in_handler(enclave, 1, 0);
+    test_nested_exception(enclave, 1, 0);
 
     oe_terminate_enclave(enclave);
 

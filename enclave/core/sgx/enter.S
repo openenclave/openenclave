@@ -397,6 +397,16 @@ oe_enter:
 .type oe_exception_dispatcher, @function
 oe_exception_dispatcher:
 .cfi_startproc
+
+    // Dummy operations to ensure the red zone does not bypass the guard page.
+    // This could happen when setting the exception handler stack but not
+    // registering the stack for #PF. In this case, when the stack overflow
+    // occurs, the first-stage handler will use the exception handler stack and
+    // then continue the execution to this point with the corrupted stack,
+    // pointing to near the end of the guard page.
+    push %rbp
+    pop %rbp
+
     // Start the new stack under the red zone.
     sub $ABI_REDZONE_BYTE_SIZE, %rsp
 

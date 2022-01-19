@@ -235,6 +235,76 @@ bool oe_sgx_td_set_exception_handler_stack(
 /*
 **==============================================================================
 **
+** oe_sgx_td_register_exception_handler_stack()
+** oe_sgx_td_unregister_exception_handler_stack()
+**
+**     Internal APIs that allows an enclave to register or unregister
+**     the exception handler stack for the given exception type
+**
+**==============================================================================
+*/
+
+OE_INLINE bool _td_set_exception_handler_stack_bitmask(
+    oe_sgx_td_t* td,
+    uint64_t type,
+    bool set_bit)
+{
+    if (!td)
+        return false;
+
+    if (type > OE_SGX_EXCEPTION_CODE_MAXIMUM)
+        return false;
+
+    oe_spin_lock(&td->lock);
+
+    if (set_bit)
+        td->exception_handler_stack_bitmask |= 1UL << type;
+    else
+        td->exception_handler_stack_bitmask &= ~(1UL << type);
+
+    oe_spin_unlock(&td->lock);
+
+    return true;
+}
+
+bool oe_sgx_td_register_exception_handler_stack(oe_sgx_td_t* td, uint64_t type)
+{
+    return _td_set_exception_handler_stack_bitmask(td, type, 1 /* set */);
+}
+
+bool oe_sgx_td_unregister_exception_handler_stack(
+    oe_sgx_td_t* td,
+    uint64_t type)
+{
+    return _td_set_exception_handler_stack_bitmask(td, type, 0 /* clear */);
+}
+
+/*
+**==============================================================================
+**
+** oe_sgx_td_exception_handler_stack_registered
+**
+**     Internal API for querying whether the thread registers the exception
+**     handler stack for the given exception type
+**
+**==============================================================================
+*/
+bool oe_sgx_td_exception_handler_stack_registered(
+    oe_sgx_td_t* td,
+    uint64_t type)
+{
+    if (!td)
+        return false;
+
+    if (type > OE_SGX_EXCEPTION_CODE_MAXIMUM)
+        return false;
+
+    return (td->exception_handler_stack_bitmask & (1UL << type)) != 0;
+}
+
+/*
+**==============================================================================
+**
 ** oe_sgx_td_mask_host_signal()
 ** oe_sgx_td_unmask_host_signal()
 **
