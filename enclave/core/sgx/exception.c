@@ -14,6 +14,11 @@
 
 #define MAX_EXCEPTION_HANDLER_COUNT 64
 
+/* Reserved stack size for the first-pass handler when the exception
+ * handler stack is enabled (regardless registered for any code).
+ * For now, one page is sufficient */
+#define FIRST_PASS_HANDLER_STACK_RESERVED_SIZE OE_PAGE_SIZE
+
 // The spin lock to synchronize the exception handler access.
 static oe_spinlock_t g_exception_lock = OE_SPINLOCK_INITIALIZER;
 
@@ -334,20 +339,31 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
     // mode
     td->host_ecall_context = td->host_previous_ecall_context;
 
-    /* If the exception handler stack is prpoerly set, restore rsp and rbp from
-     * td. Note that the case of _emulate_illegal_instruction always bypasses
-     * this logic (last_ssa_rsp and last_ssa_rbp will not be set) */
-    if (td->exception_handler_stack_size &&
-        oe_is_within_enclave(
-            (void*)td->exception_handler_stack,
-            td->exception_handler_stack_size) &&
-        oe_is_within_enclave(
-            (void*)td->last_ssa_rsp,
-            sizeof(uint64_t) && oe_is_within_enclave(
-                                    (void*)td->last_ssa_rbp, sizeof(uint64_t))))
+    /* Proceed with the check if the exception handler stack is registered for
+     * the given exception type */
+    if (oe_sgx_td_exception_handler_stack_registered(td, td->exception_code))
     {
-        oe_exception_record.context->rsp = td->last_ssa_rsp;
-        oe_exception_record.context->rbp = td->last_ssa_rbp;
+        uint64_t exception_handler_stack_start = td->exception_handler_stack;
+        uint64_t exception_handler_stack_end =
+            td->exception_handler_stack + td->exception_handler_stack_size;
+        uint64_t current_rsp;
+
+        asm volatile("mov %%rsp, %0" : "=r"(current_rsp));
+
+        /* At this point, the rsp should point to the enclave memory. We then
+         * check if the current rsp falls in the range of the exception handler
+         * stack reserved for the second-pass exception handler. The passing
+         * checks imply that we are on the exception handler stack now.
+         */
+        if (exception_handler_stack_start < exception_handler_stack_end &&
+            current_rsp > exception_handler_stack_start &&
+            current_rsp < (exception_handler_stack_end -
+                           FIRST_PASS_HANDLER_STACK_RESERVED_SIZE))
+        {
+            /* Restore rsp and rbp from td */
+            oe_exception_record.context->rsp = td->last_ssa_rsp;
+            oe_exception_record.context->rbp = td->last_ssa_rbp;
+        }
     }
 
     /* Compiler barrier to enfore the memory ordering */
@@ -582,19 +598,75 @@ void oe_virtual_exception_dispatcher(
         // handler.
         ssa_gpr->rip = (uint64_t)oe_exception_dispatcher;
 
-        /* If the exception handler stack is properly set, update the rsp in the
-         * SSA to the bottom of the stack. Also, save the rsp and rbp in the SSA
-         * before the assignment, which are used to resume the execution after
-         * exception handling. */
-        if (td->exception_handler_stack_size &&
-            oe_is_within_enclave(
-                (void*)td->exception_handler_stack,
-                td->exception_handler_stack_size))
+        /* Proceed with the check if the exception handler stack is registered
+         * for the given exception type and the stack size is sufficient.
+         *
+         * Note that first-pass exception handler always uses the exception
+         * handler stack when it is set regardless any code is registered
+         * to use it. The region with FIRST_PASS_HANDLER_STACK_RESERVED_SIZE
+         * bytes at the bottom of the exception handler stack is reserved for
+         * the first-pass exception handler.
+         *
+         * If the td->exception_code is registered for the exception handler
+         * stack, the second-pass exception handler will start from
+         * 1. exception_handler_stack_end -
+         * FIRST_PASS_HANDLER_STACK_RESERVED_SIZE if ssa_gpr->rsp does not fall
+         * in the exception handler stack
+         * 2. ssa_gpr->rsp if it falls in the exception handler stack
+         * (indicating a nested exception occurs during the exception handler
+         * stack is used)
+         *
+         * If the td->exception_code is not registered for the exception handler
+         * stack, the second-pass exception handler will continue with
+         * ssa_gpr->rsp (the default behavior).
+         */
+        if (oe_sgx_td_exception_handler_stack_registered(
+                td, td->exception_code) &&
+            td->exception_handler_stack_size >
+                FIRST_PASS_HANDLER_STACK_RESERVED_SIZE)
         {
-            td->last_ssa_rsp = ssa_gpr->rsp;
-            td->last_ssa_rbp = ssa_gpr->rbp;
-            ssa_gpr->rsp =
+            uint64_t exception_handler_stack_first_pass_end =
                 td->exception_handler_stack + td->exception_handler_stack_size;
+            uint64_t exception_handler_stack_first_pass_start =
+                exception_handler_stack_first_pass_end -
+                FIRST_PASS_HANDLER_STACK_RESERVED_SIZE;
+            uint64_t exception_handler_stack_second_pass_end =
+                exception_handler_stack_first_pass_start;
+            uint64_t exception_handler_stack_second_pass_start =
+                td->exception_handler_stack;
+            uint64_t current_rsp;
+
+            asm volatile("mov %%rsp, %0" : "=r"(current_rsp));
+
+            /* At this point, the oe_enter logic has ensured that the rsp points
+             * to the enclave memory. We then check if the current rsp falls in
+             * the reserved region in the exception handler stack. The passing
+             * checks imply that the exception handler stack has been properly
+             * set.
+             */
+            if (exception_handler_stack_second_pass_start <
+                    exception_handler_stack_first_pass_end &&
+                current_rsp > exception_handler_stack_first_pass_start &&
+                current_rsp <= exception_handler_stack_first_pass_end)
+            {
+                /* Save the rsp and rbp in the SSA (used to resume the execution
+                 * after exception handling). Note that the oe_enter logic has
+                 * ensured that the rsp in the SSA points to the enclave
+                 * memory */
+                td->last_ssa_rsp = ssa_gpr->rsp;
+                td->last_ssa_rbp = ssa_gpr->rbp;
+
+                if (td->last_ssa_rsp <
+                        exception_handler_stack_second_pass_start ||
+                    td->last_ssa_rsp > exception_handler_stack_second_pass_end)
+                {
+                    /* Update ssa_gpr->rsp to exception handler stack that
+                     * skips the reserved stack for the first pass exception
+                     * handler
+                     */
+                    ssa_gpr->rsp = exception_handler_stack_second_pass_end;
+                }
+            }
         }
     }
 

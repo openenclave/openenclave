@@ -58,14 +58,18 @@ __attribute__((constructor)) void test_cpuid_constructor()
     void* stack = malloc(EXCEPTION_HANDLER_STACK_SIZE);
     if (!stack)
         return;
+
     oe_sgx_td_t* td = oe_sgx_get_td();
+
     oe_sgx_td_set_exception_handler_stack(
         td, stack, EXCEPTION_HANDLER_STACK_SIZE);
+
     test_cpuid_instruction(500, 1);
     test_cpuid_instruction(600, 1);
     test_cpuid_instruction(AESNI_INSTRUCTIONS, 1);
 
     oe_sgx_td_set_exception_handler_stack(td, NULL, 0);
+
     free(stack);
 }
 

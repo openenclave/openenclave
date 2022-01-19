@@ -16,6 +16,11 @@
 static void* _stack;
 static uint64_t _stack_size;
 
+static void* _exception_handler_stack;
+static uint64_t _exception_handler_stack_size;
+
+int _check_exception_handler_stack;
+
 // Wrapper over the CPUID instruction.
 void get_cpuid(
     unsigned int leaf,
@@ -54,12 +59,27 @@ uint64_t enc_test_sigill_handler(oe_exception_record_t* exception)
         uint64_t rsp;
         asm volatile("mov %%rsp, %0" : "=r"(rsp));
 
+        uint64_t stack;
+        uint64_t stack_size;
+
+        if (_check_exception_handler_stack)
+        {
+            stack = (uint64_t)_exception_handler_stack;
+            stack_size = _exception_handler_stack_size;
+        }
+        else
+        {
+            stack = (uint64_t)_stack;
+            stack_size = _stack_size;
+        }
+
         oe_host_printf(
             "Check rsp (0x%lx) against stack [0x%lx, 0x%lx]\n",
             rsp,
-            (uint64_t)_stack,
-            (uint64_t)_stack + _stack_size);
-        if (rsp < (uint64_t)_stack || rsp > (uint64_t)_stack + _stack_size)
+            stack,
+            stack + stack_size);
+
+        if (rsp < stack || rsp > stack + stack_size)
             return OE_EXCEPTION_ABORT_EXECUTION;
 
         switch (*((uint16_t*)exception->context->rip))
@@ -167,6 +187,7 @@ bool test_unsupported_cpuid_leaf(uint32_t leaf)
 
 int enc_test_sigill_handling(
     int use_exception_handler_stack,
+    int register_exception_type,
     uint32_t cpuid_table[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT])
 {
     oe_result_t result;
@@ -179,9 +200,22 @@ int enc_test_sigill_handling(
         return -1;
     }
 
-    OE_TEST(
-        initialize_exception_handler_stack(
-            &_stack, &_stack_size, use_exception_handler_stack) == 0);
+    get_stack(&_stack, &_stack_size);
+
+    _check_exception_handler_stack = 0;
+
+    if (use_exception_handler_stack)
+    {
+        OE_TEST(
+            initialize_exception_handler_stack(
+                &_exception_handler_stack,
+                &_exception_handler_stack_size,
+                OE_EXCEPTION_ILLEGAL_INSTRUCTION,
+                register_exception_type) == 0);
+
+        if (register_exception_type)
+            _check_exception_handler_stack = 1;
+    }
 
     // Test illegal SGX instruction that is not emulated (GETSEC)
     if (!test_getsec_instruction())
@@ -225,8 +259,9 @@ int enc_test_sigill_handling(
 
     oe_host_printf("test_sigill_handling: completed successfully.\n");
 
-    cleaup_exception_handler_stack(
-        &_stack, &_stack_size, use_exception_handler_stack);
+    if (use_exception_handler_stack)
+        cleaup_exception_handler_stack(
+            &_exception_handler_stack, &_exception_handler_stack_size);
 
     return 0;
 }
