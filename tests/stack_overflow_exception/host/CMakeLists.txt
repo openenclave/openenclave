@@ -13,11 +13,6 @@ add_custom_command(
 add_executable(stack_overflow_exception_host host.c
                                              stack_overflow_exception_u.c)
 
-string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE_UPPER)
-if (BUILD_TYPE_UPPER STREQUAL "DEBUG" OR USE_DEBUG_MALLOC)
-  target_compile_definitions(stack_overflow_exception_host PRIVATE DEBUG_BUILD)
-endif ()
-
 target_include_directories(stack_overflow_exception_host
                            PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(stack_overflow_exception_host oehost)

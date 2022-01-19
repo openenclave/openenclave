@@ -81,7 +81,7 @@ oe_thread_data_t* oe_get_thread_data(void);
  * Due to the inability to use OE_OFFSETOF on a struct while defining its
  * members, this value is computed and hard-coded.
  */
-#define OE_THREAD_SPECIFIC_DATA_SIZE (3664)
+#define OE_THREAD_SPECIFIC_DATA_SIZE (3656)
 
 typedef struct _oe_callsite oe_callsite_t;
 
@@ -147,9 +147,15 @@ typedef struct _td
     struct _oe_ecall_context* host_ecall_context;
     struct _oe_ecall_context* host_previous_ecall_context;
 
-    /* The optional stack area setup by the runtime to handle the exceptions */
+    /* The alternative stack area setup by the runtime to handle the exceptions
+     */
     uint64_t exception_handler_stack;
     uint64_t exception_handler_stack_size;
+
+    /* A 64-bit array. Only if a bit is set, the runtime will use the
+     * alternative stack to handle the exception type corresponds to the
+     * position of the bit */
+    uint64_t exception_handler_stack_bitmask;
 
     uint64_t state;
     /* Hold the previous state upon every exception entries, which is
@@ -229,10 +235,23 @@ oe_sgx_td_t* oe_sgx_get_td(void);
 
 void oe_sgx_td_clear_states(oe_sgx_td_t* td);
 
+/* Only the code equal or below the maximum value is valid (see exception.h) */
+#define OE_SGX_EXCEPTION_CODE_MAXIMUM 8
+
 bool oe_sgx_td_set_exception_handler_stack(
     oe_sgx_td_t* td,
     void* stack,
     uint64_t size);
+
+bool oe_sgx_td_register_exception_handler_stack(oe_sgx_td_t* td, uint64_t type);
+
+bool oe_sgx_td_unregister_exception_handler_stack(
+    oe_sgx_td_t* td,
+    uint64_t type);
+
+bool oe_sgx_td_exception_handler_stack_registered(
+    oe_sgx_td_t* td,
+    uint64_t type);
 
 void oe_sgx_td_mask_host_signal(oe_sgx_td_t* td);
 
