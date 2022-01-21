@@ -451,6 +451,32 @@ static void test_unlink_file(FILE_SYSTEM& fs, const char* tmp_dir)
 }
 
 template <class FILE_SYSTEM>
+static void test_flock_file(FILE_SYSTEM& fs, const char* tmp_dir)
+{
+    char path[OE_PAGE_SIZE];
+
+    printf("--- %s()\n", __FUNCTION__);
+
+    mkpath(path, tmp_dir, "alphabet");
+
+    /* Lock the file. */
+    const auto file = fs.open(path, O_RDONLY, 0);
+    OE_TEST(file);
+    OE_TEST(fs.flock(file, LOCK_EX) == 0);
+
+    /* Try to lock the file using another handle. */
+    const auto file2 = fs.open(path, O_RDONLY, 0);
+    OE_TEST(file2);
+    OE_TEST(fs.flock(file2, LOCK_EX | LOCK_NB) == -1);
+    OE_TEST(errno == EWOULDBLOCK);
+
+    /* Closing should unlock the file. */
+    OE_TEST(fs.close(file) == 0);
+    OE_TEST(fs.flock(file2, LOCK_EX) == 0);
+    OE_TEST(fs.close(file2) == 0);
+}
+
+template <class FILE_SYSTEM>
 static void test_invalid_path(FILE_SYSTEM& fs)
 {
     const char* const path = "doesnotexist";
@@ -485,6 +511,7 @@ void test_pio(FILE_SYSTEM& fs, const char* tmp_dir)
     test_create_file(fs, tmp_dir);
     test_pread_file(fs, tmp_dir);
     test_pwrite_file(fs, tmp_dir);
+    test_flock_file(fs, tmp_dir);
     cleanup(fs, tmp_dir);
 }
 
