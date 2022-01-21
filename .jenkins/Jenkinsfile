@@ -115,7 +115,7 @@ try {
                                   booleanParam(name: 'FULL_TEST_SUITE', value: FULL_TEST_SUITE)]
            },
            "Intel Linux" : {
-                catchError {
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                     build job: '/pipelines/Intel-Agnostic',
                         parameters: [booleanParam(name: 'FULL_TEST_SUITE', value: FULL_TEST_SUITE)]
                 }
