@@ -40,6 +40,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated libcxx to version 10.0.1
 - Now the OpenSSL is built with threads support (with the dependency on the host). Note that the previous versions of OpenSSL are not suitable for multi-threaded applications.
 
+### Security
+- Update mbedTLS to version 2.16.12. Refer to the [2.16.12](https://github.com/ARMmbed/mbedtls/releases/tag/v2.16.12) release notes for the set of issues addressed.
+
 [v0.17.2][v0.17.2_log]
 --------------
 
