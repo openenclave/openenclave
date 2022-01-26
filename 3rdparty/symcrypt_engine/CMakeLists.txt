@@ -1,6 +1,8 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
+check_submodule_not_empty(SymCrypt-OpenSSL)
+
 set(OPENSSL_DIR ${PROJECT_SOURCE_DIR}/3rdparty/openssl/openssl)
 set(SYMCRYPT_ENGINE_DIR
     ${CMAKE_CURRENT_SOURCE_DIR}/SymCrypt-OpenSSL/SymCryptEngine)

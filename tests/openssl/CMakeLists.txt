@@ -553,7 +553,7 @@ foreach (testcase ${openssltests})
     if ((NOT "${subtest_name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
         AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
       set_enclave_tests_properties(
-        tests/openssl/${namesubtest_name}_symcrypt
+        tests/openssl/${subtest_name}_symcrypt
         PROPERTIES
         ENVIRONMENT
         "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
