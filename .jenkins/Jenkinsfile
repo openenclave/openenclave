@@ -8,7 +8,6 @@ DOCKER_TAG = env.DOCKER_TAG ?: "latest"
 FULL_TEST_SUITE = env.FULL_TEST_SUITE ?: false
 // Regex that includes directory you want to ignore for CI builds.
 String IGNORED_DIRS = "^(docs|\\.jenkins/infrastructure)|\\.md\$"
-GLOBAL_ERROR = null
 
 // Load OpenEnclaveJenkinsLibrary version to use in this priority:
 //     1. If this is a bors run, use the bors branch
@@ -89,55 +88,44 @@ if ( ! params.FORCE_TEST ) {
     }
 }
 
-try {
-    common.emailJobStatus('STARTED')
-    stage("Trigger downstream pipelines") {
-        parallel (
-          "Agnostic Linux" : {
-              build job: '/pipelines/Agnostic-Linux',
+stage("Trigger downstream pipelines") {
+    parallel (
+        "Agnostic Linux" : {
+            build job: '/pipelines/Agnostic-Linux',
+                parameters: [string(name: 'REPOSITORY_NAME', value: REPOSITORY_NAME),
+                                string(name: 'BRANCH_NAME', value: BRANCH_NAME),
+                                string(name: 'DOCKER_TAG', value: DOCKER_TAG),
+                                string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["ubuntu-nonsgx"]),
+                                string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
+                                booleanParam(name: 'FULL_TEST_SUITE', value: FULL_TEST_SUITE)]
+        },
+        "Azure Linux" : {
+            build job: '/pipelines/Azure-Linux',
                     parameters: [string(name: 'REPOSITORY_NAME', value: REPOSITORY_NAME),
-                                 string(name: 'BRANCH_NAME', value: BRANCH_NAME),
-                                 string(name: 'DOCKER_TAG', value: DOCKER_TAG),
-                                 string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["ubuntu-nonsgx"]),
-                                 string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
-                                 booleanParam(name: 'FULL_TEST_SUITE', value: FULL_TEST_SUITE)]
-           },
-           "Azure Linux" : {
-               build job: '/pipelines/Azure-Linux',
-                     parameters: [string(name: 'REPOSITORY_NAME', value: REPOSITORY_NAME),
-                                  string(name: 'BRANCH_NAME', value: BRANCH_NAME),
-                                  string(name: 'DOCKER_TAG', value: DOCKER_TAG),
-                                  string(name: 'UBUNTU_2004_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["acc-ubuntu-20.04"]),
-                                  string(name: 'UBUNTU_1804_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["acc-ubuntu-18.04"]),
-                                  string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["ubuntu-nonsgx"]),
-                                  string(name: 'WINDOWS_NONSGX_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["windows-nonsgx"]),
-                                  string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
-                                  booleanParam(name: 'FULL_TEST_SUITE', value: FULL_TEST_SUITE)]
-           },
-           "Intel Linux" : {
-                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    build job: '/pipelines/Intel-Agnostic',
-                        parameters: [booleanParam(name: 'FULL_TEST_SUITE', value: FULL_TEST_SUITE)]
-                }
-           },
-           "Azure Windows" : {
-               build job: '/pipelines/Azure-Windows',
-                     parameters: [string(name: 'REPOSITORY_NAME', value: REPOSITORY_NAME),
-                                  string(name: 'BRANCH_NAME', value: BRANCH_NAME),
-                                  string(name: 'DOCKER_TAG', value: DOCKER_TAG),
-                                  string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["ubuntu-nonsgx"]),
-                                  string(name: 'WINDOWS_2019_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["acc-win2019"]),
-                                  string(name: 'WINDOWS_2019_DCAP_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["acc-win2019-dcap"]),
-                                  string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
-                                  booleanParam(name: 'FULL_TEST_SUITE', value: FULL_TEST_SUITE)]
-           }
-        )
-    }
-} catch(Exception e) {
-    println "Caught global pipeline exception :" + e
-    GLOBAL_ERROR = e
-    throw e
-} finally {
-    currentBuild.result = (GLOBAL_ERROR != null) ? 'FAILURE' : "SUCCESS"
-    common.emailJobStatus(currentBuild.result)
+                                string(name: 'BRANCH_NAME', value: BRANCH_NAME),
+                                string(name: 'DOCKER_TAG', value: DOCKER_TAG),
+                                string(name: 'UBUNTU_2004_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["acc-ubuntu-20.04"]),
+                                string(name: 'UBUNTU_1804_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["acc-ubuntu-18.04"]),
+                                string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["ubuntu-nonsgx"]),
+                                string(name: 'WINDOWS_NONSGX_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["windows-nonsgx"]),
+                                string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
+                                booleanParam(name: 'FULL_TEST_SUITE', value: FULL_TEST_SUITE)]
+        },
+        "Intel Linux" : {
+            build job: '/pipelines/Intel-Agnostic',
+                parameters: [booleanParam(name: 'FULL_TEST_SUITE', value: FULL_TEST_SUITE)],
+                propagate: false
+        },
+        "Azure Windows" : {
+            build job: '/pipelines/Azure-Windows',
+                    parameters: [string(name: 'REPOSITORY_NAME', value: REPOSITORY_NAME),
+                                string(name: 'BRANCH_NAME', value: BRANCH_NAME),
+                                string(name: 'DOCKER_TAG', value: DOCKER_TAG),
+                                string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["ubuntu-nonsgx"]),
+                                string(name: 'WINDOWS_2019_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["acc-win2019"]),
+                                string(name: 'WINDOWS_2019_DCAP_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["acc-win2019-dcap"]),
+                                string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
+                                booleanParam(name: 'FULL_TEST_SUITE', value: FULL_TEST_SUITE)]
+        }
+    )
 }
