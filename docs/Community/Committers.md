@@ -34,6 +34,7 @@ therefore should usually be consulted for changes relating to that area.
 | Shanwei Cen           | shnwc               | Attestation, SGX               |
 | Shruti Ratnam         | shruti25ratnam      | Attestation                    |
 | Cheng-mean Liu        | soccerGB            | Attestation, SGX               |
+| Andy Chen             | anche-is-andy       | Attestation                    |
 
 Current Expectations
 --------------------
