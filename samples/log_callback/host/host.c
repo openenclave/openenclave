@@ -56,7 +56,7 @@ void host_customized_log(
 
     fprintf(
         log_file,
-        "%s.%06ld, %s, %s, %llx, %s",
+        "%s.%06ld, %s, %s, %lx, %s",
         time,
         usecs,
         (is_enclave ? "E" : "H"),
