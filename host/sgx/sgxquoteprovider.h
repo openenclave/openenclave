@@ -25,7 +25,13 @@ typedef struct _oe_sgx_quote_provider
         free_sgx_quote_verification_collateral;
 } oe_sgx_quote_provider_t;
 
+bool oe_set_quote_provider_logger(
+    oe_sgx_quote_provider_t* provider,
+    sgx_ql_logging_function_t logger);
+
+// This is being deprecated and replaced by SGX_QL_SET_LOGGING_CALLBACK_NAME
 #define SGX_QL_SET_LOGGING_FUNCTION_NAME "sgx_ql_set_logging_function"
+#define SGX_QL_SET_LOGGING_CALLBACK_NAME "sgx_ql_set_logging_callback"
 #define SGX_QL_GET_QUOTE_VERIFICATION_COLLATERAL_NAME \
     "sgx_ql_get_quote_verification_collateral"
 #define SGX_QL_FREE_QUOTE_VERIFICATION_COLLATERAL_NAME \

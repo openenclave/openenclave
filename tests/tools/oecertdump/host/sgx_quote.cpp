@@ -214,14 +214,7 @@ void set_log_callback()
 
     // Initialize quote provider and set log callback
     oe_initialize_quote_provider();
-
-    sgx_ql_set_logging_function_t set_log_fcn =
-        (sgx_ql_set_logging_function_t)dlsym(
-            provider.handle, "sgx_ql_set_logging_function");
-    if (set_log_fcn != nullptr)
-    {
-        set_log_fcn(oecertdump_quote_provider_log);
-    }
+    oe_set_quote_provider_logger(&provider, oecertdump_quote_provider_log);
 #endif
 }
 

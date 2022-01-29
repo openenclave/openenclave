@@ -26,23 +26,19 @@ void oe_load_quote_provider()
         HMODULE _handle = LoadLibraryEx("dcap_quoteprov.dll", NULL, 0);
         if (_handle != 0)
         {
-            sgx_ql_set_logging_function_t set_log_fcn =
-                (sgx_ql_set_logging_function_t)GetProcAddress(
-                    _handle, SGX_QL_SET_LOGGING_FUNCTION_NAME);
-            if (set_log_fcn != NULL)
+            provider.handle = _handle;
+            if (oe_get_current_logging_level() >= OE_LOG_LEVEL_INFO)
             {
-                OE_TRACE_INFO("sgxquoteprovider: Installed log function\n");
-                if (oe_get_current_logging_level() >= OE_LOG_LEVEL_INFO)
+                if (oe_set_quote_provider_logger(
+                        &provider, oe_quote_provider_log))
                 {
-                    // If info tracing is enabled, install the logging function.
-                    set_log_fcn(oe_quote_provider_log);
+                    OE_TRACE_INFO("sgxquoteprovider: Installed log function\n");
                 }
-            }
-            else
-            {
-                OE_TRACE_WARNING(
-                    "sgxquoteprovider: sgx_ql_set_logging_function "
-                    "not found\n");
+                else
+                {
+                    OE_TRACE_WARNING(
+                        "sgxquoteprovider: Not able to install log function\n");
+                }
             }
 
             provider.get_sgx_quote_verification_collateral =
@@ -72,7 +68,6 @@ void oe_load_quote_provider()
             }
 
             atexit(_unload_quote_provider);
-            provider.handle = _handle;
         }
         else
         {
@@ -83,4 +78,28 @@ void oe_load_quote_provider()
                 error);
         }
     }
+}
+
+bool oe_set_quote_provider_logger(
+    oe_sgx_quote_provider_t* provider,
+    sgx_ql_logging_function_t logger)
+{
+    sgx_ql_set_logging_function_t set_log_fcn =
+        (sgx_ql_set_logging_function_t)GetProcAddress(
+            (HMODULE)(provider->handle), SGX_QL_SET_LOGGING_FUNCTION_NAME);
+    if (set_log_fcn == NULL)
+    {
+        set_log_fcn = (sgx_ql_set_logging_function_t)GetProcAddress(
+            (HMODULE)(provider->handle), SGX_QL_SET_LOGGING_CALLBACK_NAME);
+    }
+
+    if (set_log_fcn != NULL)
+    {
+        set_log_fcn(logger);
+        return true;
+    }
+
+    OE_TRACE_WARNING("sgxquoteprovider: " SGX_QL_SET_LOGGING_FUNCTION_NAME
+                     " nor " SGX_QL_SET_LOGGING_CALLBACK_NAME "can be found\n");
+    return false;
 }
