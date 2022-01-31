@@ -27,9 +27,10 @@ if (LVI_MITIGATION MATCHES ControlFlow)
   # Link against LVI-mitigated libraries.
   target_link_libraries(
     enclave openenclave::oeenclave-lvi-cfg
-    openenclave::oecrypto${OE_CRYPTO_LIB}-lvi-cfg openenclave::oelibc-lvi-cfg)
+    openenclave::oecrypto${OE_CRYPTO_LIB}-lvi-cfg openenclave::oelibc-lvi-cfg
+    openenclave::oehostfs)
 else ()
   target_link_libraries(
     enclave openenclave::oeenclave openenclave::oecrypto${OE_CRYPTO_LIB}
-    openenclave::oelibc)
+    openenclave::oelibc openenclave::oehostfs)
 endif ()
