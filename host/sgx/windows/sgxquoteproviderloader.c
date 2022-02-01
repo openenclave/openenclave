@@ -29,7 +29,7 @@ void oe_load_quote_provider()
             provider.handle = _handle;
             if (oe_get_current_logging_level() >= OE_LOG_LEVEL_INFO)
             {
-                if (oe_set_quote_provider_logger(
+                if (oe_sgx_set_quote_provider_logger(
                         &provider, oe_quote_provider_log))
                 {
                     OE_TRACE_INFO("sgxquoteprovider: Installed log function\n");
@@ -80,17 +80,20 @@ void oe_load_quote_provider()
     }
 }
 
-bool oe_set_quote_provider_logger(
-    oe_sgx_quote_provider_t* provider,
-    sgx_ql_logging_function_t logger)
+bool oe_sgx_set_quote_provider_logger(sgx_ql_logging_function_t logger)
 {
-    sgx_ql_set_logging_function_t set_log_fcn =
-        (sgx_ql_set_logging_function_t)GetProcAddress(
-            (HMODULE)(provider->handle), SGX_QL_SET_LOGGING_FUNCTION_NAME);
+    sgx_ql_set_logging_function_t set_log_fcn = NULL;
+    if (provider.handle == 0)
+    {
+        return false;
+    }
+
+    set_log_fcn = (sgx_ql_set_logging_function_t)GetProcAddress(
+        (HMODULE)(provider.handle), SGX_QL_SET_LOGGING_FUNCTION_NAME);
     if (set_log_fcn == NULL)
     {
         set_log_fcn = (sgx_ql_set_logging_function_t)GetProcAddress(
-            (HMODULE)(provider->handle), SGX_QL_SET_LOGGING_CALLBACK_NAME);
+            (HMODULE)(provider.handle), SGX_QL_SET_LOGGING_CALLBACK_NAME);
     }
 
     if (set_log_fcn != NULL)
