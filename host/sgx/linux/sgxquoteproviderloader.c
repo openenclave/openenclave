@@ -5,6 +5,7 @@
 #include <openenclave/internal/trace.h>
 #include <stdlib.h>
 #include "../sgxquoteprovider.h"
+#include "openenclave/bits/result.h"
 
 oe_sgx_quote_provider_t provider = {0};
 
@@ -29,7 +30,8 @@ void oe_load_quote_provider()
         {
             if (oe_get_current_logging_level() >= OE_LOG_LEVEL_INFO)
             {
-                if (oe_sgx_set_quote_provider_logger(oe_quote_provider_log))
+                if (oe_sgx_set_quote_provider_logger(oe_quote_provider_log) ==
+                    OE_OK)
                 {
                     OE_TRACE_INFO("sgxquoteprovider: Installed log function\n");
                 }
@@ -77,12 +79,13 @@ void oe_load_quote_provider()
     }
 }
 
-bool oe_sgx_set_quote_provider_logger(sgx_ql_logging_function_t logger)
+oe_result_t oe_sgx_set_quote_provider_logger(sgx_ql_logging_function_t logger)
 {
     sgx_ql_set_logging_function_t set_log_fcn = NULL;
     if (provider.handle == 0)
     {
-        return false;
+        // Quote provider is not loaded.
+        return OE_QUOTE_PROVIDER_LOAD_ERROR;
     }
 
     set_log_fcn = (sgx_ql_set_logging_function_t)dlsym(
@@ -96,10 +99,11 @@ bool oe_sgx_set_quote_provider_logger(sgx_ql_logging_function_t logger)
     if (set_log_fcn != NULL)
     {
         set_log_fcn(logger);
-        return true;
+        return OE_OK;
     }
 
     OE_TRACE_WARNING("sgxquoteprovider: " SGX_QL_SET_LOGGING_FUNCTION_NAME
                      " nor " SGX_QL_SET_LOGGING_CALLBACK_NAME "can be found\n");
-    return false;
+
+    return OE_UNSUPPORTED;
 }
