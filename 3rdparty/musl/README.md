@@ -20,11 +20,11 @@ suite. The structure of the directory is as follows.
     ```
   - Ensure the OE SDK builds and tests run successfully.
 
-- libc-test/ (commit: `a51df71b050f3f9dfdc0a7d90978b57277b582ec`)
+- libc-test/ (commit: `b7ec467969a53756258778fa7d9b045f912d1c93`)
 
   The clone of libc-test that is included as a git submodule, which points to a recent
   commit. We usually update the submodule along with musl libc with following procedure:
-  - Checkout the more recent commit (the date that matches the version of musl libc)
+  - Checkout the more recent commit
     ```
     cd libc-test
     git fetch
