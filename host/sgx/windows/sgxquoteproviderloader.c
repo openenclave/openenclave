@@ -29,8 +29,7 @@ void oe_load_quote_provider()
             provider.handle = _handle;
             if (oe_get_current_logging_level() >= OE_LOG_LEVEL_INFO)
             {
-                if (oe_sgx_set_quote_provider_logger(
-                        &provider, oe_quote_provider_log))
+                if (oe_sgx_set_quote_provider_logger(oe_quote_provider_log))
                 {
                     OE_TRACE_INFO("sgxquoteprovider: Installed log function\n");
                 }
