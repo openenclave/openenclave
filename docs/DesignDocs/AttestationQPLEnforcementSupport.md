@@ -35,7 +35,7 @@ uint8_t value[MAX_PARAM_STRING_SIZE+1];
 
 ### New APIs / OCalls
 
-Though there is no API signature changes for `oe_verify_evidence`, some internal APIs that potentially get used by tools need to be changed. For backward compatibility, the following new APIs wil be added to ensure all existing code either build from OE SDK headers and libraries or source directly can still work,
+Though there is no API signature changes for `oe_verify_evidence`, some internal APIs that potentially get used by tools need to be changed. For backward compatibility, the following new APIs will be added to ensure all existing code either build from OE SDK headers and libraries or source directly can still work,
 - `oe_get_sgx_endorsements_with_policies`, after change, this API will be called by existing `oe_get_sgx_endorsements` without any policy.
 - `oe_get_quote_verification_collateral_with_params_ocall`, the current API is `oe_get_quote_verification_collateral_ocall` is an API defined in sgx/attestation.edl, which could have been used by user enclaves, so need to bring this new API to work with existing API.
 
