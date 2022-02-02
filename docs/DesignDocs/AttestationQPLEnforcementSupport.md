@@ -9,12 +9,12 @@ Motivation
 Intel SGX rolls out PCK certificate and collateral information about every six months.
 There is a scenario where a quote signed by the last version of PCK certificate cannot be verified with the latest version of collateral information.
 This causes unnecessary attestation failures when new versions of PCK certificate and collateral information are rolled out.
-To deal with this issue, the SGX QPL need to return any version of collateral information based on additional query parameters (referred to as "baselines").
+To deal with this issue, the SGX QPL needs to return any version of collateral information based on additional query parameters (referred to as "baselines").
 With that, a new API called `sgx_ql_get_quote_verification_collateral_with_params` was introduced in the SGX QPL.
 Changes are also needed in the OE SDK to call this new API.
 
 Goals:
- - Verifier can call `oe_verify_evidence` and pass SGX QPL-specific parameters to do more advanced quote verification.
+ - Verifier can call `oe_verify_evidence` and pass SGX QPL-specific parameters to do more advanced verification.
 
 User Experience
 ----
@@ -42,7 +42,7 @@ uint8_t value[MAX_PARAM_STRING_SIZE+1];
 ### New APIs / OCalls
 
 Though there is no API signature changes for `oe_verify_evidence`, some internal APIs that potentially get used by tools need to be changed.
-For backward compatibility, the following new APIs will be added to ensure all existing code can still work,
+For backward compatibility, the following internal APIs will be added to ensure all existing code can still work,
 - `oe_get_sgx_endorsements_with_policies`, after change, this API will be called by existing `oe_get_sgx_endorsements` without any policy.
 This new API will not be exposed to OE SDK users.
 - `oe_get_quote_verification_collateral_with_params_ocall`, the current API is `oe_get_quote_verification_collateral_ocall` is an API defined in sgx/attestation.edl, which could have been used by user enclaves, so need to bring this new API to work with existing API.
@@ -79,6 +79,7 @@ result = oe_verify_evidence(
             claims_length);
 ```
 
+> TODO: Need to update this document with a reference list for possible keys and values when it is available.
 
 Alternatives
 ----
