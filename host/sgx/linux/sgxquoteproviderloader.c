@@ -104,6 +104,5 @@ oe_result_t oe_sgx_set_quote_provider_logger(sgx_ql_logging_function_t logger)
 
     OE_TRACE_WARNING("sgxquoteprovider: " SGX_QL_SET_LOGGING_FUNCTION_NAME
                      " nor " SGX_QL_SET_LOGGING_CALLBACK_NAME "can be found\n");
-
     return OE_UNSUPPORTED;
 }
