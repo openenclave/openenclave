@@ -28,30 +28,30 @@ def ubuntuPublishRelease(String release_version, String os_release) {
                      string(credentialsId: 'msft-apt-repo-pem', variable: 'repoclientpem')]) {
         sh '''#!/bin/bash
             set +x
-            echo Ubuntu $os_release
+            echo Ubuntu ${os_release}
             sudo apt-get update
             sudo apt-get -y --no-install-recommends install python3-adal jq
 
             if ! apt list --installed | grep azure-repoapi-client; then
-                sudo apt -y install $repoapiclient
+                sudo apt -y install ${repoapiclient}
             fi
 
             # Install repoclient.pem
-            if [[ -f $WORKSPACE/repoclient.pem ]]; then
-                rm $WORKSPACE/repoclient.pem
+            if [[ -f ${WORKSPACE}/repoclient.pem ]]; then
+                rm ${WORKSPACE}/repoclient.pem
             fi
             touch ~/.ssh/repoclient.pem
             chmod 600 ~/.ssh/repoclient.pem
-            echo "$repoclientpem" >> $WORKSPACE/repoclient.pem
+            echo "${repoclientpem}" >> ${WORKSPACE}/repoclient.pem
 
             # Install repoclient configuration
-            cp $aptconfig $WORKSPACE/apt-config.json
-            chmod 777 $WORKSPACE/apt-config.json
-            sed -i "s|<PEM_FILE>|$WORKSPACE/repoclient.pem|g" $WORKSPACE/apt-config.json
-            chmod 600 $WORKSPACE/apt-config.json
+            cp ${aptconfig} ${WORKSPACE}/apt-config.json
+            chmod 600 ${WORKSPACE}/apt-config.json
+            sed -i "s|<PEM_FILE>|$WORKSPACE/repoclient.pem|g" ${WORKSPACE}/apt-config.json
+            chmod 600 ${WORKSPACE}/apt-config.json
 
             # Test repoclient
-            repoclient -c $WORKSPACE/apt-config.json repo list
+            repoclient -c ${WORKSPACE}/apt-config.json repo list
         '''
         script {
             // Download and publish open-enclave and open-enclave-hostverify packages if PUBLISH_RELEASE is true
@@ -60,8 +60,8 @@ def ubuntuPublishRelease(String release_version, String os_release) {
                 helpers.releaseDownloadLinux(release_version, "open-enclave-hostverify", 'GitHub', 'Ubuntu', os_release)
                 sh """#!/bin/bash
                     echo "Publishing OpenEnclave ${release_version}"
-                    mv "0.17.5/Ubuntu ${os_release}/Ubuntu_${os_release}_open-enclave_${release_version}_amd64.deb" open-enclave_${release_version}_amd64.deb
-                    mv "0.17.5/Ubuntu ${os_release}/Ubuntu_${os_release}_open-enclave-hostverify_${release_version}_amd64.deb" open-enclave-hostverify_${release_version}_amd64.deb
+                    mv "${release_version}/Ubuntu ${os_release}/Ubuntu_${os_release}_open-enclave_${release_version}_amd64.deb" open-enclave_${release_version}_amd64.deb
+                    mv "${release_version}/Ubuntu ${os_release}/Ubuntu_${os_release}_open-enclave-hostverify_${release_version}_amd64.deb" open-enclave-hostverify_${release_version}_amd64.deb
                     repoclient -c ${WORKSPACE}/apt-config.json package add open-enclave_${release_version}_amd64.deb
                     repoclient -c ${WORKSPACE}/apt-config.json package add open-enclave-hostverify_${release_version}_amd64.deb
                 """
@@ -87,13 +87,13 @@ def windowsPublishRelease(String release_version) {
             returnStdout: true
         ).trim()
 
-        helpers.releaseDownloadWindows(release_version, 'open-enclave', 'GitHub', windows_version)
-        helpers.releaseDownloadWindows(release_version, 'open-enclave.OEHOSTVERIFY', 'GitHub', windows_version)
         script {
             if (params.PUBLISH_RELEASE) {
+                helpers.releaseDownloadWindows(release_version, 'open-enclave', 'GitHub', windows_version)
+                helpers.releaseDownloadWindows(release_version, 'open-enclave.OEHOSTVERIFY', 'GitHub', windows_version)
                 powershell '''
                     nuget.exe update -self
-                    nuget.exe push *.nupkg -ApiKey $nugetkey -Source nuget.org
+                    nuget.exe push *.nupkg -ApiKey ${nugetkey} -Source "nuget.org"
                 '''
             }
         }
