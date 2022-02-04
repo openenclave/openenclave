@@ -5,6 +5,8 @@
 #include <openenclave/internal/trace.h>
 #include <stdlib.h>
 #include "../sgxquoteprovider.h"
+#include "openenclave/bits/result.h"
+#include "openenclave/internal/raise.h"
 
 oe_sgx_quote_provider_t provider = {0};
 
@@ -26,23 +28,19 @@ void oe_load_quote_provider()
         HMODULE _handle = LoadLibraryEx("dcap_quoteprov.dll", NULL, 0);
         if (_handle != 0)
         {
-            sgx_ql_set_logging_function_t set_log_fcn =
-                (sgx_ql_set_logging_function_t)GetProcAddress(
-                    _handle, SGX_QL_SET_LOGGING_FUNCTION_NAME);
-            if (set_log_fcn != NULL)
+            provider.handle = _handle;
+            if (oe_get_current_logging_level() >= OE_LOG_LEVEL_INFO)
             {
-                OE_TRACE_INFO("sgxquoteprovider: Installed log function\n");
-                if (oe_get_current_logging_level() >= OE_LOG_LEVEL_INFO)
+                if (oe_sgx_set_quote_provider_logger(oe_quote_provider_log) ==
+                    OE_OK)
                 {
-                    // If info tracing is enabled, install the logging function.
-                    set_log_fcn(oe_quote_provider_log);
+                    OE_TRACE_INFO("sgxquoteprovider: Installed log function\n");
                 }
-            }
-            else
-            {
-                OE_TRACE_WARNING(
-                    "sgxquoteprovider: sgx_ql_set_logging_function "
-                    "not found\n");
+                else
+                {
+                    OE_TRACE_WARNING(
+                        "sgxquoteprovider: Not able to install log function\n");
+                }
             }
 
             provider.get_sgx_quote_verification_collateral =
@@ -72,7 +70,6 @@ void oe_load_quote_provider()
             }
 
             atexit(_unload_quote_provider);
-            provider.handle = _handle;
         }
         else
         {
@@ -83,4 +80,33 @@ void oe_load_quote_provider()
                 error);
         }
     }
+}
+
+oe_result_t oe_sgx_set_quote_provider_logger(sgx_ql_logging_function_t logger)
+{
+    sgx_ql_set_logging_function_t set_log_fcn = NULL;
+    if (provider.handle == 0)
+    {
+        // Quote provider is not loaded.
+        return OE_QUOTE_PROVIDER_LOAD_ERROR;
+    }
+
+    set_log_fcn = (sgx_ql_set_logging_function_t)GetProcAddress(
+        (HMODULE)(provider.handle), SGX_QL_SET_LOGGING_FUNCTION_NAME);
+    if (set_log_fcn == NULL)
+    {
+        set_log_fcn = (sgx_ql_set_logging_function_t)GetProcAddress(
+            (HMODULE)(provider.handle), SGX_QL_SET_LOGGING_CALLBACK_NAME);
+    }
+
+    if (set_log_fcn != NULL)
+    {
+        set_log_fcn(logger);
+        return OE_OK;
+    }
+
+    OE_TRACE_WARNING("sgxquoteprovider: " SGX_QL_SET_LOGGING_FUNCTION_NAME
+                     " nor " SGX_QL_SET_LOGGING_CALLBACK_NAME "can be found\n");
+
+    return OE_UNSUPPORTED;
 }

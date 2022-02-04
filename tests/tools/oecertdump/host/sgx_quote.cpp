@@ -210,18 +210,9 @@ void oecertdump_quote_provider_log(
 void set_log_callback()
 {
 #if defined(__linux__)
-    extern oe_sgx_quote_provider_t provider;
-
     // Initialize quote provider and set log callback
     oe_initialize_quote_provider();
-
-    sgx_ql_set_logging_function_t set_log_fcn =
-        (sgx_ql_set_logging_function_t)dlsym(
-            provider.handle, "sgx_ql_set_logging_function");
-    if (set_log_fcn != nullptr)
-    {
-        set_log_fcn(oecertdump_quote_provider_log);
-    }
+    oe_sgx_set_quote_provider_logger(oecertdump_quote_provider_log);
 #endif
 }
 
