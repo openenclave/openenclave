@@ -250,6 +250,9 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                     def az_rg_cleanup_script = """
                         ${az_login_script}
                         az group delete --name ${vm_rg_name} --yes
+                        az image delete \
+                            --resource-group ${RESOURCE_GROUP} \
+                            --name ${managed_image_name_id}-${img_name_suffix}
                     """
                     common.azureEnvironment(az_rg_cleanup_script, params.OE_DEPLOY_IMAGE)
                 }
