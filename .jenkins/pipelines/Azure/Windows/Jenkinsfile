@@ -32,7 +32,6 @@ properties(
 )
 
 try{
-    common.emailJobStatus('STARTED')
     def testing_stages = [ "Windows 2019 Install Prerequisites Verification" : { tests.windowsPrereqsVerify("acc-win2019-dcap") }]
     if(FULL_TEST_SUITE == "true") {
         stage("Full Test Suite") {
@@ -78,5 +77,4 @@ try{
     throw e
 } finally {
     currentBuild.result = (GLOBAL_ERROR != null) ? 'FAILURE' : "SUCCESS"
-    common.emailJobStatus(currentBuild.result)
 }

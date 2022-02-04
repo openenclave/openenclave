@@ -50,7 +50,6 @@ def WindowsPackaging(String version, String build_type, String lvi_mitigation = 
 }
 
 try{
-    oe.emailJobStatus('STARTED')
     parallel "2004 SGX1FLC Package Debug" :          { LinuxPackaging('2004', 'Debug') },
          "2004 SGX1FLC Package Debug LVI" :          { LinuxPackaging('2004', 'Debug', 'ControlFlow') },
          "2004 SGX1FLC Package RelWithDebInfo" :     { LinuxPackaging('2004', 'RelWithDebInfo') },
@@ -73,5 +72,4 @@ try{
     throw e
 } finally {
     currentBuild.result = (GLOBAL_ERROR != null) ? 'FAILURE' : "SUCCESS"
-    oe.emailJobStatus(currentBuild.result)
 }

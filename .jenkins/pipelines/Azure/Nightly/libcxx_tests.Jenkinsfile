@@ -30,7 +30,6 @@ def ACCLibcxxTest(String label, String compiler, String build_type) {
 
 
 try {
-    oe.emailJobStatus('STARTED')
     parallel "Libcxx ACC2004 clang-10 Debug" :          { ACCLibcxxTest(FOCAL_LABEL,  'clang-10', 'Debug') },
              "Libcxx ACC2004 clang-10 RelWithDebInfo" : { ACCLibcxxTest(FOCAL_LABEL,  'clang-10', 'RelWithDebInfo') },
              "Libcxx ACC1804 clang-10 Debug" :          { ACCLibcxxTest(BIONIC_LABEL, 'clang-10', 'Debug') },
@@ -41,5 +40,4 @@ try {
     throw e
 } finally {
     currentBuild.result = (GLOBAL_ERROR != null) ? 'FAILURE' : "SUCCESS"
-    oe.emailJobStatus(currentBuild.result)
 }

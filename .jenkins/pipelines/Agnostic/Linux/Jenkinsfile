@@ -29,7 +29,6 @@ properties(
 )
 
 try{
-    common.emailJobStatus('STARTED')
     def testing_stages = [
         "Check CI":                                { tests.checkCI() },
         "Check Developer Experience Ubuntu 20.04": { tests.checkDevFlows('20.04') },
@@ -77,5 +76,4 @@ try{
     throw e
 } finally {
     currentBuild.result = (GLOBAL_ERROR != null) ? 'FAILURE' : "SUCCESS"
-    common.emailJobStatus(currentBuild.result)
 }
