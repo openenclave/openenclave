@@ -402,6 +402,27 @@ static void* _find_claim(
     return NULL;
 }
 
+static void _find_fmspc(uint8_t* tcb_info, uint8_t* fmspc, size_t fmspc_size)
+{
+    char* substr = "fmspc";
+    char* p_fmspc;
+    long data = 0;
+    char hex[3];
+
+    p_fmspc = strstr((char*)tcb_info, substr);
+    p_fmspc = p_fmspc + 8; // move pointer to start of value
+    hex[2] = '\0';
+
+    for (size_t i = 0; i < fmspc_size; ++i)
+    {
+        hex[0] = *p_fmspc++;
+        hex[1] = *p_fmspc++;
+
+        data = strtol(hex, NULL, 16);
+        *(fmspc + i) = (uint8_t)data;
+    }
+}
+
 static void _test_claims(
     const oe_claim_t* claims,
     size_t claims_size,
@@ -529,6 +550,14 @@ static void _test_claims(
                              sgx_report_body->isvfamilyid,
                              sizeof(sgx_report_body->isvfamilyid)) == 0);
 
+    // Check SGX cpusvn
+    value = _find_claim(claims, claims_size, OE_CLAIM_SGX_CPU_SVN);
+    OE_TEST(
+        value != NULL &&
+        memcmp(
+            value, sgx_report_body->cpusvn, sizeof(sgx_report_body->cpusvn)) ==
+            0);
+
     // Check tcb status. If it is OE_SGX_TCB_STATUS_UP_TO_DATE or
     // OE_SGX_TCB_STATUS_SW_HARDENING_NEEDED, then oe_verify_evidence should
     // return OE_OK (tcb_level_valid is true), otherwise it should return
@@ -554,6 +583,16 @@ static void _test_claims(
     value = _find_claim(claims, claims_size, OE_CLAIM_VALIDITY_UNTIL);
     OE_TEST(is_local || value != NULL);
 
+    sgx_quote_t* sgx_quote = (sgx_quote_t*)report_body;
+    value = _find_claim(claims, claims_size, OE_CLAIM_SGX_PCE_SVN);
+    OE_TEST(
+        is_local || memcmp(value, &sgx_quote->pce_svn, sizeof(uint16_t)) == 0);
+
+    value = _find_claim(claims, claims_size, OE_CLAIM_SGX_QE_ID);
+    OE_TEST(
+        is_local ||
+        memcmp(value, sgx_quote->user_data, sizeof(sgx_quote->user_data)) == 0);
+
     // Check SGX optional claims:
     if (sgx_endorsements)
     {
@@ -570,6 +609,23 @@ static void _test_claims(
                                      value,
                                      sgx_endorsements->items[j].data,
                                      sgx_endorsements->items[j].size) == 0);
+        }
+
+        if (!is_local)
+        {
+            /* Verify the fmspc value returned is as expected */
+            oe_parsed_tcb_info_t parsed_tcb_info;
+            const size_t fmspc_size = sizeof(parsed_tcb_info.fmspc);
+            uint8_t* fmspc = (uint8_t*)malloc(fmspc_size);
+            OE_TEST(fmspc != NULL);
+
+            _find_fmspc(
+                sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_TCB_INFO].data,
+                fmspc,
+                fmspc_size);
+            value = _find_claim(claims, claims_size, OE_CLAIM_SGX_FMSPC);
+            OE_TEST(value != NULL && memcmp(value, fmspc, fmspc_size) == 0);
+            free(fmspc);
         }
     }
 
