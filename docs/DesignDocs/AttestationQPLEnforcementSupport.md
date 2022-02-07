@@ -19,7 +19,7 @@ Goals:
 User Experience
 ----
 
-A new policy type `OE_POLICY_SGX_COLLATERAL_BASELINE` is added to current policy types.
+A new policy type `OE_POLICY_OPTIONS_BASELINE` is added to current policy types.
 A quote verifier application can pass multiple policies with this type, while OE SDK would pass all the policies down to the SGX QPL API without interpreting the data content.
 
 Specification
@@ -27,7 +27,7 @@ Specification
 
 ### New policy type & its data structure
 
-- `OE_POLICY_SGX_COLLATERAL_BASELINE` in `oe_policy_type_t`
+- `OE_POLICY_OPTIONS_BASELINE` in `oe_policy_type_t`
 - `oe_query_param`, which is defined as below,
 ```C
 // defined by SGX QPL
@@ -57,10 +57,10 @@ memcpy_s(baselines[0].value, MAX_PARAM_STRING_SIZE + 1, "1", strlen("1") + 1);
 memcpy_s(baselines[1].key, MAX_PARAM_STRING_SIZE + 1, "region", strlen("region") + 1);
 memcpy_s(baselines[1].value, MAX_PARAM_STRING_SIZE + 1, "eastus", strlen("eastus") + 1);
 oe_policy_t policies[2];
-policies[0].type = OE_POLICY_SGX_COLLATERAL_BASELINE;
+policies[0].type = OE_POLICY_OPTIONS_BASELINE;
 policies[0].policy = &baselines[0];
 policies[0].policy_size = sizeof(oe_query_param_t);
-policies[1].type = OE_POLICY_SGX_COLLATERAL_BASELINE;
+policies[1].type = OE_POLICY_OPTIONS_BASELINE;
 policies[1].policy = &baselines[1];
 policies[1].policy_size = sizeof(oe_query_param_t);
 
