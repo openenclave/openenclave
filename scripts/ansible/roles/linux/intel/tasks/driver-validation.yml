@@ -3,14 +3,14 @@
 
 ---
 - name: Include distribution vars
-  include_vars:
+  ansible.builtin.include_vars:
     file: "{{ ansible_distribution | lower }}/main.yml"
 
 - name: Include distribution release specific vars
-  include_vars:
+  ansible.builtin.include_vars:
     file: "{{ ansible_distribution | lower }}/{{ ansible_distribution_release | lower }}.yml"
 
 - name: Check default driver files
-  stat:
+  ansible.builtin.stat:
     path: "{{ item }}"
   loop: "{{ intel_dcap_driver_files }}"

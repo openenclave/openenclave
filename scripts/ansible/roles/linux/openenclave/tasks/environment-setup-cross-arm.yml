@@ -3,31 +3,34 @@
 
 ---
 - name: Include base setup
-  include_tasks: environment-setup.yml
+  ansible.builtin.include_tasks: environment-setup.yml
 
 - name: Mark existing APT repositories as x86/64
-  replace:
+  ansible.builtin.replace:
     path: /etc/apt/sources.list
     regexp: '^deb h'
     replace: 'deb [arch=amd64,i386] h'
 
 - name: Enable ARM64 architecture
-  command: dpkg --add-architecture arm64
+  ansible.builtin.command: dpkg --add-architecture arm64
 
-- apt_repository:
+- name: Add Ubuntu main repository
+  ansible.builtin.apt_repository:
     repo: deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports {{ ansible_distribution_release }} main restricted universe multiverse
     state: present
 
-- apt_repository:
+- name: Add Ubuntu updates repository
+  ansible.builtin.apt_repository:
     repo: deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports {{ ansible_distribution_release }}-updates main restricted universe multiverse
     state: present
 
-- apt_repository:
+- name: Add Ubuntu backports repository
+  ansible.builtin.apt_repository:
     repo: deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports {{ ansible_distribution_release }}-backports main restricted universe multiverse
     state: present
 
 - name: Install the additional Open Enclave prerequisites APT packages for ARM development
-  apt:
+  ansible.builtin.apt:
     name: "{{ apt_arm_packages }}"
     state: latest
     update_cache: yes

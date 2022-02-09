@@ -37,3 +37,9 @@ else
 fi
 
 pip3 install -U -r "$DIR/requirements.txt"
+
+ansible-galaxy collection install community.general
+ansible-galaxy collection install ansible.windows
+ansible-galaxy collection install community.windows
+
+ansible --version

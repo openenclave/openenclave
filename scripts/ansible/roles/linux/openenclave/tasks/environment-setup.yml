@@ -3,21 +3,21 @@
 
 ---
 - name: Gather Ansible facts
-  setup:
+  ansible.builtin.gather_facts:
 
 - name: Include distribution vars
-  include_vars:
+  ansible.builtin.include_vars:
     file: "{{ ansible_distribution | lower }}/main.yml"
 
 - name: Install distribution packages
-  include_tasks: "{{ ansible_distribution | lower }}/packages-install.yml"
+  ansible.builtin.include_tasks: "{{ ansible_distribution | lower }}/packages-install.yml"
 
 - name: Setup lvi dependencies
-  include_tasks: "{{ ansible_distribution | lower }}/lvi-setup.yml"
+  ansible.builtin.include_tasks: "{{ ansible_distribution | lower }}/lvi-setup.yml"
   when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
 - name: Install CMake 3.13.1
-  unarchive:
+  ansible.builtin.unarchive:
     src: https://cmake.org/files/v3.13/cmake-3.13.1-Linux-x86_64.tar.gz
     dest: "{{ cmake_prefix }}"
     remote_src: yes
@@ -27,7 +27,7 @@
   until: result is success
 
 - name: Create CMake symbolic links
-  file:
+  ansible.builtin.file:
     src: "{{ cmake_prefix }}/cmake-3.13.1-Linux-x86_64/bin/{{ item }}"
     dest: "{{ cmake_prefix }}/bin/{{ item }}"
     force: yes

@@ -160,6 +160,29 @@ def emailJobStatus(String status) {
 }
 
 /**
+ * Installs Azure CLI from Microsoft repository (Ubuntu distributions only)
+ */
+def installAzureCLI() {
+    retry(10) {
+        sh """
+            sleep 5
+            ${helpers.WaitForAptLock()}
+            sudo apt-get update
+            sudo apt-get -y install ca-certificates curl apt-transport-https lsb-release gnupg
+            curl -sL https://packages.microsoft.com/keys/microsoft.asc |
+                gpg --dearmor |
+                sudo tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null
+            AZ_REPO=\$(lsb_release -cs)
+            echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ \$AZ_REPO main" |
+                sudo tee /etc/apt/sources.list.d/azure-cli.list
+            ${helpers.WaitForAptLock()}
+            sudo apt-get update
+            sudo apt-get -y install azure-cli
+        """
+    }
+}
+
+/**
  * Compile open-enclave on Windows platform, generate NuGet package out of it, 
  * install the generated NuGet package, and run samples tests against the installation.
  */

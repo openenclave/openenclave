@@ -3,8 +3,8 @@
 
 ---
 - name: Check for existing required binaries
-  stat:
+  ansible.builtin.stat:
     path: "{{ item }}"
   with_items: "{{ validation_binaries }}"
   register: binary
-  failed_when: binary.stat.executable == False
+  failed_when: not binary.stat.executable

@@ -3,8 +3,8 @@
 
 ---
 - name: Include distribution vars
-  include_vars:
+  ansible.builtin.include_vars:
     file: "{{ ansible_distribution | lower }}/main.yml"
 
 - name: Setup Docker
-  include_tasks: "{{ ansible_distribution | lower }}/stable-install.yml"
+  ansible.builtin.include_tasks: "{{ ansible_distribution | lower }}/stable-install.yml"

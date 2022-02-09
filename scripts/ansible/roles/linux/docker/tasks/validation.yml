@@ -3,22 +3,20 @@
 
 ---
 - name: Include distribution vars
-  include_vars:
+  ansible.builtin.include_vars:
     file: "{{ ansible_distribution | lower }}/main.yml"
 
 - name: Check for existing required binaries
-  stat:
+  ansible.builtin.stat:
     path: "{{ item }}"
   with_items: "{{ validation_binaries }}"
   register: binary
-  failed_when: binary.stat.executable == False
+  failed_when: not binary.stat.executable
 
-- name: Docker version check
-  command: "docker --version"
-  register: docker_check_version
-  failed_when: docker_check_version.stdout.find(docker_target_version) == -1
+- name: Check Docker and Dockerd
+  community.general.docker_host_info:
+  register: docker_result
 
-- name: Dockerd version check
-  command: "dockerd --version"
-  register: dockerd_check_version
-  failed_when: dockerd_check_version.stdout.find(dockerd_target_version) == -1
+- name: Print Docker host info
+  ansible.builtin.debug:
+    var: docker_result.host_info

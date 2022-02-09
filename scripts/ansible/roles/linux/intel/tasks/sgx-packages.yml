@@ -3,15 +3,15 @@
 
 ---
 - name: Gather Ansible facts
-  setup:
+  ansible.builtin.gather_facts:
 
 - name: Include distribution vars
-  include_vars:
+  ansible.builtin.include_vars:
     file: "{{ ansible_distribution | lower }}/main.yml"
 
 - name: Include distribution release specific vars
-  include_vars:
+  ansible.builtin.include_vars:
     file: "{{ ansible_distribution | lower }}/{{ ansible_distribution_release | lower }}.yml"
 
 - name: Install the SGX packages
-  include_tasks: "{{ ansible_distribution | lower }}/sgx-packages-install.yml"
+  ansible.builtin.include_tasks: "{{ ansible_distribution | lower }}/sgx-packages-install.yml"
