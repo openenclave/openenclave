@@ -9,9 +9,10 @@ library "OpenEnclaveJenkinsLibrary@${params.OECI_LIB_VERSION}"
 
 GLOBAL_TIMEOUT_MINUTES = 480
 
-JENKINS_USER_CREDS_ID = "oeadmin-credentials"
-OETOOLS_REPO = "oejenkinscidockerregistry.azurecr.io"
-OETOOLS_REPO_CREDENTIALS_ID = "oejenkinscidockerregistry"
+JENKINS_USER_CREDS_ID = 'oeadmin-credentials'
+OETOOLS_REPO = 'oejenkinscidockerregistry.azurecr.io'
+OETOOLS_REPO_CREDENTIALS_ID = 'oejenkinscidockerregistry'
+SERVICE_PRINCIPAL_CREDENTIALS_ID = 'SERVICE_PRINCIPAL_OSTCLAB'
 AZURE_IMAGES_MAP = [
     "win2019": [
         "image": "MicrosoftWindowsServer:WindowsServer:2019-datacenter-gensecond:latest",
@@ -38,42 +39,50 @@ def get_commit_id() {
     return last_commit_id
 }
 
-def buildLinuxManagedImage(String os_type, String version, String image_id, String image_version) {
-
+def buildLinuxManagedImage(String os_type, String version, String managed_image_name_id, String gallery_image_version) {
+    stage('Check Prerequisites') {
+        retry(10) {
+            sh """#!/bin/bash
+                sleep 5
+                curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+                sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com \$(lsb_release -cs) main"
+                ${helpers.WaitForAptLock()}
+                sudo apt-get update && sudo apt-get install packer
+            """
+        }
+    }
     stage("${OS_NAME_MAP[os_type]} ${version} Build") {
-        def managed_image_name_id = image_id
-        def gallery_image_version = image_version
-        withEnv(["DOCKER_REGISTRY=${OETOOLS_REPO}",
-            "MANAGED_IMAGE_NAME_ID=${managed_image_name_id}",
-            "GALLERY_IMAGE_VERSION=${gallery_image_version}"]) {
-            stage("Clean-up Resources") {
-                def az_cleanup_existing_image_version_script = """
-                    az login --service-principal -u \$SERVICE_PRINCIPAL_ID -p \$SERVICE_PRINCIPAL_PASSWORD --tenant \$TENANT_ID
-                    az account set -s \$SUBSCRIPTION_ID
-
-                    # If the target image version doesn't exist, the below
-                    # command will not fail because it is idempotent.
-                    az sig image-version delete \
-                        --resource-group ${RESOURCE_GROUP} \
-                        --gallery-name ${GALLERY_NAME} \
-                        --gallery-image-definition ${os_type}-${version} \
-                        --gallery-image-version ${gallery_image_version}
-                """
-                common.azureEnvironment(az_cleanup_existing_image_version_script, params.OE_DEPLOY_IMAGE)
-            }
+        withEnv([
+                "DOCKER_REGISTRY=${OETOOLS_REPO}",
+                "MANAGED_IMAGE_NAME_ID=${managed_image_name_id}",
+                "GALLERY_IMAGE_VERSION=${gallery_image_version}",
+                "RESOURCE_GROUP=${params.RESOURCE_GROUP}",
+                "GALLERY_NAME=${params.GALLERY_NAME}"]) {
             stage("Run Packer Job") {
                 timeout(GLOBAL_TIMEOUT_MINUTES) {
-                    withCredentials([usernamePassword(credentialsId: OETOOLS_REPO_CREDENTIALS_ID,
-                                                    usernameVariable: "DOCKER_USER_NAME",
-                                                    passwordVariable: "DOCKER_USER_PASSWORD"),
-                                    usernamePassword(credentialsId: JENKINS_USER_CREDS_ID,
-                                                    usernameVariable: "SSH_USERNAME",
-                                                    passwordVariable: "SSH_PASSWORD")]) {
-                        def cmd = ("""packer build -force \
-                                        -var-file=${WORKSPACE}/.jenkins/infrastructure/provision/templates/packer/azure_managed_image/${os_type}-${version}-variables.json \
-                                        ${WORKSPACE}/.jenkins/infrastructure/provision/templates/packer/azure_managed_image/packer-${os_type}.json""")
-                        common.exec_with_retry(10, 60) {
-                            common.azureEnvironment(cmd, params.OE_DEPLOY_IMAGE)
+                    withCredentials([
+                            usernamePassword(credentialsId: JENKINS_USER_CREDS_ID,
+                                             usernameVariable: "SSH_USERNAME",
+                                             passwordVariable: "SSH_PASSWORD"),
+                            usernamePassword(credentialsId: OETOOLS_REPO_CREDENTIALS_ID,
+                                             usernameVariable: "DOCKER_USER_NAME",
+                                             passwordVariable: "DOCKER_USER_PASSWORD"),
+                            usernamePassword(credentialsId: SERVICE_PRINCIPAL_CREDENTIALS_ID,
+                                             passwordVariable: 'SERVICE_PRINCIPAL_PASSWORD',
+                                             usernameVariable: 'SERVICE_PRINCIPAL_ID'),
+                            string(credentialsId: 'OSCTLabSubID', variable: 'SUBSCRIPTION_ID'),
+                            string(credentialsId: 'TenantID', variable: 'TENANT_ID')]) {
+                        sh '''#!/bin/bash
+                            az login --service-principal -u ${SERVICE_PRINCIPAL_ID} -p ${SERVICE_PRINCIPAL_PASSWORD} --tenant ${TENANT_ID}
+                            az account set -s ${SUBSCRIPTION_ID}
+                        '''
+                        retry(5) {
+                            sh """#!/bin/bash
+                                packer build -force \
+                                    -var-file=${WORKSPACE}/.jenkins/infrastructure/provision/templates/packer/azure_managed_image/${os_type}-${version}-variables.json \
+                                    -var "use_azure_cli_auth=true" \
+                                    ${WORKSPACE}/.jenkins/infrastructure/provision/templates/packer/azure_managed_image/packer-${os_type}.json
+                            """
                         }
                     }
                 }
@@ -271,6 +280,33 @@ node(params.AGENTS_LABEL) {
         image_id = params.IMAGE_ID ?: "${version}-${commit_id}"
 
         println("IMAGE_VERSION: ${image_version}\nIMAGE_ID: ${image_id}")
+    }
+    stage("Install Azure CLI") {
+        retry(10) {
+            sh """
+                sleep 5
+                ${helpers.WaitForAptLock()}
+                sudo apt-get update
+                sudo apt-get -y install ca-certificates curl apt-transport-https lsb-release gnupg
+                curl -sL https://packages.microsoft.com/keys/microsoft.asc |
+                    gpg --dearmor |
+                    sudo tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null
+                AZ_REPO=\$(lsb_release -cs)
+                echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ \$AZ_REPO main" |
+                    sudo tee /etc/apt/sources.list.d/azure-cli.list
+                ${helpers.WaitForAptLock()}
+                sudo apt-get update
+                sudo apt-get -y install azure-cli
+            """
+        }
+    }
+    stage("Install Ansible") {
+        retry(10) {
+            sh """#!/bin/bash
+                ${helpers.WaitForAptLock()}
+                sudo ${WORKSPACE}/scripts/ansible/install-ansible.sh
+            """
+        }
     }
     stage("Build Agents") {
         parallel "Build Windows Server 2019 - nonSGX"       : { buildWindowsManagedImage("win2019", "ws2019-nonSGX", "SGX1FLC-NoIntelDrivers", image_id, image_version) },

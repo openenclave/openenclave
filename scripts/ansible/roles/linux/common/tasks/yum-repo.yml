@@ -3,7 +3,7 @@
 
 ---
 - name: Add YUM repository key
-  rpm_key:
+  ansible.builtin.rpm_key:
     key: "{{ yum_repository_key_path }}"
     state: present
   retries: 10
@@ -11,7 +11,7 @@
   until: add_yum_repo_key is success
 
 - name: Add YUM repository
-  yum:
+  ansible.builtin.yum:
     name: "{{ yum_repository_rpm_url }}"
     state: present
   retries: 10

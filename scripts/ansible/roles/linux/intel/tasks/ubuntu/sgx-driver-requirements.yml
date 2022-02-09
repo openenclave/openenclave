@@ -3,7 +3,7 @@
 
 ---
 - name: Install the dkms package
-  apt:
+  ansible.builtin.apt:
     name:
       - "dkms"
     state: latest

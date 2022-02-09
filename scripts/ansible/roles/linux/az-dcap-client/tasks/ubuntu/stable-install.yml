@@ -2,7 +2,8 @@
 # Licensed under the MIT License.
 
 ---
-- include_role:
+- name: Add Microsoft Repository
+  ansible.builtin.include_role:
     name: linux/common
     tasks_from: apt-repo.yml
   vars:
@@ -10,7 +11,7 @@
     apt_repository: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/{{ ansible_distribution_version }}/prod {{ ansible_distribution_release }} main"
 
 - name: Install the official Azure-DCAP-Client APT package
-  apt:
+  ansible.builtin.apt:
     name: az-dcap-client
     state: latest
     update_cache: yes

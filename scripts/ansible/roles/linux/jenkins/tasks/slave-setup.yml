@@ -3,19 +3,20 @@
 
 ---
 - block:
-  - import_role:
+  - name: Import Jenkins agent provision tasks
+    ansible.builtin.import_role:
       name: common/jenkins
       tasks_from: agent-provision.yml
     delegate_to: localhost
   become: no
 
-- name: Check if node_secret fact is defined
-  fail:
+- name: Jenkins | Check if node_secret fact is defined
+  ansible.builtin.fail:
     msg: "The node_secret fact is not defined!"
   when: node_secret is undefined
 
 - name: Jenkins | Install Java JRE needed by Jenkins
-  apt:
+  ansible.builtin.apt:
     name: openjdk-8-jre
     state: latest
     update_cache: yes
@@ -25,55 +26,56 @@
   until: result is success
 
 - name: Jenkins | Create the Jenkins group
-  group:
+  ansible.builtin.group:
     name: jenkins
     state: present
 
 - name: Jenkins | Add the Jenkins user
-  user:
+  ansible.builtin.user:
     name: jenkins
     group: jenkins
     state: present
 
-- import_role:
+- name: Jenkins | Import Docker install tasks
+  ansible.builtin.import_role:
     name: linux/docker
     tasks_from: stable-install.yml
 
-- name: Docker | Add the Jenkins system user to the Docker group
-  user:
+- name: Jenkins | Add the Jenkins system user to the Docker group
+  ansible.builtin.user:
     name: jenkins
     groups: docker
 
-- name: Make Jenkins JNLP slave directories
-  file:
+- name: Jenkins | Make Jenkins JNLP slave directories
+  ansible.builtin.file:
     path: "{{ jenkins_agent_root_dir }}"
     state: directory
     owner: jenkins
     group: jenkins
 
-- name: Template Jenkins JNLP slave files
-  template:
+- name: Jenkins | Template Jenkins JNLP slave files
+  ansible.builtin.template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
   with_items:
     - { src: jenkins-slave.service.j2, dest: /etc/systemd/system/jenkins-slave.service, mode: 755 }
     - { src: jenkins-slave.default.j2, dest: /etc/default/jenkins-slave, mode: 644 }
 
-- name: Start Jenkins JNLP slave
-  systemd:
+- name: Jenkins | Start Jenkins JNLP slave
+  ansible.builtin.systemd:
     name: jenkins-slave
     enabled: yes
     state: restarted
     daemon_reload: yes
 
-- name: Configure Git in target image to enable merge/rebase actions - email
-  git_config:
+- name: Jenkins | Configure Git in target image to enable merge/rebase actions - email
+  community.general.git_config:
     name: user.email
     scope: system
     value: '{{ ci_team_email }}'
 
-- name: Configure Git in target image to enable merge/rebase actions - name
-  git_config:
+- name: Jenkins | Configure Git in target image to enable merge/rebase actions - name
+  community.general.git_config:
     name: user.name
     scope: system
     value: '{{ ci_team_name }}'

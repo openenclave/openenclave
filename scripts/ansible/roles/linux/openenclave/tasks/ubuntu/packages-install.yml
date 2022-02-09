@@ -2,14 +2,16 @@
 # Licensed under the MIT License.
 
 ---
-- include_role:
+- name: Add Microsoft repository
+  ansible.builtin.include_role:
     name: linux/common
     tasks_from: apt-repo.yml
   vars:
     apt_key_url: "https://packages.microsoft.com/keys/microsoft.asc"
     apt_repository: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/{{ ansible_distribution_version }}/prod {{ ansible_distribution_release }} main"
 
-- include_role:
+- name: Add llvm repository
+  ansible.builtin.include_role:
     name: linux/common
     tasks_from: apt-repo.yml
   vars:
@@ -17,7 +19,7 @@
     apt_repository: "{{ llvm_apt_repository }}"
 
 - name: Install all the Open Enclave prerequisites APT packages for development
-  apt:
+  ansible.builtin.apt:
     name: "{{ apt_packages }}"
     state: latest
     update_cache: yes

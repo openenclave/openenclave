@@ -3,12 +3,11 @@
 
 ---
 - name: Include vars
-  include_vars: "{{ ansible_os_family | lower }}.yml"
+  ansible.builtin.include_vars: "{{ ansible_os_family | lower }}.yml"
 
 - name: Check for existing required executables and files
-  win_stat:
+  ansible.windows.win_stat:
     path: "{{ item }}"
   with_items: "{{ validation_binaries }}"
   register: file
-  failed_when: file.stat.isreg == False
-
+  failed_when: not file.stat.isreg

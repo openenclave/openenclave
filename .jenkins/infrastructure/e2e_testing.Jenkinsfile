@@ -36,18 +36,19 @@ println("IMAGE_VERSION: ${IMAGE_VERSION}")
 println("DOCKER_TAG: ${DOCKER_TAG}")
 
 stage("Build Docker Containers") {
-    build job: '/CI-CD_Infrastructure/OpenEnclave-Build-Docker-Images',
+    build job: '/Private/CICD_Infrastructure/OpenEnclave-Build-Docker-Images',
           parameters: [string(name: 'REPOSITORY_NAME', value: env.REPOSITORY),
                        string(name: 'BRANCH_NAME', value: env.BRANCH),
                        string(name: 'DOCKER_TAG', value: DOCKER_TAG),
                        string(name: 'AGENTS_LABEL', value: env.IMAGES_BUILD_LABEL),
                        string(name: 'WINDOWS_AGENTS_LABEL', value: env.WINDOWS_IMAGES_BUILD_LABEL),
                        string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
+                       string(name: 'SGX_VERSION', value: params.SGX_VERSION),
                        booleanParam(name: 'TAG_LATEST', value: false)]
 }
 
 stage("Build Jenkins Agents Images") {
-    build job: '/CI-CD_Infrastructure/OpenEnclave-Build-Azure-Managed-Images',
+    build job: '/Private/CICD_Infrastructure/OpenEnclave-Build-Azure-Managed-Images',
           parameters: [string(name: 'REPOSITORY_NAME', value: env.REPOSITORY),
                        string(name: 'BRANCH_NAME', value: env.BRANCH),
                        string(name: 'OE_DEPLOY_IMAGE', value: "oetools-20.04:${DOCKER_TAG}"),
@@ -62,7 +63,7 @@ stage("Build Jenkins Agents Images") {
 }
 
 stage("Run tests on new Agents") {
-    build job: '/CI-CD_Infrastructure/OpenEnclave-Testing',
+    build job: '/Private/CICD_Infrastructure/OpenEnclave-Testing',
           parameters: [string(name: 'REPOSITORY_NAME', value: env.REPOSITORY),
                        string(name: 'BRANCH_NAME', value: env.BRANCH),
                        string(name: 'DOCKER_TAG', value: DOCKER_TAG),
@@ -77,7 +78,7 @@ stage("Run tests on new Agents") {
 
 if(env.PRODUCTION_IMAGES_GALLERY_NAME) {
     stage("Update production infrastructure") {
-        build job: '/CI-CD_Infrastructure/OpenEnclave-Update-Production-Infrastructure',
+        build job: '/Private/CICD_Infrastructure/OpenEnclave-Update-Production-Infrastructure',
             parameters: [string(name: 'REPOSITORY_NAME', value: env.REPOSITORY),
                          string(name: 'BRANCH_NAME', value: env.BRANCH),
                          string(name: 'RESOURCE_GROUP', value: env.RESOURCE_GROUP),

@@ -11,4 +11,4 @@
     path: "{{ item }}"
   with_items: "{{ validation_distribution_files }}"
   register: file
-  failed_when: file.stat.exists == False
+  failed_when: not file.stat.exists
