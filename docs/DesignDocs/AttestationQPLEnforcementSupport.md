@@ -1,7 +1,7 @@
 Attestation SGX QPL Enforcement Support
 ====
 
-This proposal is to make a change to `oe_verify_evidence`, so that it can support policy-based SGX QPL (Quote Provider Library) specific enhancement, such as allowing the API user to pass data to the SGX QPL for more advanced quote verification.
+This proposal is to make a change to `oe_verify_evidence`, so that it can support policy-based SGX QPL (Quote Provider Library) specific enhancement, such as allowing the OE SDK applications to pass third party cloud specific parameters to the SGX QPL for more advanced quote verification.
 
 Motivation
 ----
@@ -14,30 +14,25 @@ With that, a new API called `sgx_ql_get_quote_verification_collateral_with_param
 Changes are also needed in the OE SDK to call this new API.
 
 Goals:
- - Verifier can call `oe_verify_evidence` and pass SGX QPL-specific parameters to do more advanced verification.
+ - Applications can call `oe_verify_evidence` and pass third party specific parameters to do customized verification.
+ - Changing the contract for the additional parameters does not need OE SDK changes.
+
+> The contract for the additional parameters are between OE SDK applications and the SGX third party cloud collateral caching services.
 
 User Experience
 ----
 
-A new policy type `OE_POLICY_OPTIONS_BASELINE` is added to current policy types.
-A quote verifier application can pass multiple policies with this type, while OE SDK would pass all the policies down to the SGX QPL API without interpreting the data content.
+A new policy type `OE_POLICY_ENDORSEMENTS_BASELINE` is added to current policy types.
+Only one policy in this type can be specified for `oe_verify_evidence` API.
+The data for this policy is an opaque blob for OE SDK.
 
 Specification
 ----
 
-### New policy type & its data structure
+### New policy type
 
-- `OE_POLICY_OPTIONS_BASELINE` in `oe_policy_type_t`
-- `oe_query_param`, which is defined as below,
-```C
-// defined by SGX QPL
-#define MAX_PARAM_STRING_SIZE (255)
-typedef struct _oe_query_param
-{
-uint8_t key[MAX_PARAM_STRING_SIZE+1];
-uint8_t value[MAX_PARAM_STRING_SIZE+1];
-} oe_query_param_t;
-```
+- `OE_POLICY_ENDORSEMENTS_BASELINE` in `oe_policy_type_t`
+- The data for this policy is a blob.
 
 ### New APIs / OCalls
 
@@ -51,18 +46,13 @@ This new API will not be exposed to OE SDK users.
 
 With the new policy, the OE SDK client will be able to pass in multiple collateral baseline parameters as below,
 ```C
-oe_query_param_t* baselines = (oe_query_param_t*)malloc(sizeof(oe_query_param_t) * 2);
-memcpy_s(baselines[0].key, MAX_PARAM_STRING_SIZE + 1, "tcbevalutiondatanumber", strlen("tcbevalutiondatanumber") + 1);
-memcpy_s(baselines[0].value, MAX_PARAM_STRING_SIZE + 1, "1", strlen("1") + 1);
-memcpy_s(baselines[1].key, MAX_PARAM_STRING_SIZE + 1, "region", strlen("region") + 1);
-memcpy_s(baselines[1].value, MAX_PARAM_STRING_SIZE + 1, "eastus", strlen("eastus") + 1);
-oe_policy_t policies[2];
-policies[0].type = OE_POLICY_OPTIONS_BASELINE;
-policies[0].policy = &baselines[0];
-policies[0].policy_size = sizeof(oe_query_param_t);
-policies[1].type = OE_POLICY_OPTIONS_BASELINE;
-policies[1].policy = &baselines[1];
-policies[1].policy_size = sizeof(oe_query_param_t);
+// Please be noted, the data could be any format, this is just an
+// example, the API does not have any assumption on the data format.
+const char* parameters = "region=eastus&tcbevaluationdatanumber=1"
+oe_policy_t policy;
+policy.type = OE_POLICY_ENDORSEMENTS_BASELINE;
+policy.policy_size = strlen(parameters) + 1;
+policy.policy = parameters;
 
 // Now, call oe_verify_evidence with policies
 result = oe_verify_evidence(
@@ -73,24 +63,8 @@ result = oe_verify_evidence(
             report_size,
             endorsements_buffer,
             endorsements_buffer_size,
-            policies,
-            OE_COUNTOF(policies),
+            &policies,
+            1,
             claims,
             claims_length);
 ```
-
-> TODO: Need to update this document with a reference list for possible keys and values when it is available.
-
-Alternatives
-----
-
-Since there could be other parameters required by QPL in future, the new policy type can be named to `OE_POLICY_QPL_PARAMETER`, which makes the policy more generic and the verifier can call `oe_verify_evidence` with arbitrary number of parameters with data format confronts to
-```C
-typedef struct _oe_qpl_parameter {
-    uint32_t tag;
-    uint8_t data[0];
-} oe_qpl_parameter;
-```
-
-With this, OE SDK will blindly pass all the parameters to all QPL APIs and QPL APIs need to use the `tag` for each parameter to figure out the parameters that they can take and also the format for the data in parameter.
-**However, this requires the OE SDK users know about the concept of QPL as well as the tag and data contract for each provider.** Therefore, this alternative design is not preferred.
