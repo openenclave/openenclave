@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 enclave {
-    from "openenclave/edl/logging.edl" import oe_write_ocall;
+    from "openenclave/edl/logging.edl" import *;
     from "openenclave/edl/fcntl.edl" import *;
     from "openenclave/edl/attestation.edl" import *;
 #ifdef OE_SGX
