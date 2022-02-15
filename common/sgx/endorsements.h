@@ -7,6 +7,7 @@
 #include <openenclave/bits/attestation.h>
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/result.h>
+#include "openenclave/bits/evidence.h"
 
 OE_EXTERNC_BEGIN
 
@@ -88,16 +89,21 @@ oe_result_t oe_parse_sgx_endorsements(
     oe_sgx_endorsements_t* sgx_endorsements);
 
 /**
- * Get the endorsements for the respective SGX remote report.
+ * Get the endorsements for the respective SGX remote report and given policies.
  *
  * @param[in] remote_report The remote report.
  * @param[in] remote_report_size The size of the remote report.
+ * @param[in] policies The policies that are specified for evidence
+ * verification.
+ * @param[in] policies_size The number of policies.
  * @param[out] endorsements_buffer The buffer where to store the endorsements.
  * @param[out] endorsements_buffer_size The size of the endorsements.
  */
 oe_result_t oe_get_sgx_endorsements(
     const uint8_t* remote_report,
     size_t remote_report_size,
+    const oe_policy_t* policies,
+    size_t policies_size,
     uint8_t** endorsements_buffer,
     size_t* endorsements_buffer_size);
 

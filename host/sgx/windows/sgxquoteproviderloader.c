@@ -49,6 +49,11 @@ void oe_load_quote_provider()
             provider.free_sgx_quote_verification_collateral =
                 (sgx_free_quote_verification_collateral_t)GetProcAddress(
                     _handle, SGX_QL_FREE_QUOTE_VERIFICATION_COLLATERAL_NAME);
+            provider.get_sgx_quote_verification_collateral_with_parameters =
+                (sgx_get_quote_verification_collateral_with_parameters_t)
+                    GetProcAddress(
+                        _handle,
+                        SGX_QL_GET_QUOTE_VERIFICATION_COLLATERAL_WITH_PARAMETERS_NAME);
 
             OE_TRACE_INFO(
                 "sgxquoteprovider: "
@@ -58,12 +63,26 @@ void oe_load_quote_provider()
                 "sgxquoteprovider: "
                 "provider.free_sgx_quote_verification_collateral = 0x%lx\n",
                 (uint64_t)provider.free_sgx_quote_verification_collateral);
+            OE_TRACE_INFO(
+                "sgxquoteprovider: ",
+                "provider.get_sgx_quote_verification_collateral_with_params = "
+                "0x%lx\n",
+                (uint64_t)provider
+                    .get_sgx_quote_verification_collateral_with_parameters);
 
-            if (provider.get_sgx_quote_verification_collateral == NULL ||
+            // get_sgx_quote_verification_collateral_with_params is an optional
+            // replacement for get_sgx_quote_verification_collateral, the
+            // provider is good as long as either one of them is available
+            if ((provider.get_sgx_quote_verification_collateral == NULL &&
+                 provider.get_sgx_quote_verification_collateral_with_parameters ==
+                     NULL) ||
                 provider.free_sgx_quote_verification_collateral == NULL)
             {
                 OE_TRACE_ERROR(
-                    "sgxquoteprovider: get_sgx_quote_verification_collateral "
+                    "sgxquoteprovider: none of "
+                    "get_sgx_quote_verification_collateral and "
+                    "get_sgx_quote_verification_collateral_with_params can be "
+                    "found "
                     "or free_sgx_quote_verification_collateral not found\n"
                     "If you are using Azure DCAP client, please make sure its "
                     "version is greater or equal to 1.2\n");

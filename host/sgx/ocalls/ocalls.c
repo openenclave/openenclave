@@ -159,6 +159,61 @@ oe_result_t oe_get_quote_verification_collateral_ocall(
     size_t qe_identity_issuer_chain_size,
     size_t* qe_identity_issuer_chain_size_out)
 {
+    return oe_get_quote_verification_collateral_with_baseline_ocall(
+        fmspc,
+        collateral_provider,
+        NULL,
+        0,
+        tcb_info,
+        tcb_info_size,
+        tcb_info_size_out,
+        tcb_info_issuer_chain,
+        tcb_info_issuer_chain_size,
+        tcb_info_issuer_chain_size_out,
+        pck_crl,
+        pck_crl_size,
+        pck_crl_size_out,
+        root_ca_crl,
+        root_ca_crl_size,
+        root_ca_crl_size_out,
+        pck_crl_issuer_chain,
+        pck_crl_issuer_chain_size,
+        pck_crl_issuer_chain_size_out,
+        qe_identity,
+        qe_identity_size,
+        qe_identity_size_out,
+        qe_identity_issuer_chain,
+        qe_identity_issuer_chain_size,
+        qe_identity_issuer_chain_size_out);
+}
+
+oe_result_t oe_get_quote_verification_collateral_with_baseline_ocall(
+    uint8_t fmspc[6],
+    uint8_t collateral_provider,
+    void* baseline,
+    size_t baseline_size,
+    void* tcb_info,
+    size_t tcb_info_size,
+    size_t* tcb_info_size_out,
+    void* tcb_info_issuer_chain,
+    size_t tcb_info_issuer_chain_size,
+    size_t* tcb_info_issuer_chain_size_out,
+    void* pck_crl,
+    size_t pck_crl_size,
+    size_t* pck_crl_size_out,
+    void* root_ca_crl,
+    size_t root_ca_crl_size,
+    size_t* root_ca_crl_size_out,
+    void* pck_crl_issuer_chain,
+    size_t pck_crl_issuer_chain_size,
+    size_t* pck_crl_issuer_chain_size_out,
+    void* qe_identity,
+    size_t qe_identity_size,
+    size_t* qe_identity_size_out,
+    void* qe_identity_issuer_chain,
+    size_t qe_identity_issuer_chain_size,
+    size_t* qe_identity_issuer_chain_size_out)
+{
     oe_result_t result = OE_UNEXPECTED;
     oe_get_sgx_quote_verification_collateral_args_t args = {0};
     bool buffer_too_small = false;
@@ -173,6 +228,12 @@ oe_result_t oe_get_quote_verification_collateral_ocall(
 
     /* collateral_provider */
     args.collateral_provider = collateral_provider;
+
+    /* baseline */
+    args.baseline = baseline;
+
+    /* baseline_size */
+    args.baseline_size = baseline_size;
 
     /* Populate the output fields. */
     OE_CHECK(oe_get_sgx_quote_verification_collateral(&args));

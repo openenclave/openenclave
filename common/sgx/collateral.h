@@ -38,9 +38,10 @@ oe_result_t oe_validate_revocation_list(
 
 /**
  * Fetch quote verification collateral from the quote provider given the PCK
- * certificate and CA certificate.
+ * certificate, CA certificate and baseline information for third party
+ * collateral caching service.
  *
- * Caller is responsbile for freeing the quote verification collateral resources
+ * Caller is responsible for freeing the quote verification collateral resources
  * by calling oe_free_sgx_quote_verification_collateral_args().
  *
  * @param[in] leaf_cert The PCK certificate.
@@ -51,9 +52,13 @@ oe_result_t oe_get_sgx_quote_verification_collateral_from_certs(
     oe_get_sgx_quote_verification_collateral_args_t* args);
 
 /**
- * Get the quote verification collateral from the quote provider. Caller is
- * responsible for configuring the quote verification collateral input
- * parameters.
+ * Get the quote verification collateral from the quote provider with additional
+ * OE SDK Application specified parameters for third party cloud collateral
+ * caching service. Caller is responsible for configuring the quote verification
+ * collateral input parameters.
+ *
+ * Caller is responsible for freeing the quote verification collateral resources
+ * by calling oe_free_sgx_quote_verification_collateral_args().
  *
  * @param[in,out] args The quote verification collateral.
  */
@@ -61,7 +66,8 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
     oe_get_sgx_quote_verification_collateral_args_t* args);
 
 /**
- * Free resources allocated by oe_get_sgx_quote_verification_collateral() and
+ * Free resources allocated by
+ * oe_get_sgx_quote_verification_collateral() and
  * oe_get_sgx_quote_verification_collateral_from_certs().
  *
  * @param[in] args The quote verification collateral.

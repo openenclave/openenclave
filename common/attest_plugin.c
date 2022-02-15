@@ -299,11 +299,32 @@ oe_result_t oe_verify_evidence(
     size_t plugin_evidence_size = 0;
     const uint8_t* plugin_endorsements = NULL;
     size_t plugin_endorsements_size = 0;
+    uint8_t has_endorsements_baseline_policy = 0;
 
     if (!evidence_buffer || !evidence_buffer_size ||
         (!endorsements_buffer != !endorsements_buffer_size) ||
         (!claims != !claims_length))
         OE_RAISE(OE_INVALID_PARAMETER);
+
+    // Ensure only one endorsements baseline policy can be specified.
+    if (policies && policies_size > 0)
+    {
+        for (size_t i = 0; i < policies_size; ++i)
+        {
+            if (policies[i].type == OE_POLICY_ENDORSEMENTS_BASELINE)
+            {
+                if (has_endorsements_baseline_policy)
+                {
+                    OE_RAISE_MSG(
+                        OE_INVALID_PARAMETER,
+                        "multiple endorsements baseline policies specified.",
+                        NULL);
+                }
+
+                has_endorsements_baseline_policy = 1;
+            }
+        }
+    }
 
     if (!format_id)
     {

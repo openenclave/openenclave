@@ -49,6 +49,11 @@ int main(int argc, const char* argv[])
         OE_TRACE_INFO("=== tests skipped when DCAP libraries are not found.\n");
         return SKIP_RETURN_CODE;
     }
+    else
+    {
+        // set up mocks for tests
+        set_up_mocks_for_host();
+    }
 
 #ifdef _WIN32
     /* This is a workaround for running in Visual Studio 2017 Test Explorer

@@ -812,6 +812,8 @@ oe_result_t oe_sgx_verify_evidence(
             OE_CHECK(oe_get_sgx_endorsements(
                 report_body,
                 report_body_size,
+                policies,
+                policies_size,
                 &local_endorsements_buffer,
                 &local_endorsements_buffer_size));
             endorsements_buffer = local_endorsements_buffer;

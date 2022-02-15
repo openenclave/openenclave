@@ -23,6 +23,8 @@ typedef struct _oe_sgx_quote_provider
         get_sgx_quote_verification_collateral;
     sgx_free_quote_verification_collateral_t
         free_sgx_quote_verification_collateral;
+    sgx_get_quote_verification_collateral_with_parameters_t
+        get_sgx_quote_verification_collateral_with_parameters;
 } oe_sgx_quote_provider_t;
 
 // Set customized logging function for SGX provider.
@@ -34,6 +36,8 @@ oe_result_t oe_sgx_set_quote_provider_logger(sgx_ql_logging_function_t logger);
 #define SGX_QL_SET_LOGGING_CALLBACK_NAME "sgx_ql_set_logging_callback"
 #define SGX_QL_GET_QUOTE_VERIFICATION_COLLATERAL_NAME \
     "sgx_ql_get_quote_verification_collateral"
+#define SGX_QL_GET_QUOTE_VERIFICATION_COLLATERAL_WITH_PARAMETERS_NAME \
+    "sgx_ql_get_quote_verification_collateral_with_params"
 #define SGX_QL_FREE_QUOTE_VERIFICATION_COLLATERAL_NAME \
     "sgx_ql_free_quote_verification_collateral"
 

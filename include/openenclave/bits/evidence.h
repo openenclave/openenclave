@@ -166,7 +166,16 @@ typedef enum _oe_policy_type
      *
      * The policy will be in the form of `oe_datetime_t`.
      */
-    OE_POLICY_ENDORSEMENTS_TIME = 1
+    OE_POLICY_ENDORSEMENTS_TIME = 1,
+
+    /**
+     * Enforces a baseline of endorsements that is defined and used
+     * by third party endorsements info caching service.
+     *
+     * The policy can only be specified once, having multiple polices of this
+     * type will result in API error.
+     */
+    OE_POLICY_ENDORSEMENTS_BASELINE = 2
 } oe_policy_type_t;
 
 /**

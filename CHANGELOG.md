@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - See [samples/apkman](samples/apkman) for a complete example demonstrating use of the `sqlite` database library within enclaves.
 - Support for `compiler-rt`. `oelibc` includes LLVM's `compiler-rt-10.0.1`.
 - Update logging function setup API name for SGX Quote Provider plugin to `sgx_ql_set_logging_callback` and mark API name `sgx_ql_set_logging_function` as deprecated.
+- Add new policy type `OE_POLICY_ENDORSEMENTS_BASELINE` for `oe_verify_evidence` API to pass additional parameters to QVL for more advanced quote validation.
 
 ## Changed
 - Updated libcxx to version 10.0.1

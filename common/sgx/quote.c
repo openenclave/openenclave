@@ -463,6 +463,8 @@ oe_result_t oe_verify_sgx_quote(
             oe_get_sgx_endorsements(
                 quote,
                 quote_size,
+                NULL,
+                0,
                 (uint8_t**)&local_endorsements,
                 &local_endorsements_size),
             "Failed to get SGX endorsements. %s",

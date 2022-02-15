@@ -47,15 +47,15 @@ done:
 // which is 16 bytes long
 static oe_result_t _get_crl_ca_type(
     uint8_t* platform_instance_id,
-    oe_get_sgx_quote_verification_collateral_args_t* args)
+    uint8_t* collateral_provider)
 {
     uint8_t null_platform_id[16] = {0};
     if (memcmp(
             platform_instance_id, null_platform_id, sizeof(null_platform_id)) ==
         0)
-        args->collateral_provider = CRL_CA_PROCESSOR;
+        *collateral_provider = CRL_CA_PROCESSOR;
     else
-        args->collateral_provider = CRL_CA_PLATFORM;
+        *collateral_provider = CRL_CA_PLATFORM;
     return OE_OK;
 }
 
@@ -183,8 +183,9 @@ oe_result_t oe_get_sgx_quote_verification_collateral_from_certs(
         sizeof(parsed_extension_info.fmspc)));
 
     // Use platform instance id to determine the collateral provider (PCK CA)
-    OE_CHECK(
-        _get_crl_ca_type(parsed_extension_info.opt_platform_instance_id, args));
+    OE_CHECK(_get_crl_ca_type(
+        parsed_extension_info.opt_platform_instance_id,
+        &args->collateral_provider));
     OE_CHECK(oe_get_sgx_quote_verification_collateral(args));
 
     result = OE_OK;
