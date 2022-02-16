@@ -97,12 +97,9 @@ The host does the following in this sample:
       get_evidence_with_public_key(enclave_a,
                                    &ret,
                                    format_id,
-                                   format_settings,
-                                   format_settings_size,
+                                   &format_settings,
                                    &pem_key,
-                                   &pem_key_size,
-                                   &evidence,
-                                   &evidence_size);
+                                   &evidence);
       ```
 
       Where:
@@ -117,11 +114,9 @@ The host does the following in this sample:
       ```c
       verify_evidence_and_set_public_key(enclave_a,
                                          &ret,
-                                         format_id,
-                                         pem_key,
-                                         pem_key_size,
-                                         evidence,
-                                         evidence_size);
+                                         &format_id,
+                                         &pem_key,
+                                         &evidence);
       ```
 
       In the enclave_b's implementation of `verify_evidence_and_set_public_key()`, it calls `oe_verify_evidence()`, which will be described in the enclave section to handle all the platform-specfic evidence validation operations. If successful the public key in `pem_key` will be stored inside the enclave for future use.
