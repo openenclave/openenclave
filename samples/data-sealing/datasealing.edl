@@ -6,19 +6,23 @@ enclave {
     from "platform.edl" import *;
 
     include "common/shared.h"
+
+    struct data_t
+    {
+        [size=size] uint8_t* data;
+        size_t size;
+    };
+
     trusted {
         public int seal_data(int sealPolicy,
                              [in, size = opt_msg_len] unsigned char* opt_mgs,
                              size_t opt_msg_len,
                              [in, size = data_size] unsigned char* data,
                              size_t data_size,
-                             [out] sealed_data_t** sealed_data,
-                             [out] size_t* sealed_data_size);
+                             [out] data_t* sealed_data);
 
-        public int unseal_data([in, size = sealed_data_size] sealed_data_t *sealed_data,
-                               size_t sealed_data_size,
-                               [out] unsigned char** data,
-                               [out] size_t *data_size);
+        public int unseal_data([in] const data_t* sealed_data,
+                               [out] data_t* output_data);
 
     };
 

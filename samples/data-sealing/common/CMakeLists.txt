@@ -23,5 +23,6 @@ if (WIN32)
   maybe_build_using_clangw(common)
 endif ()
 
-target_include_directories(common PUBLIC ${CMAKE_SOURCE_DIR}
-                                         ${CMAKE_BINARY_DIR})
+target_include_directories(
+  common PUBLIC ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR}
+                ${CMAKE_CURRENT_BINARY_DIR})
