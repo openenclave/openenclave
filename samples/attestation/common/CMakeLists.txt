@@ -22,5 +22,6 @@ target_compile_definitions(common PUBLIC OE_API_VERSION=2)
 target_link_libraries(
   common PUBLIC openenclave::oeenclave openenclave::oecrypto${OE_CRYPTO_LIB}
                 openenclave::oelibcxx)
-target_include_directories(common PUBLIC ${CMAKE_SOURCE_DIR}
-                                         ${CMAKE_BINARY_DIR})
+target_include_directories(
+  common PUBLIC ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR}
+                ${CMAKE_CURRENT_BINARY_DIR})
