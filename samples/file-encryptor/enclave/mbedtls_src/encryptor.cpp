@@ -107,7 +107,7 @@ void ecall_dispatcher::close()
 {
     if (m_encrypt)
     {
-        oe_host_free(m_header);
+        free(m_header);
         m_header = nullptr;
     }
 

@@ -393,13 +393,12 @@ int ecall_dispatcher::process_encryption_header(encryption_header_t* header)
 
     if (m_encrypt)
     {
-        // allocate host memory for the header and it will be returned back to
+        // allocate memory for the header and it will be copied back to
         // the host
-        m_header =
-            (encryption_header_t*)oe_host_malloc(sizeof(encryption_header_t));
+        m_header = (encryption_header_t*)malloc(sizeof(encryption_header_t));
         if (m_header == nullptr)
         {
-            TRACE_ENCLAVE("oe_host_malloc failed");
+            TRACE_ENCLAVE("malloc failed");
             ret = 1;
             goto exit;
         }
