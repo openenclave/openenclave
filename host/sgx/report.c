@@ -71,32 +71,24 @@ oe_result_t oe_get_report_v2(
     size_t* report_buffer_size)
 {
     oe_result_t result = OE_UNEXPECTED;
-    uint8_t* report = NULL;
-    size_t report_size = 0;
+    oe_report_buffer_t report = {0};
 
     if (!enclave || !report_buffer || !report_buffer_size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
+    *report_buffer = NULL;
+    *report_buffer_size = 0;
+
     OE_CHECK(oe_get_report_v2_ecall(
-        enclave,
-        &result,
-        flags,
-        opt_params,
-        opt_params_size,
-        &report,
-        &report_size));
+        enclave, &result, flags, opt_params, opt_params_size, &report));
     OE_CHECK(result);
 
-    *report_buffer = report;
-    *report_buffer_size = report_size;
-    report = NULL;
+    *report_buffer = report.buffer;
+    *report_buffer_size = report.size;
 
     result = OE_OK;
 
 done:
-    if (report)
-        oe_free_report(report);
-
     if (result == OE_UNSUPPORTED)
         OE_TRACE_WARNING(
             "SGX remote attestation is not enabled. To enable, please add\n\n"

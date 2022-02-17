@@ -17,6 +17,9 @@
 #if !defined(OE_BUILD_HOST_VERIFY)
 #include "core_u.h"
 #include "platform_u.h"
+#else
+/* Forward declaration */
+typedef struct _oe_report_buffer_t oe_report_buffer_t;
 #endif
 
 #include "quote.h"
@@ -32,8 +35,7 @@ oe_result_t _oe_get_report_v2_ecall(
     uint32_t flags,
     const void* opt_params,
     size_t opt_params_size,
-    uint8_t** report_buffer,
-    size_t* report_buffer_size);
+    oe_report_buffer_t* report_buffer);
 oe_result_t _oe_verify_local_report_ecall(
     oe_enclave_t* enclave,
     oe_result_t* _retval,
@@ -60,15 +62,13 @@ oe_result_t _oe_get_report_v2_ecall(
     uint32_t flags,
     const void* opt_params,
     size_t opt_params_size,
-    uint8_t** report_buffer,
-    size_t* report_buffer_size)
+    oe_report_buffer_t* report)
 {
     OE_UNUSED(enclave);
     OE_UNUSED(flags);
     OE_UNUSED(opt_params);
     OE_UNUSED(opt_params_size);
-    OE_UNUSED(report_buffer);
-    OE_UNUSED(report_buffer_size);
+    OE_UNUSED(report);
 
     if (_retval)
         *_retval = OE_UNSUPPORTED;
