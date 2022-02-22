@@ -87,13 +87,24 @@ All three enclaves are almost identical except signed by two different private.p
 
 There are two ECALLs implemented inside each enclave library.
 
+#### shared data structure
+
+```c
+typedef struct _data_t
+{
+    uint8_t* data;
+    size_t size;
+} data_t;
+```
+The structure is used by the ECALLs to pass deep-copied buffer.
+
 #### seal_data
 
 ```c
 int seal_data(int sealPolicy, 
               unsigned char* opt_mgs, size_t opt_msg_len, 
-              unsigned char* data, size_t data_size, 
-              sealed_data_t** sealed_data, size_t* sealed_data_size)
+              unsigned char* data, size_t data_size,
+              data_t* sealed_data)
 ```
 
  The enclave allocates the following sealed data structure and fills with iv,encrypted data, and other fields before adding the generated signature to it.
@@ -122,8 +133,7 @@ typedef struct _sealed_data_t
 #### unseal_data
 
 ```c
-int unseal_data(sealed_data_t* sealed_data, size_t sealed_data_size,
-                unsigned char** data, size_t* data_size)
+int unseal_data(const data_t* sealed_data, data_t* output_data)
 ```
 
 - `seal_data` calls `oe_get_seal_key` with key info from `sealed_data_t`.
