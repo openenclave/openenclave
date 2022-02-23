@@ -34,13 +34,10 @@ Specification
 - `OE_POLICY_ENDORSEMENTS_BASELINE` in `oe_policy_type_t`
 - The data for this policy is a blob.
 
-### New APIs / OCalls
+### New OCall API
 
-Though there are no API signature changes for `oe_verify_evidence`, some internal APIs that potentially get used by tools need to be changed.
-For backward compatibility, the following internal APIs will be added to ensure all existing code can still work,
-- `oe_get_sgx_endorsements_with_policies`, after change, this API will be called by existing `oe_get_sgx_endorsements` without any policy.
-This new API will not be exposed to OE SDK users.
-- `oe_get_quote_verification_collateral_with_params_ocall`, the current API is `oe_get_quote_verification_collateral_ocall` is an API defined in sgx/attestation.edl, which could have been used by user enclaves, so need to bring this new API to work with existing API.
+Though there are no API signature change for `oe_verify_evidence`, one EDL based API need to be added,
+- New OCall `oe_get_quote_verification_collateral_with_baseline_ocall` to be added to sgx/attestation.edl, which will coexist with current API `oe_get_quote_verification_collateral_ocall` for backward compatibility.
 
 ### Code example
 
