@@ -36,7 +36,7 @@ Specification
 
 ### New OCall API
 
-Though there are no API signature change for `oe_verify_evidence`, one EDL based API need to be added,
+Though there are no API signature changes for `oe_verify_evidence`, one EDL based API needs to be added,
 - New OCall `oe_get_quote_verification_collateral_with_baseline_ocall` to be added to sgx/attestation.edl, which will coexist with current API `oe_get_quote_verification_collateral_ocall` for backward compatibility.
 
 ### Code example
