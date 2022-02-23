@@ -29,6 +29,12 @@ enclave
         size_t size;
     };
 
+    struct oe_report_buffer_t
+    {
+        [size=size] uint8_t* buffer;
+        size_t size;
+    };
+
     trusted
     {
         public oe_result_t oe_get_sgx_report_ecall(
@@ -40,8 +46,7 @@ enclave
             uint32_t flags,
             [in, size=opt_params_size] const void* opt_params,
             size_t opt_params_size,
-            [out] uint8_t** report_buffer,
-            [out] size_t* report_buffer_size);
+            [out] oe_report_buffer_t* report);
 
         public oe_result_t oe_verify_local_report_ecall(
             [in, size=report_size] const uint8_t* report,
