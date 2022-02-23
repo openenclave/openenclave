@@ -1,7 +1,7 @@
 Attestation SGX QPL Enforcement Support
 ====
 
-This proposal is to make a change to `oe_verify_evidence`, so that it can support policy-based SGX QPL (Quote Provider Library) specific enhancement, such as allowing the OE SDK applications to pass third party cloud specific parameters to the SGX QPL for more advanced quote verification.
+This proposal is to make a change to `oe_verify_evidence`, so that it can support policy-based SGX QPL (Quote Provider Library) specific enhancement, such as allowing Verifier applications to pass third party cloud specific parameters to the SGX QPL to allow them to do more advanced quote verification.
 
 Motivation
 ----
@@ -11,19 +11,19 @@ There is a scenario where a quote signed by the last version of PCK certificate 
 This causes unnecessary attestation failures when new versions of PCK certificate and collateral information are rolled out.
 To deal with this issue, the SGX QPL needs to return any version of collateral information based on additional query parameters (referred to as "baselines").
 With that, a new API called `sgx_ql_get_quote_verification_collateral_with_params` was introduced in the SGX QPL.
-Changes are also needed in the OE SDK to call this new API.
+Changes are also needed in the OE SDK's SGX plugin to call this new API.
 
 Goals:
- - Applications can call `oe_verify_evidence` and pass third party specific parameters to do customized verification.
+ - Verifier applications can call `oe_verify_evidence` and pass third party specific parameters to do customized verification.
  - Changing the contract for the additional parameters does not need OE SDK changes.
 
-> The contract for the additional parameters are between OE SDK applications and the SGX third party cloud collateral caching services.
+The contract for the additional parameters are between Verifier applications that use the OE SDK, and the SGX third party cloud collateral caching services.
 
 User Experience
 ----
 
 A new policy type `OE_POLICY_ENDORSEMENTS_BASELINE` is added to current policy types.
-Only one policy in this type can be specified for `oe_verify_evidence` API.
+Only one policy of this type can be specified for `oe_verify_evidence` API.
 The data for this policy is an opaque blob for OE SDK.
 
 Specification
@@ -36,7 +36,7 @@ Specification
 
 ### New APIs / OCalls
 
-Though there is no API signature changes for `oe_verify_evidence`, some internal APIs that potentially get used by tools need to be changed.
+Though there are no API signature changes for `oe_verify_evidence`, some internal APIs that potentially get used by tools need to be changed.
 For backward compatibility, the following internal APIs will be added to ensure all existing code can still work,
 - `oe_get_sgx_endorsements_with_policies`, after change, this API will be called by existing `oe_get_sgx_endorsements` without any policy.
 This new API will not be exposed to OE SDK users.
