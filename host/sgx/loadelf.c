@@ -522,7 +522,7 @@ static oe_result_t _get_tls_page_count(
 **     NSTACK = number of stack pages
 **     NTCS = number of TCS objects
 **     GUARD = an unmapped guard page
-**     *-annotated sections are added when a module is present
+**     *-annotated sections are optionally added
 **
 **     [PAGES]:
 **         [PROGRAM-PAGES]
@@ -541,6 +541,8 @@ static oe_result_t _get_tls_page_count(
 **         [PROGRAM RELOCATION DATA]
 **         [*MODULE RELOCATION DATA]
 **         [ZERO PADDINGS]
+**
+**     [*EXTRA-DATA-PAGES]
 **
 **     [HEAP-PAGES]: flags=reg|w|r content=0x00000000
 **
@@ -923,7 +925,8 @@ static oe_result_t _patch_elf_image(
     oe_enclave_elf_image_t* image,
     oe_enclave_elf_image_t* module_image,
     size_t enclave_size,
-    size_t tls_page_count)
+    size_t tls_page_count,
+    size_t extra_data_size)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_sgx_enclave_properties_t* oeprops;
@@ -969,6 +972,9 @@ static oe_result_t _patch_elf_image(
         oeprops->image_info.reloc_rva,
         image->reloc_size,
         &oeprops->image_info.heap_rva));
+
+    /* move heap past extra data */
+    oeprops->image_info.heap_rva += extra_data_size;
 
     if (image->tdata_size)
     {
@@ -1191,14 +1197,21 @@ done:
     return result;
 }
 
-static oe_result_t _patch(oe_enclave_image_t* image, size_t enclave_size)
+static oe_result_t _patch(
+    oe_enclave_image_t* image,
+    size_t enclave_size,
+    size_t extra_data_size)
 {
     oe_result_t result = OE_UNEXPECTED;
     size_t tls_page_count;
 
     OE_CHECK(image->get_tls_page_count(image, &tls_page_count));
     OE_CHECK(_patch_elf_image(
-        &image->elf, image->submodule, enclave_size, tls_page_count));
+        &image->elf,
+        image->submodule,
+        enclave_size,
+        tls_page_count,
+        extra_data_size));
 
     result = OE_OK;
 done:
