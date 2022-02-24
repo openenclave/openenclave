@@ -4,6 +4,8 @@
 #ifndef _OE_LOG_H
 #define _OE_LOG_H
 
+#include "bits/defs.h"
+
 OE_EXTERNC_BEGIN
 
 typedef enum _oe_log_level
