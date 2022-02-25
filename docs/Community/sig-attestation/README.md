@@ -29,6 +29,7 @@ SIG Approvers
 * Brian Telfer ([Britel](https://github.com/Britel))
 * Cheng-mean Liu ([soccerGB](https://github.com/soccerGB))
 * Shanwei Cen ([shnwc](https://github.com/shnwc))
+* Andy Chen ([anche-is-andy](https://github.com/anche-is-andy))
 
 SIG Reviewers
 -------------
