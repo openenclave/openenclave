@@ -18,6 +18,7 @@ class MystMprotectBreakpoint(gdb.Breakpoint):
         self.bt_spec = []
         self.breaks = []
         self._welcome()
+        self._disable()
 
     def stop(self):
         # Fetch the addr, len, prot parameters as well as the current thread.
