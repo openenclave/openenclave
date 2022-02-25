@@ -4,11 +4,11 @@
 #include <openenclave/internal/crypto/init.h>
 
 /* Forward declaration */
-int SC_OSSL_ENGINE_Initialize();
+int SCOSSL_ENGINE_Initialize();
 
 /* Add the implementation of the function (only available for OpenSSL)
  * to fulfill the linker requirement */
-int SC_OSSL_ENGINE_Initialize()
+int SCOSSL_ENGINE_Initialize()
 {
     return OE_SYMCRYPT_ENGINE_INVALID;
 }

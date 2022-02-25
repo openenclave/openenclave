@@ -12,11 +12,15 @@ extern char** __environ;
 
 extern int main(int argc, char* argv[]);
 
+void register_pthread_hooks(void);
+
 int enc_test(int argc, char** argv, char** env)
 {
     int ret = 1;
-    ENGINE* eng = NULL;
     const BIO_METHOD* tap = NULL;
+
+    /* Register pthread hooks. Used only by threadstest */
+    register_pthread_hooks();
 
     /* Directly use environ from host. */
     __environ = env;
@@ -42,27 +46,6 @@ int enc_test(int argc, char** argv, char** env)
 #endif
 
     /*
-     * Initialize and opt-in the rdrand engine. This is necessary to use opensl
-     * RNG functionality inside the enclave.
-     */
-    ENGINE_load_rdrand();
-    eng = ENGINE_by_id("rdrand");
-    if (eng == NULL)
-    {
-        goto done;
-    }
-
-    if (ENGINE_init(eng) == 0)
-    {
-        goto done;
-    }
-
-    if (ENGINE_set_default(eng, ENGINE_METHOD_RAND) == 0)
-    {
-        goto done;
-    }
-
-    /*
      * Hold the reference to the tap method that is used by the OpenSSL test
      * framework such that we can free it (which the framework does not do
      * that). Without doing this, DEBUG_MALLOC will report memory leaks.
@@ -78,12 +61,7 @@ done:
 #endif
     if (__environ)
         __environ = NULL;
-    if (eng)
-    {
-        ENGINE_finish(eng);
-        ENGINE_free(eng);
-        ENGINE_cleanup();
-    }
+
     if (tap)
         BIO_meth_free((BIO_METHOD*)tap);
 
@@ -96,4 +74,4 @@ OE_SET_ENCLAVE_SGX(
     true, /* AllowDebug */
     6144, /* HeapPageCount */
     128,  /* StackPageCount */
-    1);   /* TCSCount */
+    8);   /* TCSCount */

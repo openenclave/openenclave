@@ -5,7 +5,7 @@ import java.time.*
 import java.time.format.DateTimeFormatter
 
 OECI_LIB_VERSION = env.OECI_LIB_VERSION ?: "master"
-oe = library("OpenEnclaveCommon@${OECI_LIB_VERSION}").jenkins.common.Openenclave.new()
+library "OpenEnclaveJenkinsLibrary@${params.OECI_LIB_VERSION}"
 
 GLOBAL_TIMEOUT_MINUTES = 480
 
@@ -59,7 +59,7 @@ def buildLinuxManagedImage(String os_type, String version, String image_id, Stri
                         --gallery-image-definition ${os_type}-${version} \
                         --gallery-image-version ${gallery_image_version}
                 """
-                oe.azureEnvironment(az_cleanup_existing_image_version_script, params.OE_DEPLOY_IMAGE)
+                common.azureEnvironment(az_cleanup_existing_image_version_script, params.OE_DEPLOY_IMAGE)
             }
             stage("Run Packer Job") {
                 timeout(GLOBAL_TIMEOUT_MINUTES) {
@@ -69,11 +69,11 @@ def buildLinuxManagedImage(String os_type, String version, String image_id, Stri
                                     usernamePassword(credentialsId: JENKINS_USER_CREDS_ID,
                                                     usernameVariable: "SSH_USERNAME",
                                                     passwordVariable: "SSH_PASSWORD")]) {
-                        def cmd = ("packer build -force " +
-                                    "-var-file=${WORKSPACE}/.jenkins/infrastructure/provision/templates/packer/azure_managed_image/${os_type}-${version}-variables.json " +
-                                    "${WORKSPACE}/.jenkins/infrastructure/provision/templates/packer/azure_managed_image/packer-${os_type}.json")
-                        oe.exec_with_retry(10, 60) {
-                            oe.azureEnvironment(cmd, params.OE_DEPLOY_IMAGE)
+                        def cmd = ("""packer build -force \
+                                        -var-file=${WORKSPACE}/.jenkins/infrastructure/provision/templates/packer/azure_managed_image/${os_type}-${version}-variables.json \
+                                        ${WORKSPACE}/.jenkins/infrastructure/provision/templates/packer/azure_managed_image/packer-${os_type}.json""")
+                        common.exec_with_retry(10, 60) {
+                            common.azureEnvironment(cmd, params.OE_DEPLOY_IMAGE)
                         }
                     }
                 }
@@ -106,7 +106,7 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                     ${az_login_script}
                     az group create --name ${vm_rg_name} --location ${REGION}
                 """
-                oe.azureEnvironment(az_rg_create_script, params.OE_DEPLOY_IMAGE)
+                common.azureEnvironment(az_rg_create_script, params.OE_DEPLOY_IMAGE)
             }
 
             try {
@@ -130,7 +130,7 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                             --admin-password ${JENKINS_USER_PASSWORD} \
                             --image ${azure_image_id}
                     """
-                    oe.azureEnvironment(provision_script, params.OE_DEPLOY_IMAGE)
+                    common.azureEnvironment(provision_script, params.OE_DEPLOY_IMAGE)
                 }
 
                 stage("Deploy VM") {
@@ -165,8 +165,8 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                             --command-id RunPowerShellScript \
                             --scripts @${WORKSPACE}/.jenkins/infrastructure/provision/run-sysprep.ps1
                     """
-                    oe.exec_with_retry(10, 30) {
-                        oe.azureEnvironment(deploy_script, params.OE_DEPLOY_IMAGE)
+                    common.exec_with_retry(10, 30) {
+                        common.azureEnvironment(deploy_script, params.OE_DEPLOY_IMAGE)
                     }
                 }
 
@@ -179,8 +179,8 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                             az vm deallocate --resource-group ${vm_rg_name} --name ${vm_name}
                             az vm generalize --resource-group ${vm_rg_name} --name ${vm_name}
                         """
-                        oe.exec_with_retry(10, 30) {
-                            oe.azureEnvironment(generalize_script, params.OE_DEPLOY_IMAGE)
+                        common.exec_with_retry(10, 30) {
+                            common.azureEnvironment(generalize_script, params.OE_DEPLOY_IMAGE)
                         }
                     }
                 }
@@ -206,8 +206,8 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                                 --hyper-v-generation ${AZURE_IMAGES_MAP[os_series]["generation"]} \
                                 --source \$VM_ID
                             """
-                        oe.exec_with_retry(10, 30) {
-                            oe.azureEnvironment(capture_script, params.OE_DEPLOY_IMAGE)
+                        common.exec_with_retry(10, 30) {
+                            common.azureEnvironment(capture_script, params.OE_DEPLOY_IMAGE)
                         }
                     }
                 }
@@ -239,8 +239,8 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                                 --target-regions ${env.REPLICATION_REGIONS.split(',').join(' ')} \
                                 --replica-count 1
                         """
-                        oe.exec_with_retry(10, 30) {
-                            oe.azureEnvironment(upload_script, params.OE_DEPLOY_IMAGE)
+                        common.exec_with_retry(10, 30) {
+                            common.azureEnvironment(upload_script, params.OE_DEPLOY_IMAGE)
                         }
                     }
                 }
@@ -250,8 +250,11 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                     def az_rg_cleanup_script = """
                         ${az_login_script}
                         az group delete --name ${vm_rg_name} --yes
+                        az image delete \
+                            --resource-group ${RESOURCE_GROUP} \
+                            --name ${managed_image_name_id}-${img_name_suffix}
                     """
-                    oe.azureEnvironment(az_rg_cleanup_script, params.OE_DEPLOY_IMAGE)
+                    common.azureEnvironment(az_rg_cleanup_script, params.OE_DEPLOY_IMAGE)
                 }
             }
         }

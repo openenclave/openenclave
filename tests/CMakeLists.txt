@@ -35,6 +35,17 @@ if (OE_SGX AND UNIX)
   endif ()
 endif ()
 
+option(ENABLE_SYMCRYPT_OPENSSL_TESTS "Test OpenSSL with SymCrypt engine" ON)
+if (ENABLE_SYMCRYPT_OPENSSL_TESTS)
+  message(
+    "ENABLE_SYMCRYPT_OPENSSL_TESTS set - test OpenSSL with both default settings and SymCrypt engine"
+  )
+else ()
+  message(
+    "ENABLE_SYMCRYPT_OPENSSL_TESTS not set - test OpenSSL with only default settings"
+  )
+endif ()
+
 # Define the `OE_SGX` macro used by the oeedger8r on the SGX build.
 if (OE_SGX)
   set(DEFINE_OE_SGX "-DOE_SGX")
@@ -57,6 +68,13 @@ add_subdirectory(tools)
 
 if (WIN32)
   add_subdirectory(win_paths)
+endif ()
+
+if (OE_SGX)
+  # Include newly added SGX-specific tests
+  # The task to restructure existing tests is tracked
+  # in https://github.com/openenclave/openenclave/issues/4281
+  add_subdirectory(sgx)
 endif ()
 
 if (OE_SGX)

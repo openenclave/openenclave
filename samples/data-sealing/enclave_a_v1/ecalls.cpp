@@ -17,26 +17,14 @@ int seal_data(
     size_t opt_msg_len,
     unsigned char* data,
     size_t data_size,
-    sealed_data_t** sealed_data,
-    size_t* sealed_data_size)
+    data_t* sealed_data)
 {
     printf("Enclave: seal_data\n");
     return dispatcher.seal_data(
-        sealPolicy,
-        opt_mgs,
-        opt_msg_len,
-        data,
-        data_size,
-        sealed_data,
-        sealed_data_size);
+        sealPolicy, opt_mgs, opt_msg_len, data, data_size, sealed_data);
 }
-int unseal_data(
-    sealed_data_t* sealed_data,
-    size_t sealed_data_size,
-    unsigned char** data,
-    size_t* data_size)
+int unseal_data(const data_t* sealed_data, data_t* output_data)
 {
     printf("Enclave: unseal_data\n");
-    return dispatcher.unseal_data(
-        sealed_data, sealed_data_size, data, data_size);
+    return dispatcher.unseal_data(sealed_data, output_data);
 }

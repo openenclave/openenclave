@@ -1,6 +1,9 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
 /****************************************
 * Shared Library for Helpers and Commands
 ****************************************/
@@ -11,24 +14,26 @@ def CmakeArgs(String build_type = "RelWithDebInfo", String code_coverage = "OFF"
 }
 
 def WaitForAptLock() {
-    def aptWait = """
-        i=0
+    return """
+        counter=0
+        max=600
+        step=5
         echo "Checking for locks..."
-        # Check for locks
-        while fuser /var/lib/dpkg/lock > /dev/null 2>&1 ||
-              fuser /var/lib/dpkg/lock-frontend > /dev/null 2>&1 ||
-              fuser /var/lib/apt/lists/lock > /dev/null 2>&1; do
+        while sudo fuser /var/lib/dpkg/lock > /dev/null 2>&1 ||
+              sudo fuser /var/lib/dpkg/lock-frontend > /dev/null 2>&1 ||
+              sudo fuser /var/lib/apt/lists/lock > /dev/null 2>&1 ||
+              sudo ps aux | grep -E "[a]pt|[d]pkg"; do
             # Wait up to 600 seconds to lock to be released
-            if (( i > 600 )); then
+            if (( \${counter} > \${max} )); then
                 echo "Timeout waiting for lock."
                 exit 1
             fi
             echo "Waiting for apt/dpkg locks..."
-            i=\${i++}
-            sleep 1
+            counter=\$((\${counter}+\${step}))
+            sleep \${step}
         done
     """
-    return aptWait
+    
 }
 
 def TestCommand() {
@@ -82,6 +87,7 @@ def getWindowsCwd() {
             returnStdout: true
         ).trim()
 }
+
 /**
  * Tests Open Enclave samples on *nix systems
  *
@@ -105,15 +111,37 @@ def testSamplesLinux(boolean lvi_mitigation, String oe_package) {
         cp -r /opt/openenclave/share/openenclave/samples ~/
         cd ~/samples
         . /opt/openenclave/share/openenclave/openenclaverc
+        if hash cmake 2> /dev/null; then
+            echo "INFO: Using cmake to build"
+            export BUILD_SYSTEM=CMAKE
+        elif hash make 2> /dev/null; then
+            echo "INFO: Using make to build"
+            export BUILD_SYSTEM=MAKE
+        fi
+        if [[ -z \${BUILD_SYSTEM+x} ]]; then
+            echo "Error: cmake and make not found. Please install either one to proceed"
+            exit 1
+        fi
         for i in *; do
-            if [[ -d \${i} ]] && [[ -f \${i}/CMakeLists.txt ]]; then
-                cd \${i}
-                mkdir build
-                cd build
-                cmake .. ${lvi_args}
-                make
-                make run
-                cd ~/samples
+            if [[ \${BUILD_SYSTEM} == "CMAKE" ]]; then
+                if [[ -d \${i} ]] && [[ -f \${i}/CMakeLists.txt ]]; then
+                    cd \${i}
+                    mkdir build
+                    cd build
+                    cmake .. ${lvi_args}
+                    make
+                    make run
+                    cd ~/samples
+                fi
+            elif [[ \${BUILD_SYSTEM} == "MAKE" ]]; then
+                if [[ -d \${i} ]] && [[ -f \${i}/Makefile ]]; then
+                    cd \${i}
+                    make build
+                    make run
+                fi
+            else
+                echo "Error: unrecognized build system. Either cmake or make must be installed."
+                exit 1
             fi
         done
         cd ~
@@ -206,7 +234,7 @@ def ninjaBuildCommand(String cmake_arguments = "", String build_directory = "${W
  * @param container_name          Name of the Azure Storage Container to download from
  * @param file_pattern            File pattern to match (Ant glob syntax)
  * @param storage_credentials_id  Jenkins credentials id to use to authenticate with Azure Storage
-*/
+ */
 def azureContainerDownload(String container_name, String file_pattern, String storage_credentials_id) {
     azureDownload(
         containerName: container_name,
@@ -215,6 +243,38 @@ def azureContainerDownload(String container_name, String file_pattern, String st
         includeFilesPattern: file_pattern,
         storageCredentialId: storage_credentials_id
     )
+}
+
+/**
+ * Install Open Enclave dependencies on host machine
+ *
+ * @param dcap_url      URL of DCAP package, leave blank to use default
+ * @param psw_url       URL of PSW package, leave blank to use default
+ * @param install_flags Linux: set Ansible environment variables,
+ *                      Windows: set additional args for install-windows-prereqs.ps1 script
+ * @param build_dir     String that is a path to the directory that contains CMakeList.txt
+ *                      Can be relative to current working directory or an absolute path
+ */
+def dependenciesInstall(String dcap_url = "", String psw_url = "", String install_flags = "", String build_dir = "${WORKSPACE}") {
+    if(isUnix()) {
+        sh """
+            sudo bash ${build_dir}/scripts/ansible/install-ansible.sh
+            ansible-playbook ${build_dir}/scripts/ansible/oe-contributors-acc-setup.yml --extra-vars "intel_sgx_w_flc_driver_url=${dcap_url} intel_sgx1_driver_url=${psw_url} ${install_flags}"
+
+            ${WaitForAptLock()}
+            sudo apt install -y dkms
+        """
+    } else {
+        if (dcap_url == "" || psw_url == "") {
+            powershell """
+                ${build_dir}\\scripts\\install-windows-prereqs.ps1 -InstallPath C:\\oe_prereqs -LaunchConfiguration SGX1FLC -DCAPClientType None ${install_flags}
+            """
+        } else {
+            powershell """
+                ${build_dir}\\scripts\\install-windows-prereqs.ps1 -IntelPSWURL ${psw_url} -IntelPSWHash "" -IntelDCAPURL ${dcap_url} -IntelDCAPHash "" -InstallPath C:\\oe_prereqs -LaunchConfiguration SGX1FLC -DCAPClientType None ${install_flags}
+            """
+        }
+    }
 }
 
 /**
@@ -422,4 +482,75 @@ def releaseInstall(String release_version = null, String oe_package = "open-encl
             nuget.exe install \"${oe_package}\" ${nuget_flags}
         """
     }
+}
+
+/**
+ * Get today's date in YYYYMMDD format
+ *
+ * @param delimiter  Optional argument to place a delimiter between YYYY, MM, and DD.
+ */
+def get_date(String delimiter = "") {
+    return (
+        LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy")) +
+        delimiter +
+        LocalDateTime.now().format(DateTimeFormatter.ofPattern("MM")) +
+        delimiter +
+        LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd"))
+    )
+}
+
+/* Returns Azure Image URNs for OS type
+ *
+ * @param os_type  The OS distribution (Currently only "ubuntu")
+ * @param os_version The OS distribution version ("18.04", "20.04")
+ */
+ def getAzureImageUrn(String os_type, String os_version) {
+    if (os_type.toLowerCase() != 'ubuntu' || ! os_version.matches('20.04|18.04')) {
+            error("Unsupported OS (${os_type}) or version (${os_version})")
+    }
+    if (os_version == '20.04') {
+        return "Canonical:0001-com-ubuntu-server-focal:20_04-lts-gen2:latest"
+    } else if (os_version == '18.04') {
+        return "Canonical:UbuntuServer:18_04-lts-gen2:latest"
+    }
+ }
+
+/*
+ * Determine correct Intel SGX devices to mount for Docker
+ * Returns in the format of --device=<DEVICE1> --device=<DEVICE2>...
+ *   Note: This is really only necessary as Ubuntu 20.04 has SGX 
+ *   driver 1.41 and Ubuntu 18.04 has an older version
+ *
+ * @param os_type     Host Operating System Distribution (e.g. Ubuntu)
+ * @param os_version  Host Operating System Version (e.g. 20.04)
+ */
+def getDockerSGXDevices(String os_type, String os_version) {
+    def devices = []
+    if ( os_type.equalsIgnoreCase('ubuntu') && os_version.equals('20.04') ) {
+        devices.add('/dev/sgx/provision')
+        devices.add('/dev/sgx/enclave')
+    }
+    else if ( os_type.equalsIgnoreCase('ubuntu') && os_version.equals('18.04') ) {
+        devices.add('/dev/sgx')
+    }
+    else {
+        error("getDockerSGXDevices(): Unknown OS (${os_type}) or version (${os_version})")
+    }
+    String returnDevices = ""
+    for (device in devices) {
+        if ( fileExists("${device}") ) {
+            returnDevices += " --device=${device}:${device} "
+        }
+    }
+    return returnDevices
+}
+
+/**
+ * Returns the Ubuntu release version (E.g. "18.04")
+ */
+def getUbuntuReleaseVer() {
+    sh(
+        returnStdout: true,
+        script: 'lsb_release -rs'
+    ).trim()
 }

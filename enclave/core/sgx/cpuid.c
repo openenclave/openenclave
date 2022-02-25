@@ -36,6 +36,12 @@ oe_result_t oe_initialize_cpuid(void)
     if (!(_cpuid_table[1][OE_CPUID_RCX] & OE_CPUID_AESNI_FEATURE))
         oe_abort();
 
+    // set max input value for basic and extended
+    _cpuid_table[oe_get_emulated_cpuid_leaf_index(0)][OE_CPUID_RAX] =
+        OE_CPUID_MAX_BASIC;
+    _cpuid_table[oe_get_emulated_cpuid_leaf_index(0x80000000)][OE_CPUID_RAX] =
+        OE_CPUID_MAX_EXTENDED;
+
     result = OE_OK;
 
 done:

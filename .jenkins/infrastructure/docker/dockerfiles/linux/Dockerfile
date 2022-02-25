@@ -11,13 +11,13 @@
 #
 # Once installed, build a docker image from .jenkins folder and
 # it will use this Dockerfile by default:
-#     openenclave$ sudo docker build --no-cache=true --build-arg ubuntu_version=<ubuntu_version> --build-arg devkits_uri=<devkits_uri> -t oetools-<ubuntu_version>:<version> -f .jenkins/Dockerfile.full .
+#     openenclave$ sudo docker build --no-cache=true --build-arg ubuntu_version=<ubuntu_version> -t oetools-<ubuntu_version>:<version> -f .jenkins/Dockerfile.full .
 #
 # For example, for version 1.x with Ubuntu 18.04 :
 #     openenclave$ sudo docker build \
 #         --no-cache=true \
 #         --build-arg ubuntu_version=18.04 \
-#         --build-arg devkits_uri=https://tcpsbuild.blob.core.windows.net/tcsp-build/OE-CI-devkits-dd4c992d.tar.gz \
+#         --build-arg devkits_uri=https://oejenkins.blob.core.windows.net/oejenkins/OE-CI-devkits-d1634ce8.tar.gz \
 #         -t oetools-18.04:1.x \
 #         -f .jenkins/infrastructure/docker/dockerfiles/linux/Dockerfile \
 #         .
@@ -57,10 +57,11 @@ ARG UNAME=jenkins
 ARG GNAME=jenkins
 ARG UID=1000
 ARG GID=1000
-
 ARG devkits_uri
-# Check to make sure devkits_uri is defined as build arg
-RUN test ! -z ${devkits_uri+x}
+
+# Workaround for https://githubmemory.com/repo/pypa/pip/issues/10219
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
 
 # Install essential packages
 RUN apt-get update && \
@@ -68,6 +69,10 @@ RUN apt-get update && \
     apt-get -y install make build-essential git jq vim curl wget netcat apt-transport-https unzip && \
     apt-get clean && \
     rm -rf rm /var/lib/apt/lists/*
+
+# Setup devkit
+RUN curl ${devkits_uri} | tar xvz --no-same-permissions --no-same-owner
+RUN echo ${devkits_uri##*/} > /devkits/TARBALL
 
 # Add Microsoft repo
 RUN echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ bionic main" | tee /etc/apt/sources.list.d/azure-cli.list && \
@@ -104,10 +109,6 @@ RUN git config --global user.name "OE CI Team"
 RUN groupadd --gid ${GID} ${GNAME}
 RUN useradd --create-home --uid ${UID} --gid ${GID} --shell /bin/bash ${UNAME}
 RUN echo "${UNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-
-# Setup devkit
-RUN curl ${devkits_uri} | tar xvz --no-same-permissions --no-same-owner
-RUN echo ${devkits_uri##*/} > /devkits/TARBALL
 
 # Set up out-of-proc attestation
 ENV SGX_AESM_ADDR=1

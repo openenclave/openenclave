@@ -18,6 +18,7 @@
 #include <openenclave/internal/syscall/sys/stat.h>
 #include <openenclave/internal/syscall/unistd.h>
 #include <stdio.h>
+#include <sys/file.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -79,6 +80,11 @@ class oe_fd_file_system
     int fdatasync(file_handle file)
     {
         return oe_fdatasync(file);
+    }
+
+    int flock(file_handle file, int operation)
+    {
+        return oe_flock(file, operation);
     }
 
     int close(file_handle file)
@@ -249,6 +255,11 @@ class fd_file_system
     int fdatasync(file_handle file)
     {
         return ::fdatasync(file);
+    }
+
+    int flock(file_handle file, int operation)
+    {
+        return ::flock(file, operation);
     }
 
     int close(file_handle file)
@@ -537,6 +548,11 @@ class stream_file_system
     int fdatasync(file_handle file)
     {
         return fflush(file);
+    }
+
+    int flock(file_handle file, int operation)
+    {
+        return ::flock(fileno(file), operation);
     }
 
     int close(file_handle file)

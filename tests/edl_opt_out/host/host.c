@@ -54,7 +54,7 @@ int main(int argc, const char* argv[])
     /* sgx/attestation.edl */
     result = OE_OK;
     OE_TEST(
-        oe_get_report_v2_ecall(NULL, &result, 0, NULL, 0, NULL, NULL) ==
+        oe_get_report_v2_ecall(NULL, &result, 0, NULL, 0, NULL) ==
         OE_UNSUPPORTED);
     OE_TEST(result == OE_UNSUPPORTED);
     result = OE_OK;

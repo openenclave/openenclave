@@ -59,6 +59,9 @@ def ACCTest(String label, String compiler, String build_type, List extra_cmake_a
                         done
                         """
                 }
+                sh """
+                    sudo apt list --installed | grep sgx
+                """
                 def cmakeArgs = helpers.CmakeArgs(build_type,"OFF","ON","-DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin",extra_cmake_args.join(' '))
                 def task = """
                            ${helpers.ninjaBuildCommand(cmakeArgs)}
@@ -98,11 +101,13 @@ def ACCContainerTest(String label, String version, List extra_cmake_args = []) {
                 cleanWs()
                 checkout scm
                 def cmakeArgs = helpers.CmakeArgs("RelWithDebInfo","OFF","ON","-DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin",extra_cmake_args.join(' '))
+                def devices = helpers.getDockerSGXDevices("ubuntu", helpers.getUbuntuReleaseVer())
+                println("${label} running Docker container with ${devices}")
                 def task = """
                            ${helpers.ninjaBuildCommand(cmakeArgs)}
                            ${helpers.TestCommand()}
                            """
-                common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", "clang-10", task, "--cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket")
+                common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", "clang-10", task, "--cap-add=SYS_PTRACE ${devices} --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket")
             }
         }
     }
@@ -115,6 +120,8 @@ def ACCPackageTest(String label, String version, List extra_cmake_args = []) {
                 cleanWs()
                 checkout scm
                 def cmakeArgs = helpers.CmakeArgs("RelWithDebInfo","OFF","ON","-DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin",extra_cmake_args.join(' '))
+                def devices = helpers.getDockerSGXDevices("ubuntu", helpers.getUbuntuReleaseVer())
+                println("${label} running Docker container with ${devices}")
                 common.ContainerTasks(
                     "oetools-${version}:${params.DOCKER_TAG}",
                     globalvars.COMPILER,
@@ -128,7 +135,7 @@ def ACCPackageTest(String label, String version, List extra_cmake_args = []) {
                     ),
                     helpers.TestSamplesCommand()
                     ],
-                    "--cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket"
+                    "--cap-add=SYS_PTRACE ${devices} --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket"
                 )
             }
         }
@@ -145,6 +152,8 @@ def ACCHostVerificationTest(String version, String build_type) {
                 cleanWs()
                 checkout scm
                 def cmakeArgs = "-G Ninja -DCMAKE_BUILD_TYPE=${build_type} -Wdev"
+                def devices = helpers.getDockerSGXDevices("ubuntu", helpers.getUbuntuReleaseVer())
+                println("ACC-1804 running Docker container with ${devices}")
                 println("Generating certificates and reports ...")
                 def task = """
                            ${helpers.ninjaBuildCommand(cmakeArgs)}
@@ -161,7 +170,7 @@ def ACCHostVerificationTest(String version, String build_type) {
                            ../../../output/bin/oeutil gen --format sgx_ecdsa --quote-proc out --verify
                            popd
                            """
-                common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", "clang-10", task, "--cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket")
+                common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", "clang-10", task, "--cap-add=SYS_PTRACE ${devices} --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket")
 
                 def ec_cert_created = fileExists 'build/tests/host_verify/host/sgx_cert_ec.der'
                 def rsa_cert_created = fileExists 'build/tests/host_verify/host/sgx_cert_rsa.der'
@@ -245,6 +254,8 @@ def ACCHostVerificationPackageTest(String version, String build_type) {
                 cleanWs()
                 checkout scm
                 def cmakeArgs = "-G Ninja -DCMAKE_BUILD_TYPE=${build_type} -Wdev"
+                def devices = helpers.getDockerSGXDevices("ubuntu", helpers.getUbuntuReleaseVer())
+                println("ACC-1804 running Docker container with ${devices}")
                 println("Generating certificates and reports ...")
                 def task = """
                            ${helpers.ninjaBuildCommand(cmakeArgs)}
@@ -261,7 +272,7 @@ def ACCHostVerificationPackageTest(String version, String build_type) {
                            ../../../output/bin/oeutil gen --format sgx_ecdsa --quote-proc out --verify
                            popd
                            """
-                common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", "clang-10", task, "--cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket")
+                common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", "clang-10", task, "--cap-add=SYS_PTRACE ${devices} --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket")
 
                 def ec_cert_created = fileExists 'build/tests/host_verify/host/sgx_cert_ec.der'
                 def rsa_cert_created = fileExists 'build/tests/host_verify/host/sgx_cert_rsa.der'
@@ -386,6 +397,20 @@ def OEReleaseTest(String label, String release_version, String oe_package = "ope
         node(label) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
+                helpers.releaseInstall(release_version, oe_package, source)
+                helpers.TestSamplesCommand(lvi_mitigation, oe_package)
+            }
+        }
+    }
+}
+
+def TestIntelRCs(String label, String release_version, String oe_package = "open-enclave", String source = "GitHub", boolean lvi_mitigation = false, String dcap_url, String psw_url, String install_flags = "") {
+    stage("Test Intel Drivers RCs ${label}") {
+        node(label) {
+            timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
+                cleanWs()
+                checkout scm
+                helpers.dependenciesInstall(dcap_url, psw_url, install_flags)
                 helpers.releaseInstall(release_version, oe_package, source)
                 helpers.TestSamplesCommand(lvi_mitigation, oe_package)
             }

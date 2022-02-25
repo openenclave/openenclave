@@ -10,12 +10,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Unreleased][Unreleased_log]
 --------------
 ### Added
-- Enabled creation of enclaves with base address 0x0 in SGX on Linux.
-  - This feature requires PSW version 2.14.1 or above.
-  - In 0-base enclaves a page fault is thrown on NULL pointer dereference.
-  - This enables applications to adopt NullPointerException/ NullReferenceException in their program logic and/or use other application stacks that do (Example, .NET runtime).
-  - Developers can create an 0-base enclave by setting the oesign tool configuration option 'CreateZeroBaseEnclave' to 1 or by passing in argument CREATE_ZERO_BASE_ENCLAVE=1 in OE_SET_ENCLAVE_SGX2().
-  - If the 0-base enclave creation is chosen, enclave image start address should be provided by setting the oesign tool configuration option 'StartAddress' or pass in the argument ENCLAVE_START_ADDRESS in OE_SET_ENCLAVE_SGX2().
 - `oeapkman` is a Linux tool for installing and using Alpine Linux static libraries within enclaves.
   - The command `oeapkman add package` can be used to install the specified package.
     Typically `-static` and `-dev` (e.g.: sqlite-static, sqlite-dev) packages need to be installed.
@@ -30,9 +24,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 	`oeapkman --optee exec gcc -c file.c` cross-compile `file.c` to target OP-TEE.
   - See [samples/apkman](samples/apkman) for a complete example demonstrating use of the `sqlite` database library within enclaves.
 - Support for `compiler-rt`. `oelibc` includes LLVM's `compiler-rt-10.0.1`.
+- Update logging function setup API name for SGX Quote Provider plugin to `sgx_ql_set_logging_callback` and mark API name `sgx_ql_set_logging_function` as deprecated.
 
 ## Changed
 - Updated libcxx to version 10.0.1
+
+
+[v0.17.6][v0.17.6_log]
+--------------
+
+### Added
+- Added support FIPS-enabled OpenSSL based on [SymCrypt](https://github.com/Microsoft/SymCrypt).
+  - Add a new library `oesymcryptengine`, which is a customized build of [SymCrypt OpenSSL engine](https://github.com/Microsoft/SymCrypt-OpenSSL).
+  - To use FIPS-enabled OpenSSL with SymCrypt, users need to link their enclave against
+    both `oesymcryptengine` and `libsymcrypt.so` (part of [SymCrypt](https://github.com/Microsoft/SymCrypt) release packages) in addition to OpenSSL libraries, and include `entropy.edl` in the edl file. Note that `libsymcrypt.so` needs to be placed under the same directory with the enclave binary.
+  - See the [attested_tls sample](samples/attested_tls#build-and-run) for an example of building enclaves with FIPS-enabled OpenSSL based on SymCrypt (set `OE_CRYPTO_LIB` to `openssl_symcrypt_fips`).
+- Added support for POSIX mmap and munmap.
+- Enabled MUSL conf functions.
+- Added callback option to capture and modify enclave logs.
+
+### Security
+- Update mbedTLS to version 2.16.12. Refer to the [2.16.12](https://github.com/ARMmbed/mbedtls/releases/tag/v2.16.12) release notes for the set of issues addressed.
+- Note: 2.16 LTS is at End Of Life. mbedTLS libs included with the Open Enclave SDK will move to use the 2.28 LTS branch in the next release. 2.28.0 has certain breaking changes. To understand how these changes will impact your application, please refer to the release notes for [2.28.0](https://github.com/ARMmbed/mbedtls/releases/tag/v2.28.0).
+
+[v0.17.5][v0.17.5_log]
+--------------
+
+### Added 
+- Added MUSL time functions
+asctime, asctime_r, ctime, ctime_r, ftime, localtime, localtime_r, strptime, timespec_get, wcsftime.
+
+### Changed
+- Fixed bug with incorrect layout of thread-local sections (tbss and tdata). Previous releases of OE had a bug where these sections
+will be laid out incorrectly in some cases where the tbss section had a lower alignment value than tdata section.
+- OpenSSL is now built with threads support (with the dependency on the host). Note that the previous versions of OpenSSL are not suitable for multi-threaded applications.
+
+### Security
+- Updated openssl to version 1.1.1l. Please refer to release log to find list of CVEs addressed by this version.
+
 
 [v0.17.2][v0.17.2_log]
 --------------
@@ -701,7 +730,11 @@ as listed below.
 
 Initial private preview release, no longer supported.
 
-[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.17.2...HEAD
+[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.17.6...HEAD
+
+[v0.17.6_log]:https://github.com/openenclave/openenclave/compare/v0.17.5...v0.17.6
+
+[v0.17.5_log]:https://github.com/openenclave/openenclave/compare/v0.17.2...v0.17.5
 
 [v0.17.2_log]:https://github.com/openenclave/openenclave/compare/v0.17.1...v0.17.2
 

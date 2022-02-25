@@ -4,12 +4,16 @@
 #include <openenclave/bits/exception.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/error.h>
+#include <openenclave/internal/raise.h>
+#include <openenclave/internal/sgx/tests.h>
 #include <openenclave/internal/tests.h>
 #include <sys/mman.h>
 #include <iostream>
 
 #include "../host/sgx/cpuid.h"
 #include "sgx_zerobase_u.h"
+
+#define SKIP_RETURN_CODE 2
 
 const char* message = "Hello world from Host\n\0";
 
@@ -44,6 +48,13 @@ int main(int argc, const char* argv[])
     {
         fprintf(stderr, "Usage: %s ENCLAVE_PATH\n", argv[0]);
         return 1;
+    }
+
+    if (!oe_has_sgx_quote_provider())
+    {
+        // this test should not run on any platforms where FLC is not supported
+        OE_TRACE_INFO("=== tests skipped when DCAP libraries are not found.\n");
+        return SKIP_RETURN_CODE;
     }
 
     if (strstr(argv[1], "_conf_") == NULL)

@@ -134,7 +134,7 @@ static void _test_partial_unmapping(void)
 
 static void _test_mmap_params(void)
 {
-    // Non zero addr should fail.
+    // Non zero addr should be ignored.
     OE_TEST(
         mmap(
             (void*)1,
@@ -142,8 +142,8 @@ static void _test_mmap_params(void)
             PROT_READ,
             MAP_ANONYMOUS | MAP_PRIVATE,
             -1,
-            0) == MAP_FAILED);
-    OE_TEST(errno == EINVAL);
+            0) != MAP_FAILED);
+    OE_TEST(errno == 0);
 
     // Zero length should fail.
     OE_TEST(

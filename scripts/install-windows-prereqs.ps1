@@ -14,16 +14,16 @@ Param(
     [string]$VSBuildToolsHash = '',
     [string]$ClangURL = 'https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/LLVM-10.0.0-win64.exe',
     [string]$ClangHash = '893f8a12506f8ad29ca464d868fb432fdadd782786a10655b86575fc7fc1a562',
-    [string]$IntelPSWURL = 'https://registrationcenter-download.intel.com/akdlm/irc_nas/18000/Intel%20SGX%20PSW%20for%20Windows%20v2.13.100.2.exe',
-    [string]$IntelPSWHash = '2F8D0344D5853BC1A5EA3167E779C8718EEB67B3E855BE2E2BB3B1C67B8AD084',
+    [string]$IntelPSWURL = 'https://registrationcenter-download.intel.com/akdlm/irc_nas/18335/Intel%20SGX%20PSW%20for%20Windows%20v2.14.101.1.exe',
+    [string]$IntelPSWHash = '467A6D316C1FFE62CF212593C2E0B0CB7B5FB86F680FEB017EE4D1170C954E60',
     [string]$ShellCheckURL = 'https://oejenkins.blob.core.windows.net/oejenkins/shellcheck-v0.7.0.zip',
     [string]$ShellCheckHash = '02CFA14220C8154BB7C97909E80E74D3A7FE2CBB7D80AC32ADCAC7988A95E387',
     [string]$NugetURL = 'https://www.nuget.org/api/v2/package/NuGet.exe/3.4.3',
     [string]$NugetHash = '2D4D38666E5C7D27EE487C60C9637BD9DD63795A117F0E0EDC68C55EE6DFB71F',
     [string]$DevconURL = 'https://download.microsoft.com/download/7/D/D/7DD48DE6-8BDA-47C0-854A-539A800FAA90/wdk/Installers/787bee96dbd26371076b37b13c405890.cab',
     [string]$DevconHash = 'A38E409617FC89D0BA1224C31E42AF4344013FEA046D2248E4B9E03F67D5908A',
-    [string]$IntelDCAPURL = 'https://registrationcenter-download.intel.com/akdlm/irc_nas/17999/Intel%20SGX%20DCAP%20for%20Windows%20v1.11.100.2.exe',
-    [string]$IntelDCAPHash = '8539043101736946D005173A95DDB0C3350F8A788701BEC3962E95DF898A6369',
+    [string]$IntelDCAPURL = 'https://registrationcenter-download.intel.com/akdlm/irc_nas/18336/Intel%20SGX%20DCAP%20for%20Windows%20v1.12.101.1.exe',
+    [string]$IntelDCAPHash = '7B7BC3460117142E5E9497F3D42D2C50DCBB6146DA73FC95232597D1FCC386C8',
     [string]$VCRuntime2012URL = 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe',
     [string]$VCRuntime2012Hash = '681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064',
     [string]$AzureDCAPNupkgURL = 'https://www.nuget.org/api/v2/package/Microsoft.Azure.DCAP/1.10.0',
@@ -38,6 +38,7 @@ Param(
     [Parameter(mandatory=$true)][ValidateSet("SGX1FLC", "SGX1", "SGX1FLC-NoIntelDrivers", "SGX1-NoIntelDrivers")][string]$LaunchConfiguration,
     [Parameter(mandatory=$true)][ValidateSet("None", "Azure")][string]$DCAPClientType,
     [Parameter(mandatory=$false)][switch]$InstallDocker=$false,
+    [Parameter(mandatory=$false)][switch]$SkipVSInstall=$false,
     [Parameter(mandatory=$false)][switch]$VerificationOnly=$false
 )
 
@@ -613,7 +614,9 @@ try {
     Install-7Zip
     Install-Nuget
     Install-Python3
-    Install-VisualStudio
+    if (!$SkipVSInstall) {
+        Install-VisualStudio
+    }
     Install-LLVM
     Install-Git
     Install-Shellcheck

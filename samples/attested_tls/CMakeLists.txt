@@ -26,6 +26,27 @@ set(OE_CRYPTO_LIB
 
 find_package(OpenEnclave CONFIG REQUIRED)
 
+if (OE_CRYPTO_LIB STREQUAL "openssl_symcrypt_fips")
+  # Download the SymCrypt release package at config-time
+  include(FetchContent)
+  FetchContent_Declare(
+    symcrypt_package
+    SOURCE_DIR ${CMAKE_BINARY_DIR}/SymCrypt
+    URL https://github.com/microsoft/SymCrypt/releases/download/SymCrypt_v100.20_master_2021-12-01T112555-0800_31fb2e9/symcrypt_AMD64_openenclave_100.20.0-31fb2e94-pre.tgz
+    URL_HASH
+      SHA256=8d08f459e57751cd94580395922be905f51c172dd06f3ea0db403febb7b53e3e)
+
+  # Make the downloaded package globally available
+  FetchContent_GetProperties(symcrypt_package)
+  if (NOT symcrypt_package_POPULATED)
+    FetchContent_Populate(symcrypt_package)
+  endif ()
+
+  # Option passed in oeedger8r to include entropy.edl (required by
+  # SymCrypt FIPS module)
+  set(EDL_USE_HOST_ENTROPY "-DEDL_USE_HOST_ENTROPY")
+endif ()
+
 add_subdirectory(server)
 add_subdirectory(client)
 add_subdirectory(non_enc_client)

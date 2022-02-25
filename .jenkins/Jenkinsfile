@@ -1,13 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-OECI_LIB_VERSION = env.OECI_LIB_VERSION ?: "master"
-oe = library("OpenEnclaveCommon@${OECI_LIB_VERSION}").jenkins.common.Openenclave.new()
-
-GLOBAL_TIMEOUT_MINUTES = 120
-CTEST_TIMEOUT_SECONDS = 480
-GLOBAL_ERROR = null
-
+// Global variables
 REPOSITORY_NAME = env.REPOSITORY_NAME ?: "openenclave/openenclave"
 BRANCH_NAME = env.BRANCH_NAME ?: "master"
 DOCKER_TAG = env.DOCKER_TAG ?: "latest"
@@ -15,14 +9,19 @@ FULL_TEST_SUITE = env.FULL_TEST_SUITE ?: false
 // Regex that includes directory you want to ignore for CI builds.
 String IGNORED_DIRS = "^(docs|\\.jenkins/infrastructure)|\\.md\$"
 
-AGENTS_LABELS = [
-    "acc-ubuntu-20.04": env.UBUNTU_2004_CUSTOM_LABEL ?: "ACC-2004",
-    "acc-ubuntu-18.04": env.UBUNTU_1804_CUSTOM_LABEL ?: "ACC-1804",
-    "ubuntu-nonsgx":    env.UBUNTU_NONSGX_CUSTOM_LABEL ?: "nonSGX-ubuntu-2004",
-    "acc-win2019":      env.WINDOWS_2019_CUSTOM_LABEL ?: "SGX-Windows-2019",
-    "acc-win2019-dcap": env.WINDOWS_2019_DCAP_CUSTOM_LABEL ?: "SGXFLC-Windows-2019-DCAP",
-    "windows-nonsgx":   env.WINDOWS_NONSGX_CUSTOM_LABEL ?: "nonSGX-Windows"
-]
+// Load OpenEnclaveJenkinsLibrary version to use in this priority:
+//     1. If this is a bors run, use the bors branch
+//     2. Use params.OECI_LIB_VERSION if it is specified
+//     3. If none of the above, default to master
+if ( REPOSITORY_NAME == 'openenclave/openenclave' && BRANCH_NAME ==~ /^(trying|staging)$/ ) {
+    OECI_LIB_VERSION = BRANCH_NAME
+} else if ( params.OECI_LIB_VERSION ) {
+    // Use regex to match bors branches to include any changes to OpenEnclaveJenkinsLibrary
+    OECI_LIB_VERSION = params.OECI_LIB_VERSION
+} else {
+    OECI_LIB_VERSION = "master"
+}
+library "OpenEnclaveJenkinsLibrary@${OECI_LIB_VERSION}"
 
 properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '90',
                                       artifactNumToKeepStr: '180',
@@ -30,85 +29,103 @@ properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '90',
                                       numToKeepStr: '180')),
             [$class: 'JobRestrictionProperty']])
 
-stage("Compare changes") {
-    node(AGENTS_LABELS["nonsgx"]) {
-        cleanWs()
-        checkout([
-            $class: 'GitSCM',
-            branches: scm.branches + [[name: '*/master']],
-            doGenerateSubmoduleConfigurations: false,
-            extensions: [[$class: 'SubmoduleOption',
-                            disableSubmodules: true,
-                            recursiveSubmodules: false,
-                            trackingSubmodules: false]], 
-            submoduleCfg: [],
-            userRemoteConfigs: scm.userRemoteConfigs
-        ])
-        // Check if git diff vs origin/master contains changes outside of ignored directories
-        gitChanges = sh (
-            script: """
-                    git diff --name-only HEAD origin/master | grep --invert-match --extended-regexp \'${IGNORED_DIRS}\' || true
-                    """,
-            returnStdout: true
-        ).trim()
+if ( ! params.FORCE_TEST ) {
+    stage("Compare changes") {
+        node(globalvars.AGENTS_LABELS["nonsgx"]) {
+            cleanWs()
+            checkout([
+                $class: 'GitSCM',
+                branches: [
+                    [
+                        name: "origin/master"
+                    ],
+                    [
+                        name: "testremote/${BRANCH_NAME}"
+                    ]
+                ],
+                doGenerateSubmoduleConfigurations: false,
+                extensions: [
+                    [
+                        $class: 'SubmoduleOption',
+                        disableSubmodules: true,
+                        recursiveSubmodules: false,
+                        trackingSubmodules: false
+                    ]
+                ], 
+                submoduleCfg: [],
+                userRemoteConfigs: [
+                    [
+                        url: "https://github.com/openenclave/openenclave.git",
+                        name: "origin",
+                        refspec: "+refs/heads/master:refs/remotes/origin/master",
+
+                    ],
+                    [
+                        url: "https://github.com/${REPOSITORY_NAME}.git",
+                        name: "testremote",
+                        refspec: "+refs/heads/${BRANCH_NAME}:refs/remotes/testremote/${BRANCH_NAME}"
+                    ]
+                ]
+            ])
+            // Check if git diff vs origin/master contains changes outside of ignored directories
+            gitChanges = sh (
+                script: """#!/bin/bash
+                        git diff --name-only testremote/${BRANCH_NAME} origin/master | grep --invert-match --extended-regexp \'${IGNORED_DIRS}\'  --no-messages || [[ \$? == 1 ]]
+                        """,
+                returnStdout: true,
+            ).trim()
+        }
+    }
+
+    // Skip build with a success if gitChanges is defined and empty (no changes outside of ignored directories).
+    // Note: this step must be ran outside of a stage in order to exit the entire build.
+    if (gitChanges != null && gitChanges == '') {
+        println("No significant changes detected. Testing is not necessary.")
+        currentBuild.result = 'SUCCESS'
+        return
+    } else {
+        println("Detected the follow file changes: " + gitChanges)
     }
 }
 
-// Skip build with a success if gitChanges is defined and empty (no changes outside of ignored directories).
-if (gitChanges != null && gitChanges == '') {
-    currentBuild.result = 'SUCCESS'
-    return
-} else {
-    println("Detected the follow file changes: " + gitChanges)
-}
-
-try {
-    oe.emailJobStatus('STARTED')
-    stage("Trigger downstream pipelines") {
-        parallel (
-          "Agnostic Linux" : {
-              build job: '/pipelines/Agnostic-Linux',
+stage("Trigger downstream pipelines") {
+    parallel (
+        "Agnostic Linux" : {
+            build job: '/pipelines/Agnostic-Linux',
+                parameters: [string(name: 'REPOSITORY_NAME', value: REPOSITORY_NAME),
+                                string(name: 'BRANCH_NAME', value: BRANCH_NAME),
+                                string(name: 'DOCKER_TAG', value: DOCKER_TAG),
+                                string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["ubuntu-nonsgx"]),
+                                string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
+                                booleanParam(name: 'FULL_TEST_SUITE', value: FULL_TEST_SUITE)]
+        },
+        "Azure Linux" : {
+            build job: '/pipelines/Azure-Linux',
                     parameters: [string(name: 'REPOSITORY_NAME', value: REPOSITORY_NAME),
-                                 string(name: 'BRANCH_NAME', value: BRANCH_NAME),
-                                 string(name: 'DOCKER_TAG', value: DOCKER_TAG),
-                                 string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: AGENTS_LABELS["ubuntu-nonsgx"]),
-                                 string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
-                                 booleanParam(name: 'FULL_TEST_SUITE',value: FULL_TEST_SUITE)]
-           },
-           "Azure Linux" : {
-               build job: '/pipelines/Azure-Linux',
-                     parameters: [string(name: 'REPOSITORY_NAME', value: REPOSITORY_NAME),
-                                  string(name: 'BRANCH_NAME', value: BRANCH_NAME),
-                                  string(name: 'DOCKER_TAG', value: DOCKER_TAG),
-                                  string(name: 'UBUNTU_2004_CUSTOM_LABEL', value: AGENTS_LABELS["acc-ubuntu-20.04"]),
-                                  string(name: 'UBUNTU_1804_CUSTOM_LABEL', value: AGENTS_LABELS["acc-ubuntu-18.04"]),
-                                  string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: AGENTS_LABELS["ubuntu-nonsgx"]),
-                                  string(name: 'WINDOWS_NONSGX_CUSTOM_LABEL', value: AGENTS_LABELS["windows-nonsgx"]),
-                                  string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
-                                  booleanParam(name: 'FULL_TEST_SUITE',value: FULL_TEST_SUITE)]
-           },
-           "Intel Linux" : {
-               build job: '/pipelines/Intel-Agnostic',
-                     parameters: [booleanParam(name: 'FULL_TEST_SUITE',value: FULL_TEST_SUITE)]
-           },
-           "Azure Windows" : {
-               build job: '/pipelines/Azure-Windows',
-                     parameters: [string(name: 'REPOSITORY_NAME', value: REPOSITORY_NAME),
-                                  string(name: 'BRANCH_NAME', value: BRANCH_NAME),
-                                  string(name: 'DOCKER_TAG', value: DOCKER_TAG),
-                                  string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: AGENTS_LABELS["ubuntu-nonsgx"]),
-                                  string(name: 'WINDOWS_2019_CUSTOM_LABEL', value: AGENTS_LABELS["acc-win2019"]),
-                                  string(name: 'WINDOWS_2019_DCAP_CUSTOM_LABEL', value: AGENTS_LABELS["acc-win2019-dcap"]),
-                                  string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
-                                  booleanParam(name: 'FULL_TEST_SUITE',value: FULL_TEST_SUITE)]
-           }
-        )
-    }
-} catch(Exception e) {
-    println "Caught global pipeline exception :" + e
-    GLOBAL_ERROR = e
-    throw e
-} finally {
-    currentBuild.result = (GLOBAL_ERROR != null) ? 'FAILURE' : "SUCCESS"
-    oe.emailJobStatus(currentBuild.result)
+                                string(name: 'BRANCH_NAME', value: BRANCH_NAME),
+                                string(name: 'DOCKER_TAG', value: DOCKER_TAG),
+                                string(name: 'UBUNTU_2004_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["acc-ubuntu-20.04"]),
+                                string(name: 'UBUNTU_1804_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["acc-ubuntu-18.04"]),
+                                string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["ubuntu-nonsgx"]),
+                                string(name: 'WINDOWS_NONSGX_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["windows-nonsgx"]),
+                                string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
+                                booleanParam(name: 'FULL_TEST_SUITE', value: FULL_TEST_SUITE)]
+        },
+        "Intel Linux" : {
+            build job: '/pipelines/Intel-Agnostic',
+                parameters: [booleanParam(name: 'FULL_TEST_SUITE', value: FULL_TEST_SUITE)],
+                propagate: false
+        },
+        "Azure Windows" : {
+            build job: '/pipelines/Azure-Windows',
+                    parameters: [string(name: 'REPOSITORY_NAME', value: REPOSITORY_NAME),
+                                string(name: 'BRANCH_NAME', value: BRANCH_NAME),
+                                string(name: 'DOCKER_TAG', value: DOCKER_TAG),
+                                string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["ubuntu-nonsgx"]),
+                                string(name: 'WINDOWS_2019_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["acc-win2019"]),
+                                string(name: 'WINDOWS_2019_DCAP_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["acc-win2019-dcap"]),
+                                string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
+                                booleanParam(name: 'FULL_TEST_SUITE', value: FULL_TEST_SUITE)]
+        }
+    )
 }

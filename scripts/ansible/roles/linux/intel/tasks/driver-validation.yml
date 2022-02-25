@@ -10,7 +10,7 @@
   include_vars:
     file: "{{ ansible_distribution | lower }}/{{ ansible_distribution_release | lower }}.yml"
 
-- name: Load default driver
-  modprobe:
-    name: intel_sgx
-    state: present
+- name: Check default driver files
+  stat:
+    path: "{{ item }}"
+  loop: "{{ intel_dcap_driver_files }}"

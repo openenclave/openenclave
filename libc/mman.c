@@ -60,8 +60,10 @@ static oe_result_t _validate_mmap_parameters(
     // /proc/sys/vm/mmap_min_addr) and attempt to create the mapping there.
     // OE currently does not support this usage.
     if (addr != NULL)
-        OE_RAISE_MSG(
-            OE_UNSUPPORTED, "non-zero `addr` parameter is not supported.");
+    {
+        // Previously, an error was raised in this case. To support more
+        // use cases, the addr hint is ignored instead.
+    }
 
     // PROT_NONE and PROT_EXEC are not supported.
     if (prot == PROT_NONE || (prot & PROT_EXEC))
@@ -195,7 +197,7 @@ void* oe_mmap(
         OE_RAISE(OE_OUT_OF_MEMORY);
     }
 
-    if (((ret = posix_memalign(&ptr, OE_PAGE_SIZE, length)) != 0) || !m)
+    if (((ret = posix_memalign(&ptr, OE_PAGE_SIZE, length)) != 0) || !ptr)
     {
         // posix_memalign does not set errno (by spec).
         // Set it ourselves.

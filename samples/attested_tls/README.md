@@ -12,6 +12,7 @@ It has the following properties:
 - Use of MbedTLS/OpenSSL crypto libraries within enclaves for TLS
 - Select between MbedTLS and OpenSSL crypto libraries by setting an environment variable `OE_CRYPTO_LIB` to `mbedtls` or `openssl` at build time (Note that `OE_CRYPTO_LIB` is case sensitive).
 - If the `OE_CRYPTO_LIB` not set, Mbed TLS will be used by default (see [Makefile](Makefile#L8) and [CMakeLists.txt](CMakeLists.txt#L10)).
+- To use FIPS-enabled OpenSSL based on SymCrypt, setting the `OE_CRYPTO_LIB` to `openssl_symcrypt_fips`
 - Configure both the server and the client with recommended cipher suites and elliptic curves (refer to the [section](#recommended-tls-configurations-when-using-openssl) for more details).
 - Use of following Enclave APIs
   - oe_get_attestation_certificate_with_evidence
@@ -91,6 +92,15 @@ Note: Both of them can run on the same machine or separate machines.
   make run
   ```
 
+- Use FIPS-enabled OpenSSL based on SymCrypt
+  ```bash
+  mkdir build
+  cd build
+  cmake -DOE_CRYPTO_LIB=openssl_symcrypt_fips ..
+  make
+  make run
+  ```
+
 #### GNU Make
 - Use Mbed TLS
   ```bash
@@ -100,6 +110,12 @@ Note: Both of them can run on the same machine or separate machines.
 - Use OpenSSL
   ```bash
   make OE_CRYPTO_LIB=openssl build
+  make run
+  ```
+
+- Use FIPS-enabled OpenSSL based on SymCrypt
+  ```bash
+  make OE_CRYPTO_LIB=openssl_symcrypt_fips build
   make run
   ```
 
@@ -119,6 +135,15 @@ Note: Both of them can run on the same machine or separate machines.
   mkdir build
   cd build
   cmake -G Ninja -DOE_CRYPTO_LIB=openssl ..
+  ninja
+  ninja run
+  ```
+
+- Use FIPS-enabled OpenSSL based on SymCrypt
+  ```bash
+  mkdir build
+  cd build
+  cmake -G Ninja -DOE_CRYPTO_LIB=openssl_symcrypt_fips ..
   ninja
   ninja run
   ```

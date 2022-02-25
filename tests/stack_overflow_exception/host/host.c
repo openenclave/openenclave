@@ -53,23 +53,10 @@ int main(int argc, const char* argv[])
                "ECALL.\n");
     else if (_is_misc_region_supported())
     {
-        if (enc_initialize_exception_handler(enclave, &result) != OE_OK)
-            oe_put_err(
-                "enc_initialize_exception_handler() failed: result=%u", result);
-        OE_TEST(result == OE_OK);
-
         OE_TEST(enc_stack_overflow_exception(enclave) == OE_ENCLAVE_ABORTING);
         OE_TEST(enclave_stack_overflowed == true);
 
-        result = oe_terminate_enclave(enclave);
-#ifdef DEBUG_BUILD
-        /* Expect OE_MEMORY_LEAK in the debug build (the debugmalloc is enabled)
-         * because the oe_handle_call_enclave_function does not return and
-         * therefore an internal buffer on the heap is not freed  */
-        OE_TEST(result == OE_MEMORY_LEAK);
-#else
-        OE_TEST(result == OE_OK);
-#endif
+        OE_TEST(oe_terminate_enclave(enclave) == OE_OK);
     }
     else
     {

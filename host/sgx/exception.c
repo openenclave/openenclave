@@ -23,6 +23,7 @@ uint64_t oe_host_handle_exception(oe_host_exception_context_t* context)
     uint64_t exit_code = context->rax;
     uint64_t tcs_address = context->rbx;
     uint64_t exit_address = context->rip;
+    uint64_t signal_number = context->signal_number;
 
     // Check if the signal happens inside the enclave.
     if ((exit_address == OE_AEP_ADDRESS) && (exit_code == ENCLU_ERESUME))
@@ -32,7 +33,8 @@ uint64_t oe_host_handle_exception(oe_host_exception_context_t* context)
         oe_thread_binding_t* thread_data = oe_get_thread_binding();
         if (thread_data->flags & _OE_THREAD_HANDLING_EXCEPTION)
         {
-            abort();
+            // Return directly.
+            return OE_EXCEPTION_CONTINUE_EXECUTION;
         }
 
         // Call-in enclave to handle the exception.
@@ -47,8 +49,11 @@ uint64_t oe_host_handle_exception(oe_host_exception_context_t* context)
 
         // Call into enclave first pass exception handler.
         uint64_t arg_out = 0;
-        oe_result_t result =
-            oe_ecall(enclave, OE_ECALL_VIRTUAL_EXCEPTION_HANDLER, 0, &arg_out);
+        oe_result_t result = oe_ecall(
+            enclave,
+            OE_ECALL_VIRTUAL_EXCEPTION_HANDLER,
+            signal_number,
+            &arg_out);
 
         // Reset the flag
         thread_data->flags &= (~_OE_THREAD_HANDLING_EXCEPTION);

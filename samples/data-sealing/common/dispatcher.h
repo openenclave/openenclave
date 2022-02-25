@@ -6,6 +6,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/seal.h>
 #include <string>
+#include "datasealing_args.h"
 #include "shared.h"
 
 using namespace std;
@@ -26,14 +27,9 @@ class ecall_dispatcher
         size_t opt_msg_len,
         const unsigned char* data,
         size_t data_size,
-        sealed_data_t** sealed_data,
-        size_t* sealed_data_size);
+        data_t* sealed_data);
 
-    int unseal_data(
-        const sealed_data_t* sealed_data,
-        size_t sealed_data_size,
-        unsigned char** data,
-        size_t* data_size);
+    int unseal_data(const data_t* sealed_data, data_t* output_data);
 
   private:
     void dump_data(const char* name, unsigned char* data, size_t data_size);

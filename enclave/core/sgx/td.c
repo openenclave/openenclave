@@ -10,6 +10,7 @@
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/rdrand.h>
 #include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/thread.h>
 #include <openenclave/internal/utils.h>
 #include "asmdefs.h"
 #include "thread.h"
@@ -171,16 +172,55 @@ oe_sgx_td_t* oe_sgx_get_td()
 /*
 **==============================================================================
 **
-** oe_sgx_set_td_exception_handler_stack()
+** oe_sgx_clear_td_states()
+**
+**     Internal API that allows an enclave to clear the td states.
+**
+**==============================================================================
+*/
+
+void oe_sgx_td_clear_states(oe_sgx_td_t* td)
+{
+    /* Mask host signals by default */
+    oe_sgx_td_mask_host_signal(td);
+
+    /* Clear exception-related information */
+    td->exception_code = 0;
+    td->exception_flags = 0;
+    td->exception_address = 0;
+    td->faulting_address = 0;
+    td->error_code = 0;
+    td->last_ssa_rsp = 0;
+    td->last_ssa_rbp = 0;
+
+    /* Clear states related host signal handling */
+    td->exception_nesting_level = 0;
+    td->is_handling_host_signal = 0;
+    td->host_signal_bitmask = 0;
+    td->host_signal = 0;
+
+    /* Clear the states of the state machine */
+    td->previous_state = OE_TD_STATE_NULL;
+    td->state = OE_TD_STATE_RUNNING; // the default state during the runtime
+}
+
+/*
+**==============================================================================
+**
+** oe_sgx_td_set_exception_handler_stack()
 **
 **     Internal API that allows an enclave to setup stack area for
 **     exception handlers to use.
 **
 **==============================================================================
 */
-bool oe_sgx_set_td_exception_handler_stack(void* stack, uint64_t size)
+bool oe_sgx_td_set_exception_handler_stack(
+    oe_sgx_td_t* td,
+    void* stack,
+    uint64_t size)
 {
-    oe_sgx_td_t* td = oe_sgx_get_td();
+    if (!td)
+        return false;
 
     /* ensure stack + size is 16-byte aligned */
     if (((uint64_t)stack + size) % 16)
@@ -195,11 +235,196 @@ bool oe_sgx_set_td_exception_handler_stack(void* stack, uint64_t size)
 /*
 **==============================================================================
 **
+** oe_sgx_td_register_exception_handler_stack()
+** oe_sgx_td_unregister_exception_handler_stack()
+**
+**     Internal APIs that allows an enclave to register or unregister
+**     the exception handler stack for the given exception type
+**
+**==============================================================================
+*/
+
+OE_INLINE bool _td_set_exception_handler_stack_bitmask(
+    oe_sgx_td_t* td,
+    uint64_t type,
+    bool set_bit)
+{
+    if (!td)
+        return false;
+
+    if (type > OE_SGX_EXCEPTION_CODE_MAXIMUM)
+        return false;
+
+    oe_spin_lock(&td->lock);
+
+    if (set_bit)
+        td->exception_handler_stack_bitmask |= 1UL << type;
+    else
+        td->exception_handler_stack_bitmask &= ~(1UL << type);
+
+    oe_spin_unlock(&td->lock);
+
+    return true;
+}
+
+bool oe_sgx_td_register_exception_handler_stack(oe_sgx_td_t* td, uint64_t type)
+{
+    return _td_set_exception_handler_stack_bitmask(td, type, 1 /* set */);
+}
+
+bool oe_sgx_td_unregister_exception_handler_stack(
+    oe_sgx_td_t* td,
+    uint64_t type)
+{
+    return _td_set_exception_handler_stack_bitmask(td, type, 0 /* clear */);
+}
+
+/*
+**==============================================================================
+**
+** oe_sgx_td_exception_handler_stack_registered
+**
+**     Internal API for querying whether the thread registers the exception
+**     handler stack for the given exception type
+**
+**==============================================================================
+*/
+bool oe_sgx_td_exception_handler_stack_registered(
+    oe_sgx_td_t* td,
+    uint64_t type)
+{
+    if (!td)
+        return false;
+
+    if (type > OE_SGX_EXCEPTION_CODE_MAXIMUM)
+        return false;
+
+    return (td->exception_handler_stack_bitmask & (1UL << type)) != 0;
+}
+
+/*
+**==============================================================================
+**
+** oe_sgx_td_mask_host_signal()
+** oe_sgx_td_unmask_host_signal()
+**
+**     Internal APIs that allows a thread to self-mask or unmask host signals
+**
+**==============================================================================
+*/
+
+OE_INLINE void _set_td_host_signal_unmasked(oe_sgx_td_t* td, uint64_t value)
+{
+    if (!td)
+        return;
+
+    td->host_signal_unmasked = value;
+}
+
+void oe_sgx_td_mask_host_signal(oe_sgx_td_t* td)
+{
+    _set_td_host_signal_unmasked(td, 0);
+}
+
+void oe_sgx_td_unmask_host_signal(oe_sgx_td_t* td)
+{
+    _set_td_host_signal_unmasked(td, 1);
+}
+
+/*
+**==============================================================================
+**
+** oe_sgx_register_td_host_signal()
+** oe_sgx_unregister_td_host_signal()
+**
+**     Internal APIs that allows an enclave to register or unregister signals
+**     raised by the host for itself or a target thread
+**
+**==============================================================================
+*/
+
+OE_INLINE bool _set_td_host_signal_bitmask(
+    oe_sgx_td_t* td,
+    int signal_number,
+    bool set_bit)
+{
+    if (!td)
+        return false;
+
+    /* only allow number 1-64 */
+    if (signal_number <= 0 || signal_number > 64)
+        return false;
+
+    oe_spin_lock(&td->lock);
+
+    if (set_bit)
+        td->host_signal_bitmask |= 1UL << (signal_number - 1);
+    else
+        td->host_signal_bitmask &= ~(1UL << (signal_number - 1));
+
+    oe_spin_unlock(&td->lock);
+
+    return true;
+}
+
+bool oe_sgx_td_register_host_signal(oe_sgx_td_t* td, int signal_number)
+{
+    return _set_td_host_signal_bitmask(td, signal_number, 1 /* set */);
+}
+
+bool oe_sgx_td_unregister_host_signal(oe_sgx_td_t* td, int signal_number)
+{
+    return _set_td_host_signal_bitmask(td, signal_number, 0 /* clear */);
+}
+
+/*
+**==============================================================================
+**
+** oe_sgx_td_host_signal_registered
+**
+**     Internal API for querying whether the thread registers the given
+**     host signal
+**
+**==============================================================================
+*/
+bool oe_sgx_td_host_signal_registered(oe_sgx_td_t* td, int signal_number)
+{
+    if (!td)
+        return false;
+
+    /* only allow number 1-64 */
+    if (signal_number <= 0 || signal_number > 64)
+        return false;
+
+    return (td->host_signal_bitmask & (1UL << (signal_number - 1))) != 0;
+}
+
+/*
+**==============================================================================
+**
+** oe_sgx_td_is_handling_host_signal()
+**
+**     Internal API for querying whether the thread is handling a host signal
+**
+**==============================================================================
+*/
+
+bool oe_sgx_td_is_handling_host_signal(oe_sgx_td_t* td)
+{
+    if (!td)
+        return false;
+
+    return td->is_handling_host_signal;
+}
+
+/*
+**==============================================================================
+**
 ** td_initialized()
 **
 **     Returns TRUE if this thread data structure (oe_sgx_td_t) is initialized.
-*An
-**     initialized oe_sgx_td_t meets the following conditions:
+**
+**     An initialized oe_sgx_td_t meets the following conditions:
 **
 **         (1) td is not null
 **         (2) td->base.self_addr == td

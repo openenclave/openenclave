@@ -24,15 +24,20 @@ add_enclave_library(
   ${OPENSSL_DIR}/test/testutil/tap_bio.c
   ${OPENSSL_DIR}/test/testutil/test_cleanup.c
   ${OPENSSL_DIR}/test/testutil/tests.c
-  ${OPENSSL_DIR}/test/testutil/testutil_init.c)
+  ${OPENSSL_DIR}/test/testutil/testutil_init.c
+  thread.cpp
+  # Ensure that openssl_t.h is generated.
+  openssl_t.h)
 
 enclave_compile_options(
   openssl-support PRIVATE -Wno-shorten-64-to-32 -Wno-sign-conversion
   -Wno-conversion -Wno-unused-parameter)
 
-enclave_link_libraries(openssl-support PRIVATE oelibc oe_includes)
-enclave_include_directories(openssl-support PRIVATE ${OPENSSL_DIR}/include
-                            ${CMAKE_BINARY_DIR}/3rdparty/openssl/build/include)
+enclave_link_libraries(openssl-support PRIVATE oelibcxx oelibc oe_includes)
+enclave_include_directories(
+  openssl-support PRIVATE ${OPENSSL_DIR}/include
+  ${CMAKE_BINARY_DIR}/3rdparty/openssl/build/include
+  ${CMAKE_CURRENT_BINARY_DIR})
 
 # Create an object library to avoid recompiling these files.
 # These cannot be added to openssl-support since they'd result in multiple
@@ -51,6 +56,17 @@ maybe_build_using_clangw(openssl-common)
 
 # Add the dependency to the opensslconf.h.
 add_enclave_dependencies(openssl-support openssl_generated)
+
+if (ENABLE_SYMCRYPT_OPENSSL_TESTS)
+  # Make sure the symcrypt module is placed under the same directory as enclave
+  # binaries
+  add_custom_command(
+    TARGET openssl-support
+    COMMAND
+      ${CMAKE_COMMAND} -E copy
+      ${CMAKE_BINARY_DIR}/3rdparty/symcrypt_engine/SymCrypt/lib/libsymcrypt.so
+      ${CMAKE_CURRENT_BINARY_DIR}/libsymcrypt.so)
+endif ()
 
 # List the tests that require ssltestlib.c.
 set(SSL_TEST_LIST
@@ -75,11 +91,19 @@ function (generate_buildtest TESTNAME)
     COMMAND ${OE_PERL} ${GEN_BUILDTEST_PL} ${NAME} > ${TESTNAME}.c)
 endfunction ()
 
-function (add_openssl_test_enc NAME BUILDTEST)
+function (add_openssl_test_enc NAME BUILDTEST CRYPTO_LIB)
   if (BUILDTEST)
     list(APPEND TEST_SRC ${NAME}.c)
   else ()
     list(APPEND TEST_SRC ${OPENSSL_DIR}/test/${NAME}.c)
+  endif ()
+
+  if (CRYPTO_LIB STREQUAL "OpenSSL")
+    set(TEST_NAME "${NAME}")
+  elseif (CRYPTO_LIB STREQUAL "SymCrypt_FIPS")
+    set(TEST_NAME "${NAME}_symcrypt")
+  else ()
+    message(FATAL_ERROR "${CRYPTO_LIB} is unsupported for OpenSSL tests")
   endif ()
 
   if ("${NAME}" IN_LIST SSL_TEST_LIST)
@@ -101,28 +125,33 @@ function (add_openssl_test_enc NAME BUILDTEST)
 
   add_enclave(
     TARGET
-    openssl-${NAME}_enc
+    openssl-${TEST_NAME}_enc
     # Building the enclave by default when enabling LVI mitigation to
     # test linking against LVI-mitigated libraries.
     ADD_LVI_MITIGATION
     CRYPTO_LIB
-    OpenSSL
+    ${CRYPTO_LIB}
     SOURCES
     ${TEST_SRC})
 
   enclave_include_directories(
-    openssl-${NAME}_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${OPENSSL_DIR}
+    openssl-${TEST_NAME}_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${OPENSSL_DIR}
     ${OPENSSL_DIR}/include ${CMAKE_BINARY_DIR}/3rdparty/openssl/build/include)
 
   enclave_compile_options(
-    openssl-${NAME}_enc PRIVATE -Wno-shorten-64-to-32 -Wno-sign-conversion
-    -Wno-conversion -Wno-unused-parameter)
+    openssl-${TEST_NAME}_enc
+    PRIVATE
+    -Wno-shorten-64-to-32
+    -Wno-sign-conversion
+    -Wno-conversion
+    -Wno-unused-parameter
+    -Wno-deprecated-declarations)
 
-  enclave_compile_definitions(openssl-${NAME}_enc PRIVATE OPENSSL_NO_AFALGENG
-                              __STDC_NO_ATOMICS__)
+  enclave_compile_definitions(openssl-${TEST_NAME}_enc PRIVATE
+                              OPENSSL_NO_AFALGENG __STDC_NO_ATOMICS__)
 
   if (CODE_COVERAGE)
-    enclave_compile_definitions(openssl-${NAME}_enc PRIVATE CODE_COVERAGE)
+    enclave_compile_definitions(openssl-${TEST_NAME}_enc PRIVATE CODE_COVERAGE)
   endif ()
 
   list(APPEND INCLUDE_PATHS ${CMAKE_CURRENT_BINARY_DIR}
@@ -136,13 +165,20 @@ function (add_openssl_test_enc NAME BUILDTEST)
     list(APPEND INCLUDE_PATHS ${OPENSSL_DIR}/crypto/ec)
   endif ()
 
-  enclave_include_directories(openssl-${NAME}_enc PRIVATE ${INCLUDE_PATHS})
+  enclave_include_directories(openssl-${TEST_NAME}_enc PRIVATE ${INCLUDE_PATHS})
 
-  enclave_link_libraries(openssl-${NAME}_enc openssl-support openssl-common
-                         oehostsock oehostfs oehostresolver)
+  enclave_link_libraries(openssl-${TEST_NAME}_enc openssl-support
+                         openssl-common oehostsock oehostfs oehostresolver)
+
+  if (ENABLE_SYMCRYPT_OPENSSL_TESTS)
+    # Propagate CMAKE_SKIP_RPATH variable.
+    set(CMAKE_SKIP_RPATH
+        "${CMAKE_SKIP_RPATH}"
+        PARENT_SCOPE)
+  endif ()
 
   if (WIN32)
-    maybe_build_using_clangw(openssl-${NAME}_enc)
+    maybe_build_using_clangw(openssl-${TEST_NAME}_enc)
 
     # maybe_build_using_clangw populates variables in its parent scope (ie current scope)
     # Propagate these variables back up to the caller.
@@ -194,11 +230,17 @@ file(STRINGS "../tests.supported.buildtest" alltests)
 foreach (testcase ${alltests})
   get_testcase_name(${testcase} name "../../3rdparty/openssl/openssl/test/")
   generate_buildtest(${name})
-  add_openssl_test_enc(${name} TRUE)
+  add_openssl_test_enc(${name} TRUE "OpenSSL")
+  if (ENABLE_SYMCRYPT_OPENSSL_TESTS)
+    add_openssl_test_enc(${name} TRUE "SymCrypt_FIPS")
+  endif ()
 endforeach (testcase)
 
 file(STRINGS "../tests.supported" alltests)
 foreach (testcase ${alltests})
   get_testcase_name(${testcase} name "../../3rdparty/openssl/openssl/test/")
-  add_openssl_test_enc(${name} FALSE)
+  add_openssl_test_enc(${name} FALSE "OpenSSL")
+  if (ENABLE_SYMCRYPT_OPENSSL_TESTS)
+    add_openssl_test_enc(${name} FALSE "SymCrypt_FIPS")
+  endif ()
 endforeach (testcase)

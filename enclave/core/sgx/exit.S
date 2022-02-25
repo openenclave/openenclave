@@ -7,13 +7,13 @@
 
 //==============================================================================
 //
-// void oe_asm_exit(uint64_t arg1, uint64_t arg2, oe_sgx_td_t* td, uint64_t aborting)
+// void oe_asm_exit(uint64_t arg1, uint64_t arg2, oe_sgx_td_t* td, uint64_t direct_return)
 //
 // Registers:
 //     RDI - arg1
 //     RSI - arg2
 //     RDX - td
-//     RCX - aborting
+//     RCX - direct_return
 //
 // Purpose:
 //     Restores user registers and executes the EEXIT instruction to leave the
@@ -58,9 +58,10 @@ oe_asm_exit:
     mov %rdx, %r11
 
 .determine_exit_type:
-    // Check if the argument aborting is set
-    cmp $1, %rcx
-    je .clean_exit
+    // Save the direct_return argument in r13 and check if it is set
+    mov %rcx, %r13
+    cmp $1, %r13
+    je .return
 
     // Check the depth of the ECALL stack (zero for clean exit)
     // exit-type-check.
@@ -83,6 +84,14 @@ oe_asm_exit:
 
     // Clear the oe_sgx_td_t.last_sp field (force oe_enter to calculate stack pointer)
     movq $0, td_last_sp(%r11)
+    jmp .prepare_eexit
+
+.return:
+    lfence
+
+    // Restore host ecall context
+    mov td_host_previous_ecall_context(%r11), %r8
+    mov %r8, td_host_ecall_context(%r11)
 
 .prepare_eexit:
     mov _td_from_tcs_offset(%rip), %r8
@@ -100,19 +109,46 @@ oe_asm_exit:
     lfence
 
     add $PAGE_SIZE, %r12
-    xor %r8, %r8
     // Reset the saved cssa to zero to match the value on
     // the previous oe_enter (which ERESUME will return to)
-    mov %r8, td_eenter_rax(%r11)
+    movq $0, td_eenter_rax(%r11)
 
 .restore_host_registers:
     mov td_host_rcx(%r11), %rcx
     mov SGX_SSA_URSP_OFFSET(%r12), %rsp
     mov SGX_SSA_URBP_OFFSET(%r12), %rbp
 
-    oe_cleanup_registers
+    // Bypass update_td_state if direct_return is set
+    cmp $1, %r13
+    je .execute_eexit
+
+.update_td_state:
+    lfence
+
+    // Do not update the state in the following cases:
+    // a. The enclave exists from the first-level exception handler
+    cmpq $TD_STATE_FIRST_LEVEL_EXCEPTION_HANDLING, td_state(%r11)
+    je .execute_eexit
+    // b. The enclave exists in the middle of second-level exception handler
+    // (e.g., making an OCALL)
+    cmpq $TD_STATE_SECOND_LEVEL_EXCEPTION_HANDLING, td_state(%r11)
+    je .execute_eexit
+    // c. The enclave exists after an illegal instruction (e.g., cpuid) emulation
+    cmpq $TD_STATE_FIRST_LEVEL_EXCEPTION_HANDLING, td_previous_state(%r11)
+    je .execute_eexit
+    // d. The enclave exists while it is aborted
+    cmpq $TD_STATE_ABORTED, td_state(%r11)
+    je .execute_eexit
+
+    lfence
+
+    // Update the state to indicate that the enclave is returning
+    // to the host
+    movq $TD_STATE_EXITED, td_state(%r11)
 
 .execute_eexit:
+    oe_cleanup_registers
+
     // Check oe_sgx_td_t.simulate flag
     // simulate-flag-check.
     mov td_simulate(%r11), %rax

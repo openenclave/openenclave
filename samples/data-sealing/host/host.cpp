@@ -55,20 +55,17 @@ void terminate_enclave(oe_enclave_t* enclave)
 
 int unseal_data_and_verify_result(
     oe_enclave_t* target_enclave,
-    sealed_data_t* sealed_data,
-    size_t sealed_data_size,
+    data_t* sealed_data,
     unsigned char* target_data,
     size_t target_data_size)
 {
     oe_result_t result;
     int ret;
-    unsigned char* data = NULL;
-    size_t data_size = 0;
+    data_t data;
 
     cout << "Host: enter unseal_data_and_verify_result " << endl;
 
-    result = unseal_data(
-        target_enclave, &ret, sealed_data, sealed_data_size, &data, &data_size);
+    result = unseal_data(target_enclave, &ret, sealed_data, &data);
     if ((result != OE_OK) || (ret != 0))
     {
         cout << "Host: ecall unseal_data returned " << oe_result_str(result)
@@ -79,13 +76,16 @@ int unseal_data_and_verify_result(
 
     // print unsealed data
     cout << "Host: Unsealed result:" << endl;
-    printf("data=%s\n", data);
+    printf("data=%s", data.data);
 
-    printf("data_size=%zd\n", data_size);
+    printf("data_size=%zd\n", data.size);
+
     printf("target_data_size=%zd\n", target_data_size);
 
     if (strncmp(
-            (const char*)data, (const char*)target_data, target_data_size) != 0)
+            (const char*)data.data,
+            (const char*)target_data,
+            target_data_size) != 0)
     {
         cout << "Host: Unsealed data is not equal to the original data."
              << endl;
@@ -93,8 +93,8 @@ int unseal_data_and_verify_result(
         goto exit;
     }
 exit:
-    if (data)
-        free(data);
+    if (data.data)
+        free(data.data);
 
     cout << "Host: exit unseal_data_and_verify_result with " << ret << endl;
     return ret;
@@ -109,8 +109,7 @@ oe_result_t seal_unseal_by_policy(
     oe_result_t result = OE_OK;
     unsigned char* data = NULL;
     size_t data_size = 0;
-    sealed_data_t* sealed_data = NULL;
-    size_t sealed_data_size = 0;
+    data_t sealed_data;
     int ret = 0;
 
     // Seal data into enclave_a_v1
@@ -132,8 +131,7 @@ oe_result_t seal_unseal_by_policy(
         strlen(g_opt_msg),
         data,
         data_size,
-        &sealed_data,
-        &sealed_data_size);
+        &sealed_data);
     if ((result != OE_OK) || (ret != 0))
     {
         cout << "Host: seal_data failed with " << oe_result_str(result)
@@ -145,11 +143,7 @@ oe_result_t seal_unseal_by_policy(
     // Unseal data in the same enclave it was sealed
     cout << "\n\nHost: Unseal data in the same enclave it was sealed " << endl;
     ret = unseal_data_and_verify_result(
-        enclave_a_v1,
-        sealed_data,
-        sealed_data_size,
-        (unsigned char*)g_plain_text,
-        data_size);
+        enclave_a_v1, &sealed_data, (unsigned char*)g_plain_text, data_size);
     if (ret != 0)
     {
         cout << "Host: Validation of unsealed data failed with ret = " << ret
@@ -173,11 +167,7 @@ oe_result_t seal_unseal_by_policy(
          << "Seal policy is " << GET_POLICY_NAME(policy) << "--> failure is "
          << ((policy == POLICY_UNIQUE) ? "expected" : "not expected") << endl;
     ret = unseal_data_and_verify_result(
-        enclave_a_v2,
-        sealed_data,
-        sealed_data_size,
-        (unsigned char*)g_plain_text,
-        data_size);
+        enclave_a_v2, &sealed_data, (unsigned char*)g_plain_text, data_size);
     if (policy == POLICY_UNIQUE)
     {
         if (ret != ERROR_SIGNATURE_VERIFY_FAIL)
@@ -208,11 +198,7 @@ oe_result_t seal_unseal_by_policy(
             "product: failure is expected"
          << endl;
     ret = unseal_data_and_verify_result(
-        enclave_b,
-        sealed_data,
-        sealed_data_size,
-        (unsigned char*)g_plain_text,
-        data_size);
+        enclave_b, &sealed_data, (unsigned char*)g_plain_text, data_size);
     if (ret != ERROR_SIGNATURE_VERIFY_FAIL)
     {
         cout << "Host: failed to return ERROR_SIGNATURE_VERIFY_FAIL " << endl;
@@ -226,8 +212,8 @@ oe_result_t seal_unseal_by_policy(
 exit:
 
     // Free host memory allocated by the enclave.
-    if (sealed_data != NULL)
-        free(sealed_data);
+    if (sealed_data.data != NULL)
+        free(sealed_data.data);
 
     if (ret != 0)
         result = OE_FAILURE;

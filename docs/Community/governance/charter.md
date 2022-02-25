@@ -34,6 +34,7 @@ The primary responsibilities of this Committee are:
 - to support the community through handling any code of conduct incidents and reports
 - to work with the mentor assigned by the Confidential Computing Consortium
 (CCC) in tracking a [growth plan](growth-plan.md)
+- to take the Linux Foundation course [Inclusive Open Source Community Orientation](https://training.linuxfoundation.org/training/inclusive-open-source-community-orientation-lfc102/) and help the community follow its principles
 
 This Committee is not intended to make technical decisions, as those should
 generally be made by agreement among contributors PRs are reviewed and merged,

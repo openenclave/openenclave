@@ -32,7 +32,7 @@ void host_hello()
     fprintf(stdout, "Enclave called into host to print: Hello!\n");
 }
 
-void customized_log(
+void host_customized_log(
     void* context,
     bool is_enclave,
     const struct tm* t,
@@ -56,7 +56,7 @@ void customized_log(
 
     fprintf(
         log_file,
-        "%s.%06ld, %s, %s, %llx, %s",
+        "%s.%06ld, %s, %s, %lx, %s",
         time,
         usecs,
         (is_enclave ? "E" : "H"),
@@ -65,10 +65,19 @@ void customized_log(
         message);
 }
 
+static FILE* enc_logfile = NULL;
+
+void host_transfer_logs_to_file(const char* modified_log, size_t size)
+{
+    fprintf(enc_logfile, "%.*s", (int)size, modified_log);
+}
+
 int main(int argc, const char* argv[])
 {
-    FILE* out_file = fopen("./oe_out.txt", "w");
-    oe_log_set_callback((void*)out_file, customized_log);
+    FILE* out_file = fopen("./oe_host_out.txt", "w");
+    oe_log_set_callback((void*)out_file, host_customized_log);
+
+    enc_logfile = fopen("./oe_enclave_out.txt", "w");
 
     oe_result_t result;
     int ret = 1;
@@ -100,7 +109,11 @@ int main(int argc, const char* argv[])
         goto exit;
     }
 
+    // Set callback for enclave logs
+    result = enclave_set_log_callback(enclave);
+
     // Call into the enclave
+
     result = enclave_hello(enclave);
     if (result != OE_OK)
     {
@@ -113,18 +126,23 @@ int main(int argc, const char* argv[])
     }
     else
     {
-        fprintf(stdout, "Please check ./oe_out.txt for the redirected logs.\n");
+        fprintf(
+            stdout,
+            "Please check ./oe_host_out.txt and ./oe_enclave_out.txt for the "
+            "redirected host and enclave logs, respectively.\n");
     }
 
     ret = 0;
 
 exit:
     // Clean up the enclave if we created one
-    if (out_file)
-        fclose(out_file);
-
     if (enclave)
         oe_terminate_enclave(enclave);
+
+    if (out_file)
+        fclose(out_file);
+    if (enc_logfile)
+        fclose(enc_logfile);
 
     return ret;
 }

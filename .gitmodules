@@ -23,7 +23,7 @@
 [submodule "3rdparty/mbedtls/mbedtls"]
 	path = 3rdparty/mbedtls/mbedtls
 	url = https://github.com/openenclave/openenclave-mbedtls.git
-	branch = openenclave-mbedtls-2.16.10
+	branch = openenclave-mbedtls-2.16.12
 [submodule "3rdparty/openssl/intel-sgx-ssl"]
 	path = 3rdparty/openssl/intel-sgx-ssl
 	url = https://github.com/intel/intel-sgx-ssl
@@ -33,4 +33,7 @@
 	branch = openenclave-musl-1.2.2
 [submodule "3rdparty/musl/libc-test"]
 	path = 3rdparty/musl/libc-test
-	url = https://repo.or.cz/libc-test.git
+	url = https://github.com/openenclave/openenclave-musl-libc-tests
+[submodule "3rdparty/symcrypt_engine/SymCrypt-OpenSSL"]
+	path = 3rdparty/symcrypt_engine/SymCrypt-OpenSSL
+	url = https://github.com/microsoft/SymCrypt-OpenSSL
