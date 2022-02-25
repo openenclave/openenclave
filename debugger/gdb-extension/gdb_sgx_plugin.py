@@ -129,8 +129,8 @@ class oe_debug_enclave_t:
 # This constant definition must align with sgx_tcs_t
 TCS_GSBASE_OFFSET =  56
 
-# The set to store all loaded OE enclave base address.
-g_loaded_oe_enclave_addrs = set()
+# The set to store all loaded modules.
+g_loaded_modules = []
 
 # Global enclave list parsed flag
 g_enclave_list_parsed = False
@@ -201,9 +201,11 @@ def load_enclave_symbol(enclave_path, enclave_base_addr):
         return False
     # print (gdb_cmd)
     gdb.execute(gdb_cmd, False, True)
-    # Store the oe_enclave address to global set that will be cleanup on exit.
-    global g_loaded_oe_enclave_addrs
-    g_loaded_oe_enclave_addrs.add(int(gdb_cmd.split()[2], 16))
+    # Store the oe_enclave address to global list that will be cleanup on exit.
+    global g_loaded_modules
+    g_loaded_modules.append((enclave_base_addr,
+                             enclave_path,
+                             int(gdb_cmd.split()[2], 16)))
     return True
 
 def unload_enclave_symbol(enclave_path, enclave_base_addr):
@@ -217,8 +219,10 @@ def unload_enclave_symbol(enclave_path, enclave_base_addr):
         return False
     # print (gdb_cmd)
     gdb.execute(gdb_cmd, False, True)
-    global g_loaded_oe_enclave_addrs
-    g_loaded_oe_enclave_addrs.discard(int(gdb_cmd.split()[2]))
+    global g_loaded_modules
+    g_loaded_modules.remove((enclave_base_addr,
+                             enclave_path,
+                             int(gdb_cmd.split()[2])))
     return True
 
 def set_tcs_debug_flag(tcs_addr):
@@ -292,7 +296,7 @@ class ModuleLoadedBreakpoint(gdb.Breakpoint):
         module_addr = int(gdb.parse_and_eval("$rdi"))
         debug_module = oe_debug_module_t(module_addr)
         load_enclave_symbol(debug_module.path, debug_module.base_address)
-        print ("oegdb: Loaded enclave module %s" % debug_module.path)
+        #print ("oegdb: Loaded enclave module %s" % debug_module.path)
         oe_module_loaded_hook(debug_module)
         return False
 
@@ -401,11 +405,11 @@ def oe_debugger_init():
 def oe_debugger_cleanup():
     """Remove all loaded enclave symbols"""
     global g_enclave_list_parsed
-    for oe_enclave_addr in g_loaded_oe_enclave_addrs:
-        gdb_cmd = "remove-symbol-file -a %s" % (oe_enclave_addr)
+    for m in g_loaded_modules:
+        gdb_cmd = "remove-symbol-file -a %s" % m[2]
         # print (gdb_cmd)
-        gdb.execute("remove-symbol-file -a %s" % (oe_enclave_addr), False, True)
-    g_loaded_oe_enclave_addrs.clear()
+        gdb.execute("remove-symbol-file -a %s" % m[2], False, True)
+    g_loaded_modules.clear()
     g_enclave_list_parsed = False
     oe_debugger_cleanup_hook()
     return
@@ -413,6 +417,95 @@ def oe_debugger_cleanup():
 def exit_handler(event):
     oe_debugger_cleanup()
     return
+
+
+g_prev_debug_modules = None
+
+# Ensure that debugging symbols are loaded for all loaded enclave libraries.
+def myst_sync_symbols():
+    names = ["_debug_modules", "myst_debug_modules"]
+    debug_modules = None
+    for n in names:
+        try:
+            debug_modules = gdb.parse_and_eval(n)
+            break
+        except:
+            pass
+
+    # If debug modules is not found, sync cannot be done.
+    if not debug_modules:
+        return
+
+    # Compare against the previous value of _debug_modules. If same, symbols are
+    # up to date.
+    global g_prev_debug_modules
+    if g_prev_debug_modules == int(debug_modules):
+        # No change observed
+        return
+    g_prev_debug_modules = int(debug_modules)
+
+    # Gather the list of debug modules.
+    m = debug_modules
+    modules = []
+    while m:
+        # Ignore modules that aren't marked loaded.
+        if int(m['loaded']):
+            modules.append(int(m))
+        m = m['next']
+
+    # Modules are maintained in reverse order of notification.
+    # Reverse the list to obtain the original order of debugger notification.
+    modules.reverse()
+
+    # Copy loaded modules.
+    global g_loaded_modules
+    loaded_modules = g_loaded_modules[:]
+    g_loaded_modules.clear()
+
+    # Iterate through each module in the list (modules) gathered by iterating
+    # though debug_modules. Simulaneously iterate though loaded_modules list,
+    # comparing each module. Stop when there is a mismatch.
+    idx = 0
+    for m in modules:
+        if idx >= len(loaded_modules):
+            break
+
+        debug_module = oe_debug_module_t(m)
+        if debug_module.base_address != loaded_modules[idx][0]:
+            break
+
+        # Match. Retain module.
+        g_loaded_modules.append(loaded_modules[idx])
+        idx += 1
+
+    # Remove modules for which symbols have been loaded, but are no longer in
+    # debug_modules.
+    while idx < len(loaded_modules):
+        m = loaded_modules.pop()
+        try:
+            gdb.execute("remove-symbol-file -a %s" % m[2], False, True)
+        except:
+            pass
+
+    # Load symbols for modules that are in debug_modules, but are not yet processed.
+    while idx < len(modules):
+        module_addr = int(modules[idx])
+        debug_module = oe_debug_module_t(module_addr)
+        print('loading symbols for module %s' % debug_module.path)
+        load_enclave_symbol(debug_module.path, debug_module.base_address)
+        idx += 1
+
+
+
+class MystSyncSymbols (gdb.Command):
+  """Ensure that symbols for all enclave modules are loaded."""
+
+  def __init__ (self):
+    super (MystSyncSymbols, self).__init__ ("myst-sync-symbols", gdb.COMMAND_USER)
+
+  def invoke (self, arg, from_tty):
+      myst_sync_symbols()
+
 
 # Figure out missing symbols within enclaves.
 import shutil
@@ -505,19 +598,30 @@ class MissingSymbolAnalyzer:
         self.find_missing_symbols(libname, lib)
 
 
-missing_symbol_analyzer = None
+class MystAnalyzeSymbols (gdb.Command):
+  """Analyze loaded libraries and find out missing symbols."""
+
+  def __init__ (self):
+    super (MystAnalyzeSymbols, self).__init__ ("myst-analyze-symbols", gdb.COMMAND_USER)
+
+  def invoke (self, arg, from_tty):
+      analyzer = MissingSymbolAnalyzer()
+      if len(g_loaded_modules) == 0:
+          myst_sync_symbols()
+
+      for m in g_loaded_modules:
+          analyzer.process(m[1])
+
 
 def oe_debugger_init_hook():
-    global missing_symbol_analyzer
-    missing_symbol_analyzer = MissingSymbolAnalyzer()
+    MystSyncSymbols()
+    MystAnalyzeSymbols()
 
 def oe_debugger_cleanup_hook():
-    global missing_symbol_analyzer
-    missing_symbol_analyzer = None
+    pass
 
 def oe_module_loaded_hook(debug_module):
-    if missing_symbol_analyzer:
-        missing_symbol_analyzer.process(debug_module.path)
+    pass
 
 if __name__ == "__main__":
     gdb.events.exited.connect(exit_handler)
