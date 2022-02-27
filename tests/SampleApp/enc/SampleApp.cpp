@@ -5,7 +5,7 @@
 #include <openenclave/internal/tests.h>
 #include "SampleApp_t.h"
 
-const char* ProtectedMessage = "Hello world from Enclave\n\0";
+const char* ProtectedMessage = "Hello world from Enclave1\n\0";
 
 int secure_str_patching(const char* src, char* dst, size_t dst_length)
 {

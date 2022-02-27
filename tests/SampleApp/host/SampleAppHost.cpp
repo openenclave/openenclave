@@ -71,7 +71,7 @@ int main(int argc, const char* argv[])
     }
 
     const char expect[] = "My First App\n"
-                          "Hello world from Enclave\n"
+                          "Hello world from Enclave1\n"
                           "My First App\n"
                           "Hello world from Host\n";
 
