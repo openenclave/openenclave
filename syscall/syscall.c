@@ -44,7 +44,7 @@ OE_WEAK OE_DEFINE_SYSCALL3_M(SYS_accept)
     return oe_accept(sockfd, addr, addrlen);
 }
 
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_WEAK OE_DEFINE_SYSCALL2(SYS_access)
 {
     oe_errno = 0;
@@ -99,7 +99,7 @@ OE_WEAK OE_DEFINE_SYSCALL3_M(SYS_connect)
     return oe_connect(sd, addr, addrlen);
 }
 
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_WEAK OE_DEFINE_SYSCALL2(SYS_creat)
 {
     oe_errno = 0;
@@ -130,7 +130,7 @@ OE_WEAK OE_DEFINE_SYSCALL1(SYS_dup)
     return oe_dup(fd);
 }
 
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_WEAK OE_DEFINE_SYSCALL2(SYS_dup2)
 {
     oe_errno = 0;
@@ -160,7 +160,7 @@ done:
     return ret;
 }
 
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_WEAK OE_DEFINE_SYSCALL1(SYS_epoll_create)
 {
     oe_errno = 0;
@@ -197,7 +197,7 @@ OE_WEAK OE_DEFINE_SYSCALL5_M(SYS_epoll_pwait)
     return oe_epoll_pwait(epfd, events, maxevents, timeout, sigmask);
 }
 
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_WEAK OE_DEFINE_SYSCALL4_M(SYS_epoll_wait)
 {
     oe_errno = 0;
@@ -416,7 +416,7 @@ OE_WEAK OE_DEFINE_SYSCALL1(SYS_getpgid)
     return (long)oe_getpgid(pid);
 }
 
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_WEAK OE_DEFINE_SYSCALL0(SYS_getpgrp)
 {
     oe_errno = 0;
@@ -523,7 +523,7 @@ OE_WEAK OE_DEFINE_SYSCALL3_M(SYS_ioctl)
     return oe_ioctl(fd, request, p1, p2, p3, p4);
 }
 
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_WEAK OE_DEFINE_SYSCALL2(SYS_link)
 {
     oe_errno = 0;
@@ -583,7 +583,7 @@ OE_WEAK OE_WEAK OE_DEFINE_SYSCALL3(SYS_lseek)
     return oe_lseek(fd, off, whence);
 }
 
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_WEAK OE_DEFINE_SYSCALL2(SYS_lstat)
 {
     OE_UNUSED(arg1);
@@ -593,7 +593,7 @@ OE_WEAK OE_DEFINE_SYSCALL2(SYS_lstat)
 }
 #endif
 
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_WEAK OE_DEFINE_SYSCALL2(SYS_mkdir)
 {
     oe_errno = 0;
@@ -669,7 +669,7 @@ done:
     return ret;
 }
 
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_WEAK OE_DEFINE_SYSCALL2_M(SYS_open)
 {
     oe_va_list ap;
@@ -726,7 +726,7 @@ done:
     return ret;
 }
 
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_WEAK OE_DEFINE_SYSCALL3_M(SYS_poll)
 {
     oe_errno = 0;
@@ -905,7 +905,7 @@ OE_WEAK OE_DEFINE_SYSCALL3_M(SYS_recvmsg)
     return oe_recvmsg(sockfd, (struct oe_msghdr*)buf, flags);
 }
 
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_WEAK OE_DEFINE_SYSCALL2(SYS_rename)
 {
     oe_errno = 0;
@@ -954,7 +954,7 @@ done:
     return ret;
 }
 
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_WEAK OE_DEFINE_SYSCALL1(SYS_rmdir)
 {
     oe_errno = 0;
@@ -972,7 +972,7 @@ OE_WEAK OE_DEFINE_SYSCALL3(SYS_sched_getaffinity)
     return -1;
 }
 
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_WEAK OE_DEFINE_SYSCALL5_M(SYS_select)
 {
     oe_errno = 0;
@@ -1047,7 +1047,7 @@ OE_WEAK OE_DEFINE_SYSCALL4_M(SYS_socketpair)
     return oe_socketpair(domain, type, protocol, sv);
 }
 
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_WEAK OE_DEFINE_SYSCALL2(SYS_stat)
 {
     oe_errno = 0;
@@ -1111,7 +1111,7 @@ OE_WEAK OE_DEFINE_SYSCALL1(SYS_uname)
     return oe_uname(buf);
 }
 
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_WEAK OE_DEFINE_SYSCALL1(SYS_unlink)
 {
     oe_errno = 0;
@@ -1176,7 +1176,7 @@ static long _syscall(
     switch (number)
     {
         OE_SYSCALL_DISPATCH(SYS_accept, arg1, arg2, arg3);
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
         OE_SYSCALL_DISPATCH(SYS_access, arg1, arg2);
 #endif
         OE_SYSCALL_DISPATCH(SYS_bind, arg1, arg2, arg3);
@@ -1184,21 +1184,21 @@ static long _syscall(
         OE_SYSCALL_DISPATCH(SYS_close, arg1);
         OE_SYSCALL_DISPATCH(SYS_clock_nanosleep, arg1, arg2, arg3, arg4);
         OE_SYSCALL_DISPATCH(SYS_connect, arg1, arg2, arg3);
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
         OE_SYSCALL_DISPATCH(SYS_creat, arg1, arg2);
 #endif
         OE_SYSCALL_DISPATCH(SYS_dup, arg1);
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
         OE_SYSCALL_DISPATCH(SYS_dup2, arg1, arg2);
 #endif
         OE_SYSCALL_DISPATCH(SYS_dup3, arg1, arg2, arg3);
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
         OE_SYSCALL_DISPATCH(SYS_epoll_create, arg1);
 #endif
         OE_SYSCALL_DISPATCH(SYS_epoll_create1, arg1);
         OE_SYSCALL_DISPATCH(SYS_epoll_ctl, arg1, arg2, arg3, arg4);
         OE_SYSCALL_DISPATCH(SYS_epoll_pwait, arg1, arg2, arg3, arg4, arg5);
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
         OE_SYSCALL_DISPATCH(SYS_epoll_wait, arg1, arg2, arg3, arg4);
 #endif
         OE_SYSCALL_DISPATCH(SYS_exit, arg1);
@@ -1218,7 +1218,7 @@ static long _syscall(
         OE_SYSCALL_DISPATCH(SYS_getgroups, arg1, arg2);
         OE_SYSCALL_DISPATCH(SYS_getpeername, arg1, arg2, arg3);
         OE_SYSCALL_DISPATCH(SYS_getpgid, arg1);
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
         OE_SYSCALL_DISPATCH(SYS_getpgrp);
 #endif
         OE_SYSCALL_DISPATCH(SYS_getpid);
@@ -1227,27 +1227,27 @@ static long _syscall(
         OE_SYSCALL_DISPATCH(SYS_getsockopt, arg1, arg2, arg3, arg4, arg5);
         OE_SYSCALL_DISPATCH(SYS_getuid);
         OE_SYSCALL_DISPATCH(SYS_ioctl, arg1, arg2, arg3, arg4, arg5, arg6);
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
         OE_SYSCALL_DISPATCH(SYS_link, arg1, arg2);
 #endif
         OE_SYSCALL_DISPATCH(SYS_linkat, arg1, arg2, arg3, arg4, arg5);
         OE_SYSCALL_DISPATCH(SYS_listen, arg1, arg2);
         OE_SYSCALL_DISPATCH(SYS_lseek, arg1, arg2, arg3);
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
         OE_SYSCALL_DISPATCH(SYS_lstat, arg1, arg2);
 #endif
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
         OE_SYSCALL_DISPATCH(SYS_mkdir, arg1, arg2);
 #endif
         OE_SYSCALL_DISPATCH(SYS_mkdirat, arg1, arg2, arg3);
         OE_SYSCALL_DISPATCH(SYS_mount, arg1, arg2, arg3, arg4, arg5);
         OE_SYSCALL_DISPATCH(SYS_nanosleep, arg1, arg2);
         OE_SYSCALL_DISPATCH(SYS_newfstatat, arg1, arg2, arg3, arg4);
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
         OE_SYSCALL_DISPATCH(SYS_open, arg1, arg2, arg3);
 #endif
         OE_SYSCALL_DISPATCH(SYS_openat, arg1, arg2, arg3, arg4);
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
         OE_SYSCALL_DISPATCH(SYS_poll, arg1, arg2, arg3);
 #endif
         OE_SYSCALL_DISPATCH(SYS_ppoll, arg1, arg2, arg3, arg4);
@@ -1259,14 +1259,14 @@ static long _syscall(
         OE_SYSCALL_DISPATCH(SYS_readv, arg1, arg2, arg3);
         OE_SYSCALL_DISPATCH(SYS_recvfrom, arg1, arg2, arg3, arg4, arg5, arg6);
         OE_SYSCALL_DISPATCH(SYS_recvmsg, arg1, arg2, arg3);
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
         OE_SYSCALL_DISPATCH(SYS_rename, arg1, arg2);
 #endif
         OE_SYSCALL_DISPATCH(SYS_renameat, arg1, arg2, arg3, arg4, arg5);
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
         OE_SYSCALL_DISPATCH(SYS_rmdir, arg1);
 #endif
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
         OE_SYSCALL_DISPATCH(SYS_select, arg1, arg2, arg3, arg4, arg5);
 #endif
         OE_SYSCALL_DISPATCH(SYS_sendto, arg1, arg2, arg3, arg4, arg5, arg6);
@@ -1275,14 +1275,14 @@ static long _syscall(
         OE_SYSCALL_DISPATCH(SYS_shutdown, arg1, arg2);
         OE_SYSCALL_DISPATCH(SYS_socket, arg1, arg2, arg3);
         OE_SYSCALL_DISPATCH(SYS_socketpair, arg1, arg2, arg3, arg4);
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
         OE_SYSCALL_DISPATCH(SYS_stat, arg1, arg2);
 #endif
         OE_SYSCALL_DISPATCH(SYS_truncate, arg1, arg2);
         OE_SYSCALL_DISPATCH(SYS_write, arg1, arg2, arg3);
         OE_SYSCALL_DISPATCH(SYS_writev, arg1, arg2, arg3);
         OE_SYSCALL_DISPATCH(SYS_uname, arg1);
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
         OE_SYSCALL_DISPATCH(SYS_unlink, arg1);
 #endif
         OE_SYSCALL_DISPATCH(SYS_unlinkat, arg1, arg2, arg3);

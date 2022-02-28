@@ -36,7 +36,7 @@ int main(int argc, const char* argv[])
     /* logging.edl */
     OE_TEST(oe_log_init_ecall(NULL, NULL, 0) == OE_UNSUPPORTED);
 
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 #if defined(_WIN32)
     /*
      * On Windows, explicitly invoking the function so the attestation-related
