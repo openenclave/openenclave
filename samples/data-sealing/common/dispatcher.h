@@ -29,7 +29,10 @@ class ecall_dispatcher
         size_t data_size,
         data_t* sealed_data);
 
-    int unseal_data(const data_t* sealed_data, data_t* output_data);
+    int unseal_data(
+        const data_t* sealed_data,
+        const int optional_msg_flag,
+        data_t* output_data);
 
   private:
     void dump_data(const char* name, unsigned char* data, size_t data_size);

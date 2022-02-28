@@ -56,6 +56,7 @@ void terminate_enclave(oe_enclave_t* enclave)
 int unseal_data_and_verify_result(
     oe_enclave_t* target_enclave,
     data_t* sealed_data,
+    const int optional_msg_flag,
     unsigned char* target_data,
     size_t target_data_size)
 {
@@ -65,7 +66,8 @@ int unseal_data_and_verify_result(
 
     cout << "Host: enter unseal_data_and_verify_result " << endl;
 
-    result = unseal_data(target_enclave, &ret, sealed_data, &data);
+    result = unseal_data(
+        target_enclave, &ret, sealed_data, optional_msg_flag, &data);
     if ((result != OE_OK) || (ret != 0))
     {
         cout << "Host: ecall unseal_data returned " << oe_result_str(result)
@@ -102,6 +104,7 @@ exit:
 
 oe_result_t seal_unseal_by_policy(
     int policy,
+    const int optional_msg_flag,
     oe_enclave_t* enclave_a_v1,
     oe_enclave_t* enclave_a_v2,
     oe_enclave_t* enclave_b)
@@ -127,8 +130,8 @@ oe_result_t seal_unseal_by_policy(
         enclave_a_v1,
         &ret,
         policy,
-        (unsigned char*)g_opt_msg,
-        strlen(g_opt_msg),
+        (optional_msg_flag == 1) ? (unsigned char*)g_opt_msg : NULL,
+        (optional_msg_flag == 1) ? strlen(g_opt_msg) : 0,
         data,
         data_size,
         &sealed_data);
@@ -143,7 +146,11 @@ oe_result_t seal_unseal_by_policy(
     // Unseal data in the same enclave it was sealed
     cout << "\n\nHost: Unseal data in the same enclave it was sealed " << endl;
     ret = unseal_data_and_verify_result(
-        enclave_a_v1, &sealed_data, (unsigned char*)g_plain_text, data_size);
+        enclave_a_v1,
+        &sealed_data,
+        optional_msg_flag,
+        (unsigned char*)g_plain_text,
+        data_size);
     if (ret != 0)
     {
         cout << "Host: Validation of unsealed data failed with ret = " << ret
@@ -167,7 +174,11 @@ oe_result_t seal_unseal_by_policy(
          << "Seal policy is " << GET_POLICY_NAME(policy) << "--> failure is "
          << ((policy == POLICY_UNIQUE) ? "expected" : "not expected") << endl;
     ret = unseal_data_and_verify_result(
-        enclave_a_v2, &sealed_data, (unsigned char*)g_plain_text, data_size);
+        enclave_a_v2,
+        &sealed_data,
+        optional_msg_flag,
+        (unsigned char*)g_plain_text,
+        data_size);
     if (policy == POLICY_UNIQUE)
     {
         if (ret != ERROR_SIGNATURE_VERIFY_FAIL)
@@ -198,7 +209,11 @@ oe_result_t seal_unseal_by_policy(
             "product: failure is expected"
          << endl;
     ret = unseal_data_and_verify_result(
-        enclave_b, &sealed_data, (unsigned char*)g_plain_text, data_size);
+        enclave_b,
+        &sealed_data,
+        optional_msg_flag,
+        (unsigned char*)g_plain_text,
+        data_size);
     if (ret != ERROR_SIGNATURE_VERIFY_FAIL)
     {
         cout << "Host: failed to return ERROR_SIGNATURE_VERIFY_FAIL " << endl;
@@ -265,7 +280,7 @@ int main(int argc, const char* argv[])
     cout << "Host: Sealing data with POLICY_UNIQUE policy\n";
     cout << "------------------------------------------------\n";
     result = seal_unseal_by_policy(
-        POLICY_UNIQUE, enclave_a_v1, enclave_a_v2, enclave_b);
+        POLICY_UNIQUE, 1, enclave_a_v1, enclave_a_v2, enclave_b);
     if (result != OE_OK)
     {
         cout << "Host: Data sealing with POLICY_UNIQUE failed!" << ret << endl;
@@ -277,10 +292,24 @@ int main(int argc, const char* argv[])
     cout << "Host: Sealing data with POLICY_PRODUCT policy\n";
     cout << "------------------------------------------------\n";
     result = seal_unseal_by_policy(
-        POLICY_PRODUCT, enclave_a_v1, enclave_a_v2, enclave_b);
+        POLICY_PRODUCT, 1, enclave_a_v1, enclave_a_v2, enclave_b);
     if (result != OE_OK)
     {
-        cout << "Host: Data sealing with POLICY_UNIQUE failed!" << ret << endl;
+        cout << "Host: Data sealing with POLICY_PRODUCT failed!" << ret << endl;
+        goto exit;
+    }
+
+    //  POLICY_UNIQUE policy
+    cout << "------------------------------------------------\n";
+    cout << "Host: Sealing data with POLICY_UNIQUE policy, no optional data\n";
+    cout << "------------------------------------------------\n";
+    result = seal_unseal_by_policy(
+        POLICY_UNIQUE, 0, enclave_a_v1, enclave_a_v2, enclave_b);
+    if (result != OE_OK)
+    {
+        cout << "Host: Data sealing with POLICY_UNIQUE, no optional data "
+                "failed! "
+             << ret << endl;
         goto exit;
     }
     ret = 0;

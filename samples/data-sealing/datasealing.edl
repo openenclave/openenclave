@@ -22,6 +22,7 @@ enclave {
                              [out] data_t* sealed_data);
 
         public int unseal_data([in] const data_t* sealed_data,
+                               const int optional_msg_flag,
                                [out] data_t* output_data);
 
     };
