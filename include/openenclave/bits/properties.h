@@ -51,7 +51,7 @@ typedef struct _oe_enclave_properties_header
  * define the OE_SET_ENCLAVE_SGX macro. Only define on platforms that SGX is
  * supported on, otherwise define it to be nothing.
  */
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 #include "sgx/sgxproperties.h"
 #else
 #define OE_SET_ENCLAVE_SGX( \
@@ -63,7 +63,7 @@ typedef struct _oe_enclave_properties_header
     TCS_COUNT)
 #endif
 
-#if __aarch64__
+#ifdef __aarch64__
 #include "optee/opteeproperties.h"
 #else
 #define OE_SET_ENCLAVE_OPTEE( \

@@ -62,7 +62,7 @@ OE_DEFINE_SYSCALL2_M(SYS_openat)
     return -1;
 }
 
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_DEFINE_SYSCALL2_M(SYS_open)
 {
     oe_va_list ap;
@@ -161,7 +161,7 @@ static long _syscall_dispatch(
     switch (number)
     {
         OE_SYSCALL_DISPATCH(SYS_openat, arg1, arg2, arg3, arg4);
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
         OE_SYSCALL_DISPATCH(SYS_open, arg1, arg2, arg3);
 #endif
         OE_SYSCALL_DISPATCH(SYS_read, arg1, arg2, arg3);

@@ -32,7 +32,7 @@ void enc_edl_opt_out()
     OE_TEST(oe_syscall_getpgid_ocall(NULL, 0) == OE_UNSUPPORTED);
     OE_TEST(oe_syscall_getgroups_ocall(NULL, 0, NULL) == OE_UNSUPPORTED);
 
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
     /* debug.edl */
     OE_TEST(
         oe_sgx_backtrace_symbols_ocall(NULL, NULL, NULL, 0, NULL, 0, NULL) ==

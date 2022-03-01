@@ -56,7 +56,7 @@ OE_EXTERNC_BEGIN
 
 #define SGX_UNMASKED_EVENT 128 /* SGX EINIT error code */
 
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_STATIC_ASSERT(SGX_FLAGS_DEBUG == OE_SGX_FLAGS_DEBUG);
 OE_STATIC_ASSERT(SGX_FLAGS_MODE64BIT == OE_SGX_FLAGS_MODE64BIT);
 #endif
@@ -237,7 +237,7 @@ OE_PACK_END
 
 OE_CHECK_SIZE(sizeof(sgx_sigstruct_t), 1808);
 
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_CHECK_SIZE(sizeof(sgx_sigstruct_t), OE_SGX_SIGSTRUCT_SIZE);
 #endif
 

@@ -11,7 +11,7 @@
 // For OE_SYS_ defines.
 // They are just used for asserting that they are equal to the corresponding
 // SYS_ ones.
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 #include <openenclave/internal/syscall/sys/bits/syscall_x86_64.h>
 #elif defined(__aarch64__)
 #include <openenclave/internal/syscall/sys/bits/syscall_aarch64.h>
@@ -137,7 +137,7 @@ OE_EXTERNC_BEGIN
  **/
 
 OE_DECLARE_SYSCALL3_M(SYS_accept);
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_DECLARE_SYSCALL2(SYS_access);
 #endif
 OE_DECLARE_SYSCALL3_M(SYS_bind);
@@ -146,21 +146,21 @@ OE_DECLARE_SYSCALL2(SYS_clock_gettime);
 OE_DECLARE_SYSCALL4_M(SYS_clock_nanosleep);
 OE_DECLARE_SYSCALL1_M(SYS_close);
 OE_DECLARE_SYSCALL3_M(SYS_connect);
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_DECLARE_SYSCALL2(SYS_creat);
 #endif
 OE_DECLARE_SYSCALL1(SYS_dup);
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_DECLARE_SYSCALL2(SYS_dup2);
 #endif
 OE_DECLARE_SYSCALL3(SYS_dup3);
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_DECLARE_SYSCALL1(SYS_epoll_create);
 #endif
 OE_DECLARE_SYSCALL1(SYS_epoll_create1);
 OE_DECLARE_SYSCALL4(SYS_epoll_ctl);
 OE_DECLARE_SYSCALL5_M(SYS_epoll_pwait);
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_DECLARE_SYSCALL4_M(SYS_epoll_wait);
 #endif
 OE_DECLARE_SYSCALL1(SYS_exit);
@@ -190,7 +190,7 @@ OE_DECLARE_SYSCALL0(SYS_getgid);
 OE_DECLARE_SYSCALL2(SYS_getgroups);
 OE_DECLARE_SYSCALL3_M(SYS_getpeername);
 OE_DECLARE_SYSCALL1(SYS_getpgid);
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_DECLARE_SYSCALL0(SYS_getpgrp);
 #endif
 OE_DECLARE_SYSCALL0(SYS_getpid);
@@ -206,7 +206,7 @@ OE_DECLARE_SYSCALL0(SYS_getuid);
 // SYS_ioctl is called with 3 or more args.
 // However OE only uses the first 3 args.
 OE_DECLARE_SYSCALL3_M(SYS_ioctl);
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_DECLARE_SYSCALL2(SYS_link);
 #endif
 OE_DECLARE_SYSCALL5(SYS_linkat);
@@ -216,10 +216,10 @@ OE_DECLARE_SYSCALL3(SYS_lseek);
  * lstat is required to compile musl/src/stat/fstatat.c, and hence
  * musl/src/stat/stat.c. SYS_lstat need not be implemented.
  */
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_DECLARE_SYSCALL2(SYS_lstat);
 #endif
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_DECLARE_SYSCALL2(SYS_mkdir);
 #endif
 OE_DECLARE_SYSCALL3(SYS_mkdirat);
@@ -230,13 +230,13 @@ OE_DECLARE_SYSCALL2(SYS_munmap);
 OE_DECLARE_SYSCALL5(SYS_mount);
 OE_DECLARE_SYSCALL2_M(SYS_nanosleep);
 OE_DECLARE_SYSCALL4(SYS_newfstatat);
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 // Normally called with 3 args.
 // Called with 2 args in mustl/src/stdio/__fopen_rb_ca.c
 OE_DECLARE_SYSCALL2_M(SYS_open);
 #endif
 OE_DECLARE_SYSCALL2_M(SYS_openat);
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_DECLARE_SYSCALL3_M(SYS_poll);
 #endif
 OE_DECLARE_SYSCALL4_M(SYS_ppoll);
@@ -251,16 +251,16 @@ OE_DECLARE_SYSCALL3_M(SYS_read);
 OE_DECLARE_SYSCALL3_M(SYS_readv);
 OE_DECLARE_SYSCALL6(SYS_recvfrom);
 OE_DECLARE_SYSCALL3_M(SYS_recvmsg);
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_DECLARE_SYSCALL2(SYS_rename);
 #endif
 OE_DECLARE_SYSCALL4_M(SYS_renameat);
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_DECLARE_SYSCALL1(SYS_rmdir);
 #endif
 /* Needed for sysconf. Currently unimplemented. */
 OE_DECLARE_SYSCALL3(SYS_sched_getaffinity);
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_DECLARE_SYSCALL5_M(SYS_select);
 #endif
 OE_DECLARE_SYSCALL6(SYS_sendto);
@@ -269,7 +269,7 @@ OE_DECLARE_SYSCALL5_M(SYS_setsockopt);
 OE_DECLARE_SYSCALL2_M(SYS_shutdown);
 OE_DECLARE_SYSCALL3_M(SYS_socket);
 OE_DECLARE_SYSCALL4_M(SYS_socketpair);
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_DECLARE_SYSCALL2(SYS_stat);
 #endif
 /*
@@ -285,7 +285,7 @@ OE_DECLARE_SYSCALL4(SYS_wait4);
 OE_DECLARE_SYSCALL3_M(SYS_write);
 OE_DECLARE_SYSCALL3_M(SYS_writev);
 OE_DECLARE_SYSCALL1(SYS_uname);
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_DECLARE_SYSCALL1(SYS_unlink);
 #endif
 OE_DECLARE_SYSCALL3(SYS_unlinkat);

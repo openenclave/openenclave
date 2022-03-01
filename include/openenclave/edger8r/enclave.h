@@ -169,7 +169,7 @@ void free(void* buffer);
     OE_EXPORT_CONST oe_ecall_func_t oe_ecalls_table[] = {NULL}; \
     OE_EXPORT_CONST size_t oe_ecalls_table_size = 0
 
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 /**
  * Get the internal status of the enclave.
  *
@@ -184,7 +184,7 @@ OE_INLINE oe_result_t oe_get_enclave_status()
 #endif
 
 // Define oe_lfence for Spectre mitigation in x86-64 platforms.
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 
 // x86_64 processor.
 #if defined(__clang__) || defined(__ICC) || defined(__INTEL_COMPILER) || \
