@@ -32,7 +32,6 @@ properties(
 )
 
 try{
-    common.emailJobStatus('STARTED')
     def testing_stages = [
         "Host verification 2004 RelWithDebInfo":            { tests.ACCHostVerificationTest('20.04', 'RelWithDebInfo') },
         "Host verification 1804 RelWithDebInfo":            { tests.ACCHostVerificationTest('18.04', 'RelWithDebInfo') },
@@ -122,5 +121,4 @@ try{
     throw e
 } finally {
     currentBuild.result = (GLOBAL_ERROR != null) ? 'FAILURE' : "SUCCESS"
-    common.emailJobStatus(currentBuild.result)
 }
