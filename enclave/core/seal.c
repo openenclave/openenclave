@@ -116,7 +116,8 @@ oe_result_t oe_seal(
         (plaintext == NULL) != (plaintext_size == 0) ||
         !oe_is_within_enclave(plaintext, plaintext_size) ||
         (additional_data == NULL) != (additional_data_size == 0) ||
-        !oe_is_within_enclave(additional_data, additional_data_size))
+        ((additional_data != NULL) &&
+         !oe_is_within_enclave(additional_data, additional_data_size)))
         return OE_INVALID_PARAMETER;
 
     for (i = 0; i < settings_count; ++i)
@@ -165,7 +166,8 @@ oe_result_t oe_unseal(
 
     if (blob == NULL || blob_size == 0 ||
         (additional_data == NULL) != (additional_data_size == 0) ||
-        !oe_is_within_enclave(additional_data, additional_data_size))
+        ((additional_data != NULL) &&
+         !oe_is_within_enclave(additional_data, additional_data_size)))
         return OE_INVALID_PARAMETER;
 
     if (plaintext == NULL)

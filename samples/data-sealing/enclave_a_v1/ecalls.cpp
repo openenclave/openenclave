@@ -23,8 +23,11 @@ int seal_data(
     return dispatcher.seal_data(
         sealPolicy, opt_mgs, opt_msg_len, data, data_size, sealed_data);
 }
-int unseal_data(const data_t* sealed_data, data_t* output_data)
+int unseal_data(
+    const data_t* sealed_data,
+    const int optional_msg_flag,
+    data_t* output_data)
 {
     printf("Enclave: unseal_data\n");
-    return dispatcher.unseal_data(sealed_data, output_data);
+    return dispatcher.unseal_data(sealed_data, optional_msg_flag, output_data);
 }

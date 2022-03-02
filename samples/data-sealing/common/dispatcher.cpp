@@ -72,6 +72,7 @@ exit:
 
 int ecall_dispatcher::unseal_data(
     const data_t* sealed_data,
+    const int optional_msg_flag,
     data_t* output_data)
 {
     sealed_data_t* unwrapped_sealed_data;
@@ -95,8 +96,11 @@ int ecall_dispatcher::unseal_data(
     int ret = (int)oe_unseal(
         (const uint8_t*)(unwrapped_sealed_data + 1),
         unwrapped_sealed_data->sealed_blob_size,
-        unwrapped_sealed_data->optional_message,
-        strlen((char*)unwrapped_sealed_data->optional_message),
+        (optional_msg_flag == 1) ? unwrapped_sealed_data->optional_message
+                                 : NULL,
+        (optional_msg_flag == 1)
+            ? strlen((char*)unwrapped_sealed_data->optional_message)
+            : 0,
         &temp_data,
         &temp_data_size);
     if (ret != OE_OK)
