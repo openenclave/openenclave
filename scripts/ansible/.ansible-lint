@@ -1,6 +1,7 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
-cryptography==3.3.2
-ansible>=4.10,<=5.2.0
-cmake_format==0.6.9
-pywinrm==0.2.1
+---
+
+skip_list:
+  - 503
+  - 204

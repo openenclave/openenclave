@@ -2,7 +2,8 @@
 # Licensed under the MIT License.
 
 ---
-- include_role:
+- name: Install Intel SGX repo
+  ansible.builtin.include_role:
     name: linux/common
     tasks_from: apt-repo.yml
   vars:
@@ -10,21 +11,21 @@
     apt_repository: "deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu {{ ansible_distribution_release }} main"
 
 - name: Install the Intel libsgx package dependencies
-  apt:
+  ansible.builtin.apt:
     name: "{{ intel_sgx_package_dependencies }}"
     state: latest
     update_cache: yes
     install_recommends: no
 
 - name: Install the Intel libsgx packages
-  apt:
+  ansible.builtin.apt:
     name: "{{ intel_sgx_packages }}"
     state: latest
     update_cache: yes
     install_recommends: no
 
 - name: Install the Intel DCAP packages
-  apt:
+  ansible.builtin.apt:
     name: "{{ intel_dcap_packages }}"
     state: latest
     update_cache: yes

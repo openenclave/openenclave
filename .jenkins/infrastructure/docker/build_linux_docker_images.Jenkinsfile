@@ -18,7 +18,7 @@ pipeline {
         string(name: "BASE_DOCKER_TAG", defaultValue: "SGX-${params.SGX_VERSION}", description: "The tag for the new Base Docker images. Use SGX-<version> for releases. Example: SGX-2.15.100")
         string(name: "INTERNAL_REPO", defaultValue: "https://oejenkinscidockerregistry.azurecr.io", description: "Url for internal Docker repository")
         string(name: "OECI_LIB_VERSION", defaultValue: 'master', description: 'Version of OE Libraries to use')
-        string(name: "DEVKITS_URI", defaultValue: 'https://oejenkins.blob.core.windows.net/oejenkins/OE-CI-devkits-6be0dbca.tar.gz', description: "Uri for downloading the OECI Devkit")
+        string(name: "DEVKITS_URI", defaultValue: 'https://oejenkins.blob.core.windows.net/oejenkins/OE-CI-devkits-d1634ce8.tar.gz', description: "Uri for downloading the OECI Devkit")
         booleanParam(name: "PUBLISH_DOCKER_HUB", defaultValue: false, description: "Publish container to OECITeam Docker Hub?")
         booleanParam(name: "TAG_LATEST", defaultValue: false, description: "Update the latest tag to the currently built DOCKER_TAG")
     }
@@ -124,27 +124,61 @@ pipeline {
             }
         }
         stage("Full CI/CD Image") {
-            parallel {
-                stage("Build Ubuntu 18.04 Docker Image") {
-                    steps {
-                        script {
-                            buildArgs = common.dockerBuildArgs("UID=\$(id -u)", "UNAME=\$(id -un)",
-                                                               "GID=\$(id -g)", "GNAME=\$(id -gn)")
-                            oe1804 = common.dockerImage("oetools-18.04:${DOCKER_TAG}", LINUX_DOCKERFILE, "${buildArgs} --build-arg ubuntu_version=18.04 --build-arg devkits_uri=${params.DEVKITS_URI}")
-                            if ( PUBLISH_DOCKER_HUB ) {
-                                puboe1804 = common.dockerImage("oeciteam/oetools-18.04:${DOCKER_TAG}", LINUX_DOCKERFILE, "${buildArgs} --build-arg ubuntu_version=18.04 --build-arg devkits_uri=${params.DEVKITS_URI}")
+            stages {
+                stage("Build") {
+                    parallel {
+                        stage("Build Ubuntu 18.04 Docker Image") {
+                            steps {
+                                script {
+                                    buildArgs = common.dockerBuildArgs("UID=\$(id -u)", "UNAME=\$(id -un)",
+                                                                    "GID=\$(id -g)", "GNAME=\$(id -gn)")
+                                    oe1804 = common.dockerImage("oetools-18.04:${DOCKER_TAG}", LINUX_DOCKERFILE, "${buildArgs} --build-arg ubuntu_version=18.04 --build-arg devkits_uri=${params.DEVKITS_URI}")
+                                    if ( PUBLISH_DOCKER_HUB ) {
+                                        puboe1804 = common.dockerImage("oeciteam/oetools-18.04:${DOCKER_TAG}", LINUX_DOCKERFILE, "${buildArgs} --build-arg ubuntu_version=18.04 --build-arg devkits_uri=${params.DEVKITS_URI}")
+                                    }
+                                }
+                            }
+                        }
+                        stage("Build Ubuntu 20.04 Docker Image") {
+                            steps {
+                                script {
+                                    buildArgs = common.dockerBuildArgs("UID=\$(id -u)", "UNAME=\$(id -un)",
+                                                                    "GID=\$(id -g)", "GNAME=\$(id -gn)")
+                                    oe2004 = common.dockerImage("oetools-20.04:${DOCKER_TAG}", LINUX_DOCKERFILE, "${buildArgs} --build-arg ubuntu_version=20.04 --build-arg devkits_uri=${params.DEVKITS_URI}")
+                                    if ( PUBLISH_DOCKER_HUB ) {
+                                        puboe2004 = common.dockerImage("oeciteam/oetools-20.04:${DOCKER_TAG}", LINUX_DOCKERFILE, "${buildArgs} --build-arg ubuntu_version=20.04 --build-arg devkits_uri=${params.DEVKITS_URI}")
+                                    }
+                                }
                             }
                         }
                     }
                 }
-                stage("Build Ubuntu 20.04 Docker Image") {
-                    steps {
-                        script {
-                            buildArgs = common.dockerBuildArgs("UID=\$(id -u)", "UNAME=\$(id -un)",
-                                                               "GID=\$(id -g)", "GNAME=\$(id -gn)")
-                            oe2004 = common.dockerImage("oetools-20.04:${DOCKER_TAG}", LINUX_DOCKERFILE, "${buildArgs} --build-arg ubuntu_version=20.04 --build-arg devkits_uri=${params.DEVKITS_URI}")
-                            if ( PUBLISH_DOCKER_HUB ) {
-                                puboe2004 = common.dockerImage("oeciteam/oetools-20.04:${DOCKER_TAG}", LINUX_DOCKERFILE, "${buildArgs} --build-arg ubuntu_version=20.04 --build-arg devkits_uri=${params.DEVKITS_URI}")
+                stage('Test') {
+                    parallel {
+                        stage("Test Full - 18.04") {
+                            steps {
+                                script {
+                                    oe1804.inside("--user root:root --cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
+                                        sh """
+                                            apt update
+                                            apt install -y build-essential open-enclave libssl-dev
+                                        """
+                                        helpers.TestSamplesCommand(false, "open-enclave")
+                                    }
+                                }
+                            }
+                        }
+                        stage("Test Full - 20.04") {
+                            steps {
+                                script {
+                                    oe2004.inside("--user root:root --cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
+                                        sh """
+                                            apt update
+                                            apt install -y build-essential open-enclave libssl-dev
+                                        """
+                                        helpers.TestSamplesCommand(false, "open-enclave")
+                                    }
+                                }
                             }
                         }
                     }

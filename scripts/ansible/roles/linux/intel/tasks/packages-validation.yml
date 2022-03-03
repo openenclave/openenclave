@@ -3,16 +3,16 @@
 
 ---
 - name: Include distribution vars
-  include_vars:
+  ansible.builtin.include_vars:
     file: "{{ ansible_distribution | lower }}/main.yml"
 
 - name: Include distribution release specific vars
-  include_vars:
+  ansible.builtin.include_vars:
     file: "{{ ansible_distribution | lower }}/{{ ansible_distribution_release | lower }}.yml"
 
 - name: Check for existing required files
-  stat:
+  ansible.builtin.stat:
     path: "{{ item }}"
   with_items: "{{ packages_validation_distribution_files }}"
   register: file
-  failed_when: file.stat.exists == False
+  failed_when: not file.stat.exists
