@@ -91,7 +91,7 @@ static oe_result_t _get_crl_validity(
         {
             OE_CHECK_MSG(
                 oe_crl_get_update_dates(
-                    &crls[0], &crl_this_update_date, &crl_next_update_date),
+                    &crls[i], &crl_this_update_date, &crl_next_update_date),
                 "Failed to get CRL update dates. %s",
                 oe_result_str(result));
 
