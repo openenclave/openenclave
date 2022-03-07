@@ -767,6 +767,7 @@ oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out)
     oe_result_t result = OE_UNEXPECTED;
     oe_sgx_td_t* td = oe_sgx_get_td();
     oe_callsite_t* callsite = td->callsites;
+    uint64_t saved_fs = 0;
 
     /* If the enclave is in crashing/crashed status, new OCALL should fail
     immediately. */
@@ -792,6 +793,9 @@ oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out)
                    [rflags] "m"(callsite->rflags)
                  :);
 
+    /* Save FS before making an ocall. */
+    asm("mov %%fs:0, %0" : "=r"(saved_fs));
+
     /* Save call site where execution will resume after OCALL */
     if (oe_setjmp(&callsite->jmpbuf) == 0)
     {
@@ -803,6 +807,10 @@ oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out)
     }
     else
     {
+        /* ORET here */
+
+        uint64_t current_fs;
+
         OE_CHECK_NO_TRACE(result = (oe_result_t)td->oret_result);
 
         if (arg_out)
@@ -817,7 +825,17 @@ oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out)
             td->state = OE_TD_STATE_RUNNING;
         }
 
-        /* ORET here */
+        /* Compare the saved FS with the current FS, which will always be set to
+         * GS upon EENTER (by making fsbase equal to gsbase in tcs at enclave
+         * creation, see host/sgx/create.c). Two values being different
+         * indicates that the application has changed FS. In this case, restore
+         * it with wrfsbase (emulated by the exception handler inside the SGX
+         * enclaves). */
+
+        asm("mov %%fs:0, %0" : "=r"(current_fs));
+
+        if (saved_fs != current_fs)
+            asm volatile("wrfsbase %0" ::"r"(saved_fs));
     }
 
     result = OE_OK;

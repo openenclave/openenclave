@@ -7,3 +7,4 @@ if (UNIX)
 endif ()
 
 add_subdirectory(extra_data)
+add_subdirectory(wrfsbase)
