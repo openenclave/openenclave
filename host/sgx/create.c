@@ -48,6 +48,7 @@ static char* get_fullpath(const char* path)
 #include <openenclave/internal/result.h>
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/safemath.h>
+#include <openenclave/internal/sgx/extradata.h>
 #include <openenclave/internal/sgxcreate.h>
 #include <openenclave/internal/sgxsign.h>
 #include <openenclave/internal/switchless.h>
@@ -62,6 +63,9 @@ static char* get_fullpath(const char* path)
 #include "platform_u.h"
 #include "sgxload.h"
 #include "xstate.h"
+
+static volatile oe_load_extra_enclave_data_hook_t
+    _oe_load_extra_enclave_data_hook;
 
 #if !defined(OEHOSTMR)
 static oe_once_type _enclave_init_once;
@@ -323,12 +327,56 @@ done:
     return result;
 }
 
+void oe_register_load_extra_enclave_data_hook(
+    oe_load_extra_enclave_data_hook_t hook)
+{
+    _oe_load_extra_enclave_data_hook = hook;
+}
+
+oe_result_t oe_load_extra_enclave_data(
+    oe_load_extra_enclave_data_hook_arg_t* arg,
+    uint64_t vaddr,
+    const void* page,
+    uint64_t flags,
+    bool extend)
+{
+    oe_result_t result = OE_OK;
+
+    if (!arg || arg->magic != OE_LOAD_EXTRA_ENCLAVE_DATA_HOOK_ARG_MAGIC)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (!page)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (vaddr < arg->vaddr)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (arg->sgx_load_context)
+    {
+        uint64_t addr = arg->enclave_start + arg->base_vaddr + vaddr;
+
+        OE_CHECK(oe_sgx_load_enclave_data(
+            arg->sgx_load_context,
+            arg->enclave_base,
+            addr,
+            (uint64_t)page,
+            flags,
+            extend));
+    }
+
+    arg->vaddr = vaddr + OE_PAGE_SIZE;
+
+done:
+    return result;
+}
+
 static oe_result_t _calculate_enclave_size(
     size_t image_size,
     size_t tls_page_count,
     const oe_sgx_enclave_properties_t* props,
     size_t* loaded_enclave_pages_size,
-    size_t* enclave_size)
+    size_t* enclave_size,
+    size_t* extra_data_size)
 {
     oe_result_t result = OE_UNEXPECTED;
     size_t heap_size;
@@ -341,6 +389,28 @@ static oe_result_t _calculate_enclave_size(
 
     if (enclave_size)
         *enclave_size = 0;
+
+    if (extra_data_size)
+        *extra_data_size = 0;
+
+    /* Calculate the total size of the extra enclave data (if any).
+     * The hook implementation is expected to invoke oe_load_extra_enclave_data
+     * on each data page, which will output the total size of extra data in the
+     * vaddr argument. */
+    if (_oe_load_extra_enclave_data_hook && extra_data_size)
+    {
+        oe_load_extra_enclave_data_hook_arg_t arg = {
+            .magic = OE_LOAD_EXTRA_ENCLAVE_DATA_HOOK_ARG_MAGIC,
+            .sgx_load_context = NULL,
+            .enclave_base = 0,
+            .enclave_start = 0,
+            .base_vaddr = 0,
+            .vaddr = 0,
+        };
+        OE_CHECK(_oe_load_extra_enclave_data_hook(&arg, 0));
+        *extra_data_size = arg.vaddr;
+    }
+
     *loaded_enclave_pages_size = 0;
 
     /* Compute size in bytes of the heap */
@@ -363,6 +433,9 @@ static oe_result_t _calculate_enclave_size(
         image_size + heap_size +
         (size_settings->num_tcs * (stack_size + tls_size + control_size));
 
+    if (extra_data_size)
+        *loaded_enclave_pages_size += *extra_data_size;
+
     if (enclave_size)
     {
 #ifdef OE_WITH_EXPERIMENTAL_EEID
@@ -375,6 +448,8 @@ static oe_result_t _calculate_enclave_size(
     }
 
     result = OE_OK;
+
+done:
     return result;
 }
 
@@ -703,7 +778,7 @@ static oe_result_t _add_eeid_marker_page(
          * pages (stacks + heap) excluding the EEID data size.
          */
         _calculate_enclave_size(
-            image_size, tls_page_count, props, &marker->offset, NULL);
+            image_size, tls_page_count, props, &marker->offset, NULL, NULL);
 
         uint64_t addr = enclave->start_address + *vaddr;
         uint64_t src = (uint64_t)page;
@@ -812,6 +887,7 @@ oe_result_t oe_sgx_build_enclave(
     size_t tls_page_count;
     uint64_t vaddr = 0;
     oe_sgx_enclave_properties_t props;
+    size_t extra_data_size = 0;
 
     /* Reject invalid parameters */
     if (!context || !path || !enclave)
@@ -906,7 +982,8 @@ oe_result_t oe_sgx_build_enclave(
         tls_page_count,
         &props,
         &loaded_enclave_pages_size,
-        &enclave_size));
+        &enclave_size,
+        &extra_data_size));
 
     /* Check if the enclave is configured with CapturePFGPExceptions=1 */
     if (props.config.flags.capture_pf_gp_exceptions)
@@ -974,10 +1051,26 @@ oe_result_t oe_sgx_build_enclave(
     enclave->size = enclave_size;
 
     /* Patch image */
-    OE_CHECK(oeimage.sgx_patch(&oeimage, enclave_size));
+    OE_CHECK(oeimage.sgx_patch(&oeimage, enclave_size, extra_data_size));
 
     /* Add image to enclave */
     OE_CHECK(oeimage.add_pages(&oeimage, context, enclave, &vaddr));
+
+    /* Add any extra data to the enclave */
+    if (_oe_load_extra_enclave_data_hook)
+    {
+        oe_load_extra_enclave_data_hook_arg_t arg = {
+            .magic = OE_LOAD_EXTRA_ENCLAVE_DATA_HOOK_ARG_MAGIC,
+            .sgx_load_context = context,
+            .enclave_base = enclave->base_address,
+            .enclave_start = enclave->start_address,
+            .base_vaddr = vaddr,
+            .vaddr = 0,
+        };
+        OE_CHECK(_oe_load_extra_enclave_data_hook(
+            &arg, enclave->start_address + vaddr));
+        vaddr += arg.vaddr;
+    }
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
     OE_CHECK(_add_eeid_marker_page(

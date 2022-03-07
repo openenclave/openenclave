@@ -5,3 +5,5 @@ if (UNIX)
   add_subdirectory(td_state)
   add_subdirectory(thread_interrupt)
 endif ()
+
+add_subdirectory(extra_data)
