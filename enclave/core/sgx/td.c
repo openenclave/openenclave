@@ -83,21 +83,18 @@ void td_push_callsite(oe_sgx_td_t* td, oe_callsite_t* callsite)
 **
 **     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 **     According to the implementation of Windows debugger and the previous
-**     design of this structure, the debugger need the GS segment register
+**     design of this structure, the debugger needs the GS segment register
 **     to find oe_sgx_td_t. Since oe_sgx_td_t is moved to current FS page, now
-*GS segment
-**     register needs to point to this page. Do not change the GS segment
-**     resigter until it is solved on Windows debugger.
+**     the GS segment register needs to point to this page. Do not change the GS
+**     segment register until it is solved on Windows debugger.
 **     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 **
 ** td_from_tcs()
 **
 **     This function calculates the address of the oe_sgx_td_t (thread data
-*structure)
-**     relative to the TCS (Thread Control Structure) page. The oe_sgx_td_t
-*resides in
-**     a page pointed to by the FS (segment register). This page occurs 5 pages
-**     after the TCS page. The layout is as follows:
+**     structure) relative to the TCS (Thread Control Structure) page. The
+**     oe_sgx_td_t resides in a page pointed to by the FS (segment register).
+**     This page occurs 5 pages after the TCS page. The layout is as follows:
 **
 **         +----------------------------+
 **         | TCS Page                   |
@@ -120,8 +117,7 @@ void td_push_callsite(oe_sgx_td_t* td, oe_callsite_t* callsite)
 **     The FS segment register is set by the EENTER instruction and the td_t
 **     page is zero filled upon initial enclave entry. Software sets the
 **     contents of the oe_sgx_td_t when it first determines that
-*oe_sgx_td_t.self_addr is
-**     zero.
+**     oe_sgx_td_t.self_addr is zero.
 **
 **==============================================================================
 */
@@ -152,7 +148,7 @@ void* td_to_tcs(const oe_sgx_td_t* td)
 ** oe_sgx_get_td()
 **
 **     Returns a pointer to the thread data structure for the current thread.
-**     This structure resides in the GS segment. Offset zero of this segment
+**     This structure resides in the FS segment. Offset zero of this segment
 **     contains the oe_thread_data_t.self_addr field (a back pointer to the
 **     structure itself). This field is zero until the structure is initialized
 **     by __oe_handle_main (which happens immediately an EENTER).
@@ -163,8 +159,37 @@ void* td_to_tcs(const oe_sgx_td_t* td)
 oe_sgx_td_t* oe_sgx_get_td()
 {
     oe_sgx_td_t* td;
+    void* fsbase;
+    void* gsbase;
 
-    asm("mov %%fs:0, %0" : "=r"(td));
+    asm("mov %%fs:0, %0" : "=r"(fsbase));
+    asm("mov %%gs:0, %0" : "=r"(gsbase));
+
+    td = (oe_sgx_td_t*)fsbase;
+
+    if (fsbase != gsbase)
+    {
+        /* The mismatch between FS and GS indicates that FS could have
+         * been changed by the application, which should be responsible for
+         * restoring the FS value prior to re-entering OE layer. Abort in such
+         * cases if the enclave is not in simulation mode (on Windows, GS could
+         * also be changed). */
+        if (!(td_initialized(td) && td->simulate))
+        {
+            /* Instead of calling oe_abort which also depends on oe_sgx_get_td,
+             * set the td state to ABORTED and call oe_asm_exit to exit the
+             * enclave. The subsequent enclave entries will then be blocked */
+            uint64_t arg1 = oe_make_call_arg1(OE_CODE_ERET, 0, 0, OE_OK);
+            uint64_t arg2 = OE_ENCLAVE_ABORTING;
+
+            /* use GS as td */
+            td = (oe_sgx_td_t*)gsbase;
+
+            td->state = OE_TD_STATE_ABORTED;
+
+            oe_asm_exit(arg1, arg2, td, 1 /* direct_return */);
+        }
+    }
 
     return td;
 }

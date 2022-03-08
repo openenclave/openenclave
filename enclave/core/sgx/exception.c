@@ -18,6 +18,10 @@
  * For now, one page is sufficient */
 #define FIRST_PASS_HANDLER_STACK_RESERVED_SIZE OE_PAGE_SIZE
 
+#define WRFSBASE64_OPCODE_1 0xAE0F48F3
+#define WRFSBASE64_OPCODE_2 0xAE0F49F3 // with REX.B bit set
+#define WRFSBASE64_MODRM_MASK 0xD0
+
 // The spin lock to synchronize the exception handler access.
 static oe_spinlock_t g_exception_lock = OE_SPINLOCK_INITIALIZER;
 
@@ -204,6 +208,62 @@ static struct
     {19, OE_EXCEPTION_SIMD_FLOAT_POINT},
 };
 
+static int _emulate_wrfsbase64(sgx_ssa_gpr_t* ssa_gpr)
+{
+    uint8_t modrm = 0;
+    uint8_t rex_b = 0;
+    uint8_t index = 0;
+    uint64_t registers[] = {
+        ssa_gpr->rax,
+        ssa_gpr->rcx,
+        ssa_gpr->rdx,
+        ssa_gpr->rbx,
+        ssa_gpr->rsp,
+        ssa_gpr->rbp,
+        ssa_gpr->rsi,
+        ssa_gpr->rdi,
+        ssa_gpr->r8,
+        ssa_gpr->r9,
+        ssa_gpr->r10,
+        ssa_gpr->r11,
+        ssa_gpr->r12,
+        ssa_gpr->r13,
+        ssa_gpr->r14,
+        ssa_gpr->r15,
+    };
+
+    modrm = ((uint8_t*)ssa_gpr->rip)[4];
+
+    /* validate the ModRM byte (starting with 11|010 bits (0xD0)) */
+    if ((modrm & WRFSBASE64_MODRM_MASK) != WRFSBASE64_MODRM_MASK)
+        return -1;
+
+    /* index decoding: REX.B (1 bit) | ModRM.rm (last 3 bits of the ModRM byte)
+     */
+    rex_b = ((uint8_t*)ssa_gpr->rip)[1] & 0x1;
+    index = (uint8_t)(rex_b << 3) | (modrm & 0x7);
+
+    /* emulate wrfsbase by updating fs_base and rip in SSA such that
+     * the CPU context will use these values after the execution resumes */
+    ssa_gpr->fs_base = registers[index];
+    ssa_gpr->rip += 5;
+
+    return 0;
+}
+
+static int _emulate_cpuid(sgx_ssa_gpr_t* ssa_gpr)
+{
+    if (oe_emulate_cpuid(
+            &ssa_gpr->rax, &ssa_gpr->rbx, &ssa_gpr->rcx, &ssa_gpr->rdx))
+        return -1;
+
+    /* emulation succeeded, update the rip in SSA to bypass the CPUID
+     * instruction after the execution resumes */
+    ssa_gpr->rip += 2;
+
+    return 0;
+}
+
 /*
 **==============================================================================
 **
@@ -216,11 +276,17 @@ static struct
 */
 int _emulate_illegal_instruction(sgx_ssa_gpr_t* ssa_gpr)
 {
-    // Emulate CPUID
+    // emulate CPUID
     if (*((uint16_t*)ssa_gpr->rip) == OE_CPUID_OPCODE)
     {
-        return oe_emulate_cpuid(
-            &ssa_gpr->rax, &ssa_gpr->rbx, &ssa_gpr->rcx, &ssa_gpr->rdx);
+        return _emulate_cpuid(ssa_gpr);
+    }
+
+    // emulate WRFSBASE64
+    if ((*(uint32_t*)ssa_gpr->rip) == WRFSBASE64_OPCODE_1 ||
+        (*(uint32_t*)ssa_gpr->rip) == WRFSBASE64_OPCODE_2)
+    {
+        return _emulate_wrfsbase64(ssa_gpr);
     }
 
     return -1;
@@ -498,9 +564,6 @@ void oe_virtual_exception_dispatcher(
             return;
         }
         td->exception_nesting_level--;
-
-        // Advance RIP to the next instruction for continuation
-        ssa_gpr->rip += 2;
     }
     else
     {
