@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "collateral.h"
+#include <ctype.h>
 #include <openenclave/bits/attestation.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/crypto/cert.h>
@@ -193,6 +194,36 @@ done:
     return result;
 }
 
+static unsigned char _hex_digit_to_num(char c)
+{
+    if (isdigit(c))
+        return (unsigned char)(c - '0');
+
+    if (c >= 'A' && c <= 'F')
+        return (unsigned char)(10 + (c - 'A'));
+
+    return (unsigned char)(10 + (c - 'a'));
+}
+
+static oe_result_t _hex_to_buffer(
+    const char* hex_string,
+    size_t hex_string_size,
+    uint8_t* buffer,
+    size_t buffer_size)
+{
+    if (buffer_size * 2 < hex_string_size)
+    {
+        return OE_BUFFER_TOO_SMALL;
+    }
+    for (size_t i = 0; i < hex_string_size; i += 2)
+    {
+        unsigned char v =
+            (unsigned char)(16 * _hex_digit_to_num(hex_string[i]) + _hex_digit_to_num(hex_string[i + 1]));
+        buffer[i / 2] = v;
+    }
+    return OE_OK;
+}
+
 oe_result_t oe_validate_revocation_list(
     oe_cert_t* pck_cert,
     const oe_sgx_endorsements_t* sgx_endorsements,
@@ -289,17 +320,44 @@ oe_result_t oe_validate_revocation_list(
                 "Failed to read CRL. %s",
                 oe_result_str(result));
         }
-        // Otherwise, CRL should have v3 structure which is DER encoded
+        // Otherwise, CRL should have v3 (hex encoded DER) or
+        // v3.1 (DER) structure.
         else
         {
             size_t der_data_size = sgx_endorsements->items[i].size;
             if (der_data_size == 0)
                 OE_RAISE(OE_INVALID_PARAMETER);
 
-            // If DER CRL buffer has null terminator, need to remove it before
-            // send the DER data to crypto API for reading.
+            // If CRL buffer has null terminator, need to remove it before
+            // sending the DER data to crypto API for reading.
             if (sgx_endorsements->items[i].data[der_data_size - 1] == 0)
                 der_data_size -= 1;
+
+            // Check if the CRL is composed of only hex digits
+            bool ishex = true;
+            for (size_t l = 0; l < der_data_size; l++)
+            {
+                const uint8_t c = sgx_endorsements->items[i].data[l];
+                if (!isxdigit(c))
+                {
+                    ishex = false;
+                    break;
+                }
+            }
+
+            // If CRL is a hex string, convert hex to der
+            if (ishex)
+            {
+                OE_CHECK_MSG(
+                    _hex_to_buffer(
+                        (const char*)sgx_endorsements->items[i].data,
+                        der_data_size,
+                        sgx_endorsements->items[i].data,
+                        der_data_size),
+                    "Failed to convert to DER. %s",
+                    oe_result_str(result));
+                der_data_size /= 2;
+            }
 
             OE_CHECK_MSG(
                 oe_crl_read_der(
