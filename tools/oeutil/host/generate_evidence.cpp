@@ -869,10 +869,9 @@ oe_result_t generate_certificate(
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_result_t ecall_result;
-    unsigned char* certificate = nullptr;
-    size_t certificate_size = 0;
     uint8_t* report = nullptr;
     size_t report_size = 0;
+    cert_t certificate = {0};
 
     log("========== Creating certificate with given private/public keys.\n");
     result = get_tls_cert_signed_with_key(
@@ -882,8 +881,7 @@ oe_result_t generate_certificate(
         private_key_size,
         public_key,
         public_key_size,
-        &certificate,
-        &certificate_size);
+        &certificate);
 
     if ((result != OE_OK) || (ecall_result != OE_OK))
     {
@@ -895,8 +893,8 @@ oe_result_t generate_certificate(
     }
     if (certificate_filename)
     {
-        result =
-            output_file(certificate_filename, certificate, certificate_size);
+        result = output_file(
+            certificate_filename, certificate.data, certificate.size);
         if (result != OE_OK)
         {
             printf(
@@ -908,25 +906,26 @@ oe_result_t generate_certificate(
     if (verbose)
     {
         printf("\n");
-        dump_certificate(certificate, certificate_size);
+        dump_certificate(certificate.data, certificate.size);
 
         if (get_oe_report_from_certificate(
-                certificate, certificate_size, &report, &report_size) == OE_OK)
+                certificate.data, certificate.size, &report, &report_size) ==
+            OE_OK)
         {
             dump_oe_report(report, report_size);
         }
     }
 
     log("========== Got certificate = %p certificate_size = %zu\n",
-        certificate,
-        certificate_size);
+        certificate.data,
+        certificate.size);
 
     if (verify) // validate certificate
     {
         OE_CHECK_MSG(
             oe_verify_attestation_certificate(
-                certificate,
-                certificate_size,
+                certificate.data,
+                certificate.size,
                 enclave_identity_verifier,
                 nullptr),
             "Failed to verify certificate. result=%u (%s)\n",
@@ -938,7 +937,7 @@ oe_result_t generate_certificate(
 
 done:
     // deallcate resources
-    free(certificate);
+    free(certificate.data);
 
     fflush(stdout);
     return result;

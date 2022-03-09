@@ -58,11 +58,9 @@ oe_result_t get_tls_cert_signed_with_key(
     size_t private_key_size,
     uint8_t* public_key,
     size_t public_key_size,
-    unsigned char** cert,
-    size_t* cert_size)
+    cert_t* cert)
 {
     oe_result_t result = OE_FAILURE;
-    uint8_t* host_cert_buf = NULL;
 
     uint8_t* output_cert = NULL;
     size_t output_cert_size = 0;
@@ -93,25 +91,12 @@ oe_result_t get_tls_cert_signed_with_key(
         "\nFrom inside enclave: verifying the certificate... %s\n",
         result == OE_OK ? "Success" : "Fail");
 
-    // copy cert to host memory
-    host_cert_buf = (uint8_t*)oe_host_malloc(output_cert_size);
-    if (host_cert_buf == NULL)
-    {
-        result = OE_OUT_OF_MEMORY;
-        goto done;
-    }
-
-    // copy to the host for host-side validation test
-    oe_memcpy_s(host_cert_buf, output_cert_size, output_cert, output_cert_size);
-    *cert_size = output_cert_size;
-    *cert = host_cert_buf;
-    OE_TRACE_INFO("*cert = %p", *cert);
-    OE_TRACE_INFO("*cert_size = 0x%x", *cert_size);
+    cert->data = output_cert;
+    cert->size = output_cert_size;
+    OE_TRACE_INFO("*cert = %p", cert->data);
+    OE_TRACE_INFO("*cert_size = 0x%x", cert->size);
 
 done:
-
-    oe_free_attestation_certificate(output_cert);
-
     return result;
 }
 
