@@ -14,16 +14,36 @@ add_enclave(
   TARGET
   sgx_pf_gp_exceptions_enc
   CONFIG
-  sign.conf
+  sign_pfgp.conf
   SOURCES
   enc.c
+  props_pfgp.c
   ${CMAKE_CURRENT_BINARY_DIR}/pf_gp_exceptions_t.c)
 
-add_enclave(TARGET sgx_pf_gp_exceptions_enc_unsigned SOURCES enc.c
+add_enclave(TARGET sgx_pf_gp_exceptions_enc_unsigned SOURCES enc.c props_pfgp.c
             ${CMAKE_CURRENT_BINARY_DIR}/pf_gp_exceptions_t.c)
 
 enclave_include_directories(sgx_pf_gp_exceptions_enc PRIVATE
                             ${CMAKE_CURRENT_BINARY_DIR})
 
 enclave_include_directories(sgx_pf_gp_exceptions_enc_unsigned PRIVATE
+                            ${CMAKE_CURRENT_BINARY_DIR})
+
+add_enclave(
+  TARGET
+  sgx_simulate_pf_gp_exceptions_enc
+  CONFIG
+  sign_nopfgp.conf
+  SOURCES
+  enc.c
+  props_nopfgp.c
+  ${CMAKE_CURRENT_BINARY_DIR}/pf_gp_exceptions_t.c)
+
+add_enclave(TARGET sgx_simulate_pf_gp_exceptions_enc_unsigned SOURCES enc.c
+            props_nopfgp.c ${CMAKE_CURRENT_BINARY_DIR}/pf_gp_exceptions_t.c)
+
+enclave_include_directories(sgx_simulate_pf_gp_exceptions_enc PRIVATE
+                            ${CMAKE_CURRENT_BINARY_DIR})
+
+enclave_include_directories(sgx_simulate_pf_gp_exceptions_enc_unsigned PRIVATE
                             ${CMAKE_CURRENT_BINARY_DIR})

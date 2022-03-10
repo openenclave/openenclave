@@ -6,6 +6,7 @@
 #include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/sgx/td.h>
 #include <openenclave/internal/thread.h>
+#include "../tracee.h"
 #include "context.h"
 #include "cpuid.h"
 #include "init.h"
@@ -471,6 +472,7 @@ void oe_virtual_exception_dispatcher(
     uint64_t* arg_out)
 {
     SSA_Info ssa_info = {0};
+    oe_exception_record_t* oe_exception_record = NULL;
 
     /* Validate the td state, which ensures the function
      * is only invoked by the exception entry code path (see enter.S) */
@@ -488,9 +490,21 @@ void oe_virtual_exception_dispatcher(
         return;
     }
 
-    /* Only keep the host signal for non-nested exceptions */
-    if (td->exception_nesting_level == 1)
+    /* arg_in could be either the value of the host signal when the enclave
+     * opts in the thread interrupt or the host pointer of a
+     * oe_exception_record_t that includes the information of page fault just
+     * occurred (debug mode only). */
+    if (td->exception_nesting_level == 1 && arg_in <= MAX_SIGNAL_NUMBER)
+    {
+        /* Only keep the host signal for non-nested exceptions */
         td->host_signal = arg_in;
+    }
+    else if (
+        is_enclave_debug_allowed() &&
+        oe_is_outside_enclave((void*)arg_in, sizeof(uint64_t)))
+    {
+        oe_exception_record = (oe_exception_record_t*)arg_in;
+    }
 
     uint64_t gprsgx_offset = (uint64_t)ssa_info.base_address +
                              ssa_info.frame_byte_size - OE_SGX_GPR_BYTE_SIZE;
@@ -528,10 +542,22 @@ void oe_virtual_exception_dispatcher(
     }
     else
     {
-        /* The unknown exception type indicates a host signal request. Validate
-         * the states on the td to ensure that the thread is handling the
-         * host signal */
-        if (!oe_sgx_td_host_signal_registered(td, (int)td->host_signal) ||
+        /* If the enclave is in debug mode and the oe_exception_record
+         * has been set, simulate the page fault based on host-passed
+         * information. This can either happen if the enclave runs with
+         * SGX1 CPUs or set CapturePFGPExceptions=0 on SGX2 CPUs. */
+        if (is_enclave_debug_allowed() && oe_exception_record)
+        {
+            td->exception_code = OE_EXCEPTION_PAGE_FAULT;
+            td->exception_flags |= OE_EXCEPTION_FLAGS_HARDWARE;
+
+            td->faulting_address = oe_exception_record->faulting_address;
+            td->error_code = OE_SGX_PAGE_FAULT_US_FLAG;
+        }
+        /* For the rest of cases, validate the states on the td to ensure that
+         * the thread is handling the host signal */
+        else if (
+            !oe_sgx_td_host_signal_registered(td, (int)td->host_signal) ||
             td->exception_nesting_level != 1 ||
             td->is_handling_host_signal != 1)
         {
@@ -569,8 +595,9 @@ void oe_virtual_exception_dispatcher(
     {
         /* The following codes can only be captured with SGX2 and the
          * MISCSELECT[0] bit is set to 1. */
-        if (td->exception_code == OE_EXCEPTION_PAGE_FAULT ||
-            td->exception_code == OE_EXCEPTION_ACCESS_VIOLATION)
+        if (ssa_gpr->exit_info.as_fields.valid &&
+            (td->exception_code == OE_EXCEPTION_PAGE_FAULT ||
+             td->exception_code == OE_EXCEPTION_ACCESS_VIOLATION))
         {
             sgx_exinfo_t* exinfo =
                 (sgx_exinfo_t*)(gprsgx_offset - OE_SGX_MISC_BYTE_SIZE);
