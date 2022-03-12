@@ -57,6 +57,8 @@ typedef struct _oe_tcb_info_tcb_level
     size_t advisory_ids_size;
 } oe_tcb_info_tcb_level_t;
 
+#define OE_SGX_FMSPC_SIZE 6
+
 /*! \struct oe_parsed_tcb_info_t
  *  \brief TCB info excluding the TCB levels field.
  */
@@ -65,7 +67,7 @@ typedef struct _oe_parsed_tcb_info
     uint32_t version;
     oe_datetime_t issue_date;
     oe_datetime_t next_update;
-    uint8_t fmspc[6];
+    uint8_t fmspc[OE_SGX_FMSPC_SIZE];
     uint8_t pceid[2];
     uint8_t signature[64];
 

@@ -237,17 +237,6 @@ static oe_result_t _fill_with_known_claims(
     oe_sgx_tcb_status_t tcb_status =
         oe_tcb_level_status_to_sgx_tcb_status(platform_tcb_level->status);
     oe_tcb_info_tcb_level_t local_platform_tcb_level = *platform_tcb_level;
-    uint16_t sgx_pce_svn = 0;
-
-    const size_t sgx_qe_id_size = sizeof(sgx_quote->user_data);
-    void* sgx_qe_id = oe_malloc(sgx_qe_id_size);
-    if (!sgx_qe_id)
-        OE_RAISE(OE_OUT_OF_MEMORY);
-
-    const size_t sgx_fmspc_size = sizeof(parsed_tcb_info.fmspc);
-    void* sgx_fmspc = oe_malloc(sgx_fmspc_size);
-    if (!sgx_fmspc)
-        OE_RAISE(OE_OUT_OF_MEMORY);
 
     if (claims_length < OE_REQUIRED_CLAIMS_COUNT + OE_SGX_REQUIRED_CLAIMS_COUNT)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -263,17 +252,13 @@ static oe_result_t _fill_with_known_claims(
         sgx_report_body = &((sgx_quote_t*)report_body)->report_body;
         OE_CHECK(
             oe_parse_sgx_report_body(sgx_report_body, true, &parsed_report));
-
         sgx_quote = (sgx_quote_t*)report_body;
-        sgx_pce_svn = (uint16_t)sgx_quote->pce_svn;
 
-        memcpy(sgx_qe_id, sgx_quote->user_data, sizeof(sgx_quote->user_data));
         oe_parse_tcb_info_json(
             sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_TCB_INFO].data,
             sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_TCB_INFO].size,
             &local_platform_tcb_level,
             &parsed_tcb_info);
-        memcpy(sgx_fmspc, parsed_tcb_info.fmspc, sizeof(parsed_tcb_info.fmspc));
     }
 
     // Optional claims are needed for SGX quotes for remote attestation
@@ -463,7 +448,7 @@ static oe_result_t _fill_with_known_claims(
             &claims[claims_index++],
             OE_CLAIM_SGX_PCE_SVN,
             sizeof(OE_CLAIM_SGX_PCE_SVN),
-            &sgx_pce_svn,
+            &sgx_quote->pce_svn,
             sizeof(uint16_t)));
 
         // quote QEID
@@ -471,16 +456,16 @@ static oe_result_t _fill_with_known_claims(
             &claims[claims_index++],
             OE_CLAIM_SGX_QE_ID,
             sizeof(OE_CLAIM_SGX_QE_ID),
-            sgx_qe_id,
-            sgx_qe_id_size));
+            sgx_quote->user_data,
+            SGX_USERDATA_SIZE));
 
         // TCB info FMSPC
         OE_CHECK(oe_sgx_add_claim(
             &claims[claims_index++],
             OE_CLAIM_SGX_FMSPC,
             sizeof(OE_CLAIM_SGX_FMSPC),
-            sgx_fmspc,
-            sgx_fmspc_size));
+            parsed_tcb_info.fmspc,
+            OE_SGX_FMSPC_SIZE));
 
         // TCB info
         OE_CHECK(oe_sgx_add_claim(
@@ -559,10 +544,6 @@ done:
         for (size_t i = 0; i < claims_index; i++)
             _free_claim(&claims[i]);
     }
-    if (sgx_qe_id)
-        oe_free(sgx_qe_id);
-    if (sgx_fmspc)
-        oe_free(sgx_fmspc);
 
     return result;
 }

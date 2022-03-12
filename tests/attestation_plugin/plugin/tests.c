@@ -551,9 +551,6 @@ static void _test_claims(
 
     // Check SGX cpusvn
     value = _find_claim(claims, claims_size, OE_CLAIM_SGX_CPU_SVN);
-    printf(
-        "sizeof(sgx_report_body->cpusvn) : %lu\n",
-        sizeof(sgx_report_body->cpusvn));
     OE_TEST(
         value != NULL &&
         memcmp(
@@ -590,7 +587,6 @@ static void _test_claims(
     OE_TEST(
         is_local || memcmp(value, &sgx_quote->pce_svn, sizeof(uint16_t)) == 0);
 
-    printf("sizeof(sgx_quote->user_data): %lu\n", sizeof(sgx_quote->user_data));
     value = _find_claim(claims, claims_size, OE_CLAIM_SGX_QE_ID);
     OE_TEST(
         is_local ||
@@ -619,7 +615,6 @@ static void _test_claims(
             /* Verify the fmspc value returned is as expected */
             oe_parsed_tcb_info_t parsed_tcb_info;
             const size_t fmspc_size = sizeof(parsed_tcb_info.fmspc);
-            printf("fmspc_size: %lu\n", fmspc_size);
             uint8_t* fmspc = (uint8_t*)malloc(fmspc_size);
             OE_TEST(fmspc != NULL);
 

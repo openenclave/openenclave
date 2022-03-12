@@ -407,6 +407,7 @@ typedef struct _sgx_launch_token
 #define SGX_CPUSVN_SIZE 16
 #define SGX_KEYID_SIZE 32
 #define SGX_MAC_SIZE 16
+#define SGX_USERDATA_SIZE 20
 
 OE_PACK_BEGIN
 typedef struct _sgx_einittoken
@@ -690,7 +691,7 @@ typedef struct _sgx_quote
     uint8_t uuid[16];
 
     /* (28) */
-    uint8_t user_data[20];
+    uint8_t user_data[SGX_USERDATA_SIZE];
 
     /* (48) */
     sgx_report_body_t report_body;
