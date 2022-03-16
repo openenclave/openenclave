@@ -407,10 +407,11 @@ static void _find_fmspc(uint8_t* tcb_info, uint8_t* fmspc, size_t fmspc_size)
     char* substr = "fmspc";
     char* p_fmspc;
     long data = 0;
-    char hex[2];
+    char hex[3];
 
     p_fmspc = strstr((char*)tcb_info, substr);
     p_fmspc = p_fmspc + 8; // move pointer to start of value
+    hex[2] = '\0';
 
     for (size_t i = 0; i < fmspc_size; ++i)
     {
