@@ -62,6 +62,12 @@ copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_ecc.txt
 # Note that the EOL of the *.pem files does not affect the test results. However,
 # because the test uses a same path to retrieve *.sct and *.pem files, we copy the *.pem
 # files as well.
+copy_test_data(${OPENSSL_DIR}/test/certs/bad.pem
+               ${CMAKE_CURRENT_BINARY_DIR}/certs/bad.pem)
+copy_test_data(${OPENSSL_DIR}/test/certs/ca-cert.pem
+               ${CMAKE_CURRENT_BINARY_DIR}/certs/ca-cert.pem)
+copy_test_data(${OPENSSL_DIR}/test/certs/ee-cert.pem
+               ${CMAKE_CURRENT_BINARY_DIR}/certs/ee-cert.pem)
 copy_test_data(${OPENSSL_DIR}/test/certs/embeddedSCTs1.pem
                ${CMAKE_CURRENT_BINARY_DIR}/certs/embeddedSCTs1.pem)
 copy_test_data(${OPENSSL_DIR}/test/certs/embeddedSCTs1.sct
@@ -76,8 +82,16 @@ copy_test_data(${OPENSSL_DIR}/test/certs/embeddedSCTs3_issuer.pem
                ${CMAKE_CURRENT_BINARY_DIR}/certs/embeddedSCTs3_issuer.pem)
 copy_test_data(${OPENSSL_DIR}/test/certs/leaf.pem
                ${CMAKE_CURRENT_BINARY_DIR}/certs/leaf.pem)
+copy_test_data(${OPENSSL_DIR}/test/certs/rootCA.pem
+               ${CMAKE_CURRENT_BINARY_DIR}/certs/rootCA.pem)
+copy_test_data(${OPENSSL_DIR}/test/certs/roots.pem
+               ${CMAKE_CURRENT_BINARY_DIR}/certs/roots.pem)
+copy_test_data(${OPENSSL_DIR}/test/certs/sroot-cert.pem
+               ${CMAKE_CURRENT_BINARY_DIR}/certs/sroot-cert.pem)
 copy_test_data(${OPENSSL_DIR}/test/certs/subinterCA.pem
                ${CMAKE_CURRENT_BINARY_DIR}/certs/subinterCA.pem)
+copy_test_data(${OPENSSL_DIR}/test/certs/untrusted.pem
+               ${CMAKE_CURRENT_BINARY_DIR}/certs/untrusted.pem)
 copy_test_data(${OPENSSL_DIR}/test/ct/tls1.sct
                ${CMAKE_CURRENT_BINARY_DIR}/ct/tls1.sct)
 
@@ -616,10 +630,7 @@ foreach (testcase ${openssltests})
   endif ()
 
   if ("${name}" STREQUAL verify_extra_test)
-    add_openssl_test(
-      "${name}" "${name}" ${OPENSSL_TEST_DIR}/certs/roots.pem
-      ${OPENSSL_TEST_DIR}/certs/untrusted.pem ${OPENSSL_TEST_DIR}/certs/bad.pem
-      ${OPENSSL_TEST_DIR}/certs/rootCA.pem)
+    add_openssl_test("${name}" "${name}" ${OPENSSL_TEST_DIR}/certs/)
     continue()
   endif ()
 
@@ -664,6 +675,15 @@ foreach (testcase ${openssltests})
       ${OPENSSL_TEST_DIR}/certs/root-anyEKU.pem
       ${OPENSSL_TEST_DIR}/certs/root-cert.pem
       ${OPENSSL_TEST_DIR}/certs/invalid-cert.pem)
+    continue()
+  endif ()
+
+  if ("${name}" STREQUAL ec_internal_test)
+    if (WIN32)
+      add_openssl_test("${name}" "${name}" ${TEST_DATA_DIR} ${WIN32})
+    else ()
+      add_openssl_test("${name}" "${name}" ${TEST_DATA_DIR})
+    endif ()
     continue()
   endif ()
 

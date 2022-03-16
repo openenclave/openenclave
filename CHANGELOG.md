@@ -7,6 +7,33 @@ breaking changes should be noted here. It should be more concise than `git log`.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+[Unreleased][Unreleased_log]
+--------------
+### Added
+- `oeapkman` is a Linux tool for installing and using Alpine Linux static libraries within enclaves.
+  - The command `oeapkman add package` can be used to install the specified package.
+    Typically `-static` and `-dev` (e.g.: sqlite-static, sqlite-dev) packages need to be installed.
+  - The command `oeapkman root` prints out the path to the Alpine Linux distribution maintained by `oeapkman`.
+    The root path is useful for providing paths to header files and static libraries to the compiler and linker respectively.
+  - The command `oeapkman exec` can be used to execute commands within the Alpine Linux environment.
+    For example, after executing `oeapkman add clang build-base cmake` to install development tools,
+	running `oeapkman exec clang -c file.c` would compile `file.c` in current folder using the clang compiler that
+	has been installed in the Alpine Linux environment. `oeapkman exec bash` would launch a bash shell in the current folder.
+  - The `--optee` prefix can be applied to the commands to target OP-TEE.
+    `oeapkman --optee add sqlite-static` installs aarch64 sqlite static library.
+	`oeapkman --optee exec gcc -c file.c` cross-compile `file.c` to target OP-TEE.
+  - See [samples/apkman](samples/apkman) for a complete example demonstrating use of the `sqlite` database library within enclaves.
+- Support for `compiler-rt`. `oelibc` includes LLVM's `compiler-rt-10.0.1`.
+- Update logging function setup API name for SGX Quote Provider plugin to `sgx_ql_set_logging_callback` and mark API name `sgx_ql_set_logging_function` as deprecated.
+- Add new policy type `OE_POLICY_ENDORSEMENTS_BASELINE` for `oe_verify_evidence` API to pass additional parameters to QVL for more advanced quote validation.
+
+## Changed
+- Updated libcxx to version 10.0.1
+- Updated the mbedTLS from 2.16 LTS to 2.28 LTS
+
+### Security
+- Updated openssl to version 1.1.1n. Please refer to release log to find list of CVEs addressed by this version.
+
 [v0.17.6][v0.17.6_log]
 --------------
 
