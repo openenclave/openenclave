@@ -31,6 +31,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated libcxx to version 10.0.1
 - Updated the mbedTLS from 2.16 LTS to 2.28 LTS
 
+### Security
+- Updated openssl to version 1.1.1n. Please refer to release log to find list of CVEs addressed by this version.
 
 [v0.17.6][v0.17.6_log]
 --------------
