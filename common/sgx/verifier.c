@@ -230,6 +230,7 @@ static oe_result_t _fill_with_known_claims(
     oe_report_t parsed_report = {0};
     oe_identity_t* id = &parsed_report.identity;
     const sgx_report_body_t* sgx_report_body = NULL;
+    const sgx_quote_t* sgx_quote = NULL;
     size_t claims_index = 0;
     bool flag;
     oe_sgx_tcb_status_t tcb_status =
@@ -250,6 +251,7 @@ static oe_result_t _fill_with_known_claims(
         sgx_report_body = &((sgx_quote_t*)report_body)->report_body;
         OE_CHECK(
             oe_parse_sgx_report_body(sgx_report_body, true, &parsed_report));
+        sgx_quote = (sgx_quote_t*)report_body;
     }
 
     // Optional claims are needed for SGX quotes for remote attestation
@@ -394,6 +396,11 @@ static oe_result_t _fill_with_known_claims(
 
     if (format_type != SGX_FORMAT_TYPE_LOCAL)
     {
+        /* Test if sizeof() sgx_quote creates fast fail in windows */
+        printf(
+            "Test - sizeof(sgx_quote->user_data): %lu\n",
+            sizeof(sgx_quote->user_data));
+
         // TCB status.
         OE_CHECK(oe_sgx_add_claim(
             &claims[claims_index++],
