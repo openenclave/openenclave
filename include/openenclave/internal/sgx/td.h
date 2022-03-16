@@ -230,8 +230,11 @@ OE_STATIC_ASSERT(
     OE_THREAD_SPECIFIC_DATA_SIZE ==
     sizeof(oe_sgx_td_t) - OE_OFFSETOF(oe_sgx_td_t, thread_specific_data));
 
-/* Get the thread data object for the current thread */
-oe_sgx_td_t* oe_sgx_get_td(void);
+/* Get the thread data object for the current thread with FS check */
+oe_sgx_td_t* oe_sgx_get_td();
+
+/* Get the thread data object for the current thread without FS check */
+oe_sgx_td_t* oe_sgx_get_td_no_fs_check();
 
 void oe_sgx_td_clear_states(oe_sgx_td_t* td);
 
