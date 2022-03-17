@@ -137,7 +137,8 @@ OE_EXTERNC_BEGIN
 #define OE_CLAIM_SGX_CONFIG_ID "sgx_config_id"
 #define OE_CLAIM_SGX_CONFIG_SVN "sgx_config_svn"
 #define OE_CLAIM_SGX_ISV_FAMILY_ID "sgx_isv_family_id"
-#define OE_SGX_REQUIRED_CLAIMS_COUNT 9
+#define OE_CLAIM_SGX_CPU_SVN "sgx_cpu_svn"
+#define OE_SGX_REQUIRED_CLAIMS_COUNT 10
 
 // Optional: SQX Quote verification collaterals.
 #define OE_CLAIM_SGX_TCB_INFO "sgx_tcb_info"

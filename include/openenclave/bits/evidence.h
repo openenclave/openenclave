@@ -136,11 +136,26 @@ extern const char* OE_REQUIRED_CLAIMS[OE_REQUIRED_CLAIMS_COUNT];
 #define OE_CLAIM_VALIDITY_UNTIL "validity_until"
 
 /**
+ * SGX PCESVN of platform.
+ */
+#define OE_CLAIM_SGX_PCE_SVN "sgx_pce_svn"
+
+/**
+ * QEID from SGX quote user_data.
+ */
+#define OE_CLAIM_SGX_QE_ID "sgx_qe_id"
+
+/**
+ * FMSPC from SGX TCB info
+ */
+#define OE_CLAIM_SGX_FMSPC "sgx_fmspc"
+
+/**
  * @cond DEV
  *
  */
 
-#define OE_OPTIONAL_CLAIMS_COUNT 4
+#define OE_OPTIONAL_CLAIMS_COUNT 7
 // This array is needed for tests
 extern const char* OE_OPTIONAL_CLAIMS[OE_OPTIONAL_CLAIMS_COUNT];
 
