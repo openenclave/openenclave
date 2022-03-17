@@ -38,6 +38,7 @@ tests/tools/oeapkman/zlib/enc/zpipe.c
 3rdparty/libgcov/patches/.*
 3rdparty/libunwind/libunwind/.*
 3rdparty/mbedtls/mbedtls/.*
+3rdparty/mbedtls/patches/.*
 3rdparty/musl/libc-test/.*
 3rdparty/musl/musl/.*
 3rdparty/optee/patches/.*

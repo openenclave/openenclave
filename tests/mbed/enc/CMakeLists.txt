@@ -5,6 +5,8 @@
 #    causes improper behaviour at compile time leads us to use C instead of C++
 
 set(EDL_FILE ../mbed.edl)
+set(MBEDTLS_DIR "${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls")
+set(MBEDTLS_TESTS_DIR "${MBEDTLS_DIR}/tests")
 
 add_custom_command(
   OUTPUT mbed_t.h mbed_t.c
@@ -12,6 +14,20 @@ add_custom_command(
   COMMAND
     edger8r --trusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
     ${DEFINE_OE_SGX} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_enclave_library(
+  mbedtls_test_helpers OBJECT ${MBEDTLS_TESTS_DIR}/src/helpers.c
+  ${MBEDTLS_TESTS_DIR}/src/random.c)
+
+enclave_include_directories(
+  mbedtls_test_helpers PUBLIC ${CMAKE_BINARY_DIR}/3rdparty # for config.h
+  ${MBEDTLS_DIR}/include ${MBEDTLS_DIR}/library # for ssl_tls13_keys.h
+  ${MBEDTLS_TESTS_DIR}/include)
+
+enclave_compile_options(mbedtls_test_helpers PRIVATE -Wno-sign-conversion
+                        -Wno-implicit-int-conversion)
+
+enclave_link_libraries(mbedtls_test_helpers PRIVATE oelibc oe_includes)
 
 # This function creates an enclave for a specific mbedTLS test.
 function (add_mbed_test_enclave NAME)
@@ -24,8 +40,6 @@ function (add_mbed_test_enclave NAME)
     set(suite_name ${NAME})
     set(data_name ${NAME})
   endif ()
-
-  set(MBEDTLS_TESTS_DIR "${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests")
 
   string(
     CONCAT
@@ -78,7 +92,7 @@ function (add_mbed_test_enclave NAME)
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_BINARY_DIR}/3rdparty/mbedtls/mbedtls-wrap-prefix/src/mbedtls-wrap/include/
   )
-  enclave_link_libraries(mbedtest_suite_${NAME} oelibc)
+  enclave_link_libraries(mbedtest_suite_${NAME} mbedtls_test_helpers)
 
   maybe_build_using_clangw(mbedtest_suite_${NAME})
 
@@ -156,7 +170,7 @@ function (add_mbed_selftest_enclave)
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_BINARY_DIR}/3rdparty/mbedtls/mbedtls-wrap-prefix/src/mbedtls-wrap/include/
   )
-  enclave_link_libraries(mbedtest_selftest oelibc)
+  enclave_link_libraries(mbedtest_selftest mbedtls_test_helpers)
 
   # The following variables remain uninitialized on Linux and throw warnings
   # Calling the function maybe_build_using_clangw(mbedtest_selftest) skips setting

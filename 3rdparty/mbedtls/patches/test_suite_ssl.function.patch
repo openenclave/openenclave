@@ -1,0 +1,42 @@
+diff --git a/3rdparty/mbedtls/mbedtls/tests/suites/test_suite_ssl.function b/3rdparty/mbedtls/mbedtls/tests/suites/test_suite_ssl.function
+index 74e60ae08..b11e425a5 100644
+--- a/3rdparty/mbedtls/mbedtls/tests/suites/test_suite_ssl.function
++++ b/3rdparty/mbedtls/mbedtls/tests/suites/test_suite_ssl.function
+@@ -753,6 +753,7 @@ typedef struct mbedtls_endpoint
+     mbedtls_endpoint_certificate cert;
+ } mbedtls_endpoint;
+ 
++#if defined(MBEDTLS_CERTS_C)
+ /*
+  * Initializes \p ep_cert structure and assigns it to endpoint
+  * represented by \p ep.
+@@ -858,6 +859,7 @@ exit:
+ 
+     return ret;
+ }
++#endif /* MBEDTLS_CERTS_C */
+ 
+ /*
+  * Initializes \p ep structure. It is important to call `mbedtls_endpoint_free()`
+@@ -944,8 +946,12 @@ int mbedtls_endpoint_init( mbedtls_endpoint *ep, int endpoint_type, int pk_alg,
+          mbedtls_ssl_conf_dtls_cookies( &( ep->conf ), NULL, NULL, NULL );
+ #endif
+ 
++#if defined(MBEDTLS_CERTS_C)
+     ret = mbedtls_endpoint_certificate_init( ep, pk_alg );
+     TEST_ASSERT( ret == 0 );
++#else
++    (void)pk_alg;
++#endif
+ 
+ exit:
+     return ret;
+@@ -4146,7 +4152,7 @@ void ssl_session_serialize_version_check( int corrupt_major,
+ }
+ /* END_CASE */
+ 
+-/* BEGIN_CASE depends_on:MBEDTLS_X509_CRT_PARSE_C:MBEDTLS_RSA_C:MBEDTLS_ECP_DP_SECP384R1_ENABLED:!MBEDTLS_USE_PSA_CRYPTO:MBEDTLS_PKCS1_V15:MBEDTLS_ENTROPY_C:MBEDTLS_ENTROPY_C:MBEDTLS_CTR_DRBG_C */
++/* BEGIN_CASE depends_on:MBEDTLS_X509_CRT_PARSE_C:MBEDTLS_RSA_C:MBEDTLS_ECP_DP_SECP384R1_ENABLED:!MBEDTLS_USE_PSA_CRYPTO:MBEDTLS_PKCS1_V15:MBEDTLS_ENTROPY_C:MBEDTLS_ENTROPY_C:MBEDTLS_CTR_DRBG_C:MBEDTLS_CERTS_C */
+ void mbedtls_endpoint_sanity( int endpoint_type )
+ {
+     enum { BUFFSIZE = 1024 };

@@ -19,7 +19,7 @@ struct _sealed_blob_header
     uint8_t reserved[12];
     uint32_t total_size;
     uint8_t iv[12];
-    uint8_t tag[16];
+    uint8_t tag[OE_GCM_TAG_SIZE];
 };
 
 static oe_result_t _init_key_request(sgx_key_request_t* keyrequest)
@@ -176,6 +176,7 @@ static oe_result_t _seal(
         plaintext,
         plaintext_size,
         (uint8_t*)(header + 1),
+        plaintext_size,
         header->tag));
 
 done:
@@ -231,6 +232,7 @@ static oe_result_t _unseal(
         (uint8_t*)(header + 1),
         header->ciphertext_size,
         *plaintext,
+        *plaintext_size,
         header->tag));
 
 done:
