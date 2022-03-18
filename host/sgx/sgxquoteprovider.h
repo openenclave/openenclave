@@ -44,11 +44,16 @@ oe_result_t oe_sgx_set_quote_provider_logger(sgx_ql_logging_function_t logger);
 /**
  * Version of the supported SGX quote verification collateral, which will
  * reflect the version of the PCCS/PCS API used to retrieve the collateral.
- * For V1 and V2 APIs, the ‘version’ field with have a value of 1.
- * For V3 APIs, the ‘version’ field will have the value of 3."
+ * For PCS V1 and V2 APIs, the ‘version’ field will have a value of 0x1.
+ * That is, major_version = 1 and minor_version = 0.
+ * For PCS V3 APIs, major_version = 3 and the minor_version can be 0 or 1.
+ * minor_verion of 0 (version = 0x00000003) indicates the CRL’s are formatted
+ * in Base16 encoded DER. A minor version of 1 (version = 0x00010003) indicates
+ * the CRL’s are formatted in raw binary DER.
  */
-#define SGX_QL_QVE_COLLATERAL_VERSION_1 (1)
-#define SGX_QL_QVE_COLLATERAL_VERSION_3 (3)
+#define SGX_QL_QVE_COLLATERAL_VERSION_1 (0x00000001)
+#define SGX_QL_QVE_COLLATERAL_VERSION_3_0 (0x00000003)
+#define SGX_QL_QVE_COLLATERAL_VERSION_3_1 (0x00010003)
 
 OE_EXTERNC_END
 
