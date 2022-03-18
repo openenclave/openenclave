@@ -126,7 +126,6 @@ class oe_debug_enclave_t:
     def is_valid(self):
         return self.magic == self.MAGIC_VALUE
 
-
 # This constant definition must align with sgx_tcs_t
 TCS_GSBASE_OFFSET =  56
 
@@ -135,6 +134,29 @@ g_loaded_oe_enclave_addrs = set()
 
 # Global enclave list parsed flag
 g_enclave_list_parsed = False
+
+# The base enclave
+g_enclave = None
+
+# List of extra data regions
+g_extra_data_regions = []
+
+# Determine if the enclave uses OE based on the contract
+g_using_oe = -1
+
+def is_using_oe(frame):
+    global g_using_oe
+    if g_using_oe == -1:
+        g_using_oe = False
+        while frame:
+            # Determine whether the enclave is using OE when callbacks are
+            # invoked by walking up the stack and look for the following
+            # function.
+            if frame.name == "oe_sgx_build_enclave":
+                g_using_oe = True
+                break
+            frame = frame.parent
+    return g_using_oe
 
 def read_from_memory(addr, size):
     process = lldb.debugger.GetSelectedTarget().GetProcess()
@@ -175,6 +197,8 @@ def load_enclave_symbol(enclave_path, enclave_base_addr):
     lldb.debugger.HandleCommand("target modules add " + enclave_path)
     lldb.debugger.HandleCommand("target modules load --file " + enclave_path
                                 + " -s " + str(enclave_base_addr))
+
+    print("oelldb: Loaded symbols for %s" % enclave_path)
 
     # Store the oe_enclave address to global set that will be cleanup on exit.
     global g_loaded_oe_enclave_addrs
@@ -246,7 +270,6 @@ def enable_oeenclave_debug(oe_enclave_addr):
     print("oelldb: All tcs set to debug for enclave \n")
     return True
 
-
 class EnclaveCreationBreakpoint:
     def __init__(self, target):
         breakpoint  = target.BreakpointCreateByName("oe_debug_enclave_created_hook")
@@ -256,6 +279,21 @@ class EnclaveCreationBreakpoint:
     def onHit(frame, bp_loc, dict):
         enclave_addr = frame.FindValue("rdi", lldb.eValueTypeRegister ).signed
         enable_oeenclave_debug(enclave_addr)
+
+        # Debugger is notified of the enclave *after* the enclave has been EINITed.
+        # It is now OK to register any extra data region for which the registration has
+        # been delayed.
+        global g_extra_data_regions
+        global g_enclave
+        if g_extra_data_regions:
+            for r in g_extra_data_regions:
+                load_enclave_symbol(r.path, r.base_address)
+            g_extra_data_regions = []
+
+            # The code will reach here only if there were modules without enclave field
+            # set. Therefore, this debugger can also be safely used for applications
+            # that create multiple enclaves.
+            g_enclave = enclave_addr
         return False
 
 class EnclaveTerminationBreakpoint:
@@ -268,6 +306,9 @@ class EnclaveTerminationBreakpoint:
         enclave_addr = frame.FindValue("rdi", lldb.eValueTypeRegister ).signed
         enclave = oe_debug_enclave_t(enclave_addr)
         unload_enclave_symbol(enclave.path, enclave.base_address)
+        global g_enclave
+        if g_enclave == enclave.base_address:
+            g_enclave = None
         return False
 
 class ModuleLoadedBreakpoint:
@@ -279,7 +320,26 @@ class ModuleLoadedBreakpoint:
     def onHit(frame, bp_loc, dict):
         library_image_addr = frame.FindValue("rdi", lldb.eValueTypeRegister).signed
         library_image = oe_debug_module_t(library_image_addr)
-        load_enclave_symbol(library_image.path, library_image.base_address)
+        if library_image.enclave != 0:
+            load_enclave_symbol(library_image.path, library_image.base_address)
+        elif g_enclave:
+            # If g_enclave is not null, it means that the enclave was
+            # EINITed and processed. It is OK to process region even though
+            # the enclave field is null.
+            load_enclave_symbol(library_image.path, library_image.base_address)
+        elif not is_using_oe(frame):
+            # If debugging a non-OE application, treating this breakpoint as normal
+            # module loading.
+            load_enclave_symbol(library_image.path, library_image.base_address)
+        else:
+            # For the use case of adding modules through the extra data feature,
+            # the notifications for modules are sent before the enclave has been
+            # EINITed. When the debugger tries to set any pending breakpoints in
+            # these regions, the hardware fails the write operation. Therefore,
+            # delay registering modules until after the enclave has been EINITed.
+            global g_extra_data_regions
+            g_extra_data_regions.append(library_image)
+            print("oelldb: Delaying registration of region %s" % library_image.path)
         return False
 
 class ModuleUnloadedBreakpoint:
