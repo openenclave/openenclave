@@ -30,7 +30,15 @@ typedef enum _sgx_plat_error_t
 #define __sgx_ql_qve_collateral_t
 typedef struct _sgx_ql_qve_collateral_t
 {
-    uint32_t version; /// version = 1.  PCK Cert chain is in the Quote.
+    union
+    {
+        uint32_t version;
+        struct
+        {
+            uint16_t major_version;
+            uint16_t minor_version;
+        };
+    };
     char* pck_crl_issuer_chain;
     uint32_t pck_crl_issuer_chain_size;
     char* root_ca_crl; /// Root CA CRL

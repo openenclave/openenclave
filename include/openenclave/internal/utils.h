@@ -5,7 +5,6 @@
 #define _OE_UTILS_H
 
 #include <openenclave/bits/types.h>
-#include <openenclave/corelibc/ctype.h>
 #include <openenclave/internal/defs.h>
 #if defined(_MSC_VER)
 #include <intrin.h>
@@ -227,36 +226,6 @@ OE_INLINE void oe_mem_reverse_inplace(void* mem, size_t n)
         p[i] = p[n - 1 - i];
         p[n - 1 - i] = x;
     }
-}
-
-OE_INLINE unsigned char oe_hex_digit_to_num(char c)
-{
-    if (oe_isdigit(c))
-        return (unsigned char)(c - '0');
-
-    if (c >= 'A' && c <= 'F')
-        return (unsigned char)(10 + (c - 'A'));
-
-    return (unsigned char)(10 + (c - 'a'));
-}
-
-OE_INLINE oe_result_t oe_hex_to_buffer(
-    const char* hex_string,
-    size_t hex_string_size,
-    uint8_t* buffer,
-    size_t buffer_size)
-{
-    if (buffer_size * 2 < hex_string_size)
-    {
-        return OE_BUFFER_TOO_SMALL;
-    }
-    for (size_t i = 0; i < hex_string_size; i += 2)
-    {
-        unsigned char v =
-            (unsigned char)(16 * oe_hex_digit_to_num(hex_string[i]) + oe_hex_digit_to_num(hex_string[i + 1]));
-        buffer[i / 2] = v;
-    }
-    return OE_OK;
 }
 
 OE_EXTERNC_END
