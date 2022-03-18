@@ -158,7 +158,17 @@ elseif (WIN32)
     APPEND
     PLATFORM_SDK_ONLY_SRC
     ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/bignum.c
-    ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/platform_util.c #Used by bignum.c
+    # The following files are the dependencies of bignum.c with the default configuration
+    # in mbedTLS 2.28. The OE's configuration is incompatible with Windows complier, but
+    # it is fine as this is the host library.
+    ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/constant_time.c
+    ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/md.c
+    ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/md5.c
+    ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/ripemd160.c
+    ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/sha1.c
+    ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/sha256.c
+    ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/sha512.c
+    ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/platform_util.c
     ${PROJECT_SOURCE_DIR}/common/asn1.c
     ${PROJECT_SOURCE_DIR}/common/cert.c
     crypto/bcrypt/cert.c

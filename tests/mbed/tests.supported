@@ -4,6 +4,7 @@ aes.ecb
 aes.ofb
 aes.rest
 aes.xts
+asn1parse
 asn1write
 base64
 ccm
@@ -37,12 +38,15 @@ hmac_drbg.pr
 md
 mdx
 mpi
+oid
 pem
 pkcs1_v15
 pkcs1_v21
 pkcs5
+pkcs12
 pk
 pkparse
+random
 shax
 ssl
 rsa

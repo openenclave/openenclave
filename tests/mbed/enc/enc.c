@@ -6,6 +6,7 @@
 #include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/syscall/declarations.h>
 #include <openenclave/internal/syscall/hook.h>
@@ -17,6 +18,8 @@
 #include <sys/uio.h>
 #include <unistd.h>
 #include "mbed_t.h"
+
+//#define VERBOSE
 
 int main(int argc, const char* argv[]);
 struct mbed_args gmbed_args;
@@ -125,6 +128,11 @@ OE_DEFINE_SYSCALL3_M(SYS_writev)
     {
         strncat(str_full, iov[i].iov_base, iov[i].iov_len);
     }
+
+#ifdef VERBOSE
+    oe_host_printf("%s", str_full);
+#endif
+
     test_checker(str_full);
     free(str_full);
     // expecting the runtime implementation of SYS_writev to also be

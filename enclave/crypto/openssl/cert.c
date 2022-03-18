@@ -3,7 +3,8 @@
 
 #include "cert.h"
 #include <ctype.h>
-#include <mbedtls/oid.h> // For mbedtls_oid_get_numeric_string
+#include <mbedtls/oid.h>  // For mbedtls_oid_get_numeric_string
+#include <mbedtls/x509.h> // for mbedtls_x509_buf
 #include <openenclave/bits/result.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/internal/cert.h>

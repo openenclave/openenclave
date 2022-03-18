@@ -3,6 +3,8 @@
 
 check_submodule_not_empty(mbedtls)
 
+apply_patches(patches mbedtls)
+
 # Load the compiler info if we're cross compiling on Windows.
 if (USE_CLANGW)
   include(toolchain-clangw.cmake)
@@ -30,7 +32,7 @@ set(MBEDTLS_COMPILE_OPTS
 
 if (CMAKE_COMPILER_IS_GNU)
   list(APPEND MBEDTLS_COMPILE_OPTS -Wlogical-op -Wmissing-declarations
-       -Wmissing-prototypes)
+       -Wmissing-prototypes -Wno-declaration-after-statement)
 endif ()
 
 if (CMAKE_COMPILER_IS_CLANG)
@@ -75,6 +77,7 @@ add_enclave_library(
   mbedtls/library/chachapoly.c
   mbedtls/library/cipher.c
   mbedtls/library/cipher_wrap.c
+  mbedtls/library/constant_time.c
   mbedtls/library/cmac.c
   mbedtls/library/ctr_drbg.c
   mbedtls/library/des.c
@@ -95,7 +98,6 @@ add_enclave_library(
   mbedtls/library/md2.c
   mbedtls/library/md4.c
   mbedtls/library/md5.c
-  mbedtls/library/md_wrap.c
   mbedtls/library/memory_buffer_alloc.c
   mbedtls/library/nist_kw.c
   mbedtls/library/oid.c
@@ -148,9 +150,11 @@ add_enclave_library(
   mbedtls/library/ssl_ciphersuites.c
   mbedtls/library/ssl_cli.c
   mbedtls/library/ssl_cookie.c
+  mbedtls/library/ssl_msg.c
   mbedtls/library/ssl_srv.c
   mbedtls/library/ssl_ticket.c
-  mbedtls/library/ssl_tls.c)
+  mbedtls/library/ssl_tls.c
+  mbedtls/library/ssl_tls13_keys.c)
 
 # Make sure that we build with clang on Windows.
 maybe_build_using_clangw(mbedcrypto_static)
