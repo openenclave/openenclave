@@ -5,3 +5,4 @@
 #include <openenclave/log.h>
 
 bool is_enclave_debug_allowed();
+bool is_enclave_debug_allowed_cached();

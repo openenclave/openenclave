@@ -43,6 +43,8 @@
 #include "td.h"
 #include "xstate.h"
 
+void oe_abort_with_td(oe_sgx_td_t* td) OE_NO_RETURN;
+
 oe_result_t __oe_enclave_status = OE_OK;
 uint8_t __oe_initialized = 0;
 
@@ -482,7 +484,7 @@ static void _handle_ecall(
 {
     /* To keep status of td consistent before and after _handle_ecall, td_init
      is moved into _handle_ecall. In this way _handle_ecall will not trigger
-     stack check fail by accident. Of couse not all function have the
+     stack check fail by accident. Of course not all function have the
      opportunity to keep such consistency. Such basic functions are moved to a
      separate source file and the stack protector is disabled by force
      through fno-stack-protector option. */
@@ -767,7 +769,6 @@ oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out)
     oe_result_t result = OE_UNEXPECTED;
     oe_sgx_td_t* td = oe_sgx_get_td();
     oe_callsite_t* callsite = td->callsites;
-    uint64_t saved_fs = 0;
 
     /* If the enclave is in crashing/crashed status, new OCALL should fail
     immediately. */
@@ -793,9 +794,6 @@ oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out)
                    [rflags] "m"(callsite->rflags)
                  :);
 
-    /* Save FS before making an ocall. */
-    asm("mov %%fs:0, %0" : "=r"(saved_fs));
-
     /* Save call site where execution will resume after OCALL */
     if (oe_setjmp(&callsite->jmpbuf) == 0)
     {
@@ -808,8 +806,6 @@ oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out)
     else
     {
         /* ORET here */
-
-        uint64_t current_fs;
 
         OE_CHECK_NO_TRACE(result = (oe_result_t)td->oret_result);
 
@@ -824,18 +820,6 @@ oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out)
 
             td->state = OE_TD_STATE_RUNNING;
         }
-
-        /* Compare the saved FS with the current FS, which will always be set to
-         * GS upon EENTER (by making fsbase equal to gsbase in tcs at enclave
-         * creation, see host/sgx/create.c). Two values being different
-         * indicates that the application has changed FS. In this case, restore
-         * it with wrfsbase (emulated by the exception handler inside the SGX
-         * enclaves). */
-
-        asm("mov %%fs:0, %0" : "=r"(current_fs));
-
-        if (saved_fs != current_fs)
-            asm volatile("wrfsbase %0" ::"r"(saved_fs));
     }
 
     result = OE_OK;
@@ -1167,13 +1151,13 @@ void __oe_handle_main(
         }
     }
 
+    /* Get pointer to the thread data structure */
+    oe_sgx_td_t* td = td_from_tcs(tcs);
+
     // Initialize the enclave the first time it is ever entered. Note that
     // this function DOES NOT call global constructors. Global construction
     // is performed while handling OE_ECALL_INIT_ENCLAVE.
-    oe_initialize_enclave();
-
-    /* Get pointer to the thread data structure */
-    oe_sgx_td_t* td = td_from_tcs(tcs);
+    oe_initialize_enclave(td);
 
     /* If this is a normal (non-exception) entry */
     if (cssa == 0)
@@ -1185,11 +1169,11 @@ void __oe_handle_main(
                 /* The invocation of the virtual exception handler is not
                  * allowed when cssa=0. */
                 if (func == OE_ECALL_VIRTUAL_EXCEPTION_HANDLER)
-                    oe_abort();
+                    oe_abort_with_td(td);
 
                 /* State machine check */
                 if (td->state != OE_TD_STATE_ENTERED)
-                    oe_abort();
+                    oe_abort_with_td(td);
 
                 /* At this point, we are ready to execute the ecall.
                  * Update the state to RUNNING */
@@ -1206,7 +1190,7 @@ void __oe_handle_main(
 
             default:
                 /* Unexpected case */
-                oe_abort();
+                oe_abort_with_td(td);
         }
     }
     else if (cssa == 1)
@@ -1221,23 +1205,26 @@ void __oe_handle_main(
         }
 
         /* Unexpected case */
-        oe_abort();
+        oe_abort_with_td(td);
     }
     else /* cssa > 1 */
     {
         /* Currently OE only supports an enclave with nssa = 2, which means
          * that cssa can never exceed 1 (indicating nested AEX). */
-        oe_abort();
+        oe_abort_with_td(td);
     }
 }
 
-void oe_abort(void)
+/* Abort the enclave execution with valid td. This function is only directly
+ * invoked by __oe_handle_main and init.c where the td may not be initialized
+ * yet (i.e., before the td_init() is called in the very first
+ * oe_handle_ecall()). For the other scenarios, this function is wrapped by
+ * oe_abort where we can safely get td with oe_sgx_get_td_no_check(). */
+void oe_abort_with_td(oe_sgx_td_t* td)
 {
-    oe_sgx_td_t* td = oe_sgx_get_td();
+    uint64_t arg1 = oe_make_call_arg1(OE_CODE_ERET, 0, 0, OE_OK);
 
-    /* only update the state if td is initialized */
-    if (td)
-        td->state = OE_TD_STATE_ABORTED;
+    td->state = OE_TD_STATE_ABORTED;
 
     // Once it starts to crash, the state can only transit forward, not
     // backward.
@@ -1246,9 +1233,54 @@ void oe_abort(void)
         __oe_enclave_status = OE_ENCLAVE_ABORTING;
     }
 
-    // Free the shared memory pools
-    oe_teardown_arena();
+    /* Abort can be called with user-modified FS (e.g., FS check fails in
+     * oe_sgx_get_td()). To avoid using is_enclave_debug_allowed(), which
+     * depends on oe_sgx_get_td(), we base only on the cached value to
+     * determine if the enclave is in debug mode. If the
+     * is_enclave_debug_allowed has not beed called before, the following
+     * function will return false and the stack stitching will be skipped. */
+    if (is_enclave_debug_allowed_cached())
+    {
+        oe_ecall_context_t* host_ecall_context = td->host_ecall_context;
+
+        // Make sure the context is valid.
+        if (host_ecall_context &&
+            oe_is_outside_enclave(
+                host_ecall_context, sizeof(*host_ecall_context)))
+        {
+            uint64_t* frame = (uint64_t*)__builtin_frame_address(0);
+            host_ecall_context->debug_eexit_rbp = frame[0];
+            // The caller's RSP is always given by this equation
+            //   RBP + 8 (caller frame pointer) + 8 (caller return address)
+            host_ecall_context->debug_eexit_rsp = frame[0] + 8;
+            host_ecall_context->debug_eexit_rip = frame[1];
+        }
+    }
 
     // Return to the latest ECALL.
-    _handle_exit(OE_CODE_ERET, 0, __oe_enclave_status);
+    oe_asm_exit(arg1, __oe_enclave_status, td, 1 /* direct_return */);
+}
+
+void oe_abort(void)
+{
+    /* Bypass the FS check given that the oe_abort can be invoked anywhere */
+    oe_sgx_td_t* td = oe_sgx_get_td_no_fs_check();
+
+    /* It is unlikely that td is invalid. If this is the case, we cannot
+     * call _abort to exit the enclave. Instead, we intentionally trigger
+     * the page fault by writing to the code page to exit the enclave.
+     * Note that the subsequent execution may hang in case that state machine
+     * check fails in oe_enter, which will block the call to the
+     * __oe_handle_main(). If the execution reaches __oe_handle_main(), we can
+     * safely abort with valid td via the check against __oe_enclave_status. */
+    if (!td)
+    {
+        uint64_t oe_abort_address = (uint64_t)oe_abort;
+
+        __oe_enclave_status = OE_ENCLAVE_ABORTING;
+
+        asm volatile("mov $1, %0" : "=r"(*(uint64_t*)oe_abort_address));
+    }
+
+    oe_abort_with_td(td);
 }

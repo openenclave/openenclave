@@ -308,7 +308,10 @@ int _emulate_illegal_instruction(sgx_ssa_gpr_t* ssa_gpr)
 */
 void oe_real_exception_dispatcher(oe_context_t* oe_context)
 {
-    oe_sgx_td_t* td = oe_sgx_get_td();
+    /* Bypass the FS check given that we cannot except the application
+     * to restore the FS before an exception (if the application has
+     * modified the FS) */
+    oe_sgx_td_t* td = oe_sgx_get_td_no_fs_check();
 
     /* Validate the td state, which ensures the function
      * is only invoked after oe_virtual_exception_dispatcher */

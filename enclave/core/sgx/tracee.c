@@ -46,3 +46,9 @@ bool is_enclave_debug_allowed()
 done:
     return _is_enclave_debug_allowed == 1 ? true : false;
 }
+
+// Check the cached variable only
+bool is_enclave_debug_allowed_cached()
+{
+    return _is_enclave_debug_allowed == 1 ? true : false;
+}
