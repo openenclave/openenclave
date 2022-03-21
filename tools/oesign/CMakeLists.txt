@@ -48,3 +48,31 @@ install(
 if (WITH_EEID)
   target_compile_definitions(oesign PRIVATE OE_WITH_EXPERIMENTAL_EEID)
 endif ()
+
+##==============================================================================
+##
+## Build a library out of the oesign sources
+##
+##==============================================================================
+
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${OE_LIBDIR}/openenclave/host")
+
+add_library(oesignlib ${SOURCES})
+
+target_compile_options(oesignlib PRIVATE -fPIC)
+
+set_target_properties(oesignlib PROPERTIES OUTPUT_NAME oesign)
+
+if (NOT HAVE_GETOPT_LONG)
+  target_include_directories(oesignlib PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+endif ()
+
+target_link_libraries(oesignlib PRIVATE oe_includes)
+
+set_property(TARGET oesignlib PROPERTY RUNTIME_OUTPUT_DIRECTORY ${OE_BINDIR})
+
+target_compile_definitions(oesignlib PRIVATE BUILD_LIBRARY)
+
+if (WITH_EEID)
+  target_compile_definitions(oesignlib PRIVATE OE_WITH_EXPERIMENTAL_EEID)
+endif ()

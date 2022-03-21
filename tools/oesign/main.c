@@ -578,6 +578,7 @@ int arg_handler(int argc, const char* argv[])
     return ret;
 }
 
+#if !defined(BUILD_LIBRARY)
 int main(int argc, const char* argv[])
 {
     oe_set_err_program_name(argv[0]);
@@ -592,3 +593,4 @@ int main(int argc, const char* argv[])
     ret = arg_handler(argc, argv);
     return ret;
 }
+#endif
