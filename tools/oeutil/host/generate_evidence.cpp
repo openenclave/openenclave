@@ -445,8 +445,9 @@ void dump_claims(const oe_claim_t* claims, size_t claims_length)
     {
         printf("claims[%zu]: %s\n%u\n\n", i, claims[i].name, *claims[i].value);
     }
-    // unique id, signer id, product id, format uuid, TEE-specific claims
-    for (; i < 16; i++)
+    // unique id, signer id, product id, format uuid, cpusvn,
+    // TEE-specific claims
+    for (; i < 17; i++)
     {
         printf(
             "claims[%zu]: %s (%zu)\n0x",
@@ -461,12 +462,24 @@ void dump_claims(const oe_claim_t* claims, size_t claims_length)
     printf("claims[%zu]: %s\n%u\n\n", i, claims[i].name, *claims[i].value);
     i++;
     // tcb date, validity
-    for (; i < 20; i++)
+    for (; i < 21; i++)
     {
         printf("claims[%zu]: %s\n", i, claims[i].name);
         uint32_t* date = (uint32_t*)claims[i].value;
         for (size_t j = 0; j < 6; j++)
             printf("%d ", date[j]);
+        printf("\n\n");
+    }
+    // sgx pcesvn, qeid, and fmspc
+    for (; i < 24; i++)
+    {
+        printf(
+            "claims[%zu]: %s (%zu)\n0x",
+            i,
+            claims[i].name,
+            claims[i].value_size);
+        for (size_t j = 0; j < claims[i].value_size; j++)
+            printf("%02x", claims[i].value[j]);
         printf("\n\n");
     }
     // sgx endorsements
