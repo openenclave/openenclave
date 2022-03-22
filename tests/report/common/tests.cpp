@@ -104,6 +104,8 @@ oe_result_t oe_get_collaterals(
         oe_get_sgx_endorsements(
             header->report,
             header->report_size,
+            NULL,
+            0,
             collaterals_buffer,
             collaterals_buffer_size),
         "Failed to get collaterals. %s",

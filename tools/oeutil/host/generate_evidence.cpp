@@ -1015,6 +1015,8 @@ oe_result_t generate_oe_report(
             oe_get_sgx_endorsements(
                 (const uint8_t*)quote,
                 quote_size,
+                NULL,
+                0,
                 &endorsements,
                 &endorsements_size),
             "Failed to get endorsements. Error: (%s)\n",

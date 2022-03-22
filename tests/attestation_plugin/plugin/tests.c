@@ -1,6 +1,9 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include "openenclave/bits/evidence.h"
+#include "openenclave/bits/result.h"
+#include "openenclave/internal/safecrt.h"
 #ifdef OE_BUILD_ENCLAVE
 #include <openenclave/attestation/attester.h>
 #include <openenclave/enclave.h>
@@ -25,6 +28,7 @@
 #include "../../../common/sgx/endorsements.h"
 #include "../../../common/sgx/quote.h"
 #include "../../../common/sgx/report.h"
+#include "../../../host/sgx/sgxquoteprovider.h"
 #include "mock_attester.h"
 #include "tests.h"
 
@@ -782,6 +786,158 @@ static void _test_time_policy(
         OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD);
 }
 
+#ifndef OE_BUILD_ENCLAVE
+extern oe_sgx_quote_provider_t provider;
+static const char* test_custom_parameters_prefix = "mock_for_me:";
+static const char* expected_custom_parameters = "custom_params_for_test";
+static sgx_get_quote_verification_collateral_with_parameters_t
+    origin_provider_api = NULL;
+static sgx_plat_error_t
+_test_sgx_get_quote_verification_collateral_with_parameters(
+    const uint8_t* fmspc,
+    const uint16_t fmspc_size,
+    const char* pck_ca,
+    const uint8_t* custom_parameters,
+    const uint16_t custom_parameters_length,
+    sgx_ql_qve_collateral_t** pp_quote_collateral)
+{
+    // If custom_param has prefix of test_custom_params_prefix, then mock logic
+    // will apply.
+    if (custom_parameters != NULL &&
+        strlen((const char*)custom_parameters) >
+            strlen(test_custom_parameters_prefix) &&
+        memcmp(
+            custom_parameters,
+            test_custom_parameters_prefix,
+            strlen(test_custom_parameters_prefix)) == 0)
+    {
+        const char* parameters = ((const char*)custom_parameters) +
+                                 strlen(test_custom_parameters_prefix);
+        if (strlen(parameters) != strlen(expected_custom_parameters) ||
+            memcmp(
+                parameters,
+                expected_custom_parameters,
+                strlen(expected_custom_parameters)) != 0)
+        {
+            return SGX_PLAT_ERROR_INVALID_PARAMETER;
+        }
+    }
+
+    if (provider.get_sgx_quote_verification_collateral)
+    {
+        return provider.get_sgx_quote_verification_collateral(
+            fmspc, fmspc_size, pck_ca, pp_quote_collateral);
+    }
+
+    if (origin_provider_api)
+    {
+        return origin_provider_api(
+            fmspc,
+            fmspc_size,
+            pck_ca,
+            custom_parameters,
+            custom_parameters_length,
+            pp_quote_collateral);
+    }
+
+    // This should not be reachable, but return an error as placeholder
+    return SGX_PLAT_ERROR_INVALID_PARAMETER;
+}
+
+void set_up_mocks_for_host()
+{
+    origin_provider_api =
+        provider.get_sgx_quote_verification_collateral_with_parameters;
+    provider.get_sgx_quote_verification_collateral_with_parameters =
+        &_test_sgx_get_quote_verification_collateral_with_parameters;
+}
+#endif
+
+static void _test_endorsement_baseline(
+    const oe_uuid_t* format_id,
+    bool wrapped_with_header,
+    const uint8_t* evidence,
+    size_t evidence_size,
+    const uint8_t* endorsements,
+    size_t endorsements_size)
+{
+    oe_result_t result;
+    oe_policy_t policies[2];
+    oe_claim_t* claims;
+    size_t claims_size;
+    const char* bad_parameters = "mock_for_me:bad_params";
+    const char* good_parameters = "mock_for_me:custom_params_for_test";
+
+    policies[0].type = OE_POLICY_ENDORSEMENTS_BASELINE;
+    policies[0].policy = (void*)good_parameters;
+    policies[0].policy_size = strlen(good_parameters) + 1;
+
+    // Test with good custom params
+    result = oe_verify_evidence(
+        wrapped_with_header ? NULL : format_id,
+        evidence,
+        evidence_size,
+        endorsements,
+        endorsements_size,
+        policies,
+        1,
+        &claims,
+        &claims_size);
+    OE_TEST(result == OE_OK || result == OE_TCB_LEVEL_INVALID);
+    OE_TEST_CODE(oe_free_claims(claims, claims_size), OE_OK);
+    claims = NULL;
+    claims_size = 0;
+
+    // Test with bad custom params
+    policies[0].type = OE_POLICY_ENDORSEMENTS_BASELINE;
+    policies[0].policy = (void*)bad_parameters;
+    policies[0].policy_size = strlen(bad_parameters) + 1;
+    result = oe_verify_evidence(
+        wrapped_with_header ? NULL : format_id,
+        evidence,
+        evidence_size,
+        endorsements,
+        endorsements_size,
+        policies,
+        1,
+        &claims,
+        &claims_size);
+    OE_TEST(result == OE_QUOTE_PROVIDER_CALL_ERROR);
+
+    // Test without custom params, test should go through
+    result = oe_verify_evidence(
+        wrapped_with_header ? NULL : format_id,
+        evidence,
+        evidence_size,
+        endorsements,
+        endorsements_size,
+        NULL,
+        0,
+        &claims,
+        &claims_size);
+    OE_TEST(result == OE_OK || result == OE_TCB_LEVEL_INVALID);
+    OE_TEST_CODE(oe_free_claims(claims, claims_size), OE_OK);
+    claims = NULL;
+    claims_size = 0;
+
+    // Test with multiple policies with OE_POLICY_ENDORSEMENTS_BASELINE and get
+    // invalid parameter error
+    policies[1].type = OE_POLICY_ENDORSEMENTS_BASELINE;
+    policies[1].policy = (void*)good_parameters;
+    policies[1].policy_size = strlen(good_parameters) + 1;
+    result = oe_verify_evidence(
+        wrapped_with_header ? NULL : format_id,
+        evidence,
+        evidence_size,
+        endorsements,
+        endorsements_size,
+        policies,
+        2,
+        &claims,
+        &claims_size);
+    OE_TEST(result == OE_INVALID_PARAMETER);
+}
+
 static const oe_uuid_t _local_uuid = {OE_FORMAT_UUID_SGX_LOCAL_ATTESTATION};
 static const oe_uuid_t _ecdsa_uuid = {OE_FORMAT_UUID_SGX_ECDSA};
 static const oe_uuid_t _ecdsa_report_uuid = {
@@ -1014,6 +1170,18 @@ void verify_sgx_evidence(
     OE_TEST_CODE(oe_free_claims(claims, claims_size), OE_OK);
     claims = NULL;
     claims_size = 0;
+
+    // Endorsement baseline is only valid when endorsements is null
+    if (!is_local && !endorsements)
+    {
+        _test_endorsement_baseline(
+            format_id,
+            wrapped_with_header,
+            evidence,
+            evidence_size,
+            endorsements,
+            endorsements_size);
+    }
 
     // Test SGX evidence verification using tampered-with custom claims.
     // Doable only when non-empty custom claims data is present

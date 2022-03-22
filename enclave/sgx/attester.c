@@ -187,6 +187,8 @@ static oe_result_t _get_evidence(
                 oe_get_sgx_endorsements(
                     header->report,
                     header->report_size,
+                    NULL,
+                    0,
                     &endorsements,
                     &endorsements_size),
                 "SGX Plugin: Failed to get endorsements: %s",
@@ -221,6 +223,8 @@ static oe_result_t _get_evidence(
                 oe_get_sgx_endorsements(
                     header->report,
                     header->report_size,
+                    NULL,
+                    0,
                     &endorsements,
                     &endorsements_size),
                 "SGX Plugin: Failed to get endorsements: %s",

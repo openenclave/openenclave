@@ -100,6 +100,33 @@ enclave
             size_t qe_identity_issuer_chain_size,
             [out] size_t* qe_identity_issuer_chain_size_out);
 
+        oe_result_t oe_get_quote_verification_collateral_with_baseline_ocall(
+            [in] uint8_t fmspc[6],
+            uint8_t collateral_provider,
+            [in, size=baseline_size] void* baseline,
+            size_t baseline_size,
+            [out, size=tcb_info_size] void* tcb_info,
+            size_t tcb_info_size,
+            [out] size_t* tcb_info_size_out,
+            [out, size=tcb_info_issuer_chain_size] void* tcb_info_issuer_chain,
+            size_t tcb_info_issuer_chain_size,
+            [out] size_t* tcb_info_issuer_chain_size_out,
+            [out, size=pck_crl_size] void* pck_crl,
+            size_t pck_crl_size,
+            [out] size_t* pck_crl_size_out,
+            [out, size=root_ca_crl_size] void* root_ca_crl,
+            size_t root_ca_crl_size,
+            [out] size_t* root_ca_crl_size_out,
+            [out, size=pck_crl_issuer_chain_size] void* pck_crl_issuer_chain,
+            size_t pck_crl_issuer_chain_size,
+            [out] size_t* pck_crl_issuer_chain_size_out,
+            [out, size=qe_identity_size] void* qe_identity,
+            size_t qe_identity_size,
+            [out] size_t* qe_identity_size_out,
+            [out, size=qe_identity_issuer_chain_size] void* qe_identity_issuer_chain,
+            size_t qe_identity_issuer_chain_size,
+            [out] size_t* qe_identity_issuer_chain_size_out);
+
         oe_result_t oe_verify_quote_ocall(
             [in] const oe_uuid_t* format_id,
             [in, size=opt_params_size] const void* opt_params,

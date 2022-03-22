@@ -410,6 +410,8 @@ oe_result_t generate_sgx_report(oe_enclave_t* enclave, bool verbose)
             result = oe_get_sgx_endorsements(
                 (const uint8_t*)quote,
                 quote_size,
+                NULL,
+                0,
                 &endorsements_data,
                 &endorsements_data_size);
             if (result != OE_OK)
