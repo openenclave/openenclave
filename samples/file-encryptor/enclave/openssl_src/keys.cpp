@@ -70,7 +70,7 @@ int ecall_dispatcher::generate_password_key(
             SALT_SIZE_IN_BYTES,                 // salt length
             100000,                             // iteration count
             EVP_sha256(),                       // digest function
-            key_size,                           // key length
+            (int)key_size,                      // key length
             key) == 0)                          // key
     {
         TRACE_ENCLAVE("Key generation from password using method "
@@ -93,7 +93,7 @@ int ecall_dispatcher::generate_encryption_key(
 
     memset(key, 0, key_size);
 
-    if (!(ret = RAND_bytes(key, key_size)))
+    if (!(ret = RAND_bytes(key, (int)key_size)))
     {
         TRACE_ENCLAVE("RAND_bytes failed with return code %d", ret);
         goto exit;
@@ -229,7 +229,6 @@ int ecall_dispatcher::prepare_encryption_header(
         encrypted_key[ENCRYPTION_KEY_SIZE_IN_BYTES]; // encrypted encryption_key
                                                      // using AES256-CBC
     unsigned char salt[SALT_SIZE_IN_BYTES];
-    const char seed[] = "file_encryptor_sample";
 
     if (header == nullptr)
     {

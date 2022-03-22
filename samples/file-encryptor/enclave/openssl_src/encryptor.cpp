@@ -124,7 +124,7 @@ int ecall_dispatcher::encrypt_block(
                   output_buffer,
                   &output_data_size,
                   input_buffer,
-                  size)))
+                  (int)size)))
         {
             TRACE_ENCLAVE("EVP_EncryptUpdate failed with returncode %d", ret);
             goto exit;
@@ -146,7 +146,7 @@ int ecall_dispatcher::encrypt_block(
                   output_buffer,
                   &output_data_size,
                   input_buffer,
-                  size)))
+                  (int)size)))
         {
             TRACE_ENCLAVE("EVP_DecryptUpdate failed with returncode %d", ret);
             goto exit;
