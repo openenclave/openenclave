@@ -99,6 +99,7 @@ int main(int argc, const char* argv[])
             child_thread = std::thread(child_thread_destroy, enclave, OE_OK);
             child_thread.join();
             OE_TEST(multi_thread_flag == true);
+            enclave = NULL;
             break;
         case DESTROY_AND_ECALL_CHILD_THREAD:
             child_thread = std::thread(child_thread_ecall_stay, enclave);
