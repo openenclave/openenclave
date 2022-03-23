@@ -30,24 +30,38 @@ void enclave_customized_log(
      * the host. The context might be used, for example, to transfer a
      * shared/public/private secret, that may be used to encrypt the log
      * message.
-     *
-     * NOTE: Do not use operations based on OE's host filesystem support
-     * in this function, they do not work consistently. If used, the
-     * logs generated after oe_terminate_enclave() cause the program to crash
-     * with a segmentation fault (issue #4349).
      */
-    OE_UNUSED(context);
-
-    /* invoke ocall to copy enclave logs to file */
-    oe_result_t result =
-        host_transfer_logs_to_file(modified_log, strlen(modified_log));
-
-    OE_UNUSED(result);
+    fprintf((FILE*)context, "%s\n", modified_log);
 }
 
-void enclave_set_log_callback()
+FILE* enc_logfile = NULL;
+
+void enclave_set_log_callback(const char* abs_filepath)
 {
-    oe_enclave_log_set_callback(NULL, enclave_customized_log);
+    oe_result_t result;
+
+    if (oe_load_module_host_file_system() != OE_OK)
+    {
+        fprintf(stderr, "oe_load_module_host_file_system() failed\n");
+        exit(1);
+    }
+
+    if (mount("/", "/", OE_HOST_FILE_SYSTEM, 0, NULL) != 0)
+    {
+        fprintf(stderr, "mount() failed\n");
+        exit(1);
+    }
+
+    if (!(enc_logfile = fopen(abs_filepath, "w")))
+        fprintf(stderr, "fopen failed %s\n", abs_filepath);
+
+    oe_enclave_log_set_callback((void*)enc_logfile, enclave_customized_log);
+}
+
+void enclave_hostfs_unmount()
+{
+    fclose(enc_logfile);
+    umount("/");
 }
 
 // This is the function that the host calls. It prints

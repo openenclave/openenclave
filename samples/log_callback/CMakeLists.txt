@@ -50,15 +50,17 @@ add_custom_command(
 
 add_custom_target(sign ALL DEPENDS enclave/enclave.signed)
 
+set(ABS_FILEPATH "${CMAKE_CURRENT_BINARY_DIR}")
 if ((NOT DEFINED ENV{OE_SIMULATION}) OR (NOT $ENV{OE_SIMULATION}))
   add_custom_target(
     run
     DEPENDS log_callback_host sign
-    COMMAND log_callback_host ${CMAKE_BINARY_DIR}/enclave/enclave.signed)
+    COMMAND log_callback_host ${CMAKE_BINARY_DIR}/enclave/enclave.signed
+            "${ABS_FILEPATH}/oe_enclave_out.txt")
 endif ()
 
 add_custom_target(
   simulate
   DEPENDS log_callback_host sign
   COMMAND log_callback_host ${CMAKE_BINARY_DIR}/enclave/enclave.signed
-          --simulate)
+          "${ABS_FILEPATH}/oe_enclave_out.txt" --simulate)
