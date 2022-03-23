@@ -4,6 +4,7 @@
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openssl/engine.h>
+#include <string.h>
 #include <sys/mount.h>
 #include "openssl_t.h"
 #include "tu_local.h" /* Header from openssl/test/testutil */
@@ -40,6 +41,24 @@ int enc_test(int argc, char** argv, char** env)
     if (mount("/", "/", OE_HOST_FILE_SYSTEM, 0, NULL))
         goto done;
 #endif
+
+    /*
+     * In test 'ec_internal_test', a file is created locally without
+     * providing an absolute path to fopen() systemcall. This causes
+     * the test to fail in linux. Mounting the current binary directory
+     * to root enables the filepath to be recognized by the OE's fopen()
+     * call.
+     *
+     * NOTE: OE in Windows works fine without the need for absolute path
+     * in fopen(). Mounting the current binary directory causes
+     * oe_resolve_mount() to fail.
+     */
+    if (argc == 2 && strstr(argv[0], "ec_internal_test"))
+    {
+        umount("/");
+        if (mount(argv[argc - 1], "/", OE_HOST_FILE_SYSTEM, 0, NULL))
+            goto done;
+    }
 
     /*
      * Initialize and opt-in the rdrand engine. This is necessary to use opensl
