@@ -453,6 +453,11 @@ static oe_result_t _enclave_destructor(void)
         /* Cleanup the allocator */
         oe_allocator_cleanup();
 
+        // After the allocator has been cleaned up, it is not safe to make
+        // ocalls since memory cannot be allocated for enclave-side parameter
+        // buffers. At this point, ocalls (e.g logging must be disabled).
+        oe_disable_logging();
+
         _destructor_done = true;
     }
 

@@ -5,3 +5,4 @@
 #include <openenclave/log.h>
 
 bool is_enclave_debug_allowed();
+void oe_disable_logging();

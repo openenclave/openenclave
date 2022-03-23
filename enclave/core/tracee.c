@@ -22,6 +22,7 @@
 
 static oe_log_level_t _active_log_level = OE_LOG_LEVEL_ERROR;
 static char _enclave_filename[OE_MAX_FILENAME_LEN];
+static bool _logging_disabled = false;
 
 const char* const oe_log_level_strings[OE_LOG_LEVEL_MAX] =
     {"NONE", "FATAL", "ERROR", "WARN", "INFO", "VERBOSE"};
@@ -59,6 +60,11 @@ const char* get_filename_from_path(const char* path)
 void oe_log_init_ecall(const char* enclave_path, uint32_t log_level)
 {
     const char* filename;
+
+    // Beyoned a certain point in enclave termination, logging is disabled and
+    // logs are silenced.
+    if (_logging_disabled)
+        return;
 
     // Returning OE_UNSUPPORTED means that the logging.edl is not properly
     // imported. Do not perform the initialization in this case.
@@ -145,6 +151,14 @@ oe_result_t oe_log(oe_log_level_t level, const char* fmt, ...)
     int bytes_written = 0;
     char* message = NULL;
 
+    // Beyoned a certain point in enclave termination, logging is disabled and
+    // logs are silenced.
+    if (_logging_disabled)
+    {
+        result = OE_OK;
+        goto done;
+    }
+
     // Skip logging for non-debug-allowed enclaves
     if (!is_enclave_debug_allowed())
     {
@@ -192,4 +206,9 @@ done:
 oe_log_level_t oe_get_current_logging_level(void)
 {
     return _active_log_level;
+}
+
+void oe_disable_logging(void)
+{
+    _logging_disabled = true;
 }
