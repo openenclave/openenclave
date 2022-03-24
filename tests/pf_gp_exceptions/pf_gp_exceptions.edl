@@ -7,6 +7,6 @@ enclave {
     from "openenclave/edl/sgx/platform.edl" import *;
 
     trusted {
-        public int enc_pf_gp_exceptions();
+        public int enc_pf_gp_exceptions(int is_misc_region_supported, int is_on_windows);
     };
 };

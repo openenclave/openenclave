@@ -53,13 +53,16 @@ static void _host_signal_handler(
     host_context.rax = (uint64_t)context->uc_mcontext.gregs[REG_RAX];
     host_context.rbx = (uint64_t)context->uc_mcontext.gregs[REG_RBX];
     host_context.rip = (uint64_t)context->uc_mcontext.gregs[REG_RIP];
+    /* si_addr (same as CR2) will have lower 12 bits cleared by the
+     * SGX hardware for an enclave faulting access. */
+    host_context.faulting_address = (uint64_t)sig_info->si_addr;
 
     host_context.signal_number = (uint64_t)sig_num;
     for (size_t i = 0; i < DEFAULT_SIGNALS_NUMBER; i++)
     {
-        if (sig_num == default_signals[i])
+        if (sig_num == default_signals[i] && sig_num != SIGSEGV)
         {
-            /* Do not pass the number of default signals */
+            /* Do not pass the number of default signals except for SIGSEGV */
             host_context.signal_number = 0;
             break;
         }
