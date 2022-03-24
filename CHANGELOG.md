@@ -26,6 +26,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for `compiler-rt`. `oelibc` includes LLVM's `compiler-rt-10.0.1`.
 - Update logging function setup API name for SGX Quote Provider plugin to `sgx_ql_set_logging_callback` and mark API name `sgx_ql_set_logging_function` as deprecated.
 - Add new policy type `OE_POLICY_ENDORSEMENTS_BASELINE` for `oe_verify_evidence` API to pass additional parameters to QVL for more advanced quote validation.
+- The CapturePFGPExceptions preference is now supported in SGX1 debug mode on Linux.
+  - When setting CapturePFGPExceptions=1, OE will simulate all the SIGSEGV as #PF by forwarding the host information (faulting address) to in-enclave exception handlers.
+  - Note that this feature is for debug only and there is no guarantee that the simulated behavior works the same as the hardware feature in SGX2.
 
 ## Changed
 - Updated libcxx to version 10.0.1

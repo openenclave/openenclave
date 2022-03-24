@@ -73,6 +73,9 @@ static oe_once_type _enclave_init_once;
 /* Global for caching the result of AVX check used by oe_enter */
 bool oe_is_avx_enabled = false;
 
+/* Forward declaration */
+void oe_sgx_host_enable_debug_pf_simulation(void);
+
 static void _initialize_enclave_host_impl(void)
 {
     uint64_t xfrm = oe_get_xfrm();
@@ -991,6 +994,21 @@ oe_result_t oe_sgx_build_enclave(
         /* Only opt into the feature if CPU (SGX2) supports the MISC region. */
         if (_is_misc_region_supported())
             context->capture_pf_gp_exceptions_enabled = 1;
+#if !defined(OEHOSTMR) && defined(__linux__)
+        else if (props.config.attributes & OE_SGX_FLAGS_DEBUG)
+        {
+            /* Enable #PF simulation (debug-mode only) */
+            oe_sgx_host_enable_debug_pf_simulation();
+
+            OE_TRACE_WARNING(
+                "The enclave is configured with CapturePFGPExceptions=1 "
+                "but the current CPU does not support the feature. The #PF "
+                "simulation "
+                "will be enabled (debug-mode only). To disable the simulation, "
+                "setting "
+                "CapturePFGPExceptions=0.\n");
+        }
+#endif
     }
 
     /* Check if the enclave is configured with CreateZeroBaseEnclave=1 */
