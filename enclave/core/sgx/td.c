@@ -156,7 +156,7 @@ void* td_to_tcs(const oe_sgx_td_t* td)
 **==============================================================================
 */
 
-oe_sgx_td_t* oe_sgx_get_td()
+static oe_sgx_td_t* _sgx_get_td(bool check_fs)
 {
     oe_sgx_td_t* td;
     void* fsbase;
@@ -169,29 +169,43 @@ oe_sgx_td_t* oe_sgx_get_td()
 
     if (fsbase != gsbase)
     {
-        /* The mismatch between FS and GS indicates that FS could have
-         * been changed by the application, which should be responsible for
-         * restoring the FS value prior to re-entering OE layer. Abort in such
-         * cases if the enclave is not in simulation mode (on Windows, GS could
-         * also be changed). */
-        if (!(td_initialized(td) && td->simulate))
+        /*
+         * The mismatch between FS and GS indicates that FS could have
+         * been changed by the application.
+         *
+         * If check_fs is set, we except the application to be responsible
+         * for restoring the FS value prior to re-entering OE layer (e.g.,
+         * calling an OCALL). Otherwise, abort the execution if the enclave
+         * is not in simulation mode (on Windows, GS could also be changed).
+         *
+         * If check_fs is not set, we bypass the check and use GS as td.
+         * Currently, places that need to bypass the check include:
+         * 1. second-stage exception handling as we cannot the application to
+         *   restore the FS before an exception.
+         * 2. oe_abort as it can be invoked anywhere (including this function).
+         */
+        if (check_fs)
         {
-            /* Instead of calling oe_abort which also depends on oe_sgx_get_td,
-             * set the td state to ABORTED and call oe_asm_exit to exit the
-             * enclave. The subsequent enclave entries will then be blocked */
-            uint64_t arg1 = oe_make_call_arg1(OE_CODE_ERET, 0, 0, OE_OK);
-            uint64_t arg2 = OE_ENCLAVE_ABORTING;
+            if (!(td_initialized(td) && td->simulate))
+                oe_abort();
 
-            /* use GS as td */
-            td = (oe_sgx_td_t*)gsbase;
-
-            td->state = OE_TD_STATE_ABORTED;
-
-            oe_asm_exit(arg1, arg2, td, 1 /* direct_return */);
+            /* Continue with FS as td in simulation mode */
         }
+        else
+            td = (oe_sgx_td_t*)gsbase; /* use GS as td */
     }
 
     return td;
+}
+
+oe_sgx_td_t* oe_sgx_get_td()
+{
+    return _sgx_get_td(true /* check_fs */);
+}
+
+oe_sgx_td_t* oe_sgx_get_td_no_fs_check()
+{
+    return _sgx_get_td(false /* check_fs */);
 }
 
 /*

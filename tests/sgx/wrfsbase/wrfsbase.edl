@@ -7,6 +7,10 @@ enclave {
     from "openenclave/edl/sgx/platform.edl" import *;
 
     trusted {
-        public void enc_wrfsbase(int negative_test);
+        public void enc_wrfsbase(int simulation_mode, int negative_test);
+    };
+
+    untrusted {
+        void host_dummy();
     };
 };

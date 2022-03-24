@@ -9,6 +9,10 @@
 
 oe_enclave_t* enclave;
 
+void host_dummy()
+{
+}
+
 int main(int argc, const char* argv[])
 {
     oe_result_t result;
@@ -23,7 +27,11 @@ int main(int argc, const char* argv[])
     }
 
     const uint32_t flags = oe_get_create_flags();
+    int simulation_mode = 0;
     int negative_test = atoi(argv[2]);
+
+    if (flags & OE_ENCLAVE_FLAG_SIMULATE)
+        simulation_mode = 1;
 
     if ((result = oe_create_wrfsbase_enclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
@@ -31,7 +39,7 @@ int main(int argc, const char* argv[])
 
     if (!negative_test)
     {
-        result = enc_wrfsbase(enclave, 0);
+        result = enc_wrfsbase(enclave, simulation_mode, 0);
         if (result != OE_OK)
             oe_put_err("oe_call_enclave() failed: result=%u", result);
 
@@ -39,7 +47,7 @@ int main(int argc, const char* argv[])
     }
     else
     {
-        result = enc_wrfsbase(enclave, 1);
+        result = enc_wrfsbase(enclave, simulation_mode, 1);
         if (result != OE_ENCLAVE_ABORTING)
             oe_put_err("oe_call_enclave() failed: result=%u", result);
     }
