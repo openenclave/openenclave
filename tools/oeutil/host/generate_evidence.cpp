@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <vector>
 #if defined(__linux__)
 #include <unistd.h>
 #elif defined(_WIN32)
@@ -54,6 +55,7 @@ extern FILE* log_file;
 #define INPUT_PARAM_OPTION_OUT_FILE "--out"
 #define INPUT_PARAM_OPTION_LOG_FILE "--log"
 #define INPUT_PARAM_OPTION_VERBOSE "--verbose"
+#define INPUT_PARAM_OPTION_BASELINE "--baseline"
 #define INPUT_PARAM_OPTION_HELP "--help"
 #define INPUT_PARAM_OPTION_LEGACY_REPORT_REMOTE "LEGACY_REPORT_REMOTE"
 #define INPUT_PARAM_OPTION_SGX_ECDSA "SGX_ECDSA"
@@ -65,6 +67,7 @@ extern FILE* log_file;
 #define SHORT_INPUT_PARAM_OPTION_VERIFY "-v"
 #define SHORT_INPUT_PARAM_OPTION_OUT_FILE "-o"
 #define SHORT_INPUT_PARAM_OPTION_LOG_FILE "-l"
+#define SHORT_INPUT_PARAM_OPTION_BASELINE "-b"
 #define SHORT_INPUT_PARAM_OPTION_HELP "-h"
 #define SGX_AESM_ADDR "SGX_AESM_ADDR"
 #if defined(_WIN32)
@@ -90,6 +93,7 @@ typedef struct _input_parameters
     const char* log_filename;
     const char* endorsements_filename;
     const char* quote_proc;
+    const char* baseline;
     bool generate_certificate;
     bool generate_legacy_report_remote;
     bool generate_sgx_ecdsa;
@@ -103,22 +107,22 @@ static input_parameters_t _parameters;
 
 void log(const char* fmt, ...)
 {
-    char message[4096];
+    std::vector<char> buffer(4096);
     va_list args;
     va_start(args, fmt);
-    vsnprintf(message, sizeof(message), fmt, args);
+    vsnprintf(buffer.data(), buffer.size(), fmt, args);
     va_end(args);
 
     // ensure buf is always null-terminated
-    message[sizeof(message) - 1] = 0;
+    buffer[buffer.size() - 1] = 0;
 
     if (log_file)
     {
-        fprintf(log_file, "%s", message);
+        fprintf(log_file, "%s", buffer.data());
     }
     else
     {
-        printf("%s", message);
+        printf("%s", buffer.data());
     }
 }
 
@@ -286,6 +290,11 @@ static void _display_help(const char* command)
         SHORT_INPUT_PARAM_OPTION_LOG_FILE,
         INPUT_PARAM_OPTION_LOG_FILE,
         DEFAULT_LOG_FILE);
+    printf(
+        "\t%s, %s <baseline>: baseline for evidence verification. Only valid "
+        "when --verify/-v option is specified.\n",
+        SHORT_INPUT_PARAM_OPTION_BASELINE,
+        INPUT_PARAM_OPTION_BASELINE);
     printf("\t%s: enable verbose output.\n", INPUT_PARAM_OPTION_VERBOSE);
     printf("Examples:\n");
     printf("\t1. Show the verification results of evidence in SGX_ECDSA "
@@ -1202,6 +1211,15 @@ oe_result_t generate_oe_evidence(
         size_t claims_length = 0;
         const oe_claim_t* claim;
         oe_result_t _verify_evidence_result;
+        std::vector<oe_policy_t> policies = {};
+        if (_parameters.baseline != NULL)
+        {
+            oe_policy_t policy = {
+                OE_POLICY_ENDORSEMENTS_BASELINE,
+                (void*)_parameters.baseline,
+                strlen(_parameters.baseline) + 1};
+            policies.emplace_back(policy);
+        }
 
         OE_CHECK(oe_verifier_initialize());
 
@@ -1213,8 +1231,8 @@ oe_result_t generate_oe_evidence(
                 evidence_size,
                 endorsements,
                 endorsements_size,
-                NULL,
-                0,
+                policies.data(),
+                policies.size(),
                 &claims,
                 &claims_length),
             "Failed to verify evidence. Error: (%s)\n",
@@ -1450,6 +1468,15 @@ int _parse_args(int argc, const char* argv[])
 
             _parameters.log_filename = argv[i + 1];
             i += 2;
+        }
+        else if (
+            strcasecmp(INPUT_PARAM_OPTION_BASELINE, argv[i]) == 0 ||
+            strcasecmp(SHORT_INPUT_PARAM_OPTION_BASELINE, argv[i]) == 0)
+        {
+            if (argc < i + 2)
+                break;
+
+            _parameters.baseline = argv[i + 1];
         }
         else if (strcasecmp(INPUT_PARAM_OPTION_VERBOSE, argv[i]) == 0)
         {
