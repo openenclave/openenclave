@@ -1477,6 +1477,7 @@ int _parse_args(int argc, const char* argv[])
                 break;
 
             _parameters.baseline = argv[i + 1];
+            i += 2;
         }
         else if (strcasecmp(INPUT_PARAM_OPTION_VERBOSE, argv[i]) == 0)
         {
