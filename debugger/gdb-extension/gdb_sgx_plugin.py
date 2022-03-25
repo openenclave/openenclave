@@ -10,6 +10,8 @@ import load_symbol_cmd
 
 POINTER_SIZE = 8
 
+VERBOSE = False
+
 # These constant definitions must align with oe_debug_enclave_t structure defined in debugrt/common.h
 class oe_debug_module_t:
     OFFSETOF_MAGIC = 0
@@ -130,8 +132,8 @@ class oe_debug_enclave_t:
 # This constant definition must align with sgx_tcs_t
 TCS_GSBASE_OFFSET =  56
 
-# The set to store all loaded OE enclave base address.
-g_loaded_oe_enclave_addrs = set()
+# The set to store all loaded modules.
+g_loaded_modules = []
 
 # Global enclave list parsed flag
 g_enclave_list_parsed = False
@@ -200,11 +202,14 @@ def load_enclave_symbol(enclave_path, enclave_base_addr):
     if gdb_cmd == -1:
         print ("Can't get symbol loading command.")
         return False
-    # print (gdb_cmd)
+    if VERBOSE:
+        print (gdb_cmd)
     gdb.execute(gdb_cmd, False, True)
-    # Store the oe_enclave address to global set that will be cleanup on exit.
-    global g_loaded_oe_enclave_addrs
-    g_loaded_oe_enclave_addrs.add(int(gdb_cmd.split()[2], 16))
+    # Store the oe_enclave address to global list that will be cleanup on exit.
+    global g_loaded_modules
+    g_loaded_modules.append((enclave_base_addr,
+                             enclave_path,
+                             int(gdb_cmd.split()[2], 16)))
     return True
 
 def unload_enclave_symbol(enclave_path, enclave_base_addr):
@@ -216,10 +221,13 @@ def unload_enclave_symbol(enclave_path, enclave_base_addr):
     if gdb_cmd == -1:
         print ("Can't get symbol unloading command.")
         return False
-    # print (gdb_cmd)
+    if VERBOSE:
+        print (gdb_cmd)
     gdb.execute(gdb_cmd, False, True)
-    global g_loaded_oe_enclave_addrs
-    g_loaded_oe_enclave_addrs.discard(int(gdb_cmd.split()[2]))
+    global g_loaded_modules
+    g_loaded_modules.remove((enclave_base_addr,
+                             enclave_path,
+                             int(gdb_cmd.split()[2])))
     return True
 
 def set_tcs_debug_flag(tcs_addr):
@@ -229,7 +237,8 @@ def set_tcs_debug_flag(tcs_addr):
     flag = struct.unpack('I', string)[0]
     flag |= 1
     gdb_cmd = "set *(unsigned int *)%#x = %#x" %(tcs_addr + 8, flag)
-    # print ("set tcs [{0:#x}] flag, {1}" .format(tcs_addr, gdb_cmd))
+    if VERBOSE:
+        print ("set tcs [{0:#x}] flag, {1}" .format(tcs_addr, gdb_cmd))
     gdb.execute(gdb_cmd, False, True)
     return True
 
@@ -293,7 +302,8 @@ class ModuleLoadedBreakpoint(gdb.Breakpoint):
         module_addr = int(gdb.parse_and_eval("$rdi"))
         debug_module = oe_debug_module_t(module_addr)
         load_enclave_symbol(debug_module.path, debug_module.base_address)
-        print ("oegdb: Loaded enclave module %s" % debug_module.path)
+        if VERBOSE:
+            print ("oegdb: Loaded enclave module %s" % debug_module.path)
         return False
 
 class ModuleUnloadedBreakpoint(gdb.Breakpoint):
@@ -375,11 +385,13 @@ def oe_debugger_init():
 def oe_debugger_cleanup():
     """Remove all loaded enclave symbols"""
     global g_enclave_list_parsed
-    for oe_enclave_addr in g_loaded_oe_enclave_addrs:
-        gdb_cmd = "remove-symbol-file -a %s" % (oe_enclave_addr)
-        # print (gdb_cmd)
-        gdb.execute("remove-symbol-file -a %s" % (oe_enclave_addr), False, True)
-    g_loaded_oe_enclave_addrs.clear()
+    global g_loaded_modules
+    for m in g_loaded_modules:
+        gdb_cmd = "remove-symbol-file -a %s" % m[2]
+        if VERBOSE:
+            print (gdb_cmd)
+        gdb.execute("remove-symbol-file -a %s" % m[2], False, True)
+    g_loaded_modules.clear()
     g_enclave_list_parsed = False
     return
 
