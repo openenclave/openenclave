@@ -5,11 +5,6 @@ check_submodule_not_empty(mbedtls)
 
 apply_patches(patches mbedtls)
 
-# Load the compiler info if we're cross compiling on Windows.
-if (USE_CLANGW)
-  include(toolchain-clangw.cmake)
-endif ()
-
 # We use configure_file since the config.h file has #cmakedefines in it, so
 # the C header changes if we're running in debug mode or not. This will copy
 # the config file to the build directory.
@@ -20,22 +15,32 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "DEBUG")
 endif ()
 configure_file(config.h config.h)
 
+if (WIN32)
+  # Set the compiler to clang. Otherwise cl will be used.
+  set(MBEDTLS_C_COMPILER clang)
+else ()
+  if (CMAKE_C_COMPILER_ID MATCHES Clang)
+    set(MBEDTLS_C_COMPILER clang)
+  elseif (CMAKE_C_COMPILER_ID MATCHES GNU)
+    set(MBEDTLS_C_COMPILER gcc)
+  else ()
+    message(FATAL_ERROR "Unsupported compiler: ${CMAKE_C_COMPILER_ID}")
+  endif ()
+endif ()
+
 # Compiler flags is copied from the mbedtls CMakeLists.txt and
 # mbedtls/library/CMakeLists.txt files, so that we can compile with the same warnings.
-string(REGEX MATCH "Clang" CMAKE_COMPILER_IS_CLANG "${CMAKE_C_COMPILER_ID}")
-string(REGEX MATCH "GNU" CMAKE_COMPILER_IS_GNU "${CMAKE_C_COMPILER_ID}")
 
 set(MBEDTLS_COMPILE_OPTS
     -W -Wdeclaration-after-statement -Wwrite-strings -Wshadow
     # Disable conversion warnings inherited from OE.
     -Wno-sign-conversion -Wno-conversion)
 
-if (CMAKE_COMPILER_IS_GNU)
+# The gcc supported is for OP-TEE
+if (MBEDTLS_C_COMPILER MATCHES gcc)
   list(APPEND MBEDTLS_COMPILE_OPTS -Wlogical-op -Wmissing-declarations
        -Wmissing-prototypes -Wno-declaration-after-statement)
-endif ()
-
-if (CMAKE_COMPILER_IS_CLANG)
+elseif (MBEDTLS_C_COMPILER MATCHES clang)
   list(
     APPEND
     MBEDTLS_COMPILE_OPTS
@@ -46,14 +51,8 @@ if (CMAKE_COMPILER_IS_CLANG)
     -Wdocumentation
     -Wno-documentation-deprecated-sync
     -Wunreachable-code)
-endif ()
-
-if (USE_CLANGW)
-  list(APPEND MBEDTLS_COMPILE_OPTS "-target x86_64-pc-linux")
-
-  # Set up the linker.
-  find_program(LLVM_AR "llvm-ar.exe")
-  set(CMAKE_AR ${LLVM_AR})
+else ()
+  message(FATAL_ERROR "Unsupported compiler: ${MBEDTLS_C_COMPILER}")
 endif ()
 
 # Sources for the three mbedtls libraries. We name the mbedcrypto library
