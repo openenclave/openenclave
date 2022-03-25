@@ -22,11 +22,11 @@ export PYTHONPATH=$OE_LLDB_PLUGIN_DIR
 export LD_PRELOAD=$OE_LLDB_PTRACE_PATH
 
 # Use latest version of installed lldb.
-for v in "-12" "-11" "-10" "-9" "-8" "-7" ""; do
+for v in "-13" "-12" "-11" "-10" "-9" "-8" ""; do
     if [ -n "$(command -v lldb$v)" ]; then
 	lldb$v -o "command script import lldb_sgx_plugin" "$@"
 	exit "$?"
     fi
 done
-echo "oelldb requires lldb-7 or above."
+echo "oelldb requires lldb-8 or above."
 exit 1
