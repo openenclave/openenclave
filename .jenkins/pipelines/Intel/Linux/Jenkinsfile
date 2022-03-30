@@ -43,9 +43,7 @@ pipeline {
         label globalvars.AGENTS_LABELS["ubuntu-nonsgx"]
     }
     options {
-        // Use this to make sure this pipeline does not cause
-        // a bottleneck.
-        timeout(time: 90, unit: 'MINUTES')
+        timeout(time: 240, unit: 'MINUTES')
     }
     stages {
         stage("Jenkins trigger") {
