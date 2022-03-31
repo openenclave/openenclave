@@ -28,33 +28,34 @@ def ubuntuPublishRelease(String release_version, String os_release) {
                      string(credentialsId: 'ReleaseAADClientId', variable: 'AADClientId'),
                      string(credentialsId: 'ReleaseAADResource', variable: 'AADResource'),
                      string(credentialsId: 'ReleaseAADTenant', variable: 'AADTenant'),
-                     string(credentialsId: "MicrosoftAptRepositoryUbuntu${os_release}", variable: "Ubuntu${os_release}repoid")]) {
-        sh '''#!/bin/bash
-            set +x
-            echo Ubuntu${os_release}
-            sudo apt-get update
-            sudo apt-get -y --no-install-recommends install python3-adal jq
+                     string(credentialsId: "MicrosoftAptRepositoryUbuntu${os_release}", variable: "UbuntuRepoID")]) {
+        withEnv(["OS_RELEASE=${os_release}"]) {
+            sh '''#!/bin/bash
+                set +x
+                echo Ubuntu${OS_RELEASE}
+                sudo apt-get update
+                sudo apt-get -y --no-install-recommends install python3-adal jq
 
-            if ! apt list --installed | grep azure-repoapi-client; then
-                sudo apt -y install ${repoapiclient}
-            fi
+                if ! apt list --installed | grep azure-repoapi-client; then
+                    sudo apt -y install ${repoapiclient}
+                fi
 
-            # Install repoclient.pem
-            if [[ -f ${WORKSPACE}/repoclient.pem ]]; then
-                rm ${WORKSPACE}/repoclient.pem
-            fi
-            touch ~/.ssh/repoclient.pem
-            chmod 600 ~/.ssh/repoclient.pem
-            echo ${repoclientpem} | awk 'NF {gsub(/- /, "-\\n"); gsub(/ -/, "\\n-"); printf \$0;}' &>> ${WORKSPACE}/repoclient.pem
+                # Install repoclient.pem
+                if [[ -f ${WORKSPACE}/repoclient.pem ]]; then
+                    rm ${WORKSPACE}/repoclient.pem
+                fi
+                touch ${WORKSPACE}/repoclient.pem
+                chmod 600 ${WORKSPACE}/repoclient.pem
+                echo ${repoclientpem} | awk 'NF {gsub(/- /, "-\\n"); gsub(/ -/, "\\n-"); printf \$0;}' &>> ${WORKSPACE}/repoclient.pem
 
-            # Install repoclient configuration
-            if [[ -f ${WORKSPACE}/config-Ubuntu${os_release}.json ]]; then
-                echo "Old config-Ubuntu${os_release}.json detected. Removing..."
-                rm ${WORKSPACE}/config-Ubuntu${os_release}.json
-            fi
-            touch ${WORKSPACE}/config-Ubuntu${os_release}.json
-            chmod 600 ${WORKSPACE}/config-Ubuntu${os_release}.json
-            jq '.' <<EOF >>${WORKSPACE}/config-Ubuntu${os_release}.json
+                # Install repoclient configuration
+                if [[ -f ${WORKSPACE}/config-Ubuntu${OS_RELEASE}.json ]]; then
+                    echo "Old config-Ubuntu${OS_RELEASE}.json detected. Removing..."
+                    rm ${WORKSPACE}/config-Ubuntu${OS_RELEASE}.json
+                fi
+                touch ${WORKSPACE}/config-Ubuntu${OS_RELEASE}.json
+                chmod 600 ${WORKSPACE}/config-Ubuntu${OS_RELEASE}.json
+                jq '.' <<EOF >>${WORKSPACE}/config-Ubuntu${OS_RELEASE}.json
 {
     "server": "azure-apt-cat.cloudapp.net",
     "port": "443",
@@ -63,13 +64,14 @@ def ubuntuPublishRelease(String release_version, String os_release) {
     "AADResource": "${AADResource}",
     "AADTenant": "${AADTenant}",
     "AADAuthorityUrl": "https://login.microsoftonline.com",
-    "repositoryId": "Ubuntu${os_release}repoid"
+    "repositoryId": "${UbuntuRepoID}"
 }
 EOF
 
-            # Test repoclient
-            repoclient -c ${WORKSPACE}/config-Ubuntu${os_release}.json repo list
-        '''
+                # Test repoclient
+                repoclient -c ${WORKSPACE}/config-Ubuntu${OS_RELEASE}.json repo list
+            '''
+        }
         script {
             // Download and publish open-enclave and open-enclave-hostverify packages if PUBLISH_RELEASE is true
             if (params.PUBLISH_RELEASE) {
@@ -99,14 +101,14 @@ pipeline {
     }
     parameters {
         booleanParam(name: "PUBLISH_RELEASE", defaultValue: false, description: "Publish to public repositories?")
-        string(name: "OE_RELEASE_VERSION", description: "Open Enclave Release Version")
+        string(name: "OE_RELEASE_VERSION", defaultValue: '', description: "Open Enclave Release Version")
         string(name: "OECI_LIB_VERSION", defaultValue: 'master', description: 'Version of OE Libraries to use')
     }
     stages {
         stage('Publish Open Enclave Release') {
             parallel {
-                stage('Publish Ubuntu 20.04') { steps { node('nonsgx-ubuntu-2004') { ubuntuPublishRelease(OE_RELEASE_VERSION, '2004') } }}
-                stage('Publish Ubuntu 18.04') { steps { node('nonsgx-ubuntu-1804') { ubuntuPublishRelease(OE_RELEASE_VERSION, '1804') } }}
+                stage('Publish Ubuntu 20.04') { steps { node('nonsgx-ubuntu-2004') { ubuntuPublishRelease(params.OE_RELEASE_VERSION, '2004') } }}
+                stage('Publish Ubuntu 18.04') { steps { node('nonsgx-ubuntu-1804') { ubuntuPublishRelease(params.OE_RELEASE_VERSION, '1804') } }}
                 // Todo: Add NuGet stage and function
             }
         }
