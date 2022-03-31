@@ -34,8 +34,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated libcxx to version 10.0.1
 - Updated the mbedTLS from 2.16 LTS to 2.28 LTS
 
+[v0.17.][v0.17.7_log]
+### Changed
+- Increased the value of maximum TCS from 32 to 1000, allowing SGX applications to create more threads.
+
 ### Security
-- Updated openssl to version 1.1.1n. Please refer to release log to find list of CVEs addressed by this version.
+- Updated openssl to version 1.1.1n. Please refer to [release notes](https://www.openssl.org/news/openssl-1.1.1-notes.html) to find CVEs addressed by this version.
 
 [v0.17.6][v0.17.6_log]
 --------------
@@ -737,7 +741,9 @@ as listed below.
 
 Initial private preview release, no longer supported.
 
-[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.17.6...HEAD
+[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.17.7...HEAD
+	  
+[v0.17.7_log]:https://github.com/openenclave/openenclave/compare/v0.17.6...v0.17.7
 
 [v0.17.6_log]:https://github.com/openenclave/openenclave/compare/v0.17.5...v0.17.6
 
