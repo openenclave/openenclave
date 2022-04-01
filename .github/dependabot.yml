@@ -20,3 +20,6 @@ updates:
     schedule:
       interval: "weekly"
       day: "saturday"
+    allow:
+      - dependency-name: "snmalloc"
+        update-types: ["version-update:semver-minor", "version-update:semver-patch"]
