@@ -1275,6 +1275,8 @@ oe_result_t generate_oe_evidence(
         const oe_claim_t* claim;
         oe_result_t _verify_evidence_result;
         std::vector<oe_policy_t> policies = {};
+        uint8_t* endorsements_buffer = endorsements;
+        size_t endorsements_buffer_size = endorsements_size;
         if (_parameters.baseline != NULL)
         {
             oe_policy_t policy = {
@@ -1282,6 +1284,11 @@ oe_result_t generate_oe_evidence(
                 (void*)_parameters.baseline,
                 strlen(_parameters.baseline) + 1};
             policies.emplace_back(policy);
+
+            // Endorsements need to be recreated as endorsements baseline is
+            // specified
+            endorsements_buffer = NULL;
+            endorsements_buffer_size = 0;
         }
 
         OE_CHECK(oe_verifier_initialize());
@@ -1292,8 +1299,8 @@ oe_result_t generate_oe_evidence(
                 &evidence_format,
                 evidence,
                 evidence_size,
-                endorsements,
-                endorsements_size,
+                endorsements_buffer,
+                endorsements_buffer_size,
                 policies.data(),
                 policies.size(),
                 &claims,
