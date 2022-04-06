@@ -50,7 +50,11 @@ OE_STATIC_ASSERT(sizeof(pthread_mutex_t) >= sizeof(oe_mutex_t));
 OE_STATIC_ASSERT(sizeof(pthread_cond_t) >= sizeof(oe_cond_t));
 OE_STATIC_ASSERT(sizeof(pthread_rwlock_t) >= sizeof(oe_rwlock_t));
 
-static __thread struct __pthread _pthread_self = {.locale = C_LOCALE};
+/* enforce the thread local alignment (otherwise, linker could set the
+ * alignment by itself). We observe such behaviors on Windows where
+ * lld was used */
+__attribute__((aligned(16))) static __thread struct __pthread _pthread_self = {
+    .locale = C_LOCALE};
 
 pthread_t __get_tp()
 {

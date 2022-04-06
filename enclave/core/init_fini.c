@@ -139,6 +139,10 @@ static void _call_fini_functions(
 {
     void (**fn)(void);
 
+    /* skip for invalid parameters (e.g., both are zero) */
+    if (fini_array_end <= fini_array_start)
+        return;
+
     for (fn = fini_array_end - 1; fn >= fini_array_start; fn--)
     {
         (*fn)();
