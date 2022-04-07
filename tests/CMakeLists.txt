@@ -158,6 +158,7 @@ if (UNIX
     add_subdirectory(thread)
     add_subdirectory(threadcxx)
     add_subdirectory(thread_local)
+    add_subdirectory(thread_local_alignment)
     add_subdirectory(thread_local_large)
     add_subdirectory(thread_local_no_tdata)
     add_subdirectory(VectorException)
