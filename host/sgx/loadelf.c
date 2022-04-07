@@ -367,6 +367,24 @@ static oe_result_t _stage_image_segments(
                             ph->p_vaddr);
                     }
                 }
+                else
+                {
+                    // When clang's lld is used, the alignment of tdata section
+                    // could be different from the program header alignment. We
+                    // have not observed such a discrepancy with the GNU ld. It
+                    // has been observed that in the cases of discrepancy, the
+                    // compiler generates code based on the alignment in the
+                    // program header.
+                    if (image->tdata_align != ph->p_align)
+                    {
+                        OE_TRACE_VERBOSE(
+                            "Overriding tdata_align (%d) with alignment from "
+                            "program header (%d).",
+                            image->tdata_align,
+                            ph->p_align);
+                        image->tdata_align = ph->p_align;
+                    }
+                }
                 if (image->tdata_size != ph->p_filesz)
                 {
                     // Always assert on size mismatch.
@@ -377,6 +395,7 @@ static oe_result_t _stage_image_segments(
                         image->tdata_size,
                         ph->p_filesz);
                 }
+
                 break;
             }
             default:

@@ -114,7 +114,7 @@ void td_init(oe_sgx_td_t* td)
         oe_sgx_td_set_exception_handler_stack(td, NULL, 0);
         td->exception_handler_stack_bitmask = 0;
 
-        oe_thread_local_init(td);
+        oe_sgx_thread_local_init(td);
     }
 }
 
@@ -138,7 +138,7 @@ void td_clear(oe_sgx_td_t* td)
     // pthread_create_key.
     oe_thread_destruct_specific();
 
-    oe_thread_local_cleanup(td);
+    oe_sgx_thread_local_cleanup(td);
 
     // The call sites and depth are cleaned up after the thread-local storage is
     // cleaned up since thread-local dynamic destructors could make ocalls.
