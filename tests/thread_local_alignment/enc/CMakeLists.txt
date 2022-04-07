@@ -28,7 +28,7 @@ macro (alignment_enclave TBSS_ALIGNMENT TDATA_ALIGNMENT)
                               ${CMAKE_CURRENT_BINARY_DIR})
   if (UNIX)
     # Mismatch between tdata section and TLS program header only happens when lld is used.
-    enclave_link_libraries(${ENCLAVE_NAME} oelibc -fuse-ld=lld)
+    #enclave_link_libraries(${ENCLAVE_NAME} oelibc -fuse-ld=lld)
   else ()
     # On Windows lld is used by default.
   endif ()
