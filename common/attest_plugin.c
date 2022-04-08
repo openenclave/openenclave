@@ -326,6 +326,12 @@ oe_result_t oe_verify_evidence(
         }
     }
 
+    // Endorsements buffer conflicts with endorsements baseline policy
+    if (endorsements_buffer && has_endorsements_baseline_policy)
+    {
+        OE_RAISE(OE_INVALID_PARAMETER);
+    }
+
     if (!format_id)
     {
         // check whether evidence buffer structure is oe_report
