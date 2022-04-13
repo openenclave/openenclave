@@ -37,6 +37,8 @@
 #include "cpuid.h"
 #include "handle_ecall.h"
 #include "init.h"
+#include "openenclave/bits/result.h"
+#include "openenclave/internal/backtrace.h"
 #include "platform_t.h"
 #include "report.h"
 #include "switchlesscalls.h"
@@ -1224,15 +1226,6 @@ void oe_abort_with_td(oe_sgx_td_t* td)
 {
     uint64_t arg1 = oe_make_call_arg1(OE_CODE_ERET, 0, 0, OE_OK);
 
-    td->state = OE_TD_STATE_ABORTED;
-
-    // Once it starts to crash, the state can only transit forward, not
-    // backward.
-    if (__oe_enclave_status < OE_ENCLAVE_ABORTING)
-    {
-        __oe_enclave_status = OE_ENCLAVE_ABORTING;
-    }
-
     /* Abort can be called with user-modified FS (e.g., FS check fails in
      * oe_sgx_get_td()). To avoid using is_enclave_debug_allowed(), which
      * depends on oe_sgx_get_td(), we base only on the cached value to
@@ -1255,6 +1248,58 @@ void oe_abort_with_td(oe_sgx_td_t* td)
             host_ecall_context->debug_eexit_rsp = frame[0] + 8;
             host_ecall_context->debug_eexit_rip = frame[1];
         }
+
+        // For debug enclaves, log the backtrace before marking the enclave as
+        // aborted.
+        {
+            // Fetch current values of FS and GS. Typically, FS[0] == FS and
+            // GS[0] == GS.
+            uint64_t fs;
+            uint64_t gs;
+            asm volatile("mov %%fs:0, %0" : "=r"(fs));
+            asm volatile("mov %%gs:0, %0" : "=r"(gs));
+
+            // We can make ocalls only if td has been initialized which is true
+            // only when the self-pointer has been setup.
+            if (gs == (uint64_t)td)
+            {
+                // Restore FS if FS has been modified.
+                if (fs != gs)
+                {
+                    // wrfsbase could trigger an exception. The enclave may not
+                    // be in a state to emulate the instruction. Therefore, just
+                    // restore FS[0].
+                    asm volatile("mov %0, %%fs:0" : : "r"(gs) : "memory");
+                }
+
+                void* buffer[OE_BACKTRACE_MAX];
+                int size;
+                oe_result_t r = OE_UNEXPECTED;
+                if ((size = oe_backtrace(buffer, OE_BACKTRACE_MAX)) > 0)
+                {
+                    oe_sgx_log_backtrace_ocall(
+                        &r, oe_get_enclave(), (uint64_t*)buffer, (size_t)size);
+                }
+                else
+                {
+                    // It is not possible to convey much information at this
+                    // point.
+                }
+
+                // Rever FS if it was restored above.
+                if (fs != gs)
+                    asm volatile("mov %0, %%fs:0" : : "r"(fs) : "memory");
+            }
+        }
+    }
+
+    td->state = OE_TD_STATE_ABORTED;
+
+    // Once it starts to crash, the state can only transit forward, not
+    // backward.
+    if (__oe_enclave_status < OE_ENCLAVE_ABORTING)
+    {
+        __oe_enclave_status = OE_ENCLAVE_ABORTING;
     }
 
     // Return to the latest ECALL.

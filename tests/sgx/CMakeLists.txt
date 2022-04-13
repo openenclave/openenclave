@@ -6,5 +6,6 @@ if (UNIX)
   add_subdirectory(thread_interrupt)
 endif ()
 
+add_subdirectory(backtrace)
 add_subdirectory(extra_data)
 add_subdirectory(wrfsbase)
