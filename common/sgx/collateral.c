@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "collateral.h"
+#include <ctype.h>
 #include <openenclave/bits/attestation.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/crypto/cert.h>
@@ -194,6 +195,47 @@ done:
     return result;
 }
 
+static unsigned char _hex_digit_to_num(char c)
+{
+    if (isdigit(c))
+        return (unsigned char)(c - '0');
+
+    if (c >= 'A' && c <= 'F')
+        return (unsigned char)(10 + (c - 'A'));
+
+    return (unsigned char)(10 + (c - 'a'));
+}
+
+static oe_result_t _hex_to_raw(
+    const char* hex_string,
+    size_t hex_string_size,
+    uint8_t* raw_buffer,
+    size_t raw_buffer_size)
+{
+    if (raw_buffer_size < hex_string_size / 2 + (hex_string_size % 2))
+    {
+        return OE_BUFFER_TOO_SMALL;
+    }
+
+    unsigned char v;
+
+    for (size_t i = 0; i < hex_string_size - 1; i += 2)
+    {
+        v = (unsigned char)(_hex_digit_to_num(hex_string[i]) << 4) |
+            _hex_digit_to_num(hex_string[i + 1]);
+        raw_buffer[i / 2] = v;
+    }
+
+    // handle odd hex string size
+    if (hex_string_size % 2)
+    {
+        v = (unsigned char)_hex_digit_to_num(hex_string[hex_string_size - 1]);
+        raw_buffer[hex_string_size / 2 + 1] = v;
+    }
+
+    return OE_OK;
+}
+
 oe_result_t oe_validate_revocation_list(
     oe_cert_t* pck_cert,
     const oe_sgx_endorsements_t* sgx_endorsements,
@@ -218,6 +260,9 @@ oe_result_t oe_validate_revocation_list(
     oe_datetime_t until = {0};
     oe_datetime_t latest_from = {0};
     oe_datetime_t earliest_until = {0};
+    uint8_t* der_data = NULL;
+    size_t der_data_size = 0;
+    bool ishex = true;
 
     if (pck_cert == NULL || sgx_endorsements == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -290,23 +335,56 @@ oe_result_t oe_validate_revocation_list(
                 "Failed to read CRL. %s",
                 oe_result_str(result));
         }
-        // Otherwise, CRL should have v3 structure which is DER encoded
+        /*
+         * Otherwise, CRL should have v3 (hex encoded DER)
+         * or v3.1 (raw DER) structure.
+         */
         else
         {
-            size_t der_data_size = sgx_endorsements->items[i].size;
-            if (der_data_size == 0)
+            der_data = sgx_endorsements->items[i].data;
+            der_data_size = sgx_endorsements->items[i].size;
+            if (der_data_size == 0 || der_data == NULL)
                 OE_RAISE(OE_INVALID_PARAMETER);
 
-            // If DER CRL buffer has null terminator, need to remove it before
-            // send the DER data to crypto API for reading.
+            // If CRL buffer has null terminator, need to remove it before
+            // sending the DER data to crypto API for reading.
             if (sgx_endorsements->items[i].data[der_data_size - 1] == 0)
                 der_data_size -= 1;
 
+            // Check if the CRL is composed of only hex digits
+            for (size_t l = 0; l < der_data_size; l++)
+            {
+                const uint8_t c = sgx_endorsements->items[i].data[l];
+                if (!isxdigit(c))
+                {
+                    ishex = false;
+                    break;
+                }
+            }
+
+            // If CRL is a hex string, convert hex to der
+            if (ishex)
+            {
+                der_data_size = (der_data_size / 2) + (der_data_size % 2);
+                der_data = oe_malloc(der_data_size);
+                if (!der_data)
+                    OE_RAISE(OE_OUT_OF_MEMORY);
+                OE_CHECK_MSG(
+                    _hex_to_raw(
+                        (const char*)sgx_endorsements->items[i].data,
+                        sgx_endorsements->items[i].size,
+                        der_data,
+                        der_data_size),
+                    "Failed to convert to DER. %s",
+                    oe_result_str(result));
+            }
+
             OE_CHECK_MSG(
-                oe_crl_read_der(
-                    &crls[j], sgx_endorsements->items[i].data, der_data_size),
+                oe_crl_read_der(&crls[j], der_data, der_data_size),
                 "Failed to read CRL. %s",
                 oe_result_str(result));
+            if (ishex)
+                oe_free(der_data);
         }
     }
 

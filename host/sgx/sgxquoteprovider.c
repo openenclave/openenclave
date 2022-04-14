@@ -122,7 +122,8 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
     }
 
     if (collateral->version != SGX_QL_QVE_COLLATERAL_VERSION_1 &&
-        collateral->version != SGX_QL_QVE_COLLATERAL_VERSION_3)
+        collateral->version != SGX_QL_QVE_COLLATERAL_VERSION_3_0 &&
+        collateral->version != SGX_QL_QVE_COLLATERAL_VERSION_3_1)
     {
         OE_RAISE_MSG(
             OE_INVALID_ENDORSEMENT,
@@ -228,8 +229,13 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
             args->pck_crl_size,
             collateral->pck_crl,
             collateral->pck_crl_size));
-        // Add null terminator
-        args->pck_crl[args->pck_crl_size - 1] = 0;
+        /*
+         * Add null terminator.
+         * NOTE: SGX v3.1 removed the null terminator at the end of pck crl.
+         * OE must not enforce null terminator for v3.1.
+         */
+        if (collateral->version != SGX_QL_QVE_COLLATERAL_VERSION_3_1)
+            args->pck_crl[args->pck_crl_size - 1] = 0;
         p += args->pck_crl_size;
         OE_TRACE_INFO("pck_crl_size = %ld\n", args->pck_crl_size);
     }

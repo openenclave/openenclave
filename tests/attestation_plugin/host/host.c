@@ -6,6 +6,7 @@
 #include <openenclave/internal/sgx/tests.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
+#include <string.h>
 
 #if defined(_WIN32)
 #include <ShlObj.h>
@@ -38,6 +39,49 @@ void host_verify(
         endorsements_size,
         test_claims,
         TEST_CLAIMS_SIZE);
+}
+
+#define DATAFILE_LICENSE_HEADER_SIZE 81
+oe_result_t read_file_to_buffer(
+    uint8_t** buffer,
+    size_t* buffer_size,
+    const char* filename)
+{
+    if (!filename || !buffer)
+        return OE_INVALID_PARAMETER;
+
+    void* data = NULL;
+    size_t data_size = 0;
+    FILE* fp = NULL;
+
+#ifdef _WIN32
+    OE_TEST(fopen_s(&fp, filename, "rb") == 0);
+#else
+    fp = fopen(filename, "rb");
+#endif
+    if (!fp)
+        return OE_FAILURE;
+
+    // find data size
+    OE_TEST(fseek(fp, 0, SEEK_END) == 0);
+    data_size = (size_t)ftell(fp) - DATAFILE_LICENSE_HEADER_SIZE;
+    data = malloc(data_size);
+    if (!data)
+        return OE_OUT_OF_MEMORY;
+
+    // Move file pointer after license
+    OE_TEST(fseek(fp, DATAFILE_LICENSE_HEADER_SIZE, SEEK_SET) == 0);
+
+#ifdef _WIN32
+    OE_TEST(fread_s(data, data_size, 1, data_size, fp) == data_size);
+#else
+    OE_TEST(fread(data, 1, data_size, fp) == data_size);
+#endif
+
+    *buffer = (uint8_t*)data;
+    *buffer_size = data_size;
+    fclose(fp);
+    return OE_OK;
 }
 
 int main(int argc, const char* argv[])
@@ -97,9 +141,13 @@ int main(int argc, const char* argv[])
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
 
-    if (argc != 2)
+    if (argc != 4)
     {
-        fprintf(stderr, "Usage: %s ENCLAVE\n", argv[0]);
+        fprintf(
+            stderr,
+            "Usage: %s ENCLAVE {abspath-to-evidence} "
+            "{abspath-to-endorsements}\n",
+            argv[0]);
         exit(1);
     }
 
@@ -116,6 +164,31 @@ int main(int argc, const char* argv[])
         argv[1], OE_ENCLAVE_TYPE_AUTO, flags, NULL, 0, &enclave);
     OE_TEST(result == OE_OK);
 
+    /*
+     * To test sgx pccs lib v3.0 and v3.1, we read evidence and endorsements
+     * from file.
+     * This test can be removed when the testing pipelines are updated
+     * to use the latest sgx pccs lib.
+     */
+
+    size_t evidence_size, endorsements_size;
+    uint8_t* evidence = NULL;
+    uint8_t* endorsements = NULL;
+
+    OE_TEST(read_file_to_buffer(&evidence, &evidence_size, argv[2]) == OE_OK);
+    OE_TEST(
+        read_file_to_buffer(&endorsements, &endorsements_size, argv[3]) ==
+        OE_OK);
+
+    OE_TEST_CODE(
+        test_pck_crl_validation(
+            enclave,
+            (const uint8_t*)evidence,
+            evidence_size,
+            (const uint8_t*)endorsements,
+            endorsements_size),
+        OE_OK);
+
     OE_TEST_CODE(run_runtime_test(enclave), OE_OK);
     OE_TEST_CODE(register_sgx(enclave), OE_OK);
     OE_TEST_CODE(test_sgx(enclave), OE_OK);
@@ -127,5 +200,11 @@ int main(int argc, const char* argv[])
 
     // Unregister verifier.
     unregister_verifier();
+
+    if (endorsements)
+        free(endorsements);
+    if (evidence)
+        free(evidence);
+
     return 0;
 }

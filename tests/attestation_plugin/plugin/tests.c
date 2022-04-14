@@ -11,8 +11,10 @@
 #include <openenclave/host.h>
 #endif
 
+#include <ctype.h>
 #include <openenclave/attestation/sgx/evidence.h>
 #include <openenclave/attestation/verifier.h>
+#include <openenclave/internal/crypto/cert.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/plugin.h>
 #include <openenclave/internal/raise.h>
@@ -784,6 +786,148 @@ static void _test_time_policy(
             &claims,
             &claims_size),
         OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD);
+}
+
+static void _buffer_to_hex(
+    char* hex_string,
+    size_t hex_string_size,
+    const uint8_t* buffer,
+    const size_t buffer_size)
+{
+    OE_TEST(hex_string_size >= buffer_size * 2);
+
+    const char* conversion_str = "0123456789ABCDEF";
+
+    for (size_t i = 0; i < buffer_size; i++)
+    {
+        hex_string[2 * i] = conversion_str[(buffer[i] >> 4)];
+        hex_string[2 * i + 1] = conversion_str[(buffer[i] & 0x0f)];
+    }
+}
+
+static bool _is_hex_data(const uint8_t* raw_data, size_t raw_data_size)
+{
+    // Check if the data is composed of only hex digits
+    bool ishex = true;
+    for (size_t l = 0; l < raw_data_size; l++)
+    {
+        const uint8_t c = raw_data[l];
+        if (!isxdigit(c))
+        {
+            ishex = false;
+            break;
+        }
+    }
+
+    return ishex;
+}
+
+/*
+ * Tests oe_validate_revocation_list() when the sgx_endorsement
+ * holds pckcrl as expected from sgx pccs v3.0 and v3.1.
+ */
+void validate_sgx_pck_crl(
+    const uint8_t* evidence,
+    size_t evidence_size,
+    const uint8_t* endorsements,
+    size_t endorsements_size)
+{
+    const uint8_t* pem_pck_certificate = NULL;
+    size_t pem_pck_certificate_size = 0;
+    const uint8_t* report_body = NULL;
+    size_t report_body_size = 0;
+    uint8_t* hex_pckcrl = NULL;
+    size_t hex_pckcrl_size = 0;
+    oe_cert_chain_t pck_cert_chain = {0};
+    oe_cert_t leaf_cert = {0};
+    oe_sgx_endorsements_t sgx_endorsements;
+    const uint8_t* endorsements_body = NULL;
+    size_t endorsements_body_size = 0;
+    oe_tcb_info_tcb_level_t platform_tcb_level = {{0}};
+    oe_datetime_t validity_from = {0}, validity_until = {0};
+
+    OE_TEST(evidence != NULL && endorsements != NULL);
+    OE_TEST(evidence_size > 0 && endorsements_size > 0);
+
+    report_body = evidence;
+    report_body_size =
+        sizeof(sgx_quote_t) + ((sgx_quote_t*)report_body)->signature_len;
+    OE_TEST(evidence_size == report_body_size);
+
+    // Get PCK cert chain from the quote.
+    OE_TEST(
+        oe_get_quote_cert_chain_internal(
+            report_body,
+            report_body_size,
+            &pem_pck_certificate,
+            &pem_pck_certificate_size,
+            &pck_cert_chain) == OE_OK);
+
+    // Fetch leaf certificate.
+    OE_TEST(oe_cert_chain_get_leaf_cert(&pck_cert_chain, &leaf_cert) == OE_OK);
+
+    _process_endorsements(
+        endorsements,
+        endorsements_size,
+        false,
+        &endorsements_body,
+        &endorsements_body_size);
+    if (endorsements_body)
+    {
+        OE_TEST_CODE(
+            oe_parse_sgx_endorsements(
+                (oe_endorsements_t*)endorsements_body,
+                endorsements_body_size,
+                &sgx_endorsements),
+            OE_OK);
+    }
+
+    /* Test with raw encoded pckcrl (pccs v3.1) */
+    OE_TEST(
+        oe_validate_revocation_list(
+            &leaf_cert,
+            (const oe_sgx_endorsements_t*)&sgx_endorsements,
+            &platform_tcb_level,
+            &validity_from,
+            &validity_until) == OE_OK);
+
+    // modify sgx_endorsements.items[OE_SGX_ENDORSEMENT_FIELD_CRL_PCK_CERT]
+    // to hex der.
+    OE_TEST(
+        _is_hex_data(
+            sgx_endorsements.items[OE_SGX_ENDORSEMENT_FIELD_CRL_PCK_CERT].data,
+            sgx_endorsements.items[OE_SGX_ENDORSEMENT_FIELD_CRL_PCK_CERT]
+                .size) == false);
+
+    hex_pckcrl_size =
+        2 * sgx_endorsements.items[OE_SGX_ENDORSEMENT_FIELD_CRL_PCK_CERT].size;
+    hex_pckcrl = oe_malloc(hex_pckcrl_size);
+    OE_TEST(hex_pckcrl != NULL);
+
+    _buffer_to_hex(
+        (char*)hex_pckcrl,
+        hex_pckcrl_size,
+        sgx_endorsements.items[OE_SGX_ENDORSEMENT_FIELD_CRL_PCK_CERT].data,
+        sgx_endorsements.items[OE_SGX_ENDORSEMENT_FIELD_CRL_PCK_CERT].size);
+
+    sgx_endorsements.items[OE_SGX_ENDORSEMENT_FIELD_CRL_PCK_CERT].data =
+        hex_pckcrl;
+    sgx_endorsements.items[OE_SGX_ENDORSEMENT_FIELD_CRL_PCK_CERT].size =
+        (uint32_t)hex_pckcrl_size;
+
+    /* Test with hex encoded pckcrl (pccs v3.0) */
+    OE_TEST(
+        oe_validate_revocation_list(
+            &leaf_cert,
+            (const oe_sgx_endorsements_t*)&sgx_endorsements,
+            &platform_tcb_level,
+            &validity_from,
+            &validity_until) == OE_OK);
+
+    oe_cert_free(&leaf_cert);
+    oe_cert_chain_free(&pck_cert_chain);
+    if (hex_pckcrl)
+        oe_free(hex_pckcrl);
 }
 
 #ifndef OE_BUILD_ENCLAVE

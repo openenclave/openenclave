@@ -47,6 +47,22 @@ void unregister_sgx()
     unregister_verifier();
 }
 
+void test_pck_crl_validation(
+    const uint8_t* evidence,
+    size_t evidence_size,
+    const uint8_t* endorsements,
+    size_t endorsements_size)
+{
+    /*
+     * Test that both hex encoded (sgx pccs v3) and RAW encode (sgx pccs v3.1)
+     * der pckcrl are processed by oe_validate_revocation_list().
+     */
+
+    printf("====== running test_pck_crl_validation \n");
+    validate_sgx_pck_crl(
+        evidence, evidence_size, endorsements, endorsements_size);
+}
+
 static void _test_sgx_remote()
 {
     printf("====== running _test_sgx_remote\n");
@@ -446,7 +462,6 @@ static void _test_sgx_local()
 void test_sgx()
 {
     printf("====== running test_sgx\n");
-
     _test_sgx_remote();
     _test_sgx_local();
 }
