@@ -16,16 +16,20 @@ static volatile int _is_enclave_debug_allowed = -1;
 bool is_enclave_debug_allowed()
 {
     oe_sgx_td_t* td = NULL;
+    int debug_allowed =
+        __atomic_load_n(&_is_enclave_debug_allowed, __ATOMIC_ACQUIRE);
 
-    if (_is_enclave_debug_allowed != -1)
+    if (debug_allowed != -1)
         goto done;
 
+    // Start off by assuming debug is not allowed.
+    debug_allowed = 0;
     td = oe_sgx_get_td();
 
     if (td && td->simulate)
     {
         // Enclave in simulate mode is treated as debug_allowed
-        _is_enclave_debug_allowed = 1;
+        debug_allowed = 1;
     }
     else
     {
@@ -33,22 +37,24 @@ bool is_enclave_debug_allowed()
         sgx_report_t sgx_report;
         oe_result_t result = sgx_create_report(NULL, 0, NULL, 0, &sgx_report);
 
-        if (result != OE_OK)
+        if (result == OE_OK)
         {
-            _is_enclave_debug_allowed = 0;
-            goto done;
+            debug_allowed =
+                (sgx_report.body.attributes.flags & SGX_FLAGS_DEBUG) ? 1 : 0;
         }
-
-        _is_enclave_debug_allowed =
-            (sgx_report.body.attributes.flags & SGX_FLAGS_DEBUG) ? 1 : 0;
     }
 
+    __atomic_store_n(
+        &_is_enclave_debug_allowed, debug_allowed, __ATOMIC_RELEASE);
+
 done:
-    return _is_enclave_debug_allowed == 1 ? true : false;
+    return debug_allowed == 1 ? true : false;
 }
 
 // Check the cached variable only
 bool is_enclave_debug_allowed_cached()
 {
-    return _is_enclave_debug_allowed == 1 ? true : false;
+    return __atomic_load_n(&_is_enclave_debug_allowed, __ATOMIC_ACQUIRE) == 1
+               ? true
+               : false;
 }
