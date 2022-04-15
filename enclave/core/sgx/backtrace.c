@@ -33,7 +33,7 @@ oe_result_t _oe_sgx_backtrace_symbols_ocall(
     size_t* symbols_buffer_size_out);
 
 /**
- * Make the following OCALL weak to support the system EDL opt-in.
+ * Make the following OCALLs weak to support the system EDL opt-in.
  * When the user does not opt into (import) the EDL, the linker will pick
  * the following default implementation. If the user opts into the EDL,
  * the implemention (which is strong) in the oeedger8r-generated code will be
@@ -61,6 +61,23 @@ oe_result_t _oe_sgx_backtrace_symbols_ocall(
     return OE_UNSUPPORTED;
 }
 OE_WEAK_ALIAS(_oe_sgx_backtrace_symbols_ocall, oe_sgx_backtrace_symbols_ocall);
+
+oe_result_t _oe_sgx_log_backtrace_ocall(
+    oe_result_t* _retval,
+    oe_enclave_t* oe_enclave,
+    const uint64_t* buffer,
+    size_t size)
+{
+    OE_UNUSED(oe_enclave);
+    OE_UNUSED(buffer);
+    OE_UNUSED(size);
+
+    if (_retval)
+        *_retval = OE_UNSUPPORTED;
+
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(_oe_sgx_log_backtrace_ocall, oe_sgx_log_backtrace_ocall);
 
 /* Return null if address is outside of the enclave; else return ptr. */
 const void* _check_address(const void* ptr)
