@@ -23,8 +23,7 @@ oe_result_t oe_buffer_to_argv(
 oe_result_t oe_argv_to_buffer(
     const char* argv[],
     size_t argc,
-    void* buf_out,
-    size_t buf_size,
+    void** buf_out,
     size_t* buf_size_out);
 
 OE_EXTERNC_END

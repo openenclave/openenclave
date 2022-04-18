@@ -99,15 +99,13 @@ oe_result_t oe_sgx_backtrace_symbols_ocall(
     oe_enclave_t* oe_enclave,
     const uint64_t* buffer,
     size_t size,
-    void* symbols_buffer,
-    size_t symbols_buffer_size,
-    size_t* symbols_buffer_size_out)
+    oe_symbols_t* symbols)
 {
     oe_result_t result = OE_UNEXPECTED;
     char** strings = NULL;
 
     /* Reject invalid parameters. */
-    if (!oe_enclave || !buffer || size > OE_INT_MAX || !symbols_buffer_size_out)
+    if (!oe_enclave || !buffer || size > OE_INT_MAX || !symbols)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Convert the addresses into symbol strings. */
@@ -117,14 +115,8 @@ oe_result_t oe_sgx_backtrace_symbols_ocall(
         OE_RAISE(OE_FAILURE);
     }
 
-    *symbols_buffer_size_out = symbols_buffer_size;
-
     OE_CHECK(oe_argv_to_buffer(
-        (const char**)strings,
-        size,
-        symbols_buffer,
-        symbols_buffer_size,
-        symbols_buffer_size_out));
+        (const char**)strings, size, &symbols->buffer, &symbols->size));
 
     result = OE_OK;
 

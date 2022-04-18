@@ -18,6 +18,12 @@ enclave
     // intentionally kept in host memory.
     include "openenclave/bits/types.h"
 
+    struct oe_symbols_t
+    {
+        [size = size] void* buffer;
+        size_t size;
+    };
+
     untrusted
     {
         // Translate the addresses in buffer[] into symbol names.
@@ -26,9 +32,7 @@ enclave
             [user_check] oe_enclave_t* oe_enclave,
             [in, count=size] const uint64_t* buffer,
             size_t size,
-            [out, size=symbols_buffer_size] void* symbols_buffer,
-            size_t symbols_buffer_size,
-            [out] size_t* symbols_buffer_size_out);
+            [out] oe_symbols_t* symbols);
 
 	// Log the given backtrace.
 	oe_result_t oe_sgx_log_backtrace_ocall(

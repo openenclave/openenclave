@@ -35,7 +35,7 @@ void enc_edl_opt_out()
 #if defined(__x86_64__) || defined(_M_X64)
     /* debug.edl */
     OE_TEST(
-        oe_sgx_backtrace_symbols_ocall(NULL, NULL, NULL, 0, NULL, 0, NULL) ==
+        oe_sgx_backtrace_symbols_ocall(NULL, NULL, NULL, 0, NULL) ==
         OE_UNSUPPORTED);
 
     /* sgx/switchless.edl */

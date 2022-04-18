@@ -6,10 +6,12 @@
 #include <openenclave/internal/safemath.h>
 
 #if defined(OE_BUILD_ENCLAVE)
+#include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #define strlen oe_strlen
 #else
 #include <string.h>
+#include "oe_host_stdlib.h"
 #endif
 
 #define MAX_LENGTHS 32
@@ -17,21 +19,22 @@
 oe_result_t oe_argv_to_buffer(
     const char* argv[],
     size_t argc,
-    void* buf_out,
-    size_t buf_size,
+    void** buf_out,
     size_t* buf_size_out)
 {
     oe_result_t result = OE_UNEXPECTED;
     size_t required_size = 0;
     size_t i;
     size_t lengths[MAX_LENGTHS];
+    void* buf = NULL;
 
-    if (!argv || !buf_size_out)
+    if (!argv || !buf_out || !buf_size_out)
         goto done;
 
     /* Handle empty argv list case up front. */
     if (argc == 0)
     {
+        *buf_out = NULL;
         *buf_size_out = 0;
         result = OE_OK;
         goto done;
@@ -53,37 +56,25 @@ oe_result_t oe_argv_to_buffer(
         required_size += len + 1;
     }
 
-    /* Fail if the buffer is too small. */
-    if (buf_size < required_size)
-    {
-        *buf_size_out = required_size;
-
-        if (buf_out)
-            OE_RAISE(OE_BUFFER_TOO_SMALL);
-        /* If buf_out is null, this call is intented to get the correct buf_size
-         * so no need to trace OE_BUFFER_TOO_SMALL */
-        else
-            OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
-    }
+    buf = oe_malloc(required_size);
+    if (!buf)
+        OE_RAISE(OE_OUT_OF_MEMORY);
 
     /* Copy the strings onto the allocated buffer. */
-    if (buf_out)
-    {
-        char* p = (char*)buf_out;
+    char* p = (char*)buf;
 
-        for (i = 0; i < argc; i++)
-        {
-            size_t len = (i < MAX_LENGTHS) ? lengths[i] : strlen(argv[i]);
-            memcpy(p, argv[i], len + 1);
-            p += len + 1;
-        }
+    for (i = 0; i < argc; i++)
+    {
+        size_t len = (i < MAX_LENGTHS) ? lengths[i] : strlen(argv[i]);
+        memcpy(p, argv[i], len + 1);
+        p += len + 1;
     }
 
+    *buf_out = buf;
     *buf_size_out = required_size;
     result = OE_OK;
 
 done:
-
     return result;
 }
 
@@ -101,7 +92,7 @@ oe_result_t oe_buffer_to_argv(
     size_t alloc_size = 0;
     size_t index = 0;
 
-    if (!buf || !argv_out || !malloc_func || !free_func)
+    if (!buf || !buf_size || !argv_out || !malloc_func || !free_func)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Calculate the total size of argv. */

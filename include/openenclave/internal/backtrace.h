@@ -30,7 +30,6 @@ char** oe_backtrace_symbols_impl(
     void* const* buffer,
     int size,
     void* (*malloc_fcn)(size_t),
-    void* (*realloc_fcn)(void*, size_t),
     void (*free_fcn)(void*));
 
 /**

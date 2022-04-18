@@ -28,9 +28,7 @@ oe_result_t _oe_sgx_backtrace_symbols_ocall(
     oe_enclave_t* oe_enclave,
     const uint64_t* buffer,
     size_t size,
-    void* symbols_buffer,
-    size_t symbols_buffer_size,
-    size_t* symbols_buffer_size_out);
+    oe_symbols_t* symbols);
 
 /**
  * Make the following OCALLs weak to support the system EDL opt-in.
@@ -44,16 +42,12 @@ oe_result_t _oe_sgx_backtrace_symbols_ocall(
     oe_enclave_t* oe_enclave,
     const uint64_t* buffer,
     size_t size,
-    void* symbols_buffer,
-    size_t symbols_buffer_size,
-    size_t* symbols_buffer_size_out)
+    oe_symbols_t* symbols)
 {
     OE_UNUSED(oe_enclave);
     OE_UNUSED(buffer);
     OE_UNUSED(size);
-    OE_UNUSED(symbols_buffer);
-    OE_UNUSED(symbols_buffer_size);
-    OE_UNUSED(symbols_buffer_size_out);
+    OE_UNUSED(symbols);
 
     if (_retval)
         *_retval = OE_UNSUPPORTED;
@@ -154,85 +148,40 @@ char** oe_backtrace_symbols_impl(
     void* const* buffer,
     int size,
     void* (*malloc_fcn)(size_t),
-    void* (*realloc_fcn)(void*, size_t),
     void (*free_fcn)(void*))
 {
+    oe_symbols_t symbols = {0};
     char** ret = NULL;
-    void* symbols_buffer = NULL;
-    const size_t SYMBOLS_BUFFER_SIZE = 4096;
-    size_t symbols_buffer_size = SYMBOLS_BUFFER_SIZE;
-    size_t symbols_buffer_size_out;
     oe_result_t result;
     char** argv = NULL;
 
     if (!buffer || size < 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (!(symbols_buffer = malloc_fcn(symbols_buffer_size)))
-        OE_RAISE(OE_OUT_OF_MEMORY);
-
-    /* First call might return OE_BUFFER_TOO_SMALL. */
-    if (oe_sgx_backtrace_symbols_ocall(
-            &result,
-            oe_get_enclave(),
-            (const uint64_t*)buffer,
-            (size_t)size,
-            symbols_buffer,
-            symbols_buffer_size,
-            &symbols_buffer_size_out) != OE_OK)
-    {
-        goto done;
-    }
-
-    /* Second call uses buffer size returned by first call. */
-    if (result == OE_BUFFER_TOO_SMALL)
-    {
-        symbols_buffer_size = symbols_buffer_size_out;
-        if (!(symbols_buffer =
-                  realloc_fcn(symbols_buffer, symbols_buffer_size)))
-            OE_RAISE(OE_OUT_OF_MEMORY);
-
-        if (oe_sgx_backtrace_symbols_ocall(
-                &result,
-                oe_get_enclave(),
-                (const uint64_t*)buffer,
-                (size_t)size,
-                symbols_buffer,
-                symbols_buffer_size,
-                &symbols_buffer_size_out) != OE_OK)
-        {
-            goto done;
-        }
-
-        if (result != OE_OK || symbols_buffer_size_out != symbols_buffer_size)
-        {
-            goto done;
-        }
-    }
-    else if (result != OE_OK)
-    {
-        goto done;
-    }
+    OE_CHECK(oe_sgx_backtrace_symbols_ocall(
+        &result,
+        oe_get_enclave(),
+        (const uint64_t*)buffer,
+        (size_t)size,
+        &symbols));
 
     /* Convert vector to array of strings. */
-    if (oe_buffer_to_argv(
-            symbols_buffer,
-            symbols_buffer_size_out,
-            &argv,
-            (size_t)size,
-            malloc_fcn,
-            free_fcn) != OE_OK)
-    {
-        OE_RAISE(OE_FAILURE);
-    }
+    OE_CHECK(oe_buffer_to_argv(
+        symbols.buffer,
+        symbols.size,
+        &argv,
+        (size_t)size,
+        malloc_fcn,
+        free_fcn));
 
     ret = argv;
     argv = NULL;
 
-done:
+    result = OE_OK;
 
-    if (symbols_buffer)
-        free_fcn(symbols_buffer);
+done:
+    if (symbols.buffer)
+        free_fcn(symbols.buffer);
 
     if (argv)
         free_fcn(argv);
@@ -250,11 +199,7 @@ char** oe_backtrace_symbols(void* const* buffer, int size)
 {
     /* Backtrace must use the allocator directly to bypass debug-malloc. */
     return oe_backtrace_symbols_impl(
-        buffer,
-        size,
-        oe_allocator_malloc,
-        oe_allocator_realloc,
-        oe_allocator_free);
+        buffer, size, oe_allocator_malloc, oe_allocator_free);
 }
 
 void oe_backtrace_symbols_free(char** ptr)

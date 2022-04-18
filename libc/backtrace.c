@@ -22,5 +22,5 @@ int backtrace(void** buffer, int size)
 
 char** backtrace_symbols(void* const* buffer, int size)
 {
-    return oe_backtrace_symbols_impl(buffer, size, malloc, realloc, free);
+    return oe_backtrace_symbols_impl(buffer, size, malloc, free);
 }

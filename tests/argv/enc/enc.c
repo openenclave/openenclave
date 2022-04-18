@@ -11,31 +11,29 @@
 
 static void _test(const char* argv[], size_t argc)
 {
-    oe_result_t r;
-    size_t buf_size_out = 1;
+    void* buf = NULL;
+    size_t buf_size = 1;
+    char** argv_out;
 
-    r = oe_argv_to_buffer(argv, argc, NULL, 0, &buf_size_out);
+    OE_TEST(oe_argv_to_buffer(argv, argc, &buf, &buf_size) == OE_OK);
 
     if (argc == 0)
     {
-        OE_TEST(buf_size_out == 0);
+        OE_TEST(buf == NULL);
+        OE_TEST(buf_size == 0);
+
+        OE_TEST(
+            oe_buffer_to_argv(buf, buf_size, &argv_out, argc, malloc, free) ==
+            OE_INVALID_PARAMETER);
     }
     else
     {
-        void* buf;
-        size_t buf_size;
-        char** argv_out;
+        OE_TEST(buf != NULL);
+        OE_TEST(buf_size != 0);
 
-        OE_TEST(r == OE_BUFFER_TOO_SMALL);
-
-        buf_size = buf_size_out;
-        OE_TEST((buf = malloc(buf_size)));
-
-        r = oe_argv_to_buffer(argv, argc, buf, buf_size, &buf_size_out);
-        OE_TEST(r == OE_OK);
-
-        r = oe_buffer_to_argv(buf, buf_size, &argv_out, argc, malloc, free);
-        OE_TEST(r == OE_OK);
+        OE_TEST(
+            oe_buffer_to_argv(buf, buf_size, &argv_out, argc, malloc, free) ==
+            OE_OK);
 
         for (size_t i = 0; i < argc; i++)
         {
