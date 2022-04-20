@@ -60,9 +60,12 @@ def bp_enc_c_30(frame, bp_loc, dict):
         print("** Error: c != 100")
         lldb_quit()
 
-    # Call a function defined within the enclave
-    # This doesn't work
-    lldb.debugger.HandleCommand("expr square(1)")
+    # Call a function defined within the enclave when vDSO
+    # is not enabled (in-encave SIGSEGV will be suppressed).
+    is_vdso_enabled = bool(lldb_eval("oe_sgx_is_vdso_enabled").value)
+    if is_vdso_enabled != True:
+        # This doesn't work
+        lldb.debugger.HandleCommand("expr square(1)")
 
     lldb.debugger.HandleCommand("expr c = 10000, g_square_called=1")
     return False

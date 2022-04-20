@@ -62,6 +62,7 @@ static char* get_fullpath(const char* path)
 #include "exception.h"
 #include "platform_u.h"
 #include "sgxload.h"
+#include "vdso.h"
 #include "xstate.h"
 
 static volatile oe_load_extra_enclave_data_hook_t
@@ -73,6 +74,10 @@ static oe_once_type _enclave_init_once;
 /* Global for caching the result of AVX check used by oe_enter */
 bool oe_is_avx_enabled = false;
 
+/* Global that indicates if SGX vDSO is enabled, which is used
+ * by oe_enter, oe_host_handle_exception, and _register_signal_handlers */
+bool oe_sgx_is_vdso_enabled = false;
+
 /* Forward declaration */
 void oe_sgx_host_enable_debug_pf_simulation(void);
 
@@ -81,6 +86,10 @@ static void _initialize_enclave_host_impl(void)
     uint64_t xfrm = oe_get_xfrm();
     oe_is_avx_enabled = ((xfrm & SGX_XFRM_AVX) == SGX_XFRM_AVX) ||
                         ((xfrm & SGX_XFRM_AVX512) == SGX_XFRM_AVX512);
+
+    if (oe_sgx_initialize_vdso() == OE_OK)
+        oe_sgx_is_vdso_enabled = true;
+
     oe_initialize_host_exception();
 }
 
@@ -547,6 +556,8 @@ static oe_result_t _initialize_enclave(oe_enclave_t* enclave)
 {
     oe_result_t result = OE_UNEXPECTED;
     uint64_t result_out = 0;
+
+    OE_TRACE_INFO("Invoking the initialization ECALL");
 
     OE_CHECK(oe_ecall(
         enclave, OE_ECALL_INIT_ENCLAVE, (uint64_t)enclave, &result_out));
@@ -1367,6 +1378,8 @@ oe_result_t oe_create_enclave(
      * tcs are taken up by ecall worker threads.
      */
     OE_CHECK(_configure_enclave(enclave, settings, setting_count));
+
+    OE_TRACE_INFO("oe_create_enclave succeeded");
 
     *enclave_out = enclave;
     result = OE_OK;

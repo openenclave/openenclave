@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include "asmdefs.h"
 #include "enclave.h"
+#include "vdso.h"
 
 /**
  * Relevant definitions from asmdefs.h copied locally
@@ -43,8 +44,14 @@ uint64_t oe_host_handle_exception(oe_host_exception_context_t* context)
     uint64_t faulting_address = context->faulting_address;
 
     // Check if the signal happens inside the enclave.
-    if ((exit_address == OE_AEP_ADDRESS) && (exit_code == ENCLU_ERESUME))
+    if (exit_code == ENCLU_ERESUME)
     {
+        // If vDSO is not used, check exit_address against
+        // OE_AEP_ADDRESS. Otherwise, skip the check given that
+        // the AEP is set by the kernel.
+        if (!oe_sgx_is_vdso_enabled && exit_address != OE_AEP_ADDRESS)
+            return OE_EXCEPTION_CONTINUE_SEARCH;
+
         // Check if the enclave exception happens inside the first pass
         // exception handler.
         oe_thread_binding_t* thread_data = oe_get_thread_binding();

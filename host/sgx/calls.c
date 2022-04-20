@@ -122,7 +122,14 @@ static oe_result_t _enter_sim(
     if (arg4)
         *arg4 = 0;
 
+#if defined(__linux__)
+    /* On Linux, use oe_enter (aliased to __morestack) to
+     * conform the GDB contract (see linx/enter.c) */
+    oe_enter(tcs, aep, arg1, arg2, arg3, arg4, enclave);
+#else // _WIN32
     oe_enter_sim(tcs, aep, arg1, arg2, arg3, arg4, enclave);
+#endif
+
     result = OE_OK;
 
 done:
@@ -191,7 +198,7 @@ static oe_result_t _do_eenter(
         }
         else
         {
-            oe_enter(tcs, aep, arg1, arg2, &arg3, &arg4, enclave);
+            OE_CHECK(oe_enter(tcs, aep, arg1, arg2, &arg3, &arg4, enclave));
         }
 
         *code_out = oe_get_code_from_call_arg1(arg3);

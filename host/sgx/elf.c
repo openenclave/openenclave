@@ -24,6 +24,12 @@
         goto LABEL;                                            \
     } while (0)
 
+/* forward declaration to resolve dependencies */
+static const char* _get_string_from_shstrtab_internal(
+    const void* ptr,
+    elf64_word_t offset,
+    bool use_header);
+
 int elf64_test_header(const elf64_ehdr_t* ehdr)
 {
     if (!ehdr)
@@ -114,12 +120,37 @@ static elf64_ehdr_t* _get_header(const elf64_t* elf)
     return (elf64_ehdr_t*)elf->data;
 }
 
-static elf64_shdr_t* _get_shdr(const elf64_t* elf, size_t index)
+static size_t _get_size_from_header(const elf64_ehdr_t* header)
 {
-    elf64_ehdr_t* header = _get_header(elf);
+    /* calculate the size of elf image based on the formula:
+     * offset to the section header + section size * number of sections
+     * Note that all the sections have the same size according to the ELF
+     * specification. */
+    return header->e_shoff + (header->e_shentsize * header->e_shnum);
+}
+
+static elf64_shdr_t* _get_shdr_internal(
+    const void* ptr,
+    size_t index,
+    bool use_header)
+{
+    elf64_ehdr_t* header;
+    size_t elf_size = 0;
+
+    if (!use_header)
+    {
+        const elf64_t* elf = (const elf64_t*)ptr;
+        header = _get_header(elf);
+        elf_size = elf->size;
+    }
+    else
+    {
+        header = (elf64_ehdr_t*)ptr;
+        elf_size = _get_size_from_header(header);
+    }
 
     elf64_shdr_t* shdr_start =
-        (elf64_shdr_t*)((uint8_t*)elf->data + header->e_shoff);
+        (elf64_shdr_t*)((uint8_t*)header + header->e_shoff);
 
     if (index >= header->e_shnum)
         return NULL;
@@ -136,7 +167,12 @@ static elf64_shdr_t* _get_shdr(const elf64_t* elf, size_t index)
     if (oe_safe_add_u64(shdr->sh_offset, shdr->sh_size, &end) != OE_OK)
         return NULL;
 
-    return (end <= elf->size) ? shdr : NULL;
+    return (end <= elf_size) ? shdr : NULL;
+}
+
+static elf64_shdr_t* _get_shdr(const elf64_t* elf, size_t index)
+{
+    return _get_shdr_internal((const void*)elf, index, false /* use_header */);
 }
 
 static elf64_phdr_t* _get_phdr(const elf64_t* elf, size_t index)
@@ -164,15 +200,31 @@ static elf64_phdr_t* _get_phdr(const elf64_t* elf, size_t index)
     return (end <= elf->size) ? phdr : NULL;
 }
 
-static void* _get_section(const elf64_t* elf, size_t index)
+static void* _get_section_internal(
+    const void* ptr,
+    size_t index,
+    bool use_header)
 {
-    const elf64_shdr_t* sh = _get_shdr(elf, index);
+    const elf64_shdr_t* sh = _get_shdr_internal(ptr, index, use_header);
     if (sh == NULL)
         return NULL;
 
+    const elf64_ehdr_t* header = NULL;
+
+    if (!use_header)
+        header = _get_header((const elf64_t*)ptr);
+    else
+        header = (const elf64_ehdr_t*)ptr;
+
     return (sh->sh_type == SHT_NULL || sh->sh_type == SHT_NOBITS)
                ? NULL
-               : (uint8_t*)elf->data + sh->sh_offset;
+               : (uint8_t*)header + sh->sh_offset;
+}
+
+static void* _get_section(const elf64_t* elf, size_t index)
+{
+    return _get_section_internal(
+        (const void*)elf, index, false /* use_header */);
 }
 
 void* elf_get_section(const elf64_t* elf, size_t index)
@@ -353,19 +405,32 @@ done:
     return rc;
 }
 
-static size_t _find_shdr(const elf64_t* elf, const char* name)
+static size_t _find_shdr_internal(
+    const void* ptr,
+    const char* name,
+    bool use_header)
 {
+    const elf64_ehdr_t* header = NULL;
+    const elf64_t* elf = NULL;
     size_t result = (size_t)-1;
     size_t i;
 
-    for (i = 0; i < _get_header(elf)->e_shnum; i++)
+    if (!use_header)
     {
-        const elf64_shdr_t* sh = _get_shdr(elf, i);
+        elf = (const elf64_t*)ptr;
+        header = _get_header(elf);
+    }
+    else
+        header = (const elf64_ehdr_t*)ptr;
+
+    for (i = 0; i < header->e_shnum; i++)
+    {
+        const elf64_shdr_t* sh = _get_shdr_internal(ptr, i, use_header);
         if (sh == NULL)
             goto done;
 
-        const char* s = elf64_get_string_from_shstrtab(elf, sh->sh_name);
-
+        const char* s =
+            _get_string_from_shstrtab_internal(ptr, sh->sh_name, use_header);
         if (s && strcmp(name, s) == 0)
         {
             result = i;
@@ -375,6 +440,11 @@ static size_t _find_shdr(const elf64_t* elf, const char* name)
 
 done:
     return result;
+}
+
+static size_t _find_shdr(const elf64_t* elf, const char* name)
+{
+    return _find_shdr_internal((const void*)elf, name, false /* use_header */);
 }
 
 size_t elf_find_shdr(const elf64_t* elf, const char* name)
@@ -391,25 +461,32 @@ static inline bool _is_valid_string_table(const char* table, size_t size)
     return size >= 2 && table[0] == '\0' && table[size - 1] == '\0';
 }
 
-static const char* _get_string_from_section_index(
-    const elf64_t* elf,
+static const char* _get_string_from_section_by_index_internal(
+    const void* ptr,
     size_t index,
-    elf64_word_t offset)
+    elf64_word_t offset,
+    bool use_header)
 {
-    const elf64_shdr_t* sh;
+    const elf64_ehdr_t* header = NULL;
+    const elf64_shdr_t* sh = NULL;
     const char* result = NULL;
 
-    if (index == 0 || index >= _get_header(elf)->e_shnum)
+    if (!use_header)
+        header = _get_header((const elf64_t*)ptr);
+    else
+        header = (const elf64_ehdr_t*)ptr;
+
+    if (index == 0 || index >= header->e_shnum)
         goto done;
 
-    sh = _get_shdr(elf, index);
+    sh = _get_shdr_internal(ptr, index, use_header);
 
     if (sh == NULL || offset >= sh->sh_size)
         goto done;
 
     /* If the section is null, the elf file is corrupted, since only `SHT_NULL`
      * and `SHT_NOBITS` can have nonexistent sections. */
-    result = (const char*)_get_section(elf, index);
+    result = (const char*)_get_section_internal(ptr, index, use_header);
     if (result == NULL)
         goto done;
 
@@ -420,6 +497,42 @@ static const char* _get_string_from_section_index(
 
 done:
     return result;
+}
+
+static const char* _get_string_from_section_by_index(
+    const elf64_t* elf,
+    size_t index,
+    elf64_word_t offset)
+{
+    return _get_string_from_section_by_index_internal(
+        (const void*)elf, index, offset, false /* use_header */);
+}
+
+static const char* _get_string_from_shstrtab_internal(
+    const void* ptr,
+    elf64_word_t offset,
+    bool use_header)
+{
+    size_t index;
+
+    if (!use_header)
+        index = _get_header((const elf64_t*)ptr)->e_shstrndx;
+    else
+        index = ((const elf64_ehdr_t*)ptr)->e_shstrndx;
+
+    return _get_string_from_section_by_index_internal(
+        ptr, index, offset, use_header);
+}
+
+const char* elf64_get_string_from_shstrtab(
+    const elf64_t* elf,
+    elf64_word_t offset)
+{
+    if (!_is_valid_elf64(elf))
+        return NULL;
+
+    return _get_string_from_shstrtab_internal(
+        (const void*)elf, offset, false /* use_header */);
 }
 
 const char* elf64_get_string_from_strtab(
@@ -434,20 +547,7 @@ const char* elf64_get_string_from_strtab(
     if ((index = _find_shdr(elf, ".strtab")) == (size_t)-1)
         return NULL;
 
-    return _get_string_from_section_index(elf, index, offset);
-}
-
-const char* elf64_get_string_from_shstrtab(
-    const elf64_t* elf,
-    elf64_word_t offset)
-{
-    size_t index;
-
-    if (!_is_valid_elf64(elf))
-        return NULL;
-
-    index = _get_header(elf)->e_shstrndx;
-    return _get_string_from_section_index(elf, index, offset);
+    return _get_string_from_section_by_index(elf, index, offset);
 }
 
 int elf64_find_symbol_by_name(
@@ -567,28 +667,40 @@ done:
     return rc;
 }
 
+static const char* _get_string_from_dynstr_internal(
+    const void* ptr,
+    elf64_word_t offset,
+    bool use_header)
+{
+    size_t index;
+
+    if ((index = _find_shdr_internal(ptr, ".dynstr", use_header)) == (size_t)-1)
+        return NULL;
+
+    return _get_string_from_section_by_index_internal(
+        ptr, index, offset, use_header);
+}
+
 const char* elf64_get_string_from_dynstr(
     const elf64_t* elf,
     elf64_word_t offset)
 {
-    size_t index;
-
     if (!_is_valid_elf64(elf))
         return NULL;
 
-    if ((index = _find_shdr(elf, ".dynstr")) == (size_t)-1)
-        return NULL;
-
-    return _get_string_from_section_index(elf, index, offset);
+    return _get_string_from_dynstr_internal(
+        (const void*)elf, offset, false /* use_header */);
 }
 
-int elf64_find_dynamic_symbol_by_name(
-    const elf64_t* elf,
+static int _find_dynamic_symbol_by_name(
+    const void* ptr,
     const char* name,
-    elf64_sym_t* sym)
+    elf64_sym_t* sym,
+    bool use_header)
 {
     int rc = -1;
     size_t index;
+    const elf64_ehdr_t* header = NULL;
     const elf64_shdr_t* sh;
     const elf64_sym_t* symtab;
     size_t n;
@@ -596,18 +708,21 @@ int elf64_find_dynamic_symbol_by_name(
     const char* SECTIONNAME = ".dynsym";
     const elf64_word_t SH_TYPE = SHT_DYNSYM;
 
-    if (!_is_valid_elf64(elf) || !name || !sym)
-        goto done;
-
     /* Find the symbol table section header */
-    if ((index = _find_shdr(elf, SECTIONNAME)) == (size_t)-1)
+    if ((index = _find_shdr_internal(ptr, SECTIONNAME, use_header)) ==
+        (size_t)-1)
         goto done;
 
-    if (index == 0 || index >= _get_header(elf)->e_shnum)
+    if (!use_header)
+        header = _get_header((const elf64_t*)ptr);
+    else
+        header = (const elf64_ehdr_t*)ptr;
+
+    if (index == 0 || index >= header->e_shnum)
         goto done;
 
     /* Set pointer to section header */
-    if (!(sh = _get_shdr(elf, index)))
+    if (!(sh = _get_shdr_internal(ptr, index, use_header)))
         goto done;
 
     /* If this is not a symbol table */
@@ -619,7 +734,8 @@ int elf64_find_dynamic_symbol_by_name(
         goto done;
 
     /* Set pointer to symbol table section */
-    if (!(symtab = (const elf64_sym_t*)_get_section(elf, index)))
+    if (!(symtab = (const elf64_sym_t*)_get_section_internal(
+              ptr, index, use_header)))
         goto done;
 
     /* Calculate number of symbol table entries */
@@ -635,7 +751,8 @@ int elf64_find_dynamic_symbol_by_name(
             continue;
 
         /* If illegal name */
-        if (!(s = elf64_get_string_from_dynstr(elf, p->st_name)))
+        if (!(s = _get_string_from_dynstr_internal(
+                  ptr, p->st_name, use_header)))
             goto done;
 
         /* If found */
@@ -649,6 +766,30 @@ int elf64_find_dynamic_symbol_by_name(
 
 done:
     return rc;
+}
+
+int elf64_find_dynamic_symbol_by_name(
+    const elf64_t* elf,
+    const char* name,
+    elf64_sym_t* sym)
+{
+    if (!_is_valid_elf64(elf) || !name || !sym)
+        return -1;
+
+    return _find_dynamic_symbol_by_name(
+        (const void*)elf, name, sym, false /* use_header */);
+}
+
+int elf64_find_dynamic_symbol_by_name_with_header(
+    const elf64_ehdr_t* header,
+    const char* name,
+    elf64_sym_t* sym)
+{
+    if (elf64_test_header(header) != 0 || !name || !sym)
+        return -1;
+
+    return _find_dynamic_symbol_by_name(
+        (const void*)header, name, sym, true /* use_header */);
 }
 
 int elf64_find_symbol_by_address(

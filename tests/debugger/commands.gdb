@@ -61,10 +61,18 @@ commands 4
         quit 1
     end
 
+    # The call command does not work when vDSO is
+    # enabled (in-enclave SIGSEGV will be suppressed).
     # Call a function defined within the enclave
-    call square(c)
-
-    set variable c = $1
+    # when the vDSO is not enabled. Otherwise, fake
+    # the call.
+    if oe_sgx_is_vdso_enabled != 1
+        call square(c)
+        set variable c = $1
+    else
+        set variable c = 10000
+        set g_square_called = 1
+    end
 
     continue
 end

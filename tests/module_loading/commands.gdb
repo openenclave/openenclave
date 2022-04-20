@@ -52,8 +52,17 @@ end
 # Set a breakpoint in module destructor
 b fini_module
 commands 5
-    # Test ability to call function
-    p notify_module_done_wrapper()
+    # The call command does not work when vDSO is
+    # enabled (in-enclave SIGSEGV will be suppressed).
+    # Test the ability to call a function defined within the
+    # enclave when the vDSO is not enabled. Otherwise, fake
+    # the call.
+    if oe_sgx_is_vdso_enabled != 1
+        p notify_module_done_wrapper()
+    else
+        set variable module_fini = 1
+    end
+
     continue
 end
 

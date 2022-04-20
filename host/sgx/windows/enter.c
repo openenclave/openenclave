@@ -6,9 +6,17 @@
 #include <openenclave/internal/constants_x64.h>
 #include <openenclave/internal/registers.h>
 #include <openenclave/internal/sgx/ecall_context.h>
-#include "asmdefs.h"
-#include "enclave.h"
-#include "xstate.h"
+#include "../asmdefs.h"
+#include "../enclave.h"
+#include "../xstate.h"
+
+/* Note: The code was originally made to work on both Linux and Windows.
+ * Given that the diversity increases with the support of vDSO, we make
+ * the copy of the code to each OS, sgx/linux/enter.c and sgx/windows/enter.c,
+ * and apply vDSO-related changes to the former while leave the latter
+ * mostly untouched. Doing so also avoids breaking the debugging contract
+ * on Windows, which requires careful review before we want to merge
+ * the two implementations again. */
 
 // Define a variable with given name and bind it to the register with the
 // corresponding name. This allows manipulating the register as a normal
@@ -16,8 +24,6 @@
 // specified value.
 #define OE_DEFINE_REGISTER(regname, value) \
     register uint64_t regname __asm__(#regname) = (uint64_t)(value)
-
-#if _WIN32
 
 // In x64 Windows ABI, the frame pointer can be any register and the frame
 // pointer points to a constant location *within* the frame. In x64, the
@@ -33,17 +39,6 @@
 // parameter in the stack.
 #define OE_FRAME_POINTER_VALUE ((uint64_t)&enclave - 0x40)
 #define OE_FRAME_POINTER , "r"(rbp)
-
-#elif __linux__
-
-// The debugger requires a Linux x64 ABI frame pointer for stack walking.
-// Therefore, this file must be compiled with -fno-omit-frame-pointer.
-// Nothing else needs to be done and the macros below are noops.
-#define OE_DEFINE_FRAME_POINTER(r, v) OE_UNUSED(v)
-#define OE_FRAME_POINTER_VALUE 0
-#define OE_FRAME_POINTER
-
-#endif
 
 // The following registers are inputs to ENCLU instruction. They are also
 // clobbered and hence are marked as +r.
@@ -178,7 +173,7 @@ OE_INLINE void _setup_ecall_context(oe_ecall_context_t* ecall_context)
  * OE_ENCLU_CLOBBERED_REGISTERS.
  */
 OE_NEVER_INLINE
-void oe_enter(
+oe_result_t oe_enter(
     void* tcs,
     uint64_t aep,
     uint64_t arg1,
@@ -192,7 +187,7 @@ void oe_enter(
     uint32_t mxcsr = 0;
     uint16_t fcw = 0;
 
-    oe_ecall_context_t ecall_context = {{0}};
+    oe_ecall_context_t ecall_context = {0};
     _setup_ecall_context(&ecall_context);
 
     while (1)
@@ -245,6 +240,8 @@ void oe_enter(
 
     *arg3 = arg1;
     *arg4 = arg2;
+
+    return OE_OK;
 }
 
 /**
@@ -279,7 +276,7 @@ void oe_enter_sim(
     void* host_fs = oe_get_fs_register_base();
     void* host_gs = oe_get_gs_register_base();
     sgx_tcs_t* sgx_tcs = (sgx_tcs_t*)tcs;
-    oe_ecall_context_t ecall_context = {{0}};
+    oe_ecall_context_t ecall_context = {0};
     _setup_ecall_context(&ecall_context);
 
     while (1)

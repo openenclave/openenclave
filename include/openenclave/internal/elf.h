@@ -293,12 +293,22 @@ int elf64_find_symbol_by_name(
     const char* name,
     elf64_sym_t* sym);
 
+int elf64_find_symbol_by_name_with_header(
+    const elf64_ehdr_t* header,
+    const char* name,
+    elf64_sym_t* sym);
+
 const char* elf64_get_string_from_dynstr(
     const elf64_t* elf,
     elf64_word_t offset);
 
 int elf64_find_dynamic_symbol_by_name(
     const elf64_t* elf,
+    const char* name,
+    elf64_sym_t* sym);
+
+int elf64_find_dynamic_symbol_by_name_with_header(
+    const elf64_ehdr_t* header,
     const char* name,
     elf64_sym_t* sym);
 

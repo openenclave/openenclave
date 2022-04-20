@@ -196,10 +196,11 @@ if (OE_SGX AND WIN32)
   # set up the frame pointer.
   add_custom_command(
     OUTPUT enter.obj
-    DEPENDS sgx/enter.c
+    DEPENDS sgx/windows/enter.c
     COMMAND
       clang -c -O2 -fomit-frame-pointer -m64 -I${PROJECT_SOURCE_DIR}/include
-      -I${OE_INCDIR} ${CMAKE_CURRENT_SOURCE_DIR}/sgx/enter.c -o enter.obj)
+      -I${OE_INCDIR} ${CMAKE_CURRENT_SOURCE_DIR}/sgx/windows/enter.c -o
+      enter.obj)
 endif ()
 
 # SGX specific files.
@@ -259,6 +260,20 @@ if (OE_SGX)
 
   # OS specific as well.
   if (UNIX)
+    # Download the sgx.h from Linux github repository. Currently use v5.13 tag.
+    file(
+      DOWNLOAD
+      https://raw.githubusercontent.com/torvalds/linux/v5.13/arch/x86/include/uapi/asm/sgx.h
+      ${CMAKE_CURRENT_BINARY_DIR}/sgx.h
+      EXPECTED_HASH
+        SHA256=4764b8ce858579d99f1b66bb1e5f04ba149a38aea15649fff19f65f8d9113fd0)
+
+    list(APPEND PLATFORM_SDK_ONLY_SRC sgx/linux/vdso.c)
+
+    set_source_files_properties(
+      oehost sgx/linux/vdso.c PROPERTIES COMPILE_FLAGS
+                                         "-O2 -fno-omit-frame-pointer")
+
     list(APPEND PLATFORM_HOST_ONLY_SRC sgx/linux/sgxquoteproviderloader.c
          sgx/linux/sgxquoteexloader.c)
 
@@ -266,7 +281,7 @@ if (OE_SGX)
       APPEND
       PLATFORM_SDK_ONLY_SRC
       sgx/linux/aep.S
-      sgx/enter.c
+      sgx/linux/enter.c
       sgx/linux/exception.c
       sgx/linux/sgxioctl.c
       sgx/linux/switchless.c
@@ -284,6 +299,7 @@ if (OE_SGX)
       sgx/windows/exception.c
       sgx/windows/switchless.c
       sgx/windows/sgxquoteexloader.c
+      sgx/windows/vdso_stub.c
       sgx/windows/xstate.c)
   endif ()
 
@@ -354,10 +370,10 @@ target_link_libraries(oehost PUBLIC oe_includes)
 
 if (OE_SGX)
   target_include_directories(
-    oehost PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/sgxsdk/include)
+    oehost PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/sgxsdk/include
+                   ${CMAKE_CURRENT_BINARY_DIR})
   target_include_directories(
     oehostverify PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/sgxsdk/include)
-
 endif ()
 
 if (WIN32)
@@ -373,7 +389,8 @@ if (OE_SGX AND UNIX)
   # It is compiled with -O2 flag to retain the same generated assembly
   # code in both debug and release builds.
   set_source_files_properties(
-    oehost sgx/enter.c PROPERTIES COMPILE_FLAGS "-O2 -fno-omit-frame-pointer")
+    oehost sgx/linux/enter.c PROPERTIES COMPILE_FLAGS
+                                        "-O2 -fno-omit-frame-pointer")
 endif ()
 
 add_dependencies(oehost syscall_untrusted_edl)
