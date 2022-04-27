@@ -18,6 +18,8 @@
 #include <openenclave/tracee.h>
 
 #include "core_t.h"
+#include "openenclave/log.h"
+#include "platform_t.h"
 #include "tracee.h"
 
 static oe_log_level_t _active_log_level = OE_LOG_LEVEL_ERROR;
@@ -125,6 +127,56 @@ static oe_result_t _log_enclave_message(
 
         if ((result = oe_log_ocall(level, message)) != OE_OK)
             goto done;
+
+#if defined(__x86_64__) || defined(_M_X64)
+        if (result == OE_OK)
+        {
+            if (level == OE_LOG_LEVEL_ERROR || level == OE_LOG_LEVEL_FATAL)
+            {
+                // Fetch current values of FS and GS. Typically, FS[0] == FS and
+                // GS[0] == GS.
+                uint64_t fs;
+                uint64_t gs;
+                asm volatile("mov %%fs:0, %0" : "=r"(fs));
+                asm volatile("mov %%gs:0, %0" : "=r"(gs));
+
+                // We can make ocalls only if td has been initialized which is
+                // true only when the self-pointer has been setup (non-zero).
+                if (gs)
+                {
+                    // Restore FS if FS has been modified.
+                    if (fs != gs)
+                    {
+                        // wrfsbase could trigger an exception. The enclave may
+                        // not be in a state to emulate the instruction.
+                        // Therefore, just restore FS[0].
+                        asm volatile("mov %0, %%fs:0" : : "r"(gs) : "memory");
+                    }
+
+                    void* buffer[OE_BACKTRACE_MAX];
+                    int size;
+                    oe_result_t r = OE_UNEXPECTED;
+                    if ((size = oe_backtrace(buffer, OE_BACKTRACE_MAX)) > 0)
+                    {
+                        oe_sgx_log_backtrace_ocall(
+                            &r,
+                            oe_get_enclave(),
+                            (uint64_t*)buffer,
+                            (size_t)size);
+                    }
+                    else
+                    {
+                        // It is not possible to convey much information at this
+                        // point.
+                    }
+
+                    // Rever FS if it was restored above.
+                    if (fs != gs)
+                        asm volatile("mov %0, %%fs:0" : : "r"(fs) : "memory");
+                }
+            }
+        }
+#endif
     }
 
     result = OE_OK;
