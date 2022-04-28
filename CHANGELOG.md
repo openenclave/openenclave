@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The CapturePFGPExceptions preference is now supported in SGX1 debug mode on Linux.
   - When setting CapturePFGPExceptions=1, OE will simulate all the SIGSEGV as #PF by forwarding the host information (faulting address) to in-enclave exception handlers.
   - Note that this feature is for debug only and there is no guarantee that the simulated behavior works the same as the hardware feature in SGX2.
+- Added the support of using vDSO interfaces for SGX enclaves on Linux to enable synchronous exception handling. The `oehost` library automatically opts into the vDSO interface when it is available (Linux kernel 5.11+).
 
 ## Changed
 - Updated libcxx to version 10.0.1

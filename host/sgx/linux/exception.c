@@ -20,6 +20,7 @@
 #include <unistd.h>
 #include "../asmdefs.h"
 #include "../enclave.h"
+#include "../vdso.h"
 
 #if !defined(_NSIG) && defined(_SIG_MAXSIG)
 #define _NSIG (_SIG_MAXSIG - 1)
@@ -56,6 +57,8 @@ static void _host_signal_handler(
     /* si_addr (same as CR2) will have lower 12 bits cleared by the
      * SGX hardware for an enclave faulting access. */
     host_context.faulting_address = (uint64_t)sig_info->si_addr;
+
+    OE_TRACE_INFO("Host-side exception handler is called, signo=%d", sig_num);
 
     host_context.signal_number = (uint64_t)sig_num;
     for (size_t i = 0; i < DEFAULT_SIGNALS_NUMBER; i++)
@@ -151,23 +154,31 @@ static void _register_signal_handlers(void)
         abort();
     }
 
-    // Unmask the signals we want to receive.
-    for (size_t i = 0; i < DEFAULT_SIGNALS_NUMBER; i++)
+    /* Unmask the default set of signals when vDSO is not enabled.
+     * Note that the check may be redundant because the kernel will
+     * filter out these signals when vDSO is used. */
+    if (!oe_sgx_is_vdso_enabled)
     {
-        int signal_number = default_signals[i];
-        sigdelset(&sig_action.sa_mask, signal_number);
-
-        // Set the signal handlers, and store the previous signal action into a
-        // global array.
-        if (sigaction(
-                signal_number,
-                &sig_action,
-                &g_previous_sigaction[signal_number]) != 0)
+        for (size_t i = 0; i < DEFAULT_SIGNALS_NUMBER; i++)
         {
-            abort();
+            int signal_number = default_signals[i];
+            sigdelset(&sig_action.sa_mask, signal_number);
+
+            /* Set the signal handlers, and store the previous signal action
+             * into a global array. */
+            if (sigaction(
+                    signal_number,
+                    &sig_action,
+                    &g_previous_sigaction[signal_number]) != 0)
+            {
+                abort();
+            }
         }
     }
 
+    /* Always unmask the optional set of signals so that we can support
+     * enclave thread interrupt with both regular and vDSO interfaces;
+     * i.e., the kernel will not filter out these signals when vDSO is used. */
     for (size_t i = 0; i < OPTIONAL_SIGNALS_NUMBER; i++)
     {
         int signal_number = optional_signals[i];

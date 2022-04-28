@@ -99,7 +99,7 @@ int enc_pf_gp_exceptions(int is_misc_region_supported, int is_on_windows)
         OE_TEST(exception_code == OE_EXCEPTION_PAGE_FAULT);
 
         oe_host_printf(
-            "Test #PF on 0x%lx passed (aligned)\n", unmapped_address);
+            "Test #PF on 0x%lx passed (unaligned)\n", unmapped_address);
     }
     else
     {
@@ -109,7 +109,7 @@ int enc_pf_gp_exceptions(int is_misc_region_supported, int is_on_windows)
         OE_TEST(error_code == OE_SGX_PAGE_FAULT_US_FLAG);
 
         oe_host_printf(
-            "Test #PF on 0x%lx passed (unaligned)\n", unmapped_address);
+            "Test #PF on 0x%lx passed (aligned)\n", unmapped_address);
     }
 
     /* Trigger #GP */

@@ -1012,6 +1012,72 @@ oe_result_t oe_call_host_function(
 /*
 **==============================================================================
 **
+** _stitch_ecall_stack()
+**
+**     This function fixes up the first enclave frame (passed in) when the
+**     enclave is in debug mode and the ecall_context includes valid
+**     debug_eenter_rbp and debug_eenter_rip (i.e., both of which should
+**     be set and point to host memory). Otherwise, the function is a no-op.
+**     Currently, the stack stitching is required when vDSO is used on Linux.
+**
+**     Backtrace before stitching:
+**
+**     oe_ecall                                    | in host
+**       -> _do_eenter                             |
+**         -> oe_enter (aliased as __morestack)    |
+**           -> oe_vdso_enter                      |
+**             -> __vdso_sgx_enter_enclave         |
+**   --------------------------------------------------------------------------
+**             -> oe_enter                         | in enclave
+**              -> __oe_handle_main                |
+**
+**     Given that __vdso_sgx_enter_enclave is the vDSO function, we cannot rely
+**     on the Linux kernel to preserve its stack frame. Instead, we fix up the
+**     call stack that bypasses oe_vdso_enter and __vdso_sgx_enter_enclave in
+**     the trace, making it align with the trace when vDSO is not used.
+**
+**     Backtrace after stitching:
+**
+**     oe_ecall                                    | in host
+**       -> _do_eenter                             |
+**         -> oe_enter (aliased as __morestack)    |
+**   --------------------------------------------------------------------------
+**         -> oe_enter                             | in enclave
+**           -> __oe_handle_main                   |
+**
+**==============================================================================
+*/
+
+static void _stitch_ecall_stack(oe_sgx_td_t* td, uint64_t* first_enclave_frame)
+{
+    oe_ecall_context_t* ecall_context = td->host_ecall_context;
+
+    /* Use is_enclave_debug_allowed_cached() given that the td may not
+     * be initialized at this point. This also means that the very first
+     * ecall stack stitching will always be bypassed (the OE_ECALL_INIT_ENCLAVE
+     * ECALL) because the default caching value is false. */
+    if (is_enclave_debug_allowed_cached())
+    {
+        if (oe_is_outside_enclave(ecall_context, sizeof(*ecall_context)))
+        {
+            uint64_t host_rbp = ecall_context->debug_eenter_rbp;
+            uint64_t host_rip = ecall_context->debug_eenter_rip;
+
+            /* Check that the supplied host frame (hpst_rbp, host_rip) are set
+             * and really lies outside before stitching the stack */
+            if (oe_is_outside_enclave((void*)host_rbp, sizeof(uint64_t)) &&
+                oe_is_outside_enclave((void*)host_rip, sizeof(uint64_t)))
+            {
+                first_enclave_frame[0] = host_rbp;
+                first_enclave_frame[1] = host_rip;
+            }
+        }
+    }
+}
+
+/*
+**==============================================================================
+**
 ** __oe_handle_main()
 **
 **     This function is called by oe_enter(), which is called by the EENTER
@@ -1114,6 +1180,23 @@ void __oe_handle_main(
     *output_arg1 = 0;
     *output_arg2 = 0;
 
+    /* Get pointer to the thread data structure */
+    oe_sgx_td_t* td = td_from_tcs(tcs);
+
+    /* Initialize the enclave the first time it is ever entered. Note that
+     * this function DOES NOT call global constructors. Global construction
+     * is performed while handling OE_ECALL_INIT_ENCLAVE. */
+    oe_initialize_enclave(td);
+
+    /* Stitch the stack. Pass the caller's frame for fix up.
+     * Note that before stitching, the caller's frame points
+     * to the host stack right before switiching to the enclave
+     * stack (see .construct_stack_frame in enter.S).
+     * The function is called after oe_initialize_enclave
+     * (relocations have been applied) so that we can safely
+     * access globals that are referenced via GOT. */
+    _stitch_ecall_stack(td, __builtin_frame_address(1));
+
     // Block enclave enter based on current enclave status.
     switch (__oe_enclave_status)
     {
@@ -1152,14 +1235,6 @@ void __oe_handle_main(
             return;
         }
     }
-
-    /* Get pointer to the thread data structure */
-    oe_sgx_td_t* td = td_from_tcs(tcs);
-
-    // Initialize the enclave the first time it is ever entered. Note that
-    // this function DOES NOT call global constructors. Global construction
-    // is performed while handling OE_ECALL_INIT_ENCLAVE.
-    oe_initialize_enclave(td);
 
     /* If this is a normal (non-exception) entry */
     if (cssa == 0)
