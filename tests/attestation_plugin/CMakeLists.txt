@@ -9,8 +9,8 @@ endif ()
 
 add_enclave_test(
   tests/attestation_plugin_mbedtls plugin_host plugin_mbedtls_enc
-  ${CMAKE_CURRENT_SOURCE_DIR}/data/evidence.txt
-  ${CMAKE_CURRENT_SOURCE_DIR}/data/endorsements.txt)
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/evidence
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/endorsements)
 set_enclave_tests_properties(tests/attestation_plugin_mbedtls PROPERTIES
                              SKIP_RETURN_CODE 2)
 
