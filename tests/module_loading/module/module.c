@@ -11,6 +11,7 @@ extern int is_module_init;
 
 void notify_module_done_wrapper();
 int oe_sgx_get_additional_host_entropy(uint8_t* data, size_t size);
+void __stack_chk_fail(void);
 
 __attribute__((constructor)) void init_module()
 {
@@ -57,6 +58,7 @@ int test_libc_symbols()
     TEST_SYMBOL(memcpy);
     TEST_SYMBOL(memmove);
     TEST_SYMBOL(memset);
+    TEST_SYMBOL(__stack_chk_fail);
     TEST_SYMBOL(oe_sgx_get_additional_host_entropy);
     TEST_SYMBOL(pthread_mutex_destroy);
     TEST_SYMBOL(pthread_mutex_init);

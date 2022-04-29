@@ -44,7 +44,9 @@ enclave_compile_options(
   # user. There are valid reasons for an end user to use built-ins.
   $<BUILD_INTERFACE:-fno-builtin-malloc
   -fno-builtin-calloc
-  -fno-builtin>)
+  -fno-builtin>
+  # Enable stack protector
+  -fstack-protector-strong)
 
 add_enclave_dependencies(module oelibc_includes)
 

@@ -34,6 +34,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Changed
 - Updated libcxx to version 10.0.1
 - Updated the mbedTLS from 2.16 LTS to 2.28 LTS
+- Updated the SymCrypt-OpenSSL to v1.1.0
+- Updated the support of the SymCrypt module to v101.3.0
 
 [v0.17.][v0.17.7_log]
 ### Changed

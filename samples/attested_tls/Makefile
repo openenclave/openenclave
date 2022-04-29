@@ -10,11 +10,13 @@ export OE_CRYPTO_LIB
 
 TARGETS =
 
-SYMCRYPT_TAR = symcrypt_AMD64_openenclave_100.20.0-31fb2e94-pre.tgz
-SYMCRYPT_URL = https://github.com/microsoft/SymCrypt/releases/download/SymCrypt_v100.20_master_2021-12-01T112555-0800_31fb2e9/${SYMCRYPT_TAR}
-SYMCRYPT_SHA256 = 8d08f459e57751cd94580395922be905f51c172dd06f3ea0db403febb7b53e3e
+SYMCRYPT_TAR = symcrypt_AMD64_oe_full_v101.3.0-31e06ae.tgz
+SYMCRYPT_URL = https://github.com/microsoft/SymCrypt/releases/download/v101.3.0/${SYMCRYPT_TAR}
+SYMCRYPT_SHA256 = 53fcbdbae3925b82e880c102969dc4c646b36dffbca602d2f85f967d54e958e7
 SYMCRYPT_DIR = SymCrypt
-SYMCRYPT_SO = libsymcrypt.so
+SYMCRYPT_SO = libsymcrypt.so.101.3.0
+# The linker can only resolve up to single number after .so
+SYMCRYPT_LINK_SO = libsymcrypt.so.101
 
 ifeq (${OE_CRYPTO_LIB}, openssl_symcrypt_fips)
 	TARGETS += symcrypt
@@ -30,8 +32,8 @@ symcrypt:
 	mkdir -p ${SYMCRYPT_DIR}
 	tar zxvf ${SYMCRYPT_TAR} -C ${SYMCRYPT_DIR}
 	rm ${SYMCRYPT_TAR}
-	cp ${SYMCRYPT_DIR}/lib/${SYMCRYPT_SO} server/enc
-	cp ${SYMCRYPT_DIR}/lib/${SYMCRYPT_SO} client/enc
+	cp ${SYMCRYPT_DIR}/lib/${SYMCRYPT_SO} server/enc/${SYMCRYPT_LINK_SO}
+	cp ${SYMCRYPT_DIR}/lib/${SYMCRYPT_SO} client/enc/${SYMCRYPT_LINK_SO}
 
 build:
 	echo ${OE_CRYPTO_LIB}
@@ -44,8 +46,8 @@ clean:
 	$(MAKE) -C client clean
 	$(MAKE) -C non_enc_client clean
 	rm -rf ${SYMCRYPT_DIR}
-	rm -f server/enc/${SYMCRYPT_SO}
-	rm -f client/enc/${SYMCRYPT_SO}
+	rm -f server/enc/${SYMCRYPT_LINK_SO}
+	rm -f client/enc/${SYMCRYPT_LINK_SO}
 
 run:
 	echo "Launch processes to establish an Attested TLS between two enclaves"

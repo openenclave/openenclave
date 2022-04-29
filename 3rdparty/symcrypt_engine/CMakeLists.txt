@@ -7,15 +7,37 @@ set(OPENSSL_DIR ${PROJECT_SOURCE_DIR}/3rdparty/openssl/openssl)
 set(SYMCRYPT_ENGINE_DIR
     ${CMAKE_CURRENT_SOURCE_DIR}/SymCrypt-OpenSSL/SymCryptEngine)
 
+# Use CACHE so that the variables can be globally accessible
+set(SYMCRYPT_VERSION_MAJOR
+    "101"
+    CACHE INTERNAL "")
+set(SYMCRYPT_VERSION_MINOR
+    "3"
+    CACHE INTERNAL "")
+set(SYMCRYPT_VERSION_PATCH
+    "0"
+    CACHE INTERNAL "")
+set(SYMCRYPT_VERSION
+    "${SYMCRYPT_VERSION_MAJOR}.${SYMCRYPT_VERSION_MINOR}.${SYMCRYPT_VERSION_PATCH}"
+    CACHE INTERNAL "")
+set(SYMCRYPT_NAME
+    "libsymcrypt.so.${SYMCRYPT_VERSION}"
+    CACHE INTERNAL "")
+# The linker only takes one number after ".so"
+set(SYMCRYPT_LINK_NAME
+    "libsymcrypt.so.${SYMCRYPT_VERSION_MAJOR}"
+    CACHE INTERNAL "")
+
 # Download the SymCrypt release package at config-time
 # The SymCrypt OpenSSL engine build requires the SymCrypt header
 include(FetchContent)
 FetchContent_Declare(
   symcrypt_package
-  SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/SymCrypt
-  URL https://github.com/microsoft/SymCrypt/releases/download/SymCrypt_v100.20_master_2021-12-01T112555-0800_31fb2e9/symcrypt_AMD64_openenclave_100.20.0-31fb2e94-pre.tgz
+  SOURCE_DIR
+  ${CMAKE_CURRENT_BINARY_DIR}/SymCrypt
+  URL https://github.com/microsoft/SymCrypt/releases/download/v101.3.0/symcrypt_AMD64_oe_full_v101.3.0-31e06ae.tgz
   URL_HASH
-    SHA256=8d08f459e57751cd94580395922be905f51c172dd06f3ea0db403febb7b53e3e)
+    SHA256=53fcbdbae3925b82e880c102969dc4c646b36dffbca602d2f85f967d54e958e7)
 
 # Make the downloaded package globally available
 FetchContent_GetProperties(symcrypt_package)
