@@ -4,8 +4,8 @@
 import java.time.*
 import java.time.format.DateTimeFormatter
 
-OECI_LIB_VERSION = env.OECI_LIB_VERSION ?: "master"
-library "OpenEnclaveJenkinsLibrary@${params.OECI_LIB_VERSION}"
+OECI_LIB_VERSION = params.OECI_LIB_VERSION ?: "master"
+library "OpenEnclaveJenkinsLibrary@${OECI_LIB_VERSION}"
 
 GLOBAL_TIMEOUT_MINUTES = 480
 
@@ -70,7 +70,7 @@ def buildLinuxManagedImage(String os_type, String version, String managed_image_
                             usernamePassword(credentialsId: SERVICE_PRINCIPAL_CREDENTIALS_ID,
                                              passwordVariable: 'SERVICE_PRINCIPAL_PASSWORD',
                                              usernameVariable: 'SERVICE_PRINCIPAL_ID'),
-                            string(credentialsId: 'OSCTLabSubID', variable: 'SUBSCRIPTION_ID'),
+                            string(credentialsId: 'openenclaveci-subscription-id', variable: 'SUBSCRIPTION_ID'),
                             string(credentialsId: 'TenantID', variable: 'TENANT_ID')]) {
                         sh '''#!/bin/bash
                             az login --service-principal -u ${SERVICE_PRINCIPAL_ID} -p ${SERVICE_PRINCIPAL_PASSWORD} --tenant ${TENANT_ID}
@@ -94,78 +94,119 @@ def buildLinuxManagedImage(String os_type, String version, String managed_image_
 def buildWindowsManagedImage(String os_series, String img_name_suffix, String launch_configuration, String image_id, String image_version) {
 
     stage("${launch_configuration} Build") {
-        withCredentials([usernamePassword(credentialsId: JENKINS_USER_CREDS_ID,
-                                    usernameVariable: "JENKINS_USER_NAME",
-                                    passwordVariable: "JENKINS_USER_PASSWORD")]) {
-            def az_login_script = """
-                az login --service-principal -u \$SERVICE_PRINCIPAL_ID -p \$SERVICE_PRINCIPAL_PASSWORD --tenant \$TENANT_ID
-                az account set -s \$SUBSCRIPTION_ID
-            """
-            def managed_image_name_id = image_id
-            def gallery_image_version = image_version
-            def vm_rg_name = "build-${managed_image_name_id}-${img_name_suffix}-${BUILD_NUMBER}"
-            def vm_name = "${os_series}-vm"
-            def jenkins_rg_name = params.JENKINS_RESOURCE_GROUP
-            def jenkins_vnet_name = params.JENKINS_VNET_NAME
-            def jenkins_subnet_name = params.JENKINS_SUBNET_NAME
-            def azure_image_id = AZURE_IMAGES_MAP[os_series]["image"]
 
-            stage("Prepare Resource Group") {
-                def az_rg_create_script = """
-                    ${az_login_script}
+        def managed_image_name_id = image_id
+        def gallery_image_version = image_version
+        def vm_rg_name = "build-${managed_image_name_id}-${img_name_suffix}-${BUILD_NUMBER}"
+        def vm_name = "${os_series}-vm"
+        def jenkins_rg_name = params.JENKINS_RESOURCE_GROUP
+        def jenkins_vnet_name = params.JENKINS_VNET_NAME
+        def jenkins_subnet_name = params.JENKINS_SUBNET_NAME
+        def azure_image_id = AZURE_IMAGES_MAP[os_series]["image"]
+
+        stage("Azure CLI Login") {
+            withCredentials([
+                    usernamePassword(credentialsId: SERVICE_PRINCIPAL_CREDENTIALS_ID,
+                                        passwordVariable: 'SERVICE_PRINCIPAL_PASSWORD',
+                                        usernameVariable: 'SERVICE_PRINCIPAL_ID'),
+                    string(credentialsId: 'openenclaveci-subscription-id', variable: 'SUBSCRIPTION_ID'),
+                    string(credentialsId: 'TenantID', variable: 'TENANT_ID')]) {
+                sh '''#!/bin/bash
+                    az login --service-principal -u ${SERVICE_PRINCIPAL_ID} -p ${SERVICE_PRINCIPAL_PASSWORD} --tenant ${TENANT_ID}
+                    az account set -s ${SUBSCRIPTION_ID}
+                '''
+            }
+        }
+
+        try {
+
+            stage("Create Resource Group") {
+                sh """
                     az group create --name ${vm_rg_name} --location ${REGION}
                 """
-                common.azureEnvironment(az_rg_create_script, params.OE_DEPLOY_IMAGE)
             }
 
-            try {
-                stage("Provision VM") {
-                    def provision_script = """
-                        ${az_login_script}
-
-                        SUBNET_ID=\$(az network vnet subnet show \
-                            --resource-group ${jenkins_rg_name} \
-                            --name ${jenkins_subnet_name} \
-                            --vnet-name ${jenkins_vnet_name} --query id -o tsv)
-
-                        az vm create \
-                            --resource-group ${vm_rg_name} \
-                            --location ${REGION} \
-                            --name ${vm_name} \
-                            --size Standard_DC4s \
-                            --os-disk-size-gb 128 \
-                            --subnet \$SUBNET_ID \
-                            --admin-username ${JENKINS_USER_NAME} \
-                            --admin-password ${JENKINS_USER_PASSWORD} \
-                            --image ${azure_image_id}
-                    """
-                    common.azureEnvironment(provision_script, params.OE_DEPLOY_IMAGE)
+            stage("Provision VM") {
+                withCredentials([
+                        usernamePassword(credentialsId: JENKINS_USER_CREDS_ID,
+                                            usernameVariable: "SSH_USERNAME",
+                                            passwordVariable: "SSH_PASSWORD")]) {
+                    withEnv([
+                            "JENKINS_RG_NAME=${jenkins_rg_name}",
+                            "JENKINS_SUBNET_NAME=${jenkins_subnet_name}",
+                            "JENKINS_VNET_NAME=${jenkins_vnet_name}",
+                            "VM_RG_NAME=${vm_rg_name}",
+                            "REGION=${REGION}",
+                            "VM_NAME=${vm_name}",
+                            "AZURE_IMAGE_ID=${azure_image_id}"]) {
+                        sh '''
+                            SUBNET_ID=\$(az network vnet subnet show \
+                                --resource-group ${JENKINS_RG_NAME} \
+                                --name ${JENKINS_SUBNET_NAME} \
+                                --vnet-name ${JENKINS_VNET_NAME} --query id -o tsv)
+                            az vm create \
+                                --resource-group ${VM_RG_NAME} \
+                                --location ${REGION} \
+                                --name ${VM_NAME} \
+                                --size Standard_DC4s_v2 \
+                                --os-disk-size-gb 128 \
+                                --subnet \$SUBNET_ID \
+                                --admin-username ${SSH_USERNAME} \
+                                --admin-password ${SSH_PASSWORD} \
+                                --image ${AZURE_IMAGE_ID} \
+                                --public-ip-address ""
+                        '''
+                    }
                 }
+            }
 
-                stage("Deploy VM") {
-                    def deploy_script = """
-                        ${az_login_script}
+            stage("Deploy VM") {
+                checkout([$class: 'GitSCM',
+                    branches: [[name: BRANCH_NAME]],
+                    extensions: [],
+                    userRemoteConfigs: [[url: "https://github.com/${params.REPOSITORY_NAME}"]]])
+                withCredentials([
+                        usernamePassword(credentialsId: JENKINS_USER_CREDS_ID,
+                                            usernameVariable: "SSH_USERNAME",
+                                            passwordVariable: "SSH_PASSWORD")]) {
+                    withEnv([
+                            "JENKINS_RG_NAME=${jenkins_rg_name}",
+                            "JENKINS_SUBNET_NAME=${jenkins_subnet_name}",
+                            "JENKINS_VNET_NAME=${jenkins_vnet_name}",
+                            "VM_RG_NAME=${vm_rg_name}",
+                            "REGION=${REGION}",
+                            "VM_NAME=${vm_name}",
+                            "AZURE_IMAGE_ID=${azure_image_id}",
+                            "LAUNCH_CONFIGURATION=${launch_configuration}"]) {
+                        sh '''
+                            VM_DETAILS=\$(az vm show --resource-group ${VM_RG_NAME} \
+                                                    --name ${VM_NAME} \
+                                                    --show-details)
 
-                        VM_DETAILS=\$(az vm show --resource-group ${vm_rg_name} \
-                                                --name ${vm_name} \
-                                                --show-details)
+                            az vm run-command invoke \
+                                --resource-group ${VM_RG_NAME} \
+                                --name ${VM_NAME} \
+                                --command-id EnableRemotePS
 
-                        az vm run-command invoke \
-                            --resource-group ${vm_rg_name} \
-                            --name ${vm_name} \
-                            --command-id EnableRemotePS
+                            PRIVATE_IP=\$(echo \$VM_DETAILS | jq -r '.privateIps')
 
-                        PRIVATE_IP=\$(echo \$VM_DETAILS | jq -r '.privateIps')
-                        rm -f ${WORKSPACE}/scripts/ansible/inventory/hosts-${launch_configuration}
-                        echo "[windows-agents]" >> ${WORKSPACE}/scripts/ansible/inventory/hosts-${launch_configuration}
-                        echo "\$PRIVATE_IP" >> ${WORKSPACE}/scripts/ansible/inventory/hosts-${launch_configuration}
-                        echo "ansible_user: ${JENKINS_USER_NAME}" >> ${WORKSPACE}/scripts/ansible/inventory/host_vars/\$PRIVATE_IP
-                        echo "ansible_password: ${JENKINS_USER_PASSWORD}" >> ${WORKSPACE}/scripts/ansible/inventory/host_vars/\$PRIVATE_IP
-                        echo "ansible_winrm_transport: ntlm" >> ${WORKSPACE}/scripts/ansible/inventory/host_vars/\$PRIVATE_IP
-                        echo "launch_configuration: ${launch_configuration}" >> ${WORKSPACE}/scripts/ansible/inventory/host_vars/\$PRIVATE_IP
+                            rm -f ${WORKSPACE}/scripts/ansible/inventory/hosts-${LAUNCH_CONFIGURATION}
+
+                            echo "[windows-agents]" >> ${WORKSPACE}/scripts/ansible/inventory/hosts-${LAUNCH_CONFIGURATION}
+                            echo "\$PRIVATE_IP" >> ${WORKSPACE}/scripts/ansible/inventory/hosts-${LAUNCH_CONFIGURATION}
+
+                            echo "ansible_winrm_transport: ntlm" >> ${WORKSPACE}/scripts/ansible/inventory/host_vars/\$PRIVATE_IP
+                            echo "launch_configuration: ${LAUNCH_CONFIGURATION}" >> ${WORKSPACE}/scripts/ansible/inventory/host_vars/\$PRIVATE_IP
+                            echo "ansible_user: ${SSH_USERNAME}" >> ${WORKSPACE}/scripts/ansible/inventory/host_vars/\$PRIVATE_IP
+                            echo "ansible_password: ${SSH_PASSWORD}" >> ${WORKSPACE}/scripts/ansible/inventory/host_vars/\$PRIVATE_IP
+                        '''
+                    }
+                }
+                common.exec_with_retry(5, 60) {
+                    sh """
 
                         cd ${WORKSPACE}/scripts/ansible
-                        source ${WORKSPACE}/.jenkins/infrastructure/provision/utils.sh
+
                         ansible-playbook -i ${WORKSPACE}/scripts/ansible/inventory/hosts-${launch_configuration} oe-windows-acc-setup.yml jenkins-packer.yml
 
                         az vm run-command invoke \
@@ -174,31 +215,24 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                             --command-id RunPowerShellScript \
                             --scripts @${WORKSPACE}/.jenkins/infrastructure/provision/run-sysprep.ps1
                     """
-                    common.exec_with_retry(10, 30) {
-                        common.azureEnvironment(deploy_script, params.OE_DEPLOY_IMAGE)
-                    }
                 }
+            }
 
-
-                stage("Generalize VM") {
-                    timeout(GLOBAL_TIMEOUT_MINUTES) {
-                        def generalize_script = """
-                            ${az_login_script}
-
+            stage("Generalize VM") {
+                timeout(GLOBAL_TIMEOUT_MINUTES) {
+                    common.exec_with_retry(5, 60) {
+                        sh """
                             az vm deallocate --resource-group ${vm_rg_name} --name ${vm_name}
                             az vm generalize --resource-group ${vm_rg_name} --name ${vm_name}
                         """
-                        common.exec_with_retry(10, 30) {
-                            common.azureEnvironment(generalize_script, params.OE_DEPLOY_IMAGE)
-                        }
                     }
                 }
+            }
 
-                stage("Capture Image") {
-                    timeout(GLOBAL_TIMEOUT_MINUTES) {
-                        def capture_script = """
-                            ${az_login_script}
-
+            stage("Capture Image") {
+                timeout(GLOBAL_TIMEOUT_MINUTES) {
+                    common.exec_with_retry(5, 60) {
+                        sh """
                             VM_ID=\$(az vm show \
                                 --resource-group ${vm_rg_name} \
                                 --name ${vm_name} | jq -r '.id' )
@@ -214,18 +248,15 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                                 --name ${managed_image_name_id}-${img_name_suffix} \
                                 --hyper-v-generation ${AZURE_IMAGES_MAP[os_series]["generation"]} \
                                 --source \$VM_ID
-                            """
-                        common.exec_with_retry(10, 30) {
-                            common.azureEnvironment(capture_script, params.OE_DEPLOY_IMAGE)
-                        }
+                        """
                     }
                 }
+            }
 
-                stage("Upload Image") {
-                    timeout(GLOBAL_TIMEOUT_MINUTES) {
-                        def upload_script = """
-                            ${az_login_script}
-
+            stage("Upload Image") {
+                timeout(GLOBAL_TIMEOUT_MINUTES) {
+                    common.exec_with_retry(10, 30) {
+                        sh """
                             MANAGED_IMG_ID=\$(az image show \
                                 --resource-group ${RESOURCE_GROUP} \
                                 --name ${managed_image_name_id}-${img_name_suffix} \
@@ -248,77 +279,79 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                                 --target-regions ${env.REPLICATION_REGIONS.split(',').join(' ')} \
                                 --replica-count 1
                         """
-                        common.exec_with_retry(10, 30) {
-                            common.azureEnvironment(upload_script, params.OE_DEPLOY_IMAGE)
-                        }
                     }
                 }
-
-            } finally {
-                stage("${img_name_suffix}-cleanup") {
-                    def az_rg_cleanup_script = """
-                        ${az_login_script}
-                        az group delete --name ${vm_rg_name} --yes
-                        az image delete \
-                            --resource-group ${RESOURCE_GROUP} \
-                            --name ${managed_image_name_id}-${img_name_suffix}
-                    """
-                    common.azureEnvironment(az_rg_cleanup_script, params.OE_DEPLOY_IMAGE)
-                }
+            }
+        } finally {
+            stage("${img_name_suffix}-cleanup") {
+                sh """
+                    az group delete --name ${vm_rg_name} --yes
+                    az image delete \
+                        --resource-group ${RESOURCE_GROUP} \
+                        --name ${managed_image_name_id}-${img_name_suffix}
+                """
             }
         }
     }
 }
 
 node(params.AGENTS_LABEL) {
-    stage("Initialize Workspace") {
+    try {
+        stage("Initialize Workspace") {
 
-        cleanWs()
-        checkout scm
+            cleanWs()
+            checkout scm
 
-        commit_id = get_commit_id()
-        version = get_image_version()
+            commit_id = get_commit_id()
+            version = get_image_version()
 
-        image_version = params.IMAGE_VERSION ?: version
-        image_id = params.IMAGE_ID ?: "${version}-${commit_id}"
+            image_version = params.IMAGE_VERSION ?: version
+            image_id = params.IMAGE_ID ?: "${version}-${commit_id}"
 
-        println("IMAGE_VERSION: ${image_version}\nIMAGE_ID: ${image_id}")
-    }
-    stage("Install Azure CLI") {
-        retry(10) {
+            println("IMAGE_VERSION: ${image_version}\nIMAGE_ID: ${image_id}")
+        }
+        stage("Install Azure CLI") {
+            retry(10) {
+                sh """
+                    sleep 5
+                    ${helpers.WaitForAptLock()}
+                    sudo apt-get update
+                    sudo apt-get -y install ca-certificates curl apt-transport-https lsb-release gnupg
+                    curl -sL https://packages.microsoft.com/keys/microsoft.asc |
+                        gpg --dearmor |
+                        sudo tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null
+                    AZ_REPO=\$(lsb_release -cs)
+                    echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ \$AZ_REPO main" |
+                        sudo tee /etc/apt/sources.list.d/azure-cli.list
+                    ${helpers.WaitForAptLock()}
+                    sudo apt-get update
+                    sudo apt-get -y install azure-cli jq
+                """
+            }
+        }
+        stage("Install Ansible") {
+            retry(10) {
+                sh """#!/bin/bash
+                    ${helpers.WaitForAptLock()}
+                    sudo ${WORKSPACE}/scripts/ansible/install-ansible.sh
+                """
+            }
+        }
+        stage("Build Agents") {
+            parallel "Build Windows Server 2019 - nonSGX"      : { buildWindowsManagedImage("win2019", "ws2019-nonSGX", "SGX1FLC-NoIntelDrivers", image_id, image_version) },
+                    "Build Windows Server 2019 - SGX1"         : { buildWindowsManagedImage("win2019", "ws2019-SGX", "SGX1", image_id, image_version) },
+                    "Build Windows Server 2019 - SGX1FLC DCAP" : { buildWindowsManagedImage("win2019", "ws2019-SGX-DCAP", "SGX1FLC", image_id, image_version) },
+                    "Build Ubuntu 18.04"                       : { buildLinuxManagedImage("ubuntu", "18.04", image_id, image_version) },
+                    "Build Ubuntu 20.04"                       : { buildLinuxManagedImage("ubuntu", "20.04", image_id, image_version) }
+        }
+    } finally {
+        stage("Clean up") {
             sh """
-                sleep 5
-                ${helpers.WaitForAptLock()}
-                sudo apt-get update
-                sudo apt-get -y install ca-certificates curl apt-transport-https lsb-release gnupg
-                curl -sL https://packages.microsoft.com/keys/microsoft.asc |
-                    gpg --dearmor |
-                    sudo tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null
-                AZ_REPO=\$(lsb_release -cs)
-                echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ \$AZ_REPO main" |
-                    sudo tee /etc/apt/sources.list.d/azure-cli.list
-                ${helpers.WaitForAptLock()}
-                sudo apt-get update
-                sudo apt-get -y install azure-cli
+                az logout || true
+                az cache purge
+                az account clear
             """
+            cleanWs()
         }
-    }
-    stage("Install Ansible") {
-        retry(10) {
-            sh """#!/bin/bash
-                ${helpers.WaitForAptLock()}
-                sudo ${WORKSPACE}/scripts/ansible/install-ansible.sh
-            """
-        }
-    }
-    stage("Build Agents") {
-        parallel "Build Windows Server 2019 - nonSGX"       : { buildWindowsManagedImage("win2019", "ws2019-nonSGX", "SGX1FLC-NoIntelDrivers", image_id, image_version) },
-                 "Build Windows Server 2019 - SGX1"         : { buildWindowsManagedImage("win2019", "ws2019-SGX", "SGX1", image_id, image_version) },
-                 "Build Windows Server 2019 - SGX1FLC DCAP" : { buildWindowsManagedImage("win2019", "ws2019-SGX-DCAP", "SGX1FLC", image_id, image_version) },
-                 "Build Ubuntu 18.04" :                       { buildLinuxManagedImage("ubuntu", "18.04", image_id, image_version) },
-                 "Build Ubuntu 20.04" :                       { buildLinuxManagedImage("ubuntu", "20.04", image_id, image_version) }
-    }
-    stage("Clean Workspace") {
-        cleanWs()
     }
 }

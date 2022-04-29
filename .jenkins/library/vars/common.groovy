@@ -18,7 +18,7 @@ String dockerImage(String tag, String dockerfile = ".jenkins/Dockerfile", String
 }
 
 def ContainerRun(String imageName, String compiler, String task, String runArgs="", registryUrl="https://oejenkinscidockerregistry.azurecr.io", registryName="oejenkinscidockerregistry") {
-    exec_with_retry(10,300){
+    exec_with_retry(3,60){
         docker.withRegistry(registryUrl, registryName) {
             def image = docker.image(imageName)
             image.pull()
@@ -82,6 +82,7 @@ def runTask(String task) {
                 set -o errexit
                 set -o pipefail
                 source /etc/profile
+                echo \$(whoami)
                 ${task}
             """
     }

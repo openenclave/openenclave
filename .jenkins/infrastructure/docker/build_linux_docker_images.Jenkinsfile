@@ -125,39 +125,14 @@ pipeline {
         }
         stage("Full CI/CD Image") {
             stages {
-                stage("Build") {
+                stage("Build, Test, and Push") {
                     parallel {
-                        stage("Build Ubuntu 18.04 Docker Image") {
+                        stage("Ubuntu 18.04") {
                             steps {
                                 script {
                                     buildArgs = common.dockerBuildArgs("UID=\$(id -u)", "UNAME=\$(id -un)",
-                                                                    "GID=\$(id -g)", "GNAME=\$(id -gn)")
+                                                                       "GID=\$(id -g)", "GNAME=\$(id -gn)")
                                     oe1804 = common.dockerImage("oetools-18.04:${DOCKER_TAG}", LINUX_DOCKERFILE, "${buildArgs} --build-arg ubuntu_version=18.04 --build-arg devkits_uri=${params.DEVKITS_URI}")
-                                    if ( PUBLISH_DOCKER_HUB ) {
-                                        puboe1804 = common.dockerImage("oeciteam/oetools-18.04:${DOCKER_TAG}", LINUX_DOCKERFILE, "${buildArgs} --build-arg ubuntu_version=18.04 --build-arg devkits_uri=${params.DEVKITS_URI}")
-                                    }
-                                }
-                            }
-                        }
-                        stage("Build Ubuntu 20.04 Docker Image") {
-                            steps {
-                                script {
-                                    buildArgs = common.dockerBuildArgs("UID=\$(id -u)", "UNAME=\$(id -un)",
-                                                                    "GID=\$(id -g)", "GNAME=\$(id -gn)")
-                                    oe2004 = common.dockerImage("oetools-20.04:${DOCKER_TAG}", LINUX_DOCKERFILE, "${buildArgs} --build-arg ubuntu_version=20.04 --build-arg devkits_uri=${params.DEVKITS_URI}")
-                                    if ( PUBLISH_DOCKER_HUB ) {
-                                        puboe2004 = common.dockerImage("oeciteam/oetools-20.04:${DOCKER_TAG}", LINUX_DOCKERFILE, "${buildArgs} --build-arg ubuntu_version=20.04 --build-arg devkits_uri=${params.DEVKITS_URI}")
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                stage('Test') {
-                    parallel {
-                        stage("Test Full - 18.04") {
-                            steps {
-                                script {
                                     oe1804.inside("--user root:root --cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
                                         sh """
                                             apt update
@@ -165,18 +140,36 @@ pipeline {
                                         """
                                         helpers.TestSamplesCommand(false, "open-enclave")
                                     }
+                                    docker.withRegistry(params.INTERNAL_REPO, env.INTERNAL_REPO_CREDS) {
+                                        common.exec_with_retry { oe1804.push() }
+                                        if ( params.TAG_LATEST ) {
+                                            common.exec_with_retry { oe1804.push('latest') }
+                                        }
+                                    }
                                 }
                             }
                         }
-                        stage("Test Full - 20.04") {
+                        stage("Ubuntu 20.04") {
+                            agent {
+                                label globalvars.AGENTS_LABELS["acc-ubuntu-20.04"]
+                            }
                             steps {
                                 script {
-                                    oe2004.inside("--user root:root --cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
+                                    buildArgs = common.dockerBuildArgs("UID=\$(id -u)", "UNAME=\$(id -un)",
+                                                                       "GID=\$(id -g)", "GNAME=\$(id -gn)")
+                                    oe2004 = common.dockerImage("oetools-20.04:${DOCKER_TAG}", LINUX_DOCKERFILE, "${buildArgs} --build-arg ubuntu_version=20.04 --build-arg devkits_uri=${params.DEVKITS_URI}")
+                                    oe2004.inside("--user root:root --cap-add=SYS_PTRACE --device /dev/sgx/provision:/dev/sgx/provision --device /dev/sgx/enclave:/dev/sgx/enclave --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
                                         sh """
                                             apt update
                                             apt install -y build-essential open-enclave libssl-dev
                                         """
                                         helpers.TestSamplesCommand(false, "open-enclave")
+                                    }
+                                    docker.withRegistry(params.INTERNAL_REPO, env.INTERNAL_REPO_CREDS) {
+                                        common.exec_with_retry { oe2004.push() }
+                                        if ( params.TAG_LATEST ) {
+                                            common.exec_with_retry { oe2004.push('latest') }
+                                        }
                                     }
                                 }
                             }
@@ -194,25 +187,6 @@ pipeline {
                         if ( params.TAG_LATEST ) {
                             common.exec_with_retry { oe1804.push('latest') }
                             common.exec_with_retry { oe2004.push('latest') }
-                        }
-                    }
-                }
-            }
-        }
-        stage("Push to OE Docker Hub Registry") {
-            when {
-                expression {
-                    return params.PUBLISH_DOCKER_HUB
-                }
-            }
-            steps {
-                script {
-                    docker.withRegistry('', DOCKERHUB_REPO_CREDS) {
-                        common.exec_with_retry { puboe1804.push() }
-                        common.exec_with_retry { puboe2004.push() }
-                        if ( TAG_LATEST ) {
-                            common.exec_with_retry { puboe1804.push('latest') }
-                            common.exec_with_retry { puboe2004.push('latest') }
                         }
                     }
                 }
