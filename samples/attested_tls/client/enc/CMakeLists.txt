@@ -67,18 +67,17 @@ elseif (${OE_CRYPTO_LIB} STREQUAL "mbedtls")
 elseif (${OE_CRYPTO_LIB} STREQUAL "openssl_symcrypt_fips")
   add_custom_command(
     TARGET tls_client_enc
-    COMMAND
-      ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/SymCrypt/lib/libsymcrypt.so
-      ${CMAKE_CURRENT_BINARY_DIR}/libsymcrypt.so)
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/libsymcrypt.so.101
+            ${CMAKE_CURRENT_BINARY_DIR}/libsymcrypt.so.101)
 
   target_link_libraries(
     tls_client_enc
     openenclave::oeenclave
     openenclave::oesymcryptengine
     openenclave::oecryptoopenssl
-    # Workaround: refer to the downloaded location so that we don't rely on the
+    # Workaround: refer to the root of the build location so that we don't rely on the
     # order of copy
-    ${CMAKE_BINARY_DIR}/SymCrypt/lib/libsymcrypt.so
+    ${CMAKE_BINARY_DIR}/libsymcrypt.so.101
     openenclave::oelibcxx
     openenclave::oehostsock
     openenclave::oehostresolver)

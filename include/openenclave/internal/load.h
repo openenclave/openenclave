@@ -77,6 +77,9 @@ struct _oe_enclave_elf_image
     /* Offset to write back to the file oe_sgx_enclave_properties_t
      * during signing */
     uint64_t oeinfo_file_pos;
+
+    /* Offset of the dynamic section. Needed by submodule allocation */
+    uint64_t dynamic_rva;
 };
 
 typedef enum _oe_image_type

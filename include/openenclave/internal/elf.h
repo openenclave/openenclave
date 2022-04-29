@@ -139,6 +139,7 @@ ELF_EXTERNC_BEGIN
 /* elf64_dyn.d_tag */
 #define DT_NULL 0
 #define DT_NEEDED 1
+#define DT_PLTGOT 3
 #define DT_STRTAB 5
 #define DT_SYMTAB 6
 #define DT_RELA 7
