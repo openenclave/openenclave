@@ -102,12 +102,13 @@ def ACCContainerTest(String label, String version, List extra_cmake_args = []) {
                 checkout scm
                 def cmakeArgs = helpers.CmakeArgs("RelWithDebInfo","OFF","ON","-DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin",extra_cmake_args.join(' '))
                 def devices = helpers.getDockerSGXDevices("ubuntu", helpers.getUbuntuReleaseVer())
+                def runArgs = "--user root:root --cap-add=SYS_PTRACE ${devices} --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket"
                 println("${label} running Docker container with ${devices}")
                 def task = """
                            ${helpers.ninjaBuildCommand(cmakeArgs)}
                            ${helpers.TestCommand()}
                            """
-                common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", "clang-10", task, "--cap-add=SYS_PTRACE ${devices} --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket")
+                common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", "clang-10", task, runArgs)
             }
         }
     }
@@ -146,14 +147,15 @@ def ACCHostVerificationTest(String version, String build_type) {
     /* Compile tests in SGX machine.  This will generate the necessary certs for the
     * host_verify test.
     */
-    stage("ACC-1804 Generate Quote") {
-        node(globalvars.AGENTS_LABELS["acc-ubuntu-18.04"]) {
+    stage("ACC ${version} Generate Quote") {
+        node(globalvars.AGENTS_LABELS["acc-ubuntu-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
                 def cmakeArgs = "-G Ninja -DCMAKE_BUILD_TYPE=${build_type} -Wdev"
                 def devices = helpers.getDockerSGXDevices("ubuntu", helpers.getUbuntuReleaseVer())
-                println("ACC-1804 running Docker container with ${devices}")
+                def runArgs = "--user root:root --cap-add=SYS_PTRACE ${devices} --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket"
+                println("ACC-${version} running Docker container with ${devices}")
                 println("Generating certificates and reports ...")
                 def task = """
                            ${helpers.ninjaBuildCommand(cmakeArgs)}
@@ -170,7 +172,7 @@ def ACCHostVerificationTest(String version, String build_type) {
                            ../../../output/bin/oeutil gen --format sgx_ecdsa --quote-proc out --verify
                            popd
                            """
-                common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", "clang-10", task, "--cap-add=SYS_PTRACE ${devices} --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket")
+                common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", "clang-10", task, runArgs)
 
                 def ec_cert_created = fileExists 'build/tests/host_verify/host/sgx_cert_ec.der'
                 def rsa_cert_created = fileExists 'build/tests/host_verify/host/sgx_cert_rsa.der'
@@ -204,7 +206,7 @@ def ACCHostVerificationTest(String version, String build_type) {
 
     /* Compile the tests and unstash the certs over for verification.  */
     stage("Linux nonSGX Verify Quote") {
-        node(globalvars.AGENTS_LABELS["ubuntu-nonsgx"]) {
+        node(globalvars.AGENTS_LABELS["ubuntu-nonsgx-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
@@ -248,14 +250,15 @@ def ACCHostVerificationPackageTest(String version, String build_type) {
     /* Generate an SGX report and two SGX certificates for the host_verify sample.
     * Also generate and install the host_verify package. Then run the host_verify sample.
     */
-    stage("ACC-1804 Generate Quote") {
-        node(globalvars.AGENTS_LABELS["acc-ubuntu-18.04"]) {
+    stage("ACC-${version} Generate Quote") {
+        node(globalvars.AGENTS_LABELS["acc-ubuntu-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
                 def cmakeArgs = "-G Ninja -DCMAKE_BUILD_TYPE=${build_type} -Wdev"
                 def devices = helpers.getDockerSGXDevices("ubuntu", helpers.getUbuntuReleaseVer())
-                println("ACC-1804 running Docker container with ${devices}")
+                def runArgs = "--user root:root --cap-add=SYS_PTRACE ${devices} --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket"
+                println("ACC-${version} running Docker container with ${devices}")
                 println("Generating certificates and reports ...")
                 def task = """
                            ${helpers.ninjaBuildCommand(cmakeArgs)}
@@ -272,7 +275,7 @@ def ACCHostVerificationPackageTest(String version, String build_type) {
                            ../../../output/bin/oeutil gen --format sgx_ecdsa --quote-proc out --verify
                            popd
                            """
-                common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", "clang-10", task, "--cap-add=SYS_PTRACE ${devices} --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket")
+                common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", "clang-10", task, runArgs)
 
                 def ec_cert_created = fileExists 'build/tests/host_verify/host/sgx_cert_ec.der'
                 def rsa_cert_created = fileExists 'build/tests/host_verify/host/sgx_cert_rsa.der'
@@ -306,7 +309,7 @@ def ACCHostVerificationPackageTest(String version, String build_type) {
 
     /* Linux nonSGX stage. */
     stage("Linux nonSGX Verify Quote") {
-        node(globalvars.AGENTS_LABELS["ubuntu-nonsgx"]) {
+        node(globalvars.AGENTS_LABELS["ubuntu-nonsgx-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
@@ -442,7 +445,8 @@ def windowsPrereqsVerify(String label) {
 
 def windowsLinuxElfBuild(String label, String version, String compiler, String build_type, String lvi_mitigation = 'None', String lvi_mitigation_skip_tests = 'OFF', List extra_cmake_args = []) {
     stage("Ubuntu ${version} SGX1 ${compiler} ${build_type} LVI_MITIGATION=${lvi_mitigation}") {
-        node(globalvars.AGENTS_LABELS["ubuntu-nonsgx"]) {
+        println(version)
+        node(globalvars.AGENTS_LABELS["ubuntu-nonsgx-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
@@ -530,7 +534,7 @@ def windowsCrossPlatform(String label) {
 
 def simulationContainerTest(String version, String build_type, List extra_cmake_args = []) {
     stage("Simulation Ubuntu ${version} clang-10 ${build_type}, extra_cmake_args: ${extra_cmake_args}") {
-        node(globalvars.AGENTS_LABELS["ubuntu-nonsgx"]) {
+        node(globalvars.AGENTS_LABELS["ubuntu-nonsgx-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
@@ -554,7 +558,7 @@ def simulationContainerTest(String version, String build_type, List extra_cmake_
 
 def buildCrossPlatform(String version) {
     stage("Ubuntu ${version} OP-TEE Build") {
-        node(globalvars.AGENTS_LABELS["ubuntu-nonsgx"]) {
+        node(globalvars.AGENTS_LABELS["ubuntu-nonsgx-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
@@ -584,7 +588,7 @@ def buildCrossPlatform(String version) {
 
 def AArch64GNUTest(String version, String build_type) {
     stage("AArch64 GNU gcc Ubuntu${version} ${build_type}") {
-        node(globalvars.AGENTS_LABELS["ubuntu-nonsgx"]) {
+        node(globalvars.AGENTS_LABELS["ubuntu-nonsgx-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
@@ -606,7 +610,7 @@ def AArch64GNUTest(String version, String build_type) {
 
 def checkDevFlows(String version) {
     stage('Default compiler') {
-        node(globalvars.AGENTS_LABELS["ubuntu-nonsgx"]) {
+        node(globalvars.AGENTS_LABELS["ubuntu-nonsgx-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
@@ -622,7 +626,7 @@ def checkDevFlows(String version) {
 
 def checkCI() {
     stage('Check CI') {
-        node(globalvars.AGENTS_LABELS["ubuntu-nonsgx"]) {
+        node(globalvars.AGENTS_LABELS["ubuntu-nonsgx-20.04"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm

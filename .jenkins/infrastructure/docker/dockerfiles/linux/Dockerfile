@@ -39,11 +39,6 @@
 #     $ sudo docker push oejenkinscidockerregistry.azurecr.io/oetools-<ubuntu_version>:<version>
 #     $ sudo docker logout
 #
-# You can check that the image has been successfully uploaded by checking
-# the oejenkinscidockerregistry Container registry in Azure at this link,
-# assuming you have proper permissions:
-# https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource/subscriptions/e5839dfd-61f0-4b2f-b06f-de7fc47b5998/resourceGroups/OE-Jenkins-CI/providers/Microsoft.ContainerRegistry/registries/oejenkinscidockerregistry/overview
-#
 # This image includes out-of-proc attestation using Intel SGX by default.
 # To allow this, the Intel SGX AESM Service will need to be made available by creating the container with the following parameter:
 #   --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket
@@ -55,6 +50,7 @@ FROM ubuntu:${ubuntu_version}
 
 ARG UNAME=jenkins
 ARG GNAME=jenkins
+# This UID/GID needs to match Jenkins agent UID/GID
 ARG UID=1000
 ARG GID=1000
 ARG devkits_uri
