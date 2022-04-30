@@ -5,6 +5,7 @@
 #define _OE_INTERNAL_SGX_TESTS_H
 
 #include <openenclave/bits/defs.h>
+#include <openenclave/internal/sgxcreate.h>
 
 OE_EXTERNC_BEGIN
 
