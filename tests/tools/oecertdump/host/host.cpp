@@ -277,7 +277,7 @@ int main(int argc, const char* argv[])
 {
     int ret = 0;
 
-    if (!oe_has_sgx_quote_provider())
+    if (!oe_sgx_has_quote_provider())
     {
         fprintf(
             stderr, "FAILURE: DCAP libraries must be present for this test.\n");

@@ -105,7 +105,7 @@ int main(int argc, const char* argv[])
     /* check_kss_extended_ids currently assumes the quote provider is available.
      * Skip if there is no quote provider for now.
      */
-    if (_is_kss_supported() && oe_has_sgx_quote_provider())
+    if (_is_kss_supported() && oe_sgx_has_quote_provider())
     {
         result = check_kss_extended_ids(
             enclave,
