@@ -7,24 +7,8 @@
 #include <openenclave/internal/sgx/tests.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
-#include "../host/sgx/cpuid.h"
 
 #include "oesign_test_u.h"
-
-static bool _is_kss_supported()
-{
-    uint32_t eax, ebx, ecx, edx;
-    eax = ebx = ecx = edx = 0;
-
-    // Obtain feature information using CPUID
-    oe_get_cpuid(0x12, 0x1, &eax, &ebx, &ecx, &edx);
-
-    // Check if KSS (bit 7) is supported by the processor
-    if (!(eax & (1 << 7)))
-        return false;
-    else
-        return true;
-}
 
 int main(int argc, const char* argv[])
 {
@@ -42,7 +26,7 @@ int main(int argc, const char* argv[])
 
     // Create the enclave
     uint32_t flags = oe_get_create_flags();
-    bool is_kss_supported = _is_kss_supported();
+    bool is_kss_supported = oe_sgx_is_kss_supported();
 
     /* Load the ELF image */
     if ((result = oe_load_enclave_image(argv[1], &oeimage)) != OE_OK)
@@ -105,7 +89,7 @@ int main(int argc, const char* argv[])
     /* check_kss_extended_ids currently assumes the quote provider is available.
      * Skip if there is no quote provider for now.
      */
-    if (_is_kss_supported() && oe_sgx_has_quote_provider())
+    if (is_kss_supported && oe_sgx_has_quote_provider())
     {
         result = check_kss_extended_ids(
             enclave,

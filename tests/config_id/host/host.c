@@ -2,22 +2,10 @@
 // Licensed under the MIT License.
 
 #include <openenclave/host.h>
+#include <openenclave/internal/sgx/tests.h>
 #include <openenclave/internal/tests.h>
 #include "../common.h"
-#include "../host/sgx/cpuid.h"
 #include "config_id_u.h"
-
-static bool _is_kss_supported()
-{
-    uint32_t eax, ebx, ecx, edx;
-    eax = ebx = ecx = edx = 0;
-
-    // Obtain feature information using CPUID
-    oe_get_cpuid(0x12, 0x1, &eax, &ebx, &ecx, &edx);
-
-    // Check if KSS (bit 7) is supported by the processor
-    return eax & (1 << 7);
-}
 
 int main(int argc, const char* argv[])
 {
@@ -56,7 +44,7 @@ int main(int argc, const char* argv[])
     optional_settings.setting_type = OE_SGX_ENCLAVE_CONFIG_DATA;
     optional_settings.u.config_data = &optional_config_data_setting;
 
-    if (_is_kss_supported())
+    if (oe_sgx_is_kss_supported())
     {
         result = oe_create_config_id_enclave(
             argv[1],

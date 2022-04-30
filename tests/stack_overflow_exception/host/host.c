@@ -4,25 +4,13 @@
 #include <limits.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/error.h>
+#include <openenclave/internal/sgx/tests.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "../host/sgx/cpuid.h"
 #include "stack_overflow_exception_u.h"
 
 static bool enclave_stack_overflowed = false;
-
-static bool _is_misc_region_supported()
-{
-    uint32_t eax, ebx, ecx, edx;
-    eax = ebx = ecx = edx = 0;
-
-    // Obtain feature information using CPUID
-    oe_get_cpuid(CPUID_SGX_LEAF, 0x0, &eax, &ebx, &ecx, &edx);
-
-    // Check if EXINFO is supported by the processor
-    return (ebx & CPUID_SGX_MISC_EXINFO_MASK);
-}
 
 void host_notify_stack_overflowed()
 {
@@ -51,7 +39,7 @@ int main(int argc, const char* argv[])
     if (flags & OE_ENCLAVE_FLAG_SIMULATE)
         printf("Simulation mode does not support exceptions. Skip the test "
                "ECALL.\n");
-    else if (_is_misc_region_supported())
+    else if (oe_sgx_is_misc_region_supported())
     {
         OE_TEST(enc_stack_overflow_exception(enclave) == OE_ENCLAVE_ABORTING);
         OE_TEST(enclave_stack_overflowed == true);

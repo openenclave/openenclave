@@ -107,7 +107,7 @@ static void _initialize_enclave_host()
 }
 #endif // OEHOSTMR
 
-static bool _is_kss_supported()
+bool oe_sgx_is_kss_supported(void)
 {
     uint32_t eax, ebx, ecx, edx;
     eax = ebx = ecx = edx = 0;
@@ -119,7 +119,7 @@ static bool _is_kss_supported()
     return (eax & CPUID_SGX_KSS_MASK);
 }
 
-static bool _is_misc_region_supported()
+bool oe_sgx_is_misc_region_supported(void)
 {
     uint32_t eax, ebx, ecx, edx;
     eax = ebx = ecx = edx = 0;
@@ -1003,7 +1003,7 @@ oe_result_t oe_sgx_build_enclave(
     if (props.config.flags.capture_pf_gp_exceptions)
     {
         /* Only opt into the feature if CPU (SGX2) supports the MISC region. */
-        if (_is_misc_region_supported())
+        if (oe_sgx_is_misc_region_supported())
             context->capture_pf_gp_exceptions_enabled = 1;
 #if !defined(OEHOSTMR) && defined(__linux__)
         else if (props.config.attributes & OE_SGX_FLAGS_DEBUG)
@@ -1038,7 +1038,8 @@ oe_result_t oe_sgx_build_enclave(
 
     if (props.config.attributes & OE_SGX_FLAGS_KSS)
     {
-        if ((context->type == OE_SGX_LOAD_TYPE_CREATE) && !_is_kss_supported())
+        if ((context->type == OE_SGX_LOAD_TYPE_CREATE) &&
+            !oe_sgx_is_kss_supported())
         {
             // Fail if the CPU does not support KSS and the enclave specifies
             // the KSS flag
@@ -1052,7 +1053,7 @@ oe_result_t oe_sgx_build_enclave(
     }
 
     // if config_id data is passed and kss is not supported
-    if (context->use_config_id && !_is_kss_supported())
+    if (context->use_config_id && !oe_sgx_is_kss_supported())
     {
         if (!context->config_data->ignore_if_unsupported)
         {

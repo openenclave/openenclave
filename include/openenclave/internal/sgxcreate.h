@@ -117,6 +117,9 @@ oe_result_t oe_sgx_validate_enclave_properties(
     const oe_sgx_enclave_properties_t* properties,
     const char** field_name);
 
+bool oe_sgx_is_kss_supported(void);
+bool oe_sgx_is_misc_region_supported(void);
+
 OE_EXTERNC_END
 
 #endif /* _OE_SGXCREATE_H */

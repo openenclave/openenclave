@@ -10,24 +10,11 @@
 #include <sys/mman.h>
 #include <iostream>
 
-#include "../host/sgx/cpuid.h"
 #include "sgx_zerobase_u.h"
 
 #define SKIP_RETURN_CODE 2
 
 const char* message = "Hello world from Host\n\0";
-
-static bool _is_misc_region_supported()
-{
-    uint32_t eax, ebx, ecx, edx;
-    eax = ebx = ecx = edx = 0;
-
-    // Obtain feature information using CPUID
-    oe_get_cpuid(CPUID_SGX_LEAF, 0x0, &eax, &ebx, &ecx, &edx);
-
-    // Check if EXINFO is supported by the processor
-    return (ebx & CPUID_SGX_MISC_EXINFO_MASK);
-}
 
 int test_ocall(const char* message)
 {
@@ -152,7 +139,7 @@ int main(int argc, const char* argv[])
     }
 
     /* Enclave memory access tests */
-    if (_is_misc_region_supported())
+    if (oe_sgx_is_misc_region_supported())
     {
         bool exception = false;
 
