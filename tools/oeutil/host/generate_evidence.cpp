@@ -1683,7 +1683,7 @@ int oeutil_generate_evidence(int argc, const char* argv[])
     int ret = 0;
     printf("NOTICE: oeutil generate-evidence is purely a debugging utility and "
            "not suitable for production use.\n\n");
-    if (!oe_has_sgx_quote_provider())
+    if (!oe_sgx_has_quote_provider())
     {
         fprintf(
             stderr, "FAILURE: DCAP libraries must be present for this test.\n");

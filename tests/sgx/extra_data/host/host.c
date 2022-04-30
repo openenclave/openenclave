@@ -72,7 +72,7 @@ int main(int argc, const char* argv[])
 
     const bool enable_zerobase = strcmp(argv[2], "zerobase") == 0;
 
-    if (enable_zerobase && !oe_has_sgx_quote_provider())
+    if (enable_zerobase && !oe_sgx_has_quote_provider())
     {
         // this test should not run on any platforms where FLC is not supported
         printf("=== tests skipped when DCAP libraries are not found.\n");
