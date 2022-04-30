@@ -87,7 +87,7 @@ static void _test_debug_signed(const char* path)
     /* Signed debug mode should always pass. */
     _launch_enclave_success(path, _create_flags(SGX_DEBUG), 1);
     _launch_enclave_success(path, _create_flags(SGX_DEBUG_AUTO), 1);
-    if (oe_sgx_has_quote_provider())
+    if (oe_sgx_is_flc_supported())
     {
         /* Only works with FLC */
         _launch_enclave_success(path, _create_flags(SGX_NON_DEBUG), 0);
@@ -106,7 +106,7 @@ static void _test_non_debug_signed(const char* path)
 {
     /* Debug mode should fail. Non-debug mode should pass. */
     _launch_enclave_fail(path, _create_flags(SGX_DEBUG), OE_DEBUG_DOWNGRADE);
-    if (oe_sgx_has_quote_provider())
+    if (oe_sgx_is_flc_supported())
     {
         /* Only works with FLC */
         _launch_enclave_success(path, _create_flags(SGX_NON_DEBUG), 0);
