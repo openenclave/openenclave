@@ -14,6 +14,11 @@ OE_EXTERNC_BEGIN
  */
 bool oe_sgx_has_quote_provider(void);
 
+/*
+ * Return whether SGX FLC is supported by the processor.
+ */
+bool oe_sgx_is_flc_supported(void);
+
 OE_EXTERNC_END
 
 #endif // _OE_INTERNAL_SGX_TESTS_H

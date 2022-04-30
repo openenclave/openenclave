@@ -36,10 +36,9 @@ int main(int argc, const char* argv[])
         fprintf(stderr, "Usage: %s ENCLAVE_PATH TEST_NUMBER\n", argv[0]);
         exit(1);
     }
-    if (!oe_sgx_has_quote_provider())
+    if (!oe_sgx_is_flc_supported())
     {
-        // this test should not run on any platforms where FLC is not supported
-        OE_TRACE_INFO("=== tests skipped when DCAP libraries are not found.\n");
+        OE_TRACE_INFO("=== tests skipped when FLC is not supported.\n");
         return SKIP_RETURN_CODE;
     }
     oe_enclave_t* enclave = NULL;
