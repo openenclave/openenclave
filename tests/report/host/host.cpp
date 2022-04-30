@@ -55,7 +55,7 @@ extern int FileToBytes(const char* path, std::vector<uint8_t>* output);
 
 void generate_and_save_report(oe_enclave_t* enclave)
 {
-    if (!oe_has_sgx_quote_provider())
+    if (!oe_sgx_has_quote_provider())
         return;
 
     static uint8_t* report;
@@ -180,7 +180,7 @@ int main(int argc, const char* argv[])
                 enclave, 0, nullptr, 0, &report_buffer, &report_buffer_size) ==
             OE_UNSUPPORTED);
     }
-    else if (oe_has_sgx_quote_provider())
+    else if (oe_sgx_has_quote_provider())
     {
         static oe_uuid_t sgx_ecdsa_uuid = {OE_FORMAT_UUID_SGX_ECDSA};
 

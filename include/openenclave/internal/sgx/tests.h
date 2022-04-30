@@ -12,7 +12,7 @@ OE_EXTERNC_BEGIN
 /*
  * Return whether SGX quote provider libraries are available in the system.
  */
-bool oe_has_sgx_quote_provider(void);
+bool oe_sgx_has_quote_provider(void);
 
 OE_EXTERNC_END
 

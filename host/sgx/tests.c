@@ -13,7 +13,7 @@ static void _check_quote_provider(void)
     _has_quote_provider = (oe_initialize_quote_provider() == OE_OK);
 }
 
-bool oe_has_sgx_quote_provider(void)
+bool oe_sgx_has_quote_provider(void)
 {
     static oe_once_type once = OE_H_ONCE_INITIALIZER;
     oe_once(&once, _check_quote_provider);
