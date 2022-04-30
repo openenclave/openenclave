@@ -385,6 +385,19 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
      * for the case of nested exceptions) */
     td->state = OE_TD_STATE_SECOND_LEVEL_EXCEPTION_HANDLING;
 
+    // Update the stitched callstack so that it points to the location that
+    // raised the exception.
+    if (is_enclave_debug_allowed_cached())
+    {
+        // Real exception dispatcher never returns. It is directly called by
+        // oe_exception_dispatcher. It is safe to modify its frame.
+        void** frame = (void**)__builtin_frame_address(0);
+
+        // Update the frame with rip, rbp from SSA.
+        frame[0] = (void*)oe_exception_record.context->rbp;
+        frame[1] = (void*)oe_exception_record.context->rip;
+    }
+
     // Traverse the existing exception handlers, stop when
     // OE_EXCEPTION_CONTINUE_EXECUTION is found.
     uint64_t handler_ret = OE_EXCEPTION_CONTINUE_SEARCH;
@@ -515,6 +528,32 @@ void oe_virtual_exception_dispatcher(
 
     td->exception_address = ssa_gpr->rip;
     td->exception_code = OE_EXCEPTION_UNKNOWN;
+
+    // Update the stitched callstack so that it points to the location that
+    // raised the exception.
+    if (is_enclave_debug_allowed_cached())
+    {
+        // Start at the current frame.
+        void** frame = (void**)__builtin_frame_address(0);
+
+        // Look at only 20 caller frames. This ensures that the loop will
+        // terminate.
+        for (int i = 0; i < 20; ++i)
+        {
+            // Check if the frame is the first enclave frame. For the first
+            // frame, the caller will lie outside the enclave.
+            if (frame && oe_is_outside_enclave(frame[0], 1))
+            {
+                // Update the frame with rip, rbp from SSA.
+                frame[0] = (void*)ssa_gpr->rbp;
+                frame[1] = (void*)ssa_gpr->rip;
+                break;
+            }
+
+            // Move to previous frame.
+            frame = frame[0];
+        }
+    }
 
     /* Get the exception code and flags only if the exception type
      * is recognized by the SGX hardware */
