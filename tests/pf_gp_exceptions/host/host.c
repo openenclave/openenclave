@@ -39,6 +39,12 @@ int main(int argc, const char* argv[])
     result = oe_create_pf_gp_exceptions_enclave(
         argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
 
+    if (result == OE_PLATFORM_ERROR && !oe_sgx_is_flc_supported())
+    {
+        // creation of non-debug enclave may fail on non-FLC systems
+        return SKIP_RETURN_CODE;
+    }
+
     /* The enclave creation should succeed on both SGX1 and SGX2 machines. */
     if (result != OE_OK)
         oe_put_err("oe_create_enclave(): result=%u", result);
