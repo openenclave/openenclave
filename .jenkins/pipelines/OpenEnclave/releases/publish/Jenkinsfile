@@ -79,8 +79,8 @@ EOF
                 helpers.releaseDownloadLinux(release_version, "open-enclave-hostverify", 'GitHub', 'Ubuntu', os_release)
                 sh """#!/bin/bash
                     echo "Publishing OpenEnclave ${release_version}"
-                    repoclient -c ${WORKSPACE}/config-Ubuntu${os_release}.json package add open-enclave"
-                    repoclient -c ${WORKSPACE}/config-Ubuntu${os_release}.json package add open-enclave-hostverify"
+                    repoclient -c ${WORKSPACE}/config-Ubuntu${os_release}.json package add open-enclave
+                    repoclient -c ${WORKSPACE}/config-Ubuntu${os_release}.json package add open-enclave-hostverify
                 """
             }
         }

@@ -9,15 +9,14 @@ Integration Partners
 
 Agnostic Cloud Provider
 
-[![Provider Agnostic Regression Linux](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/OpenEnclave/job/Agnostic-Linux-Badge/badge/icon?subject=Provider%20Agnostic%20Regession)](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/OpenEnclave/job/Agnostic-Linux-Badge/)
+[![Provider Agnostic Regression Linux](https://openenclaveci.westus.cloudapp.azure.com/job/OpenEnclave/job/Badges/job/Agnostic-Linux/badge/icon?subject=Provider%20Agnostic%20Regression)](https://openenclaveci.westus.cloudapp.azure.com/job/OpenEnclave/job/Badges/job/Agnostic-Linux/)
 
 Azure
 
-[![Nightly Regression](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/OpenEnclave/job/Nightly/badge/icon?subject=Azure%20Regression%20Testing)](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/OpenEnclave/job/Nightly/)
-[![Azure Windows](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/OpenEnclave/job/Azure-Windows-Badge/badge/icon?subject=Azure-Windows)](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/OpenEnclave/job/Azure-Windows-Badge/)
-[![Nightly Libcxx](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/OpenEnclave/job/OpenEnclave-libcxx-tests/badge/icon?subject=Azure%20libcxx%20testing)](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/OpenEnclave/job/OpenEnclave-libcxx-tests/)
-[![Azure Linux](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/OpenEnclave/job/Azure-Linux-Badge/badge/icon?subject=Azure-Linux)](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/OpenEnclave/job/Azure-Linux-Badge/)
-[![Nightly Packages](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/OpenEnclave/job/OpenEnclave-nightly-packages/badge/icon?subject=Azure%20Package%20build)](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/OpenEnclave/job/OpenEnclave-nightly-packages/)
+[![Azure Windows](https://openenclaveci.westus.cloudapp.azure.com/job/OpenEnclave/job/Badges/job/Azure-Windows/badge/icon?subject=Azure-Windows)](https://openenclaveci.westus.cloudapp.azure.com/job/OpenEnclave/job/Badges/job/Azure-Windows/)
+[![Nightly Libcxx](https://openenclaveci.westus.cloudapp.azure.com/job/OpenEnclave/job/Badges/job/OpenEnclave-libcxx-tests/badge/icon?subject=Azure%20libcxx%20testing)](https://openenclaveci.westus.cloudapp.azure.com/job/OpenEnclave/job/Badges/job/OpenEnclave-libcxx-tests/)
+[![Azure Linux](https://openenclaveci.westus.cloudapp.azure.com/job/OpenEnclave/job/Badges/job/Azure-Linux/badge/icon?subject=Azure-Linux)](https://openenclaveci.westus.cloudapp.azure.com/job/OpenEnclave/job/Badges/job/Azure-Linux/)
+[![Nightly Packages](https://openenclaveci.westus.cloudapp.azure.com/job/OpenEnclave/job/Badges/job/OpenEnclave-nightly-packages/badge/icon?subject=Nightly%20Packages)](https://openenclaveci.westus.cloudapp.azure.com/job/OpenEnclave/job/Badges/job/OpenEnclave-nightly-packages/)
 
 
 Introduction

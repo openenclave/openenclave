@@ -91,7 +91,7 @@ if ( ! params.FORCE_TEST ) {
 stage("Trigger downstream pipelines") {
     parallel (
         "Agnostic Linux" : {
-            build job: '/pipelines/Agnostic-Linux',
+            build job: '/OpenEnclave/Agnostic-Linux',
                 parameters: [string(name: 'REPOSITORY_NAME', value: REPOSITORY_NAME),
                                 string(name: 'BRANCH_NAME', value: BRANCH_NAME),
                                 string(name: 'DOCKER_TAG', value: DOCKER_TAG),
@@ -100,7 +100,7 @@ stage("Trigger downstream pipelines") {
                                 booleanParam(name: 'FULL_TEST_SUITE', value: FULL_TEST_SUITE)]
         },
         "Azure Linux" : {
-            build job: '/pipelines/Azure-Linux',
+            build job: '/OpenEnclave/Azure-Linux',
                     parameters: [string(name: 'REPOSITORY_NAME', value: REPOSITORY_NAME),
                                 string(name: 'BRANCH_NAME', value: BRANCH_NAME),
                                 string(name: 'DOCKER_TAG', value: DOCKER_TAG),
@@ -112,12 +112,12 @@ stage("Trigger downstream pipelines") {
                                 booleanParam(name: 'FULL_TEST_SUITE', value: FULL_TEST_SUITE)]
         },
         "Intel Linux" : {
-            build job: '/pipelines/Intel-Agnostic',
+            build job: '/OpenEnclave/Intel-Agnostic',
                 parameters: [booleanParam(name: 'FULL_TEST_SUITE', value: FULL_TEST_SUITE)],
                 propagate: false
         },
         "Azure Windows" : {
-            build job: '/pipelines/Azure-Windows',
+            build job: '/OpenEnclave/Azure-Windows',
                     parameters: [string(name: 'REPOSITORY_NAME', value: REPOSITORY_NAME),
                                 string(name: 'BRANCH_NAME', value: BRANCH_NAME),
                                 string(name: 'DOCKER_TAG', value: DOCKER_TAG),
