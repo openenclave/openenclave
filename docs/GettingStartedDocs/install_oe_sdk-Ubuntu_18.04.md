@@ -32,7 +32,7 @@ sudo ./sgx_linux_x64_driver.bin
 ```
 
 > This may not be the latest Intel SGX DCAP driver.
-> Please check with [Intel's SGX site](https://01.org/intel-software-guard-extensions/downloads) or 
+> Please check with [Intel's SGX site](https://01.org/intel-software-guard-extensions/downloads)
 > if a more recent SGX DCAP driver exists.
 
 ### 3. Install the Intel and Open Enclave packages and dependencies
