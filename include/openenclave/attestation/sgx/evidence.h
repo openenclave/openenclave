@@ -140,7 +140,10 @@ OE_EXTERNC_BEGIN
 #define OE_CLAIM_SGX_CPU_SVN "sgx_cpu_svn"
 #define OE_SGX_REQUIRED_CLAIMS_COUNT 10
 
-// Optional: SQX Quote verification collaterals.
+/*
+ * Optional: SQX Quote data
+ */
+// SQX quote verification collaterals.
 #define OE_CLAIM_SGX_TCB_INFO "sgx_tcb_info"
 #define OE_CLAIM_SGX_TCB_ISSUER_CHAIN "sgx_tcb_issuer_chain"
 #define OE_CLAIM_SGX_PCK_CRL "sgx_pck_crl"
@@ -148,7 +151,10 @@ OE_EXTERNC_BEGIN
 #define OE_CLAIM_SGX_CRL_ISSUER_CHAIN "sgx_crl_issuer_chain"
 #define OE_CLAIM_SGX_QE_ID_INFO "sgx_qe_id_info"
 #define OE_CLAIM_SGX_QE_ID_ISSUER_CHAIN "sgx_qe_id_issuer_chain"
-#define OE_SGX_OPTIONAL_CLAIMS_COUNT 7
+#define OE_SGX_OPTIONAL_CLAIMS_SGX_COLLATERALS_COUNT 7
+// SGX PCESVN.
+#define OE_CLAIM_SGX_PCE_SVN "sgx_pce_svn"
+#define OE_SGX_OPTIONAL_CLAIMS_COUNT 8
 
 // Additional SGX specific claim: for the report data embedded in the SGX quote.
 

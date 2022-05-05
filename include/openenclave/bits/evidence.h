@@ -38,6 +38,18 @@ OE_EXTERNC_BEGIN
 #define OE_UUID_SIZE 16
 
 /**
+ * The maximum size of UEID in bytes.
+ */
+#define OE_UEID_SIZE 33
+
+/**
+ * UEID types.
+ */
+#define OE_UEID_TYPE_RAND 0x01
+#define OE_UEID_TYPE_IEEE_EUI 0x02
+#define OE_UEID_TYPE_IMEI 0x03
+
+/**
  * Struct containing the definition for an UUID.
  */
 typedef struct _oe_uuid_t
@@ -136,26 +148,21 @@ extern const char* OE_REQUIRED_CLAIMS[OE_REQUIRED_CLAIMS_COUNT];
 #define OE_CLAIM_VALIDITY_UNTIL "validity_until"
 
 /**
- * SGX PCESVN of platform.
+ * Universal entity identity.
  */
-#define OE_CLAIM_SGX_PCE_SVN "sgx_pce_svn"
+#define OE_CLAIM_UEID "ueid"
 
 /**
- * QEID from SGX quote user_data.
+ * Hardware Model.
  */
-#define OE_CLAIM_SGX_QE_ID "sgx_qe_id"
-
-/**
- * FMSPC from SGX TCB info
- */
-#define OE_CLAIM_SGX_FMSPC "sgx_fmspc"
+#define OE_CLAIM_HARDWARE_MODEL "hardware_model"
 
 /**
  * @cond DEV
  *
  */
 
-#define OE_OPTIONAL_CLAIMS_COUNT 7
+#define OE_OPTIONAL_CLAIMS_COUNT 6
 // This array is needed for tests
 extern const char* OE_OPTIONAL_CLAIMS[OE_OPTIONAL_CLAIMS_COUNT];
 
