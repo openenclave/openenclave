@@ -148,7 +148,7 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                                 --resource-group ${VM_RG_NAME} \
                                 --location ${REGION} \
                                 --name ${VM_NAME} \
-                                --size Standard_DC4s_v2 \
+                                --size Standard_DC4s_v3 \
                                 --os-disk-size-gb 128 \
                                 --subnet \$SUBNET_ID \
                                 --admin-username ${SSH_USERNAME} \
@@ -161,10 +161,6 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
             }
 
             stage("Deploy VM") {
-                checkout([$class: 'GitSCM',
-                    branches: [[name: BRANCH_NAME]],
-                    extensions: [],
-                    userRemoteConfigs: [[url: "https://github.com/${params.REPOSITORY_NAME}"]]])
                 withCredentials([
                         usernamePassword(credentialsId: JENKINS_USER_CREDS_ID,
                                             usernameVariable: "SSH_USERNAME",
@@ -300,7 +296,10 @@ node(params.AGENTS_LABEL) {
         stage("Initialize Workspace") {
 
             cleanWs()
-            checkout scm
+            checkout([$class: 'GitSCM',
+                branches: [[name: BRANCH_NAME]],
+                extensions: [],
+                userRemoteConfigs: [[url: "https://github.com/${params.REPOSITORY_NAME}"]]])
 
             commit_id = get_commit_id()
             version = get_image_version()

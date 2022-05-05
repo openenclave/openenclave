@@ -69,7 +69,7 @@ def buildLinuxVMBaseImage(String os_type, String os_version) {
                         --resource-group "${BUILD_RESOURCE_GROUP}" \
                         --location "${params.AZURE_REGION}" \
                         --name "${BUILD_VM_NAME}" \
-                        --size Standard_DC2s \
+                        --size Standard_DC4s_v3 \
                         --os-disk-size-gb 128 \
                         --subnet "${EXISTING_SUBNET_ID}" \
                         --public-ip-address "" \
@@ -108,7 +108,7 @@ def buildLinuxVMBaseImage(String os_type, String os_version) {
                                 sudo systemctl disable apt-daily.timer"
                         '''
                     }
-                    withCredentials([usernamePassword(credentialsId: JENKINS_USER_CREDS_ID,
+                    withCredentials([usernamePassword(credentialsId: 'oeadmin-credentials',
                                                     usernameVariable: 'SSH_USERNAME',
                                                     passwordVariable: 'SSH_PASSWORD')
                     ]) {
@@ -175,7 +175,10 @@ def buildLinuxVMBaseImage(String os_type, String os_version) {
 
 pipeline {
     agent {
-        label globalvars.AGENTS_LABELS["ubuntu-nonsgx"]
+        // TODO: Use an unmodified image directly from Azure/Canonical instead of a base image
+        // Building base images by using a base image is a cyclic dependency issue, but it will
+        // work so long as a base image already exists.
+        label "vanilla-ubuntu-1804"
     }
     options {
         timeout(time: 90, unit: 'MINUTES')
@@ -183,20 +186,17 @@ pipeline {
     parameters {
         string(name: 'REPOSITORY_NAME', defaultValue: 'openenclave/openenclave', description: 'GitHub repository to checkout')
         string(name: 'BRANCH_NAME', defaultValue: 'master', description: 'The branch used to checkout the repository')
-        string(name: 'GALLERY_RESOURCE_GROUP', defaultValue: 'OE-Jenkins-Images', description: 'Target resource group used to save the base Azure images')
-        string(name: 'OE_DEPLOY_IMAGE', defaultValue: 'oetools-deploy:latest', description: 'Docker image and versions used to run packer')
         string(name: 'AZURE_REGION', defaultValue: 'westeurope', description: 'Images location')
+        string(name: 'GALLERY_RESOURCE_GROUP', defaultValue: 'jenkins-images', description: 'Target resource group used to save the base Azure images')
         string(name: 'REPLICATION_REGIONS', defaultValue: 'westeurope,eastus,uksouth,eastus2', description: 'Replication regions for the shared gallery images definitions (comma-separated)')
         string(name: "OECI_LIB_VERSION", defaultValue: 'master', description: 'Version of OE Libraries to use')
     }
     environment {
-        JENKINS_USER_CREDS_ID = 'oeadmin-credentials'
-        OETOOLS_REPO_CREDENTIALS_ID = 'oejenkinscidockerregistry'
-        DOCKER_REGISTRY = 'oejenkinscidockerregistry.azurecr.io'
-        JENKINS_RESOURCE_GROUP = 'OE-Jenkins-terraform'
-        JENKINS_VNET_NAME = 'OE-Jenkins-terraform-test'
-        JENKINS_SUBNET_NAME = 'subnet1'
-        GALLERY_NAME = 'Vanilla_Images'
+        // TODO: Parameterize the first 4 vars here
+        JENKINS_RESOURCE_GROUP = 'jenkins-images'
+        JENKINS_VNET_NAME = 'jenkins-images-vnet'
+        JENKINS_SUBNET_NAME = 'default'
+        GALLERY_NAME = 'vanilla_images'
         GALLERY_IMAGE_DATE = helpers.get_date(".")
         GALLERY_IMAGE_VERSION = "${GALLERY_IMAGE_DATE}${BUILD_NUMBER}"
     }
