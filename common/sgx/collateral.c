@@ -346,11 +346,6 @@ oe_result_t oe_validate_revocation_list(
             if (der_data_size == 0 || der_data == NULL)
                 OE_RAISE(OE_INVALID_PARAMETER);
 
-            // If CRL buffer has null terminator, need to remove it before
-            // sending the DER data to crypto API for reading.
-            if (sgx_endorsements->items[i].data[der_data_size - 1] == 0)
-                der_data_size -= 1;
-
             // Check if the CRL is composed of only hex digits
             for (size_t l = 0; l < der_data_size; l++)
             {
@@ -378,6 +373,11 @@ oe_result_t oe_validate_revocation_list(
                     "Failed to convert to DER. %s",
                     oe_result_str(result));
             }
+
+            // If CRL buffer has null terminator, need to remove it before
+            // sending the DER data to crypto API for reading.
+            if (der_data[der_data_size - 1] == 0)
+                der_data_size -= 1;
 
             OE_CHECK_MSG(
                 oe_crl_read_der(&crls[j], der_data, der_data_size),
