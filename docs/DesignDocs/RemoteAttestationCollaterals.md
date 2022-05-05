@@ -473,6 +473,8 @@ Current set of claims definitions:
 | tcb_date                   | oe_datetime_t      | Remote Only   |The date and time when the evidence's TCB level was certified.       |
 | validity_from              | oe_datetime_t      | Remote Only   |Overall datetime from which the evidence and endorsements are valid. |
 | validity_until             | oe_datetime_t      | Remote Only   |Overall datetime at which the evidence and endorsements expire.      |
+| ueid                       | uint8_t[33]        | Remote Only   |Universal Entity Identity (qe_id for SGX).                           |
+| hardware_model             | uint8_t[6]         | Remote Only   |Hardware family/ model identity (fmspc for SGX).                     |
 | sgx_pf_gp_exit_info_enabled| bool               | SGX           |Whether the enclave page fault and general protection exception are reported.|
 | sgx_isv_extended_product_id| uint8_t[16]        | SGX           |Enclave extended production id.                                      |
 | sgx_is_mode64bit           | bool               | SGX           |Whether the enclave is in 64bit mode.                                |
@@ -483,9 +485,6 @@ Current set of claims definitions:
 | sgx_config_svn             | uint16_t           | SGX           |Enclave configuration security version.                              |
 | sgx_isv_family_id          | uint8_t[16]        | SGX           |Enclave family ID.                                                   |
 | sgx_cpu_svn                | uint8_t[16]        | SGX           |Enclave CPU security version from sgx_report_t.                      |
-| sgx_pce_svn                | uint16_t           | SGX Remote    |PCE security version from quote.                                     |
-| sgx_qe_id                  | uint8_t[16]        | SGX Remote    |SGX Quoting Enclave ID, referred as QE_ID in SGX_ECDSA_QuoteGenReference_DCAP_API 3.1.4|
-| sgx_fmspc                  | uint8_t[6]         | SGX Remote    |SGX Family-Model-Stepping-Platform-Custom SKU from PCE certificate.  |
 | sgx_tcb_info               | uint8_t[dynamic]   | SGX Remote    |SGX TCB info in JSON format.                                         |
 | sgx_tcb_issuer_chain       | uint8_t[dynamic]   | SGX Remote    |SGX TCB info issuer certificates chain.                              |
 | sgx_pck_crl                | uint8_t[dynamic]   | SGX Remote    |CRL for SGX PCE certificates.                                        |
@@ -493,6 +492,7 @@ Current set of claims definitions:
 | sgx_crl_issuer_chain       | uint8_t[dynamic]   | SGX Remote    |CRL for SGX issuer chain CA certificates.                            |
 | sgx_qe_id_info             | uint8_t[dynamic]   | SGX Remote    |Quoting Enclave Identity details in JSON format, **noted: this is different from sgx_qe_id**|
 | sgx_qe_id_issuer_chain     | uint8_t[dynamic]   | SGX Remote    |Issuer chain certificates for Quoting Enclave Identity sign certificate.|
+| sgx_pce_svn                | uint16_t[dynamic]  | SGX Remote    |PCE security version from quote.                                     |
 
 
 

@@ -590,23 +590,31 @@ static void _test_claims(
     OE_TEST(is_local || value != NULL);
 
     sgx_quote_t* sgx_quote = (sgx_quote_t*)report_body;
-    value = _find_claim(claims, claims_size, OE_CLAIM_SGX_PCE_SVN);
-    OE_TEST(
-        is_local || memcmp(value, &sgx_quote->pce_svn, sizeof(uint16_t)) == 0);
-
-    value = _find_claim(claims, claims_size, OE_CLAIM_SGX_QE_ID);
+    // Check universal entity ID
+    value = _find_claim(claims, claims_size, OE_CLAIM_UEID);
+    // The first byte of ueid claim is reserved for type and is not checked.
+    uint8_t* ueid = (uint8_t*)value;
+    OE_TEST(is_local || ueid[0] == OE_UEID_TYPE_RAND);
     OE_TEST(
         is_local ||
-        memcmp(value, sgx_quote->user_data, sizeof(sgx_quote->user_data)) == 0);
+        memcmp(ueid + 1, sgx_quote->user_data, sizeof(sgx_quote->user_data)) ==
+            0);
 
-    // Check SGX optional claims:
+    // Check SGX specific optional claim PCESVN
+    value = _find_claim(claims, claims_size, OE_CLAIM_SGX_PCE_SVN);
+    OE_TEST(
+        is_local ||
+        memcmp(value, &sgx_quote->pce_svn, sizeof(sgx_quote->pce_svn)) == 0);
+
     if (sgx_endorsements)
     {
+        // Check SGX specific optional claims that hold quote verification
+        // collaterals.
         for (uint32_t i = OE_REQUIRED_CLAIMS_COUNT +
                           OE_SGX_REQUIRED_CLAIMS_COUNT +
                           OE_OPTIONAL_CLAIMS_COUNT,
                       j = 1;
-             j <= OE_SGX_OPTIONAL_CLAIMS_COUNT;
+             j <= OE_SGX_OPTIONAL_CLAIMS_SGX_COLLATERALS_COUNT;
              i++, j++)
         {
             value = claims[i].value;
@@ -617,6 +625,7 @@ static void _test_claims(
                                      sgx_endorsements->items[j].size) == 0);
         }
 
+        // Check optional claim hardware_model
         if (!is_local)
         {
             /* Verify the fmspc value returned is as expected */
@@ -629,7 +638,7 @@ static void _test_claims(
                 sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_TCB_INFO].data,
                 fmspc,
                 fmspc_size);
-            value = _find_claim(claims, claims_size, OE_CLAIM_SGX_FMSPC);
+            value = _find_claim(claims, claims_size, OE_CLAIM_HARDWARE_MODEL);
             OE_TEST(value != NULL && memcmp(value, fmspc, fmspc_size) == 0);
             free(fmspc);
         }

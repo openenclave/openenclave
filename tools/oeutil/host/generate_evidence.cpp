@@ -20,6 +20,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <iterator>
+#include <map>
+#include <string>
 #include <vector>
 #if defined(__linux__)
 #include <unistd.h>
@@ -445,56 +448,117 @@ static const oe_claim_t* find_claim(
     return nullptr;
 }
 
+void print_claims(
+    size_t claim_number,
+    const char* claim_name,
+    const uint8_t* claim_value,
+    size_t claim_value_size,
+    const char format_type)
+{
+    switch (format_type)
+    {
+        case 'u':
+        {
+            printf(
+                "claims[%zu]: %s\n%u\n\n",
+                claim_number,
+                claim_name,
+                *claim_value);
+            break;
+        }
+        case 'x':
+        {
+            printf(
+                "claims[%zu]: %s (%zu)\n0x",
+                claim_number,
+                claim_name,
+                claim_value_size);
+            for (size_t j = 0; j < claim_value_size; j++)
+                printf("%02x", claim_value[j]);
+            printf("\n\n");
+            break;
+        }
+        case 's':
+        {
+            printf(
+                "claims[%zu]: %s\n%s\n\n",
+                claim_number,
+                claim_name,
+                claim_value);
+            break;
+        }
+        case 'D':
+        {
+            printf("claims[%zu]: %s\n", claim_number, claim_name);
+            uint32_t* date = (uint32_t*)claim_value;
+            for (size_t j = 0; j < 6; j++)
+                printf("%d ", date[j]);
+            printf("\n\n");
+            break;
+        }
+        default:
+        {
+            printf("The claim format is not recognised.\n");
+        }
+    }
+}
+
 void dump_claims(const oe_claim_t* claims, size_t claims_length)
 {
     printf("\n%zu OE claims retrieved:\n\n", claims_length);
-    size_t i = 0;
-    // id version, security version, attributes(bit flags)
-    for (; i < 3; i++)
+
+    /*
+     * This map holds a mapping to claims and their expected
+     * print format strings and needs to be updated when a
+     * new claim is added. The convention followed is:
+     * %u   : 'u'
+     * %02x : 'x'
+     * %s   : 's'
+     * date : 'D'
+     */
+    std::map<std::string, char> claims_format{
+        {"attributes", 'u'},
+        {"format_uuid", 'x'},
+        {"hardware_model", 'x'},
+        {"id_version", 'u'},
+        {"product_id", 'x'},
+        {"security_version", 'u'},
+        {"sgx_config_id", 'x'},
+        {"sgx_config_svn", 'x'},
+        {"sgx_crl_issuer_chain", 's'},
+        {"sgx_cpu_svn", 'x'},
+        {"sgx_has_einittoken_key", 'x'},
+        {"sgx_has_provision_key", 'x'},
+        {"sgx_is_mode64bit", 'x'},
+        {"sgx_isv_extended_product_id", 'x'},
+        {"sgx_isv_family_id", 'x'},
+        {"sgx_pce_svn", 'x'},
+        {"sgx_pck_crl", 's'},
+        {"sgx_pf_gp_exit_info_enabled", 'x'},
+        {"sgx_qe_id_info", 's'},
+        {"sgx_qe_id_issuer_chain", 's'},
+        {"sgx_root_ca_crl", 's'},
+        {"sgx_tcb_info", 's'},
+        {"sgx_tcb_issuer_chain", 's'},
+        {"sgx_uses_kss", 'x'},
+        {"signer_id", 'x'},
+        {"tcb_date", 'D'},
+        {"tcb_status", 'u'},
+        {"ueid", 'x'},
+        {"unique_id", 'x'},
+        {"validity_from", 'D'},
+        {"validity_until", 'D'}};
+    std::map<std::string, char>::iterator itr;
+
+    for (size_t i = 0; i < claims_length; i++)
     {
-        printf("claims[%zu]: %s\n%u\n\n", i, claims[i].name, *claims[i].value);
-    }
-    // unique id, signer id, product id, format uuid, cpusvn,
-    // TEE-specific claims
-    for (; i < 17; i++)
-    {
-        printf(
-            "claims[%zu]: %s (%zu)\n0x",
+        itr = claims_format.find(claims[i].name);
+        print_claims(
             i,
-            claims[i].name,
-            claims[i].value_size);
-        for (size_t j = 0; j < claims[i].value_size; j++)
-            printf("%02x", claims[i].value[j]);
-        printf("\n\n");
-    }
-    // tcb status
-    printf("claims[%zu]: %s\n%u\n\n", i, claims[i].name, *claims[i].value);
-    i++;
-    // tcb date, validity
-    for (; i < 21; i++)
-    {
-        printf("claims[%zu]: %s\n", i, claims[i].name);
-        uint32_t* date = (uint32_t*)claims[i].value;
-        for (size_t j = 0; j < 6; j++)
-            printf("%d ", date[j]);
-        printf("\n\n");
-    }
-    // sgx pcesvn, qeid, and fmspc
-    for (; i < 24; i++)
-    {
-        printf(
-            "claims[%zu]: %s (%zu)\n0x",
-            i,
-            claims[i].name,
-            claims[i].value_size);
-        for (size_t j = 0; j < claims[i].value_size; j++)
-            printf("%02x", claims[i].value[j]);
-        printf("\n\n");
-    }
-    // sgx endorsements
-    for (; i < claims_length; i++)
-    {
-        printf("claims[%zu]: %s\n%s\n\n", i, claims[i].name, claims[i].value);
+            (const char*)claims[i].name,
+            (const uint8_t*)claims[i].value,
+            claims[i].value_size,
+            (const char)itr->second);
     }
 }
 
@@ -1163,7 +1227,6 @@ oe_result_t generate_oe_evidence(
 
     // Dump evidence
     printf("Generated OE evidence, evidence_size = %zu\n", evidence_size);
-
     if (verbose)
     {
         OE_CHECK_MSG(
