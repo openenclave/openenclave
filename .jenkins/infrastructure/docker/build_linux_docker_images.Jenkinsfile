@@ -178,19 +178,5 @@ pipeline {
                 }
             }
         }
-        stage("Push to OE Docker Registry") {
-            steps {
-                script {
-                    docker.withRegistry(params.INTERNAL_REPO, env.INTERNAL_REPO_CREDS) {
-                        common.exec_with_retry { oe1804.push() }
-                        common.exec_with_retry { oe2004.push() }
-                        if ( params.TAG_LATEST ) {
-                            common.exec_with_retry { oe1804.push('latest') }
-                            common.exec_with_retry { oe2004.push('latest') }
-                        }
-                    }
-                }
-            }
-        }
     }
 }

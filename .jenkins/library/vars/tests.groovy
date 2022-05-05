@@ -212,12 +212,13 @@ def ACCHostVerificationTest(String version, String build_type) {
                 checkout scm
                 unstash "linux_host_verify-${version}-${build_type}-${BUILD_NUMBER}"
                 def cmakeArgs = "-G Ninja -DBUILD_ENCLAVES=OFF -DCMAKE_BUILD_TYPE=${build_type} -Wdev"
+                def runArgs = "--user root:root --cap-add=SYS_PTRACE"
                 def task = """
                            ${helpers.ninjaBuildCommand(cmakeArgs)}
                            ctest -R host_verify --output-on-failure --timeout ${globalvars.CTEST_TIMEOUT_SECONDS}
                            """
                 // Note: Include the commands to build and run the quote verification test above
-                common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", "clang-10", task, "--cap-add=SYS_PTRACE")
+                common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", "clang-10", task, runArgs)
             }
         }
     }
@@ -314,16 +315,17 @@ def ACCHostVerificationPackageTest(String version, String build_type) {
                 cleanWs()
                 checkout scm
                 unstash "linux_host_verify-${version}-${build_type}-${BUILD_NUMBER}"
-                cmakeArgs = "-G Ninja \
+                def cmakeArgs = "-G Ninja \
                              -DBUILD_ENCLAVES=OFF \
                              -DCMAKE_BUILD_TYPE=${build_type} \
                              -DCMAKE_INSTALL_PREFIX=/opt/openenclave \
                              -DCOMPONENT=OEHOSTVERIFY \
                              -Wdev"
-                cmakeArgsHostVerify = "-G Ninja \
+                def cmakeArgsHostVerify = "-G Ninja \
                                        -DBUILD_ENCLAVES=OFF \
                                        -DCMAKE_BUILD_TYPE=${build_type} \
                                        -Wdev"
+                def runArgs = "--user root:root --cap-add=SYS_PTRACE"
                 def task = """
                            ${helpers.ninjaBuildCommand(cmakeArgs)}
                            cpack -G DEB -D CPACK_DEB_COMPONENT_INSTALL=ON -D CPACK_COMPONENTS_ALL=OEHOSTVERIFY
@@ -341,7 +343,7 @@ def ACCHostVerificationPackageTest(String version, String build_type) {
                            popd
                            """
                 // Note: Include the commands to build and run the quote verification test above
-                common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", "clang-10", task, "--cap-add=SYS_PTRACE")
+                common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", "clang-10", task, runArgs)
             }
         }
     }
@@ -450,6 +452,7 @@ def windowsLinuxElfBuild(String label, String version, String compiler, String b
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
+                def runArgs = "--user root:root --cap-add=SYS_PTRACE"
                 def task = """
                            cmake ${WORKSPACE}                                           \
                                -G Ninja                                                 \
@@ -461,7 +464,8 @@ def windowsLinuxElfBuild(String label, String version, String compiler, String b
                                ${extra_cmake_args.join(' ')}
                            ninja -v
                            """
-                common.ContainerRun("oetools-${version}:${DOCKER_TAG}", compiler, task, "--cap-add=SYS_PTRACE")
+                common.ContainerRun("oetools-${version}:${DOCKER_TAG}", compiler, task, runArgs)
+                sh 'sudo chown -R oeadmin:oeadmin ${WORKSPACE}/build/tests'
                 stash includes: 'build/tests/**', name: "linux-${label}-${compiler}-${build_type}-lvi_mitigation=${lvi_mitigation}-${version}-${BUILD_NUMBER}"
             }
         }
@@ -538,6 +542,7 @@ def simulationContainerTest(String version, String build_type, List extra_cmake_
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
+                def runArgs = "--user root:root --cap-add=SYS_PTRACE"
                 def task = """
                            cmake ${WORKSPACE}                                           \
                                -G Ninja                                                 \
@@ -549,7 +554,7 @@ def simulationContainerTest(String version, String build_type, List extra_cmake_
                            ctest --output-on-failure --timeout ${globalvars.CTEST_TIMEOUT_SECONDS}
                            """
                 withEnv(["OE_SIMULATION=1"]) {
-                    common.ContainerRun("oetools-${version}:${DOCKER_TAG}", "clang-10", task, "--cap-add=SYS_PTRACE")
+                    common.ContainerRun("oetools-${version}:${DOCKER_TAG}", "clang-10", task, runArgs)
                 }
             }
         }
@@ -562,6 +567,7 @@ def buildCrossPlatform(String version) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
+                def runArgs = "--user root:root --cap-add=SYS_PTRACE"
                 def os = version == "20.04" ? "focal" : "bionic"
                 def task = """
                            cd ${WORKSPACE}
@@ -580,7 +586,7 @@ def buildCrossPlatform(String version) {
                            bash devex/cross-nuget/standalone-builds/linux/runner.sh
                            """
 
-                common.ContainerRun("oetools-${version}:${DOCKER_TAG}", "clang-10", task, "--cap-add=SYS_PTRACE")
+                common.ContainerRun("oetools-${version}:${DOCKER_TAG}", "clang-10", task, runArgs)
             }
         }
     }
@@ -592,6 +598,7 @@ def AArch64GNUTest(String version, String build_type) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
+                def runArgs = "--user root:root --cap-add=SYS_PTRACE"
                 def task = """
                             cmake ${WORKSPACE}                                                     \
                                 -G Ninja                                                           \
@@ -602,7 +609,7 @@ def AArch64GNUTest(String version, String build_type) {
                                 -Wdev
                             ninja -v
                             """
-                common.ContainerRun("oetools-${version}:${DOCKER_TAG}", "cross", task, "--cap-add=SYS_PTRACE")
+                common.ContainerRun("oetools-${version}:${DOCKER_TAG}", "cross", task, runArgs)
             }
         }
     }
@@ -614,11 +621,12 @@ def checkDevFlows(String version) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
+                def runArgs = "--user root:root --cap-add=SYS_PTRACE"
                 def task = """
                            cmake ${WORKSPACE} -G Ninja -DHAS_QUOTE_PROVIDER=OFF -Wdev --warn-uninitialized -Werror=dev
                            ninja -v
                            """
-                common.ContainerRun("oetools-${version}:${DOCKER_TAG}", "clang-10", task, "--cap-add=SYS_PTRACE")
+                common.ContainerRun("oetools-${version}:${DOCKER_TAG}", "clang-10", task, runArgs)
             }
         }
     }
@@ -630,9 +638,15 @@ def checkCI() {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
+                def runArgs = "--user root:root --cap-add=SYS_PTRACE"
+                def task = """
+                    git config --global --add safe.directory ${WORKSPACE}
+                    cd ${WORKSPACE}
+                    ./scripts/check-ci
+                """
                 // At the moment, the check-ci script assumes that it's executed from the
                 // root source code directory.
-                common.ContainerRun("oetools-18.04:${DOCKER_TAG}", "clang-10", "cd ${WORKSPACE} && ./scripts/check-ci", "--cap-add=SYS_PTRACE")
+                common.ContainerRun("oetools-18.04:${DOCKER_TAG}", "clang-10", task, runArgs)
             }
         }
     }
