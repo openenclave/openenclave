@@ -14,7 +14,7 @@ end
 
 # Set a breakpoint in enc.c (enclave)
 # This is a pending break point.
-b enc.c:37
+b enc.c:38
 commands 2
     printf "** Hit breakpoint in enclave\n"
 
@@ -39,7 +39,7 @@ commands 3
 end
 
 # Set a breakpoint by line number
-b module.c:19
+b module.c:20
 commands 4
     # Check that value has been set.
     if is_module_init != 1
@@ -67,7 +67,7 @@ commands 5
 end
 
 # Set breakpoint in square function
-b module.c:32
+b module.c:33
 commands 6
     # Evaluate expression
     set var r = a * a
@@ -75,7 +75,7 @@ commands 6
 end
 
 # Set conditional breakpoint
-b module.c:44
+b module.c:45
 commands 7
     p t
     set var t = a + b + k

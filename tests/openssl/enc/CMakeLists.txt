@@ -64,8 +64,8 @@ if (ENABLE_SYMCRYPT_OPENSSL_TESTS)
     TARGET openssl-support
     COMMAND
       ${CMAKE_COMMAND} -E copy
-      ${CMAKE_BINARY_DIR}/3rdparty/symcrypt_engine/SymCrypt/lib/libsymcrypt.so
-      ${CMAKE_CURRENT_BINARY_DIR}/libsymcrypt.so)
+      ${CMAKE_BINARY_DIR}/3rdparty/symcrypt_engine/SymCrypt/lib/${SYMCRYPT_NAME}
+      ${CMAKE_CURRENT_BINARY_DIR}/${SYMCRYPT_LINK_NAME})
 endif ()
 
 # List the tests that require ssltestlib.c.

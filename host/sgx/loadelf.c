@@ -173,6 +173,11 @@ static oe_result_t _read_sections(
                     sh->sh_size,
                     sh->sh_addralign);
             }
+            else if (strcmp(name, ".dynamic") == 0)
+            {
+                image->dynamic_rva = sh->sh_addr;
+                OE_TRACE_VERBOSE("dynamic { rva=%lx }", sh->sh_addr);
+            }
         }
     }
 
@@ -1071,34 +1076,12 @@ done:
     return result;
 }
 
-static oe_result_t _get_symbol_rva(
-    oe_enclave_elf_image_t* image,
-    const char* name,
-    uint64_t* rva)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    elf64_sym_t symbol = {0};
-
-    if (!image || !name || !rva)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    if (elf64_find_symbol_by_name(&image->elf, name, &symbol) != 0)
-        goto done;
-
-    *rva = symbol.st_value;
-    result = OE_OK;
-
-done:
-    return result;
-}
-
 static oe_result_t _add_dynamic_section_relocations(
     oe_enclave_elf_image_t* image)
 {
     oe_result_t result = OE_FAILURE;
     elf64_dyn_t* dynamic = NULL;
     size_t dynamic_size = 0;
-    uint64_t dynamic_rva = 0;
     size_t number_of_entries = 0;
     elf64_rela_t* relocation_records = NULL;
     size_t relocation_size = 0;
@@ -1112,19 +1095,16 @@ static oe_result_t _add_dynamic_section_relocations(
             OE_INVALID_IMAGE,
             "Failed to locate the .dynamic section in the submodule",
             NULL);
-    if (!dynamic || !dynamic_size)
-        OE_RAISE(OE_INVALID_IMAGE);
 
-    /* The _DYNAMIC symbol holds the RVA of the dynamic section after loading,
-     * which is different from its offset within the ELF file. */
-    OE_CHECK(_get_symbol_rva(image, "_DYNAMIC", &dynamic_rva));
+    if (!dynamic || !dynamic_size || !image->dynamic_rva)
+        OE_RAISE(OE_INVALID_IMAGE);
 
     /* First loop: count the number of entries that we support now */
     for (uint64_t i = 0; dynamic[i].d_tag != DT_NULL; i++)
     {
         if (dynamic[i].d_tag == DT_STRTAB || dynamic[i].d_tag == DT_SYMTAB ||
             dynamic[i].d_tag == DT_RELA || dynamic[i].d_tag == DT_GNU_HASH ||
-            dynamic[i].d_tag == DT_VERSYM)
+            dynamic[i].d_tag == DT_VERSYM || dynamic[i].d_tag == DT_PLTGOT)
             number_of_entries++;
     }
 
@@ -1146,14 +1126,15 @@ static oe_result_t _add_dynamic_section_relocations(
     {
         if (dynamic[i].d_tag == DT_STRTAB || dynamic[i].d_tag == DT_SYMTAB ||
             dynamic[i].d_tag == DT_RELA || dynamic[i].d_tag == DT_GNU_HASH ||
-            dynamic[i].d_tag == DT_VERSYM)
+            dynamic[i].d_tag == DT_VERSYM || dynamic[i].d_tag == DT_PLTGOT)
         {
             uint64_t offset;
             uint64_t append;
             relocation_records[j].r_info = R_X86_64_RELATIVE;
+            /* Calculate the offset relative to dynamic_rva */
             OE_CHECK(oe_safe_sub_u64(
                 (uint64_t)&dynamic[i].d_un, (uint64_t)dynamic, &offset));
-            OE_CHECK(oe_safe_add_u64(offset, dynamic_rva, &offset));
+            OE_CHECK(oe_safe_add_u64(offset, image->dynamic_rva, &offset));
             OE_CHECK(oe_safe_add_u64(offset, image->image_rva, &offset));
             relocation_records[j].r_offset = offset;
             OE_CHECK(oe_safe_add_u64(

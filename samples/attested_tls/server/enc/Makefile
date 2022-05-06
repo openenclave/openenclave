@@ -23,7 +23,7 @@ endif
 EDL_USE_HOST_ENTROPY =
 
 ifeq (${OE_CRYPTO_LIB}, openssl_symcrypt_fips)
-	OBJ_FILES += libsymcrypt.so
+	OBJ_FILES += libsymcrypt.so.101
 	EDL_USE_HOST_ENTROPY = -DEDL_USE_HOST_ENTROPY
 endif
 
