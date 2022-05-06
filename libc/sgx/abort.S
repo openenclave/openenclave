@@ -5,7 +5,7 @@
 .type abort, @function
 abort:
 .cfi_startproc
-
+    sub $8, %rsp // align rsp so that the call below is ABI compliant
     call oe_abort
     ud2
 

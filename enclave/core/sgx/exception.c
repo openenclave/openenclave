@@ -451,6 +451,17 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
 
     // Exception can't be handled by trusted handlers, abort the enclave.
     // Let the oe_abort to run on the stack where the exception happens.
+    // oe_continue_execution uses a retq instruction to jump to the target
+    // address. Since no return address is being pushed to the stack, this
+    // can break x64 ABI compatibility which requires that RSP ought to
+    // be a multiple of 8 upon entry to the function. To ensure compatibility,
+    // first align the RSP to 16 bytes and the push the current rsp to fake
+    // a call.
+    oe_exception_record.context->rsp =
+        (oe_exception_record.context->rsp & (uint64_t)-16) - 8;
+    uint64_t current_rip = 0;
+    asm volatile("lea (%%rip), %0" : "=r"(current_rip));
+    *(uint64_t*)oe_exception_record.context->rsp = current_rip;
     oe_exception_record.context->rip = (uint64_t)oe_abort;
     oe_continue_execution(oe_exception_record.context);
 
