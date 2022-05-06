@@ -98,13 +98,9 @@ int main(int argc, const char* argv[])
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
 
-    if (argc != 4)
+    if (argc != 2)
     {
-        fprintf(
-            stderr,
-            "Usage: %s ENCLAVE {abspath-to-evidence} "
-            "{abspath-to-endorsements}\n",
-            argv[0]);
+        fprintf(stderr, "Usage: %s ENCLAVE \n", argv[0]);
         exit(1);
     }
 
