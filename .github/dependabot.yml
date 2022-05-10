@@ -23,3 +23,5 @@ updates:
     allow:
       - dependency-name: "snmalloc"
         update-types: ["version-update:semver-minor", "version-update:semver-patch"]
+    ignore:
+      - dependency-name: "3rdparty/openssl/openssl"
