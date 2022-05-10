@@ -706,7 +706,7 @@ static void _exit_enclave(uint64_t arg1, uint64_t arg2)
 {
     oe_sgx_td_t* td = oe_sgx_get_td();
 
-    if (is_enclave_debug_allowed())
+    if (oe_is_enclave_debug_allowed())
     {
         oe_ecall_context_t* host_ecall_context = td->host_ecall_context;
 
@@ -1052,11 +1052,7 @@ static void _stitch_ecall_stack(oe_sgx_td_t* td, uint64_t* first_enclave_frame)
 {
     oe_ecall_context_t* ecall_context = td->host_ecall_context;
 
-    /* Use is_enclave_debug_allowed_cached() given that the td may not
-     * be initialized at this point. This also means that the very first
-     * ecall stack stitching will always be bypassed (the OE_ECALL_INIT_ENCLAVE
-     * ECALL) because the default caching value is false. */
-    if (is_enclave_debug_allowed_cached())
+    if (oe_is_enclave_debug_allowed())
     {
         if (oe_is_outside_enclave(ecall_context, sizeof(*ecall_context)))
         {
@@ -1302,12 +1298,8 @@ void oe_abort_with_td(oe_sgx_td_t* td)
     uint64_t arg1 = oe_make_call_arg1(OE_CODE_ERET, 0, 0, OE_OK);
 
     /* Abort can be called with user-modified FS (e.g., FS check fails in
-     * oe_sgx_get_td()). To avoid using is_enclave_debug_allowed(), which
-     * depends on oe_sgx_get_td(), we base only on the cached value to
-     * determine if the enclave is in debug mode. If the
-     * is_enclave_debug_allowed has not beed called before, the following
-     * function will return false and the stack stitching will be skipped. */
-    if (is_enclave_debug_allowed_cached())
+     * oe_sgx_get_td()). */
+    if (oe_is_enclave_debug_allowed())
     {
         oe_ecall_context_t* host_ecall_context = td->host_ecall_context;
 

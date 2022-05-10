@@ -4,5 +4,4 @@
 #include <openenclave/corelibc/stdbool.h>
 #include <openenclave/log.h>
 
-bool is_enclave_debug_allowed();
-bool is_enclave_debug_allowed_cached();
+bool oe_is_enclave_debug_allowed();
