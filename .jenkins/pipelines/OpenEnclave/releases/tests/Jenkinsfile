@@ -14,7 +14,7 @@ properties(
         [$class: 'JobRestrictionProperty'],
         parameters(
             [
-                string(name: "OECI_LIB_VERSION", defaultValue: 'cyan/test-releases', description: 'Version of OE Libraries to use'),
+                string(name: "OECI_LIB_VERSION", defaultValue: 'master', description: 'Version of OE Libraries to use'),
                 string(name: "OE_RELEASE_VERSION", description: "Open Enclave Release Version"),
                 choice(name: "OE_PACKAGE", choices: ["open-enclave", "open-enclave-hostverify"], description: "Open Enclave package type to install"),
                 choice(name: "RELEASE_SOURCE", choices: ["Azure", "GitHub"], description: "Source to download the OE Release from")
