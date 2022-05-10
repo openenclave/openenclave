@@ -391,7 +391,7 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
 
     // Update the stitched callstack so that it points to the location that
     // raised the exception.
-    if (is_enclave_debug_allowed_cached())
+    if (oe_is_enclave_debug_allowed())
     {
         // Real exception dispatcher never returns. It is directly called by
         // oe_exception_dispatcher. It is safe to modify its frame.
@@ -542,7 +542,7 @@ void oe_virtual_exception_dispatcher(
         td->host_signal = arg_in;
     }
     else if (
-        is_enclave_debug_allowed() &&
+        oe_is_enclave_debug_allowed() &&
         oe_is_outside_enclave((void*)arg_in, sizeof(oe_exception_record_t)))
     {
         oe_exception_record = (oe_exception_record_t*)arg_in;
@@ -557,7 +557,7 @@ void oe_virtual_exception_dispatcher(
 
     // Update the stitched callstack so that it points to the location that
     // raised the exception.
-    if (is_enclave_debug_allowed_cached())
+    if (oe_is_enclave_debug_allowed())
     {
         // Start at the current frame.
         void** frame = (void**)__builtin_frame_address(0);
@@ -614,7 +614,7 @@ void oe_virtual_exception_dispatcher(
          * has been set, simulate the page fault based on host-passed
          * information. This can either happen if the enclave runs with
          * SGX1 CPUs or set CapturePFGPExceptions=0 on SGX2 CPUs. */
-        if (is_enclave_debug_allowed() && oe_exception_record)
+        if (oe_is_enclave_debug_allowed() && oe_exception_record)
         {
             td->exception_code = OE_EXCEPTION_PAGE_FAULT;
             td->exception_flags |= OE_EXCEPTION_FLAGS_HARDWARE;
