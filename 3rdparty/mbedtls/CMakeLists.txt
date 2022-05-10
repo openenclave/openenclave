@@ -3,8 +3,6 @@
 
 check_submodule_not_empty(mbedtls)
 
-apply_patches(patches mbedtls)
-
 # We use configure_file since the config.h file has #cmakedefines in it, so
 # the C header changes if we're running in debug mode or not. This will copy
 # the config file to the build directory.
