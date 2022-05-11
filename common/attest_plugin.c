@@ -326,10 +326,14 @@ oe_result_t oe_verify_evidence(
         }
     }
 
-    // Endorsements buffer conflicts with endorsements baseline policy
+    // fail the API call if both endorsements_buffer and
+    // endorsements_baseline_policy are specified.
     if (endorsements_buffer && has_endorsements_baseline_policy)
     {
-        OE_RAISE(OE_INVALID_PARAMETER);
+        OE_RAISE_MSG(
+            OE_INVALID_PARAMETER,
+            "endorsements buffer conflicts with endorsements baseline policy",
+            NULL);
     }
 
     if (!format_id)
