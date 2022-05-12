@@ -74,13 +74,14 @@ EOF
         }
         script {
             // Download and publish open-enclave and open-enclave-hostverify packages if PUBLISH_RELEASE is true
+            def os_id = 'Ubuntu'
             if (params.PUBLISH_RELEASE) {
-                helpers.releaseDownloadLinux(release_version, "open-enclave", 'GitHub', 'Ubuntu', os_release)
-                helpers.releaseDownloadLinux(release_version, "open-enclave-hostverify", 'GitHub', 'Ubuntu', os_release)
+                helpers.releaseDownloadLinux(release_version, "open-enclave", 'GitHub', os_id, os_release)
+                helpers.releaseDownloadLinux(release_version, "open-enclave-hostverify", 'GitHub', os_id, os_release)
                 sh """#!/bin/bash
                     echo "Publishing OpenEnclave ${release_version}"
-                    repoclient -c ${WORKSPACE}/config-Ubuntu${os_release}.json package add open-enclave
-                    repoclient -c ${WORKSPACE}/config-Ubuntu${os_release}.json package add open-enclave-hostverify
+                    repoclient -c ${WORKSPACE}/config-Ubuntu${os_release}.json package add "${WORKSPACE}/${release_version}/${os_id}_${os_release}/${os_id}_${os_release}_open-enclave_${release_version}_amd64.deb"
+                    repoclient -c ${WORKSPACE}/config-Ubuntu${os_release}.json package add "${WORKSPACE}/${release_version}/${os_id}_${os_release}/${os_id}_${os_release}_open-enclave-hostverify_${release_version}_amd64.deb"
                 """
             }
         }
@@ -100,9 +101,11 @@ pipeline {
         )
     }
     parameters {
-        booleanParam(name: "PUBLISH_RELEASE", defaultValue: false, description: "Publish to public repositories?")
-        string(name: "OE_RELEASE_VERSION", defaultValue: '', description: "Open Enclave Release Version")
-        string(name: "OECI_LIB_VERSION", defaultValue: 'master', description: 'Version of OE Libraries to use')
+        string(name: 'REPOSITORY', defaultValue: 'openenclave', description: 'GitHub repository owner name', trim: true)
+        string(name: 'BRANCH', defaultValue: 'master', description: 'GitHub repository branch to checkout', trim: true)
+        booleanParam(name: "PUBLISH_RELEASE", defaultValue: false, description: 'Publish to public repositories?')
+        string(name: "OE_RELEASE_VERSION", defaultValue: '', description: 'Open Enclave Release Version', trim: true)
+        string(name: "OECI_LIB_VERSION", defaultValue: 'master', description: 'Version of OE Libraries to use', trim: true)
     }
     stages {
         stage('Publish Open Enclave Release') {
