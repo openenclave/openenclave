@@ -299,8 +299,8 @@ def releaseDownloadLinuxGitHub(String release_version, String oe_package, String
             if echo "\${url}" | grep -E '^https?://[-A-Za-z0-9\\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\\+&@#/%=~_|]\$'; then
                 # Filter packages specific to current distribution and version
                 if echo "\${url}" | grep "${os_id}_${os_release}_${oe_package}"; then
-                    wget --no-verbose --directory-prefix="${release_version}/${os_id} ${os_release}" \${url}
-                    if [[ -f "${release_version}/${os_id} ${os_release}/\$(basename \${url})" ]]; then
+                    wget --no-verbose --directory-prefix="${release_version}/${os_id}_${os_release}" \${url}
+                    if [[ -f "${release_version}/${os_id}_${os_release}/\$(basename \${url})" ]]; then
                         CHANGED=1
                     else
                         echo "[Error] Failed to download from \${url}"
@@ -337,7 +337,7 @@ def releaseDownloadLinux(String release_version, String oe_package, String sourc
     // Note: lsb_release is only available on Ubuntu.
     if(source == "Azure") {
         // Download from Open Enclave storage container
-        azureContainerDownload('releasecandidates', "${release_version}/${os_id} ${os_release}/*", 'openenclavereleaseblobcontainer')
+        azureContainerDownload('releasecandidates', "${release_version}/${os_id}_${os_release}/*", 'openenclavereleaseblobcontainer')
     } else if(source == "GitHub") {
         // Download packages from Open Enclave GitHub repository releaases
         releaseDownloadLinuxGitHub(release_version, oe_package, os_id, os_release)
@@ -446,7 +446,7 @@ def releaseInstall(String release_version = null, String oe_package = "open-encl
         // Install Open Enclave package
         sh """
             ${WaitForAptLock()}
-            sudo dpkg -i "${release_version}/${os_id} ${os_release}/${os_id}_${os_release}_${oe_package}_${release_version}_amd64.deb"
+            sudo dpkg -i "${release_version}/${os_id}_${os_release}/${os_id}_${os_release}_${oe_package}_${release_version}_amd64.deb"
         """
     // For Windows
     } else {
