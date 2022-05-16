@@ -13,6 +13,9 @@
 #error "oe_get_cpuid(): no cpuid intrinsic mapping for this compiler"
 #endif
 
+#define CPUID_EXTENDED_FEATURE_FLAGS_LEAF 0x07
+#define CPUID_EXTENDED_FEATURE_FLAGS_SGX_FLC_MASK 0x40000000
+
 #define CPUID_SGX_LEAF 0x12
 #define CPUID_SGX_KSS_MASK 0x80
 #define CPUID_SGX_MISC_EXINFO_MASK 0x01

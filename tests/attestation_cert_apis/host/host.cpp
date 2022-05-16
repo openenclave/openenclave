@@ -131,7 +131,7 @@ void run_test(oe_enclave_t* enclave, int test_type)
 
 int main(int argc, const char* argv[])
 {
-    if (!oe_has_sgx_quote_provider())
+    if (!oe_sgx_has_quote_provider())
     {
         // this test should not run on any platforms where DCAP libraries are
         // not found.
