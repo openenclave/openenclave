@@ -98,7 +98,8 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
         def managed_image_name_id = image_id
         def gallery_image_version = image_version
         def vm_rg_name = "build-${managed_image_name_id}-${img_name_suffix}-${BUILD_NUMBER}"
-        def vm_name = "${os_series}-vm"
+        // Azure VM names must be 15 characters or less
+        def vm_name = img_name_suffix.drop(7) + "-${BUILD_NUMBER}"
         def jenkins_rg_name = params.JENKINS_RESOURCE_GROUP
         def jenkins_vnet_name = params.JENKINS_VNET_NAME
         def jenkins_subnet_name = params.JENKINS_SUBNET_NAME
@@ -154,7 +155,8 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                                 --admin-username ${SSH_USERNAME} \
                                 --admin-password ${SSH_PASSWORD} \
                                 --image ${AZURE_IMAGE_ID} \
-                                --public-ip-address ""
+                                --public-ip-address \"\" \
+                                --nsg-rule NONE
                         '''
                     }
                 }
