@@ -71,25 +71,19 @@ def update_production_azure_gallery_images(String image_name) {
         }
         stage("Update production Azure managed image: ${image_name}") {
             sh """
-                IMAGE_ID=\$(az sig image-version show \
+                SOURCE_ID=\$(az sig image-version show \
                     --resource-group ${params.RESOURCE_GROUP} \
                     --gallery-name "${params.E2E_IMAGES_GALLERY_NAME}" \
                     --gallery-image-definition "${image_name}" \
-                    --gallery-image-version ${params.IMAGE_VERSION} \
+                    --gallery-image-version ${params.IMAGE_ID} \
                     | jq -r '.id')
-
-                az sig image-version delete \
-                    --resource-group ${params.RESOURCE_GROUP} \
-                    --gallery-name ${params.PRODUCTION_IMAGES_GALLERY_NAME} \
-                    --gallery-image-definition ${image_name} \
-                    --gallery-image-version ${params.IMAGE_VERSION}
 
                 az sig image-version create \
                     --resource-group ${params.RESOURCE_GROUP} \
                     --gallery-name ${params.PRODUCTION_IMAGES_GALLERY_NAME} \
                     --gallery-image-definition ${image_name} \
                     --gallery-image-version ${params.IMAGE_VERSION} \
-                    --managed-image \${IMAGE_ID} \
+                    --managed-image \${SOURCE_ID} \
                     --target-regions ${params.REPLICATION_REGIONS.split(',').join(' ')} \
                     --replica-count 1
             """
@@ -117,7 +111,7 @@ pipeline {
         string(name: 'IMAGE_ID', description: '[REQUIRED] The image id to promote from E2E to Production. E.g. 2021.12.0336')
         string(name: 'E2E_IMAGES_GALLERY_NAME', defaultValue: 'e2e_images', description: '[OPTIONAL] The Azure Shared Image Gallery for E2E Images')
         string(name: 'PRODUCTION_IMAGES_GALLERY_NAME', defaultValue: 'production_images', description: '[OPTIONAL] The Azure Shared Image Gallery for Production Images')
-        string(name: 'IMAGE_VERSION', defaultValue: '${IMAGE_ID}', description: '[OPTIONAL] The version that the image should be tagged as')
+        string(name: 'IMAGE_VERSION', defaultValue: '${IMAGE_ID}', description: '[OPTIONAL] The version that the image should be tagged as in Production_Images')
         string(name: 'REPLICATION_REGIONS', defaultValue: 'westus,westeurope,eastus,uksouth,eastus2,canadacentral', description: '[OPTIONAL] Replication regions for the shared gallery images definitions (comma-separated)')
         string(name: "OECI_LIB_VERSION", defaultValue: 'master', description: '[OPTIONAL] Version of OE Libraries to use')
     }
