@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <openenclave/internal/tests.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <sys/mman.h>
 #include "../../../libc/mman.h"
 #include "mman_t.h"
@@ -63,6 +64,7 @@ static void _test_partial_unmapping(void)
     OE_TEST(m->end == p2_end);
 
     // Swap p1 and p2 if p2 lies before p1.
+    bool swapped = false;
     if (p2_start < p1_start)
     {
         uint64_t t = p1_start;
@@ -72,6 +74,7 @@ static void _test_partial_unmapping(void)
         t = p1_end;
         p1_end = p2_end;
         p2_end = t;
+        swapped = true;
     }
 
     // Do an unmap that starts within p1 and ends within p2.
@@ -82,22 +85,44 @@ static void _test_partial_unmapping(void)
 
     // Partial unmapping only changes the status vectors and not the bounds.
     m = oe_test_get_mappings();
-    OE_TEST(m->start == p2_start);
-    OE_TEST(m->end == p2_end);
-    m = m->next;
-    OE_TEST(m->start == p1_start);
-    OE_TEST(m->end == p1_end);
+    if (swapped)
+    {
+        OE_TEST(m->start == p1_start);
+        OE_TEST(m->end == p1_end);
+        m = m->next;
+        OE_TEST(m->start == p2_start);
+        OE_TEST(m->end == p2_end);
+    }
+    else
+    {
+        OE_TEST(m->start == p2_start);
+        OE_TEST(m->end == p2_end);
+        m = m->next;
+        OE_TEST(m->start == p1_start);
+        OE_TEST(m->end == p1_end);
+    }
 
     // Do another partial unmap.
     start -= OE_PAGE_SIZE;
     OE_TEST(munmap((void*)start, end - start) == 0);
     OE_TEST(errno == 0);
     m = oe_test_get_mappings();
-    OE_TEST(m->start == p2_start);
-    OE_TEST(m->end == p2_end);
-    m = m->next;
-    OE_TEST(m->start == p1_start);
-    OE_TEST(m->end == p1_end);
+    if (swapped)
+    {
+        OE_TEST(m->start == p1_start);
+        OE_TEST(m->end == p1_end);
+        m = m->next;
+        OE_TEST(m->start == p2_start);
+        OE_TEST(m->end == p2_end);
+    }
+    else
+    {
+        OE_TEST(m->start == p2_start);
+        OE_TEST(m->end == p2_end);
+        m = m->next;
+        OE_TEST(m->start == p1_start);
+        OE_TEST(m->end == p1_end);
+    }
 
     // Do an unmap till the start.
     // This ought to delete one mapping completely.
