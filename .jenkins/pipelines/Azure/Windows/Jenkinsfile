@@ -5,32 +5,6 @@ library "OpenEnclaveJenkinsLibrary@${params.OECI_LIB_VERSION}"
 GLOBAL_ERROR = globalvars.GLOBAL_ERROR
 globalvars.CTEST_TIMEOUT_SECONDS = 1200
 
-properties(
-    [
-        buildDiscarder(
-            logRotator(
-                artifactDaysToKeepStr: '90',
-                artifactNumToKeepStr: '180',
-                daysToKeepStr: '90',
-                numToKeepStr: '180'
-            )
-        ),
-        [$class: 'JobRestrictionProperty'],
-        parameters(
-            [
-                string(name: 'REPOSITORY_NAME',                defaultValue: 'openenclave/openenclave', description: 'GitHub repository to build.'),
-                string(name: 'BRANCH_NAME',                    defaultValue: 'master',                  description: 'Git branch to build.'),
-                string(name: 'DOCKER_TAG',                     defaultValue: 'latest',                  description: 'Tag used to pull oetools docker image.'),
-                string(name: 'OECI_LIB_VERSION',               defaultValue: 'master',                  description: 'Version of OE Libraries to use'),
-                string(name: 'WINDOWS_2019_CUSTOM_LABEL',      defaultValue: '',                        description: '[Optional] Jenkins agent label to use for Windows Server 2019'),
-                string(name: 'WINDOWS_2019_DCAP_CUSTOM_LABEL', defaultValue: '',                        description: '[Optional] Jenkins agent label to use for Windows Server 2019 with DCAP'),
-                string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL',     defaultValue: '',                        description: '[Optional] Jenkins agent label to use for Ubuntu 20.04 without SGX.'),
-                booleanParam(name: 'FULL_TEST_SUITE',          defaultValue: false,                     description: 'Run all additional tests available in the test suite.')
-            ]
-        )
-    ]
-)
-
 try{
     def testing_stages = [ "Windows 2019 Install Prerequisites Verification" : { tests.windowsPrereqsVerify("acc-win2019-dcap") }]
     if(FULL_TEST_SUITE == "true") {
