@@ -54,8 +54,11 @@ int main(int argc, const char* argv[])
             1,
             &enclave);
         OE_TEST(result == OE_OK);
-        enclave_test_config_id(enclave, &result);
-        OE_TEST(result == OE_OK);
+        if (oe_sgx_has_quote_provider())
+        {
+            enclave_test_config_id(enclave, &result);
+            OE_TEST(result == OE_OK);
+        }
     }
     else
     {
