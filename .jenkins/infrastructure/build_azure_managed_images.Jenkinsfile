@@ -200,11 +200,9 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                         '''
                     }
                 }
-                common.exec_with_retry(5, 60) {
+                common.exec_with_retry(5, 120) {
                     sh """
-
                         cd ${WORKSPACE}/scripts/ansible
-
                         ansible-playbook -i ${WORKSPACE}/scripts/ansible/inventory/hosts-${launch_configuration} oe-windows-acc-setup.yml jenkins-packer.yml
 
                         az vm run-command invoke \
