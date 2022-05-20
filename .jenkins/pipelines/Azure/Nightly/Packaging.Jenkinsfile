@@ -1,9 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-BRANCH_NAME = env.BRANCH_NAME ?: "master"
-OECI_LIB_VERSION = env.OECI_LIB_VERSION ?: "master"
-oe = library("OpenEnclaveCommon@${OECI_LIB_VERSION}").jenkins.common.Openenclave.new()
+library "OpenEnclaveJenkinsLibrary@${params.OECI_LIB_VERSION}"
 
 GLOBAL_TIMEOUT_MINUTES = 120
 CTEST_TIMEOUT_SECONDS = 480
@@ -27,7 +25,7 @@ def LinuxPackaging(String version, String build_type, String lvi_mitigation = 'N
                            cpack
                            ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
                            """
-                oe.Run("clang-10", task)
+                common.Run("clang-10", task)
                 azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: "${BRANCH_NAME}/${BUILD_NUMBER}/ubuntu/${version}/${build_type}/lvi-mitigation-${lvi_mitigation}/SGX1FLC/", containerName: 'oejenkins')
                 azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: "${BRANCH_NAME}/latest/ubuntu/${version}/${build_type}/lvi-mitigation-${lvi_mitigation}/SGX1FLC/", containerName: 'oejenkins')
             }
@@ -40,7 +38,7 @@ def WindowsPackaging(String version, String build_type, String lvi_mitigation = 
         node("SGXFLC-Windows-${version}-DCAP") {
             withEnv(["OE_SIMULATION=${simulation}"]) {
                 timeout(GLOBAL_TIMEOUT_MINUTES) {
-                    oe.WinCompilePackageTest("build", build_type, "ON", CTEST_TIMEOUT_SECONDS, lvi_mitigation)
+                    common.WinCompilePackageTest("build", build_type, "ON", CTEST_TIMEOUT_SECONDS, lvi_mitigation)
                     azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.nupkg', storageType: 'blobstorage', virtualPath: "${BRANCH_NAME}/${BUILD_NUMBER}/windows/${version}/${build_type}/lvi-mitigation-${lvi_mitigation}/SGX1FLC/", containerName: 'oejenkins')
                     azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.nupkg', storageType: 'blobstorage', virtualPath: "${BRANCH_NAME}/latest/windows/${version}/${build_type}/lvi-mitigation-${lvi_mitigation}/SGX1FLC/", containerName: 'oejenkins')
                 }
@@ -49,27 +47,41 @@ def WindowsPackaging(String version, String build_type, String lvi_mitigation = 
     }
 }
 
-try{
-    parallel "2004 SGX1FLC Package Debug" :          { LinuxPackaging('2004', 'Debug') },
-         "2004 SGX1FLC Package Debug LVI" :          { LinuxPackaging('2004', 'Debug', 'ControlFlow') },
-         "2004 SGX1FLC Package RelWithDebInfo" :     { LinuxPackaging('2004', 'RelWithDebInfo') },
-         "2004 SGX1FLC Package RelWithDebInfo LVI" : { LinuxPackaging('2004', 'RelWithDebInfo', 'ControlFlow') },
-         "1804 SGX1FLC Package Debug" :              { LinuxPackaging('1804', 'Debug') },
-         "1804 SGX1FLC Package Debug LVI" :          { LinuxPackaging('1804', 'Debug', 'ControlFlow') },
-         "1804 SGX1FLC Package RelWithDebInfo" :     { LinuxPackaging('1804', 'RelWithDebInfo') },
-         "1804 SGX1FLC Package RelWithDebInfo LVI" : { LinuxPackaging('1804', 'RelWithDebInfo', 'ControlFlow') },
-         "Windows 2019 Debug" :                      { WindowsPackaging('2019','Debug') },
-         "Windows 2019 Debug LVI" :                  { WindowsPackaging('2019','Debug', 'ControlFlow') },
-         "Windows 2019 RelWithDebInfo" :             { WindowsPackaging('2019','RelWithDebInfo') },
-         "Windows 2019 RelWithDebInfo LVI" :         { WindowsPackaging('2019','RelWithDebInfo', 'ControlFlow') },
-         "Windows 2019 Sim Debug" :                  { WindowsPackaging('2019','Debug', 'None', '1') },
-         "Windows 2019 Sim Debug LVI" :              { WindowsPackaging('2019','Debug', 'ControlFlow', '1') },
-         "Windows 2019 Sim RelWithDebInfo" :         { WindowsPackaging('2019','RelWithDebInfo', 'None', '1') },
-         "Windows 2019 Sim RelWithDebInfo LVI" :     { WindowsPackaging('2019','RelWithDebInfo', 'ControlFlow', '1') }
-} catch(Exception e) {
-    println "Caught global pipeline exception :" + e
-    GLOBAL_ERROR = e
-    throw e
-} finally {
-    currentBuild.result = (GLOBAL_ERROR != null) ? 'FAILURE' : "SUCCESS"
+pipeline {
+    agent any
+    options {
+        timeout(time: 240, unit: 'MINUTES')
+        buildDiscarder(logRotator(artifactDaysToKeepStr: '90', artifactNumToKeepStr: '180', daysToKeepStr: '90', numToKeepStr: '180'))
+    }
+    parameters {
+        string(name: 'REPOSITORY_NAME',  defaultValue: 'openenclave/openenclave', description: 'GitHub repository to build.')
+        string(name: 'BRANCH_NAME',      defaultValue: 'master',                  description: 'Git branch to build.')
+        string(name: 'OECI_LIB_VERSION', defaultValue: 'master',                  description: 'Version of OE Libraries to use')
+    }
+    stages {
+        stage('Run tests') {
+            steps {
+                script {
+                    parallel([
+                        "2004 SGX1FLC Package Debug":              { LinuxPackaging('2004', 'Debug') },
+                        "2004 SGX1FLC Package Debug LVI":          { LinuxPackaging('2004', 'Debug', 'ControlFlow') },
+                        "2004 SGX1FLC Package RelWithDebInfo":     { LinuxPackaging('2004', 'RelWithDebInfo') },
+                        "2004 SGX1FLC Package RelWithDebInfo LVI": { LinuxPackaging('2004', 'RelWithDebInfo', 'ControlFlow') },
+                        "1804 SGX1FLC Package Debug":              { LinuxPackaging('1804', 'Debug') },
+                        "1804 SGX1FLC Package Debug LVI":          { LinuxPackaging('1804', 'Debug', 'ControlFlow') },
+                        "1804 SGX1FLC Package RelWithDebInfo":     { LinuxPackaging('1804', 'RelWithDebInfo') },
+                        "1804 SGX1FLC Package RelWithDebInfo LVI": { LinuxPackaging('1804', 'RelWithDebInfo', 'ControlFlow') },
+                        "Windows 2019 Debug":                      { WindowsPackaging('2019','Debug') },
+                        "Windows 2019 Debug LVI":                  { WindowsPackaging('2019','Debug', 'ControlFlow') },
+                        "Windows 2019 RelWithDebInfo":             { WindowsPackaging('2019','RelWithDebInfo') },
+                        "Windows 2019 RelWithDebInfo LVI":         { WindowsPackaging('2019','RelWithDebInfo', 'ControlFlow') },
+                        "Windows 2019 Sim Debug":                  { WindowsPackaging('2019','Debug', 'None', '1') },
+                        "Windows 2019 Sim Debug LVI":              { WindowsPackaging('2019','Debug', 'ControlFlow', '1') },
+                        "Windows 2019 Sim RelWithDebInfo":         { WindowsPackaging('2019','RelWithDebInfo', 'None', '1') },
+                        "Windows 2019 Sim RelWithDebInfo LVI":     { WindowsPackaging('2019','RelWithDebInfo', 'ControlFlow', '1') }
+                    ]) 
+                }
+            }
+        }
+    }
 }

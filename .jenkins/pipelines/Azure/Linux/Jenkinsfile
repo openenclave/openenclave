@@ -4,33 +4,6 @@
 library "OpenEnclaveJenkinsLibrary@${params.OECI_LIB_VERSION}"
 GLOBAL_ERROR = globalvars.GLOBAL_ERROR
 
-properties(
-    [
-        buildDiscarder(
-            logRotator(
-                artifactDaysToKeepStr: '90',
-                artifactNumToKeepStr: '180',
-                daysToKeepStr: '90',
-                numToKeepStr: '180'
-            )
-        ),
-        [$class: 'JobRestrictionProperty'],
-        parameters(
-            [
-                string(name: 'REPOSITORY_NAME',             defaultValue: 'openenclave/openenclave', description: 'GitHub repository to build.'),
-                string(name: 'BRANCH_NAME',                 defaultValue: 'master',                  description: 'Git branch to build.'),
-                string(name: 'DOCKER_TAG',                  defaultValue: 'latest',                  description: 'Tag used to pull oetools docker image.'),
-                string(name: 'OECI_LIB_VERSION',            defaultValue: 'master',                  description: 'Version of OE Libraries to use'),
-                string(name: 'UBUNTU_1804_CUSTOM_LABEL',    defaultValue: '',                        description: '[Optional] Jenkins agent label to use for Ubuntu 18.04 with SGX.'),
-                string(name: 'UBUNTU_2004_CUSTOM_LABEL',    defaultValue: '',                        description: '[Optional] Jenkins agent label to use for Ubuntu 20.04 with SGX.'),
-                string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL',  defaultValue: '',                        description: '[Optional] Jenkins agent label to use for Ubuntu 20.04 without SGX.'),
-                string(name: 'WINDOWS_NONSGX_CUSTOM_LABEL', defaultValue: '',                        description: '[Optional] Jenkins agent label to use for WS 2019 without SGX.'),
-                booleanParam(name: 'FULL_TEST_SUITE',       defaultValue: false,                     description: 'Run all additional tests available in the test suite.')
-            ]
-        )
-    ]
-)
-
 try{
     def testing_stages = [
         "Host verification 2004 RelWithDebInfo":            { tests.ACCHostVerificationTest('20.04', 'RelWithDebInfo') },
