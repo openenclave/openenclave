@@ -8,7 +8,8 @@ add_custom_command(
   DEPENDS ${EDL_FILE} edger8r
   COMMAND
     edger8r --trusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
-    ${DEFINE_OE_SGX} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
+    ${DEFINE_OE_SGX} ${DEFINE_OE_CODE_COVERAGE} --search-path
+    ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(PLATFORM_EDL_FILE ../edl/header.edl)
 add_custom_command(
@@ -32,6 +33,10 @@ add_enclave(
   ${CMAKE_CURRENT_BINARY_DIR}/edl_opt_out_t.c)
 
 add_enclave_dependencies(edl_opt_out_enc trusted_header)
+
+if (CODE_COVERAGE)
+  enclave_compile_definitions(edl_opt_out_enc PRIVATE CODE_COVERAGE)
+endif ()
 
 enclave_include_directories(edl_opt_out_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 enclave_link_libraries(edl_opt_out_enc oelibc)

@@ -48,7 +48,11 @@ OE_WEAK_ALIAS(_oe_syscall_epoll_wake_ocall, oe_syscall_epoll_wake_ocall);
 **==============================================================================
 */
 
-static oe_result_t _oe_syscall_read_ocall(
+/* The following symbols are the dependencies to the fdtable implementation and
+ * are pulled in by default and therefore will not be eliminated by the linker.
+ * Theses stubs are necessary to support the ocall opt-out. */
+
+oe_result_t _oe_syscall_read_ocall(
     ssize_t* _retval,
     oe_host_fd_t fd,
     void* buf,
@@ -62,7 +66,7 @@ static oe_result_t _oe_syscall_read_ocall(
 }
 OE_WEAK_ALIAS(_oe_syscall_read_ocall, oe_syscall_read_ocall);
 
-static oe_result_t _oe_syscall_write_ocall(
+oe_result_t _oe_syscall_write_ocall(
     ssize_t* _retval,
     oe_host_fd_t fd,
     const void* buf,
@@ -93,6 +97,54 @@ static oe_result_t _oe_syscall_fcntl_ocall(
     return OE_UNSUPPORTED;
 }
 OE_WEAK_ALIAS(_oe_syscall_fcntl_ocall, oe_syscall_fcntl_ocall);
+
+oe_result_t _oe_syscall_readv_ocall(
+    ssize_t* _retval,
+    oe_host_fd_t fd,
+    void* iov_buf,
+    int iovcnt,
+    size_t iov_buf_size)
+{
+    OE_UNUSED(_retval);
+    OE_UNUSED(fd);
+    OE_UNUSED(iov_buf);
+    OE_UNUSED(iovcnt);
+    OE_UNUSED(iov_buf_size);
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(_oe_syscall_readv_ocall, oe_syscall_readv_ocall);
+
+oe_result_t _oe_syscall_writev_ocall(
+    ssize_t* _retval,
+    oe_host_fd_t fd,
+    const void* iov_buf,
+    int iovcnt,
+    size_t iov_buf_size)
+{
+    OE_UNUSED(_retval);
+    OE_UNUSED(fd);
+    OE_UNUSED(iov_buf);
+    OE_UNUSED(iovcnt);
+    OE_UNUSED(iov_buf_size);
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(_oe_syscall_writev_ocall, oe_syscall_writev_ocall);
+
+oe_result_t _oe_syscall_close_ocall(int* _retval, oe_host_fd_t fd)
+{
+    OE_UNUSED(_retval);
+    OE_UNUSED(fd);
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(_oe_syscall_close_ocall, oe_syscall_close_ocall);
+
+oe_result_t _oe_syscall_dup_ocall(oe_host_fd_t* _retval, oe_host_fd_t oldfd)
+{
+    OE_UNUSED(_retval);
+    OE_UNUSED(oldfd);
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(_oe_syscall_dup_ocall, oe_syscall_dup_ocall);
 
 /*
 **==============================================================================

@@ -51,6 +51,10 @@ if (OE_SGX)
   set(DEFINE_OE_SGX "-DOE_SGX")
 endif ()
 
+if (CODE_COVERAGE)
+  set(DEFINE_OE_CODE_COVERAGE "-DOE_CODE_COVERAGE")
+endif ()
+
 if (UNIX)
   # On Linux prefer python3 since python may not be available.
   find_program(PYTHON NAMES python3 python)
