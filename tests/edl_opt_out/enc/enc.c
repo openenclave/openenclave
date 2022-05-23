@@ -12,6 +12,16 @@ void enc_edl_opt_out()
     /* logging.edl */
     OE_TEST(oe_log_ocall(0, NULL) == OE_UNSUPPORTED);
 
+#ifndef CODE_COVERAGE
+    /* fcntl.edl */
+    OE_TEST(oe_syscall_read_ocall(NULL, 0, NULL, 0) == OE_UNSUPPORTED);
+    OE_TEST(oe_syscall_write_ocall(NULL, 0, NULL, 0) == OE_UNSUPPORTED);
+    OE_TEST(oe_syscall_readv_ocall(NULL, 0, NULL, 0, 0) == OE_UNSUPPORTED);
+    OE_TEST(oe_syscall_writev_ocall(NULL, 0, NULL, 0, 0) == OE_UNSUPPORTED);
+    OE_TEST(oe_syscall_close_ocall(NULL, 0) == OE_UNSUPPORTED);
+    OE_TEST(oe_syscall_dup_ocall(NULL, 0) == OE_UNSUPPORTED);
+#endif
+
     /* ioctl.edl */
     OE_TEST(oe_syscall_ioctl_ocall(NULL, 0, 0, 0, 0, NULL) == OE_UNSUPPORTED);
 
