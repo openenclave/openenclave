@@ -17,6 +17,7 @@
 #include <openenclave/internal/thread.h>
 #include "asmdefs.h"
 #include "td.h"
+#include "tracee.h"
 
 void oe_abort_with_td(oe_sgx_td_t* td) OE_NO_RETURN;
 
@@ -131,6 +132,9 @@ static oe_once_t _enclave_initialize_once;
 static void _initialize_enclave_imp(void)
 {
     _initialize_enclave_image();
+
+    if (oe_sgx_initialize_simulation_mode_cache(_td) != OE_OK)
+        oe_abort_with_td(_td);
 }
 
 /*

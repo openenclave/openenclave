@@ -4,6 +4,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/tests.h>
+#include "../../../enclave/core/tracee.h"
 #include "pf_gp_exceptions_t.h"
 
 #define MOV_INSTRUCTION_BYTES 3
@@ -13,8 +14,6 @@ static uint64_t faulting_address;
 static uint32_t error_code;
 static uint32_t exception_code;
 static uint64_t bypass_bytes;
-
-bool is_enclave_debug_allowed();
 
 uint64_t test_pfgp_handler(oe_exception_record_t* exception_record)
 {
@@ -45,7 +44,7 @@ int enc_pf_gp_exceptions(int is_misc_region_supported, int is_on_windows)
         return 2;
 
     /* For SGX1 enclaves, the PF simulation is only supported in debug mode */
-    if (!is_misc_region_supported && !is_enclave_debug_allowed())
+    if (!is_misc_region_supported && !oe_is_enclave_debug_allowed())
         return 2;
 
     if (oe_add_vectored_exception_handler(false, test_pfgp_handler) != OE_OK)

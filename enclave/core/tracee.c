@@ -143,7 +143,7 @@ oe_result_t oe_log(oe_log_level_t level, const char* fmt, ...)
     bool locked = false;
 
     // Skip logging for non-debug-allowed enclaves
-    if (!is_enclave_debug_allowed())
+    if (!oe_is_enclave_debug_allowed())
     {
         result = OE_OK;
         goto done;

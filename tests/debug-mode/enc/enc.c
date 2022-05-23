@@ -8,5 +8,5 @@
 
 int test(void)
 {
-    return is_enclave_debug_allowed();
+    return oe_is_enclave_debug_allowed();
 }
