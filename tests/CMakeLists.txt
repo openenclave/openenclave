@@ -53,6 +53,8 @@ endif ()
 
 if (CODE_COVERAGE)
   set(DEFINE_OE_CODE_COVERAGE "-DOE_CODE_COVERAGE")
+else ()
+  set(DEFINE_OE_CODE_COVERAGE "")
 endif ()
 
 if (UNIX)
