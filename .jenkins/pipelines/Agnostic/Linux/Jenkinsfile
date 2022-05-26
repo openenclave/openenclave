@@ -7,9 +7,8 @@ GLOBAL_ERROR = globalvars.GLOBAL_ERROR
 try{
     def testing_stages = [
         "Check CI":                                { tests.checkCI() },
-	// Temporarily commented out to unblock CI
-        //"Check Developer Experience Ubuntu 20.04": { tests.checkDevFlows('20.04') },
-        //"Check Developer Experience Ubuntu 18.04": { tests.checkDevFlows('18.04') },
+        "Check Developer Experience Ubuntu 20.04": { tests.checkDevFlows('20.04') },
+        "Check Developer Experience Ubuntu 18.04": { tests.checkDevFlows('18.04') },
         "AArch64 2004 GNU gcc Debug":              { tests.AArch64GNUTest('20.04', 'Debug') },
         "AArch64 2004 GNU gcc RelWithDebInfo":     { tests.AArch64GNUTest('20.04', 'RelWithDebInfo') },
         "AArch64 1804 GNU gcc Debug":              { tests.AArch64GNUTest('18.04', 'Debug') },
