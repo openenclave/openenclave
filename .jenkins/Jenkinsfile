@@ -1,11 +1,9 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-// Global variables
-REPOSITORY_NAME = env.REPOSITORY_NAME ?: "openenclave/openenclave"
-BRANCH_NAME = env.BRANCH_NAME ?: "master"
-DOCKER_TAG = env.DOCKER_TAG ?: "latest"
-FULL_TEST_SUITE = env.FULL_TEST_SUITE ?: false
+// Check if BRANCH is specified by multibranch pipeline job
+GLOBAL_BRANCH_NAME = env.BRANCH_NAME ?: params.BRANCH
+
 // Regex that includes directory you want to ignore for CI builds.
 String IGNORED_DIRS = "^(docs|\\.jenkins/infrastructure)|\\.md\$"
 
@@ -13,15 +11,15 @@ String IGNORED_DIRS = "^(docs|\\.jenkins/infrastructure)|\\.md\$"
 //     1. If this is a bors run, use the bors branch
 //     2. Use params.OECI_LIB_VERSION if it is specified
 //     3. If none of the above, default to master
-if ( REPOSITORY_NAME == 'openenclave/openenclave' && BRANCH_NAME ==~ /^(trying|staging)$/ ) {
-    OECI_LIB_VERSION = BRANCH_NAME
+if ( REPOSITORY_NAME == 'openenclave/openenclave' && GLOBAL_BRANCH_NAME ==~ /^(trying|staging)$/ ) {
+    GLOBAL_OECI_LIB_VERSION = GLOBAL_BRANCH_NAME
 } else if ( params.OECI_LIB_VERSION ) {
     // Use regex to match bors branches to include any changes to OpenEnclaveJenkinsLibrary
-    OECI_LIB_VERSION = params.OECI_LIB_VERSION
+    GLOBAL_OECI_LIB_VERSION = params.OECI_LIB_VERSION
 } else {
-    OECI_LIB_VERSION = "master"
+    GLOBAL_OECI_LIB_VERSION = "master"
 }
-library "OpenEnclaveJenkinsLibrary@${OECI_LIB_VERSION}"
+library "OpenEnclaveJenkinsLibrary@${GLOBAL_OECI_LIB_VERSION}"
 
 pipeline {
     agent any
@@ -31,10 +29,10 @@ pipeline {
     }
     parameters {
         string(name: 'REPOSITORY_NAME', defaultValue: 'openenclave/openenclave', description: 'GitHub repository to checkout', trim: true)
-        string(name: 'BRANCH_NAME', defaultValue: 'master', description: 'The branch used to checkout the repository', trim: true)
-        string(name: 'BRANCH_NAME', defaultValue: 'master', description: 'The branch used to checkout the repository', trim: true)
+        string(name: 'BRANCH', defaultValue: 'master', description: 'The branch used to checkout the repository', trim: true)
         booleanParam(name: 'FULL_TEST_SUITE', defaultValue: false, description: 'Run all tests')
         booleanParam(name: 'FORCE_TEST', defaultValue: false, description: 'Force tests to continue even if there are no changes compared to master')
+        string(name: 'DOCKER_TAG', defaultValue: 'latest', description: 'Version of Docker image "oetools" to use', trim: true)
         string(name: "OECI_LIB_VERSION", defaultValue: 'master', description: 'Version of OE Libraries to use', trim: true)
     }
     stages {
@@ -54,7 +52,7 @@ pipeline {
                             name: "origin/master"
                         ],
                         [
-                            name: "testremote/${BRANCH_NAME}"
+                            name: "testremote/${GLOBAL_BRANCH_NAME}"
                         ]
                     ],
                     doGenerateSubmoduleConfigurations: false,
@@ -78,7 +76,7 @@ pipeline {
                         [
                             url: "https://github.com/${REPOSITORY_NAME}.git",
                             name: "testremote",
-                            refspec: "+refs/heads/${BRANCH_NAME}:refs/remotes/testremote/${BRANCH_NAME}"
+                            refspec: "+refs/heads/${GLOBAL_BRANCH_NAME}:refs/remotes/testremote/${GLOBAL_BRANCH_NAME}"
                         ]
                     ]
                 ])
@@ -86,7 +84,7 @@ pipeline {
                     // Check if git diff vs origin/master contains changes outside of ignored directories
                     gitChanges = sh (
                         script: """#!/bin/bash
-                                git diff --name-only testremote/${BRANCH_NAME} origin/master | grep --invert-match --extended-regexp \'${IGNORED_DIRS}\'  --no-messages || [[ \$? == 1 ]]
+                                git diff --name-only testremote/${GLOBAL_BRANCH_NAME} origin/master | grep --invert-match --extended-regexp \'${IGNORED_DIRS}\'  --no-messages || [[ \$? == 1 ]]
                                 """,
                         returnStdout: true,
                     ).trim()
@@ -109,11 +107,11 @@ pipeline {
                         build job: '/OpenEnclave/Agnostic-Linux',
                             parameters: [
                                 string(name: 'REPOSITORY_NAME', value: REPOSITORY_NAME),
-                                string(name: 'BRANCH_NAME', value: BRANCH_NAME),
-                                string(name: 'DOCKER_TAG', value: DOCKER_TAG),
+                                string(name: 'BRANCH_NAME', value: GLOBAL_BRANCH_NAME),
+                                string(name: 'DOCKER_TAG', value: params.DOCKER_TAG),
                                 string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["ubuntu-nonsgx"]),
-                                string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
-                                booleanParam(name: 'FULL_TEST_SUITE', value: FULL_TEST_SUITE)
+                                string(name: 'OECI_LIB_VERSION', value: GLOBAL_OECI_LIB_VERSION),
+                                booleanParam(name: 'FULL_TEST_SUITE', value: params.FULL_TEST_SUITE)
                             ]
                     }
                 }
@@ -122,14 +120,14 @@ pipeline {
                         build job: '/OpenEnclave/Azure-Linux',
                             parameters: [
                                 string(name: 'REPOSITORY_NAME', value: REPOSITORY_NAME),
-                                string(name: 'BRANCH_NAME', value: BRANCH_NAME),
-                                string(name: 'DOCKER_TAG', value: DOCKER_TAG),
+                                string(name: 'BRANCH_NAME', value: GLOBAL_BRANCH_NAME),
+                                string(name: 'DOCKER_TAG', value: params.DOCKER_TAG),
                                 string(name: 'UBUNTU_2004_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["acc-ubuntu-20.04"]),
                                 string(name: 'UBUNTU_1804_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["acc-ubuntu-18.04"]),
                                 string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["ubuntu-nonsgx"]),
                                 string(name: 'WINDOWS_NONSGX_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["windows-nonsgx"]),
-                                string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
-                                booleanParam(name: 'FULL_TEST_SUITE', value: FULL_TEST_SUITE)
+                                string(name: 'OECI_LIB_VERSION', value: GLOBAL_OECI_LIB_VERSION),
+                                booleanParam(name: 'FULL_TEST_SUITE', value: params.FULL_TEST_SUITE)
                             ]
                     }
                 }
@@ -138,13 +136,13 @@ pipeline {
                         build job: '/OpenEnclave/Azure-Windows',
                             parameters: [
                                 string(name: 'REPOSITORY_NAME', value: REPOSITORY_NAME),
-                                string(name: 'BRANCH_NAME', value: BRANCH_NAME),
-                                string(name: 'DOCKER_TAG', value: DOCKER_TAG),
+                                string(name: 'BRANCH_NAME', value: GLOBAL_BRANCH_NAME),
+                                string(name: 'DOCKER_TAG', value: params.DOCKER_TAG),
                                 string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["ubuntu-nonsgx"]),
                                 string(name: 'WINDOWS_2019_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["acc-win2019"]),
                                 string(name: 'WINDOWS_2019_DCAP_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["acc-win2019-dcap"]),
-                                string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
-                                booleanParam(name: 'FULL_TEST_SUITE', value: FULL_TEST_SUITE)
+                                string(name: 'OECI_LIB_VERSION', value: GLOBAL_OECI_LIB_VERSION),
+                                booleanParam(name: 'FULL_TEST_SUITE', value: params.FULL_TEST_SUITE)
                             ]
                     }
                 }
@@ -152,7 +150,7 @@ pipeline {
                     steps {
                         build job: '/OpenEnclave/Intel-Agnostic',
                             parameters: [
-                                booleanParam(name: 'FULL_TEST_SUITE', value: FULL_TEST_SUITE)
+                                booleanParam(name: 'FULL_TEST_SUITE', value: params.FULL_TEST_SUITE)
                             ],
                             propagate: false
 
