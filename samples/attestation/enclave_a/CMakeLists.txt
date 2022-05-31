@@ -5,6 +5,7 @@
 add_custom_command(
   OUTPUT enclave_b_pubkey.h
   DEPENDS public_key_b ${CMAKE_SOURCE_DIR}/gen_pubkey_header.sh
+          ${CMAKE_BINARY_DIR}/enclave_b/public_b.pem
   COMMAND ${CMAKE_SOURCE_DIR}/gen_pubkey_header.sh enclave_b_pubkey.h
           ${CMAKE_BINARY_DIR}/enclave_b/public_b.pem)
 
