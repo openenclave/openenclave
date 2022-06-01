@@ -15,8 +15,10 @@
     - To install this driver, simply run it as root like this:
         - `sudo bash ./sgx_linux_x64_driver_1.35.bin`
 
-3. Pull the latest oetools image for Open Enclave from this distribution:
-    - https://hub.docker.com/r/oeciteam/oetools-18.04 or https://hub.docker.com/r/oeciteam/oetools-20.04
+3. Pull the latest "Full" image for Open Enclave for your appropriate distribution from [this table](https://github.com/openenclave/openenclave/blob/master/DOCKER_IMAGES.md). Example:
+```bash
+docker pull oejenkinscidockerregistry.azurecr.io/oetools-20.04:2022.06.0931
+```
 
 4. Run an interactive container of one of these images. If you're using the Intel SGX DCAP driver, for example, you'll want to expose the /dev/sgx device to the container:
 ```bash

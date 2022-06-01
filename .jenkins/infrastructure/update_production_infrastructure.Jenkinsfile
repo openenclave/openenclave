@@ -5,12 +5,6 @@ OECI_LIB_VERSION = params.OECI_LIB_VERSION ?: "master"
 library "OpenEnclaveJenkinsLibrary@${OECI_LIB_VERSION}"
 
 GLOBAL_TIMEOUT_MINUTES = 240
-
-OETOOLS_REPO_NAME = "oejenkinscidockerregistry.azurecr.io"
-OETOOLS_REPO_CREDENTIAL_ID = "oejenkinscidockerregistry"
-OETOOLS_DOCKERHUB_REPO_CREDENTIAL_ID = "oeciteamdockerhub"
-
-DOCKER_IMAGES_NAMES = ["oetools-18.04", "oetools-20.04"]
 AZURE_IMAGES_MAP = [
     // Mapping between shared gallery image definition name and
     // generated Azure managed image name
@@ -19,40 +13,6 @@ AZURE_IMAGES_MAP = [
     "ws2019-nonSGX":   "${params.IMAGE_ID}-ws2019-nonSGX",
     "ws2019-SGX-DCAP": "${params.IMAGE_ID}-ws2019-SGX-DCAP"
 ]
-
-// def update_production_docker_images() {
-//     node("nonSGX-ubuntu-2004") {
-//         timeout(GLOBAL_TIMEOUT_MINUTES) {
-//             stage("Backup current production Docker images") {
-//                 docker.withRegistry("https://${OETOOLS_REPO_NAME}", OETOOLS_REPO_CREDENTIAL_ID) {
-//                     for (image_name in DOCKER_IMAGES_NAMES) {
-//                         def image = docker.image("${OETOOLS_REPO_NAME}/${image_name}:latest")
-//                         oe.exec_with_retry { image.pull() }
-//                         oe.exec_with_retry { image.push("latest-backup") }
-//                     }
-//                 }
-//             }
-//         }
-//     }
-//     node(IMAGES_BUILD_LABEL) {
-//         timeout(GLOBAL_TIMEOUT_MINUTES) {
-//             stage("Update production Docker images") {
-//                 for (image_name in DOCKER_IMAGES_NAMES) {
-//                     docker.withRegistry("https://${OETOOLS_REPO_NAME}", OETOOLS_REPO_CREDENTIAL_ID) {
-//                         def image = docker.image("${OETOOLS_REPO_NAME}/${image_name}:${env.DOCKER_TAG}")
-//                         oe.exec_with_retry { image.pull() }
-//                         oe.exec_with_retry { image.push("latest") }
-//                     }
-//                     sh("docker tag ${OETOOLS_REPO_NAME}/${image_name}:${env.DOCKER_TAG} oeciteam/${image_name}:latest")
-//                     docker.withRegistry('', OETOOLS_DOCKERHUB_REPO_CREDENTIAL_ID) {
-//                         def image = docker.image("oeciteam/${image_name}:latest")
-//                         oe.exec_with_retry { image.push("latest") }
-//                     }
-//                 }
-//             }
-//         }
-//     }
-// }
 
 def update_production_azure_gallery_images(String image_name) {
     timeout(GLOBAL_TIMEOUT_MINUTES) {
@@ -91,7 +51,6 @@ def update_production_azure_gallery_images(String image_name) {
     }
 }
 
-// def parallel_steps = [ "Update Docker images": { update_production_docker_images() } ]
 def parallel_steps = [:]
 AZURE_IMAGES_MAP.keySet().each {
     image_name -> parallel_steps["Update Azure gallery ${image_name} image"] = { update_production_azure_gallery_images(image_name) }
