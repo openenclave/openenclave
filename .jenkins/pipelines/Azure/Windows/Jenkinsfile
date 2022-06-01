@@ -9,6 +9,10 @@ try{
     def testing_stages = [ "Windows 2019 Install Prerequisites Verification" : { tests.windowsPrereqsVerify("acc-win2019-dcap") }]
     if(FULL_TEST_SUITE == "true") {
         stage("Full Test Suite") {
+            // node("vanilla-ws2019") {
+            //     helpers.windowsPrereqsInstall()
+            //     common.WinCompilePackageTest("build/X64-RelWithDebInfo", "RelWithDebInfo", 'OFF', globalvars.CTEST_TIMEOUT_SECONDS, 'ControlFlow', 'OFF', ['-DUSE_SNMALLOC=ON'])
+            // }
             testing_stages += [
                 "Win2019 Ubuntu2004 clang-10 Debug Linux-Elf-build":              { tests.windowsLinuxElfBuild('acc-win2019-dcap', '20.04', 'clang-10', 'Debug') },
                 "Win2019 Ubuntu2004 clang-10 RelWithDebInfo Linux-Elf-build":     { tests.windowsLinuxElfBuild('acc-win2019-dcap', '20.04', 'clang-10', 'RelWithDebInfo') },

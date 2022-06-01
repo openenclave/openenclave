@@ -3,9 +3,12 @@
 
 library "OpenEnclaveJenkinsLibrary@${params.OECI_LIB_VERSION}"
 
+TAG_BASE_IMAGE = params.BASE_DOCKER_TAG ?: helpers.get_date(".")
+TAG_FULL_IMAGE = params.DOCKER_TAG ?: helpers.get_date(".")
+
 pipeline {
     agent {
-        label globalvars.AGENTS_LABELS["acc-ubuntu-18.04"]
+        label globalvars.AGENTS_LABELS[params.AGENTS_LABEL]
     }
     options {
         timeout(time: 240, unit: 'MINUTES')
@@ -14,11 +17,12 @@ pipeline {
         string(name: "SGX_VERSION", description: "Intel SGX version to install (Ex: 2.15.100). For versions see: https://download.01.org/intel-sgx/sgx_repo/ubuntu/apt_preference_files/")
         string(name: "REPOSITORY_NAME", defaultValue: "openenclave/openenclave", description: "GitHub repository to checkout")
         string(name: "BRANCH_NAME", defaultValue: "master", description: "The branch used to checkout the repository")
-        string(name: "DOCKER_TAG", defaultValue: "standalone-linux-build", description: "The tag for the new Docker images")
-        string(name: "BASE_DOCKER_TAG", defaultValue: "SGX-${params.SGX_VERSION}", description: "The tag for the new Base Docker images. Use SGX-<version> for releases. Example: SGX-2.15.100")
+        string(name: "DOCKER_TAG", defaultValue: "", description: "[OPTIONAL] Specify the tag for the new Docker images.")
+        string(name: "BASE_DOCKER_TAG", defaultValue: "", description: "[OPTIONAL] Specify the tag for the new Base Docker images.")
         string(name: "INTERNAL_REPO", defaultValue: "https://oejenkinscidockerregistry.azurecr.io", description: "Url for internal Docker repository")
         string(name: "OECI_LIB_VERSION", defaultValue: 'master', description: 'Version of OE Libraries to use')
         string(name: "DEVKITS_URI", defaultValue: 'https://oejenkins.blob.core.windows.net/oejenkins/OE-CI-devkits-d1634ce8.tar.gz', description: "Uri for downloading the OECI Devkit")
+        string(name: "AGENTS_LABEL", defaultValue: 'acc-ubuntu-18.04', description: "Label of the agent to use to run this job")
         booleanParam(name: "PUBLISH_DOCKER_HUB", defaultValue: false, description: "Publish container to OECITeam Docker Hub?")
         booleanParam(name: "TAG_LATEST", defaultValue: false, description: "Update the latest tag to the currently built DOCKER_TAG")
     }
@@ -48,8 +52,8 @@ pipeline {
                                 chmod +x ./build.sh
                                 mkdir build
                                 cd build
-                                ../build.sh -v "${params.SGX_VERSION}" -u "18.04" -t "${params.BASE_DOCKER_TAG}"
-                                ../build.sh -v "${params.SGX_VERSION}" -u "20.04" -t "${params.BASE_DOCKER_TAG}"
+                                ../build.sh -v "${params.SGX_VERSION}" -u "18.04" -t "${TAG_BASE_IMAGE}"
+                                ../build.sh -v "${params.SGX_VERSION}" -u "20.04" -t "${TAG_BASE_IMAGE}"
                             """
                         }
                     }
@@ -59,7 +63,7 @@ pipeline {
                         stage("Test Base - 18.04") {
                             steps {
                                 script {
-                                    base_1804_image = docker.image("oeciteam/openenclave-base-ubuntu-18.04:${params.BASE_DOCKER_TAG}")
+                                    base_1804_image = docker.image("oeciteam/openenclave-base-ubuntu-18.04:${TAG_BASE_IMAGE}")
                                     base_1804_image.inside("--user root:root --cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
                                         sh """
                                             apt update
@@ -73,7 +77,7 @@ pipeline {
                         stage("Test Base - 20.04") {
                             steps {
                                 script {
-                                    base_2004_image = docker.image("oeciteam/openenclave-base-ubuntu-20.04:${params.BASE_DOCKER_TAG}")
+                                    base_2004_image = docker.image("oeciteam/openenclave-base-ubuntu-20.04:${TAG_BASE_IMAGE}")
                                     base_2004_image.inside("--user root:root --cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
                                         sh """
                                             apt update
@@ -130,9 +134,11 @@ pipeline {
                         stage("Ubuntu 18.04") {
                             steps {
                                 script {
-                                    buildArgs = common.dockerBuildArgs("UID=\$(id -u)", "UNAME=\$(id -un)",
-                                                                       "GID=\$(id -g)", "GNAME=\$(id -gn)")
-                                    oe1804 = common.dockerImage("oetools-18.04:${DOCKER_TAG}", LINUX_DOCKERFILE, "${buildArgs} --build-arg ubuntu_version=18.04 --build-arg devkits_uri=${params.DEVKITS_URI}")
+                                    buildArgs = common.dockerBuildArgs(
+                                        "ubuntu_version=18.04",
+                                        "devkits_uri=${params.DEVKITS_URI}"
+                                    )
+                                    oe1804 = common.dockerImage("oetools-18.04:${TAG_FULL_IMAGE}", LINUX_DOCKERFILE, "${buildArgs}")
                                     oe1804.inside("--user root:root --cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
                                         sh """
                                             apt update
@@ -155,9 +161,11 @@ pipeline {
                             }
                             steps {
                                 script {
-                                    buildArgs = common.dockerBuildArgs("UID=\$(id -u)", "UNAME=\$(id -un)",
-                                                                       "GID=\$(id -g)", "GNAME=\$(id -gn)")
-                                    oe2004 = common.dockerImage("oetools-20.04:${DOCKER_TAG}", LINUX_DOCKERFILE, "${buildArgs} --build-arg ubuntu_version=20.04 --build-arg devkits_uri=${params.DEVKITS_URI}")
+                                    buildArgs = common.dockerBuildArgs(
+                                        "ubuntu_version=20.04",
+                                        "devkits_uri=${params.DEVKITS_URI}"
+                                    )
+                                    oe2004 = common.dockerImage("oetools-20.04:${TAG_FULL_IMAGE}", LINUX_DOCKERFILE, "${buildArgs}")
                                     oe2004.inside("--user root:root --cap-add=SYS_PTRACE --device /dev/sgx/provision:/dev/sgx/provision --device /dev/sgx/enclave:/dev/sgx/enclave --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
                                         sh """
                                             apt update

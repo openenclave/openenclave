@@ -50,10 +50,11 @@ pipeline {
                         string(name: 'REPOSITORY_NAME', value: env.REPOSITORY),
                         string(name: 'BRANCH_NAME', value: env.BRANCH),
                         string(name: 'DOCKER_TAG', value: DOCKER_TAG),
-                        string(name: 'AGENTS_LABEL', value: env.IMAGES_BUILD_LABEL),
+                        string(name: 'IMAGES_BUILD_LABEL', value: env.IMAGES_BUILD_LABEL),
                         string(name: 'WINDOWS_AGENTS_LABEL', value: env.WINDOWS_IMAGES_BUILD_LABEL),
                         string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
                         string(name: 'SGX_VERSION', value: params.SGX_VERSION),
+                        booleanParam(name: 'PUBLISH_DOCKER_HUB', value: false)
                         booleanParam(name: 'TAG_LATEST', value: false)
                     ]
             }

@@ -554,3 +554,25 @@ def getUbuntuReleaseVer() {
         script: 'lsb_release -rs'
     ).trim()
 }
+
+/**
+ * Returns current git commit id
+ */
+def get_commit_id() {
+    return sh(script: "git rev-parse --short HEAD", returnStdout: true).tokenize().last()
+}
+
+/**
+ * Installs Windows prerequisites for Open Enclave
+ */
+def windowsPrereqsInstall() {
+dir('scripts') {
+    bat(
+        returnStdout: false,
+        returnStatus: false,
+        script: """
+            powershell.exe -ExecutionPolicy Unrestricted -NoLogo -NonInteractive -NoProfile -WindowStyle Hidden -File install-windows-prereqs.ps1 -InstallPath C:\\oe_prereqs -LaunchConfiguration SGX1FLC -DCAPClientType Azure
+        """
+    )
+}
+}

@@ -1,9 +1,6 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-import java.time.*
-import java.time.format.DateTimeFormatter
-
 OECI_LIB_VERSION = params.OECI_LIB_VERSION ?: "master"
 library "OpenEnclaveJenkinsLibrary@${OECI_LIB_VERSION}"
 
@@ -23,21 +20,6 @@ OS_NAME_MAP = [
     "win2019": "Windows Server 2019",
     "ubuntu":  "Ubuntu",
 ]
-
-def get_image_version() {
-    if (params.IMAGE_VERSION) {
-        return "${params.IMAGE_VERSION}"
-    }
-    def now = LocalDateTime.now()
-    return (now.format(DateTimeFormatter.ofPattern("yyyy")) + "." + \
-            now.format(DateTimeFormatter.ofPattern("MM")) + "." + \
-            now.format(DateTimeFormatter.ofPattern("dd")) + "${BUILD_NUMBER}")
-}
-
-def get_commit_id() {
-    def last_commit_id = sh(script: "git rev-parse --short HEAD", returnStdout: true).tokenize().last()
-    return last_commit_id
-}
 
 def buildLinuxManagedImage(String os_type, String version, String managed_image_name_id, String gallery_image_version) {
     stage('Check Prerequisites') {
@@ -301,11 +283,15 @@ node(params.AGENTS_LABEL) {
                 extensions: [],
                 userRemoteConfigs: [[url: "https://github.com/${params.REPOSITORY_NAME}"]]])
 
-            commit_id = get_commit_id()
-            version = get_image_version()
+            commit_id = helpers.get_commit_id()
 
-            image_version = params.IMAGE_VERSION ?: version
-            image_id = params.IMAGE_ID ?: "${version}-${commit_id}"
+            if (params.IMAGE_VERSION) {
+                image_version = params.IMAGE_VERSION
+            } else {
+                image_version = helpers.get_date(".") + "${BUILD_NUMBER}"
+            }
+            
+            image_id = params.IMAGE_ID ?: "${image_version}-${commit_id}"
 
             println("IMAGE_VERSION: ${image_version}\nIMAGE_ID: ${image_id}")
         }
