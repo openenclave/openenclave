@@ -39,7 +39,6 @@ pipeline {
          string(name: 'WINDOWS_2019_DCAP_LABEL', defaultValue: 'e2e-SGXFLC-Windows-2019-DCAP', description: 'Label to use for image testing and promotion', trim: true)
          string(name: 'WINDOWS_NONSGX_CUSTOM_LABEL', defaultValue: 'e2e-nonsgx-windows', description: 'Label to use for image testing and promotion', trim: true)
          string(name: 'IMAGES_BUILD_LABEL', defaultValue: 'vanilla-ubuntu-2004', description: 'Agent label used to run Azure Managed Image builds', trim: true)
-         string(name: 'WINDOWS_IMAGES_BUILD_LABEL', defaultValue: 'nonSGX-Windows-2019', description: 'Agent label used to run image builds (Windows)', trim: true)
          string(name: 'OECI_LIB_VERSION', defaultValue: 'master', description: 'Version of OE Libraries to use', trim: true)
     }
     stages {
@@ -50,11 +49,11 @@ pipeline {
                         string(name: 'REPOSITORY_NAME', value: env.REPOSITORY),
                         string(name: 'BRANCH_NAME', value: env.BRANCH),
                         string(name: 'DOCKER_TAG', value: DOCKER_TAG),
-                        string(name: 'AGENTS_LABEL', value: env.IMAGES_BUILD_LABEL),
-                        string(name: 'WINDOWS_AGENTS_LABEL', value: env.WINDOWS_IMAGES_BUILD_LABEL),
                         string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
                         string(name: 'SGX_VERSION', value: params.SGX_VERSION),
+                        booleanParam(name: 'PUBLISH_DOCKER_HUB', value: false)
                         booleanParam(name: 'TAG_LATEST', value: false)
+                        booleanParam(name: 'PUBLISH', value: false)
                     ]
             }
         }
