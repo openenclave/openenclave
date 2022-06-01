@@ -6,6 +6,7 @@
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/str.h>
 #include <openenclave/internal/tests.h>
+#include <openenclave/internal/trace.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -171,6 +172,14 @@ int main(int argc, const char* argv[])
     if ((result = oe_create_mbed_enclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
         oe_put_err("oe_create_enclave(): result=%u", result);
+
+    {
+        // Turn on SIGSEGV simulation so that SIGSEGV is propagated as a signal
+        // to the enclave. The SIGSEGV signal is unhandled which will cause the
+        // enclave to oe_abort with a backtrace when OE_LOG_LEVEL=INFO.
+        void oe_sgx_host_enable_debug_pf_simulation(void);
+        oe_sgx_host_enable_debug_pf_simulation();
+    }
 
     // Invoke "Test()" in the enclave.
     Test(enclave, selftest, data_file_name);
