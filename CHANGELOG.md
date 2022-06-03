@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Unreleased][Unreleased_log]
 --------------
 ### Added
+
+## Changed
+
+
+[v0.18.0][v0.18.0_log]
+--------------
+### Added
 - `oeapkman` is a Linux tool for installing and using Alpine Linux static libraries within enclaves.
   - The command `oeapkman add package` can be used to install the specified package.
     Typically `-static` and `-dev` (e.g.: sqlite-static, sqlite-dev) packages need to be installed.
@@ -37,7 +44,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated the SymCrypt-OpenSSL to v1.1.0
 - Updated the support of the SymCrypt module to v101.3.0
 
-[v0.17.][v0.17.7_log]
+[v0.17.7][v0.17.7_log]
+-------------
 ### Changed
 - Increased the value of maximum TCS from 32 to 1000, allowing SGX applications to create more threads.
 
@@ -744,7 +752,9 @@ as listed below.
 
 Initial private preview release, no longer supported.
 
-[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.17.7...HEAD
+[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.18.0...HEAD
+
+[v0.18.0_log]:https://github.com/openenclave/openenclave/compare/v0.17.7...v0.18.0
 	  
 [v0.17.7_log]:https://github.com/openenclave/openenclave/compare/v0.17.6...v0.17.7
 
