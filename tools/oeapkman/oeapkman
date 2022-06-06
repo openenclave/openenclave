@@ -44,8 +44,7 @@ eval set -- "$PARAMS"
 # Use a recent version of proot. With older versions, apk would
 # report messages like "2 errors", that are innocuous, but catch
 # the eye.
-PROOT_URL="https://gitlab.com/proot/proot/-/jobs/981080842/\
-artifacts/download?file_type=archive"
+PROOT_URL="https://proot.gitlab.io/proot/bin/proot"
 
 # URL to fetch alpine root fs from About 2.5 MB download.
 ALPINE_ROOTFS_URL="https://dl-cdn.alpinelinux.org/alpine/\
@@ -189,14 +188,13 @@ setup_alpine_fs()
             if ! alpine_exec echo "unshare works" 2>/dev/null; then
 		# Download and use proot
 		echo "unshare doesn't work"
+		mkdir dist
 		if command -v curl > /dev/null; then
-                    curl -L -o proot.zip "$PROOT_URL"
+                    curl -L -o dist/proot "$PROOT_URL"
 		else
-                    wget -O proot.zip "$PROOT_URL"
+                    wget -O dist/proot "$PROOT_URL"
 		fi
-		if ! unzip -o proot.zip 2>/dev/null; then
-                    "$ALPINE_FS/lib/ld-musl-${ARCH}.so.1" "$ALPINE_FS/bin/busybox" unzip -o proot.zip
-		fi
+		chmod +x dist/proot
 		MODE="proot"
             else
 		MODE="unshare"
