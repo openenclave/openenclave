@@ -1283,6 +1283,10 @@ oe_result_t oe_create_enclave(
     if (!(enclave = (oe_enclave_t*)calloc(1, sizeof(oe_enclave_t))))
         OE_RAISE(OE_OUT_OF_MEMORY);
 
+    /* Initialize the context parameter and any driver handles */
+    OE_CHECK(oe_sgx_initialize_load_context(
+        &context, OE_SGX_LOAD_TYPE_CREATE, flags));
+
 #if defined(_WIN32)
     /* Create Windows events for each TCS binding. Enclaves use
      * this event when calling into the host to handle waits/wakes
@@ -1305,10 +1309,6 @@ oe_result_t oe_create_enclave(
     }
 
 #endif
-
-    /* Initialize the context parameter and any driver handles */
-    OE_CHECK(oe_sgx_initialize_load_context(
-        &context, OE_SGX_LOAD_TYPE_CREATE, flags));
 
     for (size_t i = 0; i < setting_count; i++)
     {
