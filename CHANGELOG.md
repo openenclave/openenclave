@@ -44,6 +44,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated the SymCrypt-OpenSSL to v1.1.0
 - Updated the support of the SymCrypt module to v101.3.0
 
+### Security
+- Updated openssl to version 1.1.1o. Please refer to [release notes](https://www.openssl.org/news/openssl-1.1.1-notes.html) to find CVEs addressed by this version.
+
 [v0.17.7][v0.17.7_log]
 -------------
 ### Changed
