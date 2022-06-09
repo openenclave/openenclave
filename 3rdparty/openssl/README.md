@@ -4,7 +4,7 @@ OpenSSL
 This directory includes the necessary files to build the OpenSSL libraries, including libcrypto and libssl,
 that work with Open Enclave. The structure of the directory is as follows.
 
-- openssl/ (branch: OpenSSL_1_1_1n)
+- openssl/ (branch: OpenSSL_1_1_1o)
   The clone of official OpenSSL repository that is included as a git submodule, which points to
   a recent release tag. To update the submodule, we use the following procedure:
   - Checkout the tag that we want to update to.
