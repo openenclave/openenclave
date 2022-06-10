@@ -40,15 +40,13 @@
     url_password: "{{ jenkins_admin_password }}"
     dest: "{{ jenkins_agent_root_dir }}/agent.jar"
 
-- name: Oracle JDK8 - Download
+- name: OpenJDK - Download
   ansible.windows.win_get_url:
-    url: "{{ jdk8_url }}"
-    headers:
-      Cookie: "oraclelicense=accept-securebackup-cookie"
-    dest: "{{ tmp_dir }}\\jdk-windows-x64.exe"
+    url: "{{ openjdk_url }}"
+    dest: "{{ tmp_dir }}\\openjdk-windows-x64.msi"
 
-- name: Oracle JDK8 - Install
-  ansible.builtin.raw: "{{ tmp_dir }}\\jdk-windows-x64.exe /s REBOOT=Disable REMOVEOUTOFDATEJRES=1"
+- name: OpenJDK - Install
+  ansible.builtin.raw: "msiexec /i {{ temp_dir }}\\openjdk-windows-x64.msi ADDLOCAL=FeatureMain,FeatureEnvironment,FeatureJarFileRunWith,FeatureJavaHome INSTALLDIR="C:\Program Files\Microsoft\" /quiet
 
 - name: Windows | Check if the service wrapper exists
   ansible.windows.win_stat:
