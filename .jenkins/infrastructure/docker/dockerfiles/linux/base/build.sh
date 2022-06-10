@@ -119,5 +119,5 @@ DOCKER_BUILDKIT=1 docker build \
   --build-arg UBUNTU_CODENAME="${UBUNTU_CODENAME}" \
   --no-cache \
   --file "${SOURCE_DIR}/Dockerfile" \
-  --tag "oeciteam/openenclave-base-ubuntu-${UBUNTU_VERSION}:${IMAGE_TAG}" \
+  --tag "openenclave-base-ubuntu-${UBUNTU_VERSION}:${IMAGE_TAG}" \
   "${BUILD_DIR}"

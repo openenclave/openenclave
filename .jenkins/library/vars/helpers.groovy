@@ -554,3 +554,25 @@ def getUbuntuReleaseVer() {
         script: 'lsb_release -rs'
     ).trim()
 }
+
+/**
+ * Returns current git commit id
+ */
+def get_commit_id() {
+    return sh(script: "git rev-parse --short HEAD", returnStdout: true).tokenize().last()
+}
+
+/**
+ * Returns apt package versions inside Docker container, or None
+ *
+ * @param docker_image  Docker image[:tag]
+ * @param package       Apt package name
+ */
+def dockerGetAptPackageVersion(String docker_image, String apt_package) {
+    version = sh(
+        script: "docker run ${docker_image} apt list --installed 2>/dev/null | grep ${apt_package} | awk \'{print \$2}\'",
+        returnStdout: true
+    ).trim()
+    if ( !version ) { version = "N/A" }
+    return version
+}

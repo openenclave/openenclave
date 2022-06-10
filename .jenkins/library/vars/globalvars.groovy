@@ -22,6 +22,7 @@ import groovy.transform.Field
     "acc-ubuntu-20.04-vanilla": env.UBUNTU_VANILLA_2004_CUSTOM_LABEL ?: "vanilla-ubuntu-2004",
     "acc-ubuntu-18.04-vanilla": env.UBUNTU_VANILLA_1804_CUSTOM_LABEL ?: "vanilla-ubuntu-1804",
     "acc-win2019-dcap":         env.WINDOWS_2019_DCAP_CUSTOM_LABEL ?: "SGXFLC-Windows-2019-DCAP",
-    "acc-v3-win2019-dcap":      env.WINDOWS_2019_DCAP_ICX_CUSTOM_LABEL ?: "ACC-v3-SGXFLC-Windows-2019-DCAP"
+    "acc-v3-win2019-dcap":      env.WINDOWS_2019_DCAP_ICX_CUSTOM_LABEL ?: "ACC-v3-SGXFLC-Windows-2019-DCAP",
+    "shared":                   "Jenkins-Shared-DC2"
 ]
 @Field COMPILER = "clang-10"

@@ -21,12 +21,9 @@ This image supports out-of-proc attestation using Intel SGX. To allow this, the 
 
 ## Versions
 
-All base images available are:  
-[oeciteam/openenclave-base-ubuntu-18.04](https://hub.docker.com/r/oeciteam/openenclave-base-ubuntu-18.04) for Ubuntu 18.04  
-[oeciteam/openenclave-base-ubuntu-20.04](https://hub.docker.com/r/oeciteam/openenclave-base-ubuntu-20.04) for Ubuntu 20.04
+All Docker images offered are available in [this table](https://github.com/openenclave/openenclave/blob/master/DOCKER_IMAGES.md).
 
 The base Docker images can be pulled from Dockerhub like so:
-```docker pull oeciteam/openenclave-base-ubuntu-18.04```
+```docker pull oejenkinscidockerregistry.azurecr.io/openenclave-base-ubuntu-20.04:2022.06.0931```
 
-Tags are versioned by the Intel SGX version that are used to build it. For example: `SGX-2.15.100`.
-Alternatively, you can use the `latest` tag to pull in the container with the latest Intel SGX version. 
+Tags correspond to different Open Enclave or Intel SGX PSW/DCAP versions. You can use the `latest` tag to pull in the container with the latest component versions.
