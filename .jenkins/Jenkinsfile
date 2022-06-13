@@ -92,15 +92,20 @@ pipeline {
                     // Note: this step must be ran outside of a stage in order to exit the entire build.
                     if (gitChanges != null && gitChanges == '') {
                         println("No significant changes detected. Testing is not necessary.")
-                        currentBuild.result = 'SUCCESS'
-                        return
+                        continue_build = false
                     } else {
                         println("Detected the follow file changes: " + gitChanges)
+                        continue_build = true
                     }
                 }
             }
         }
         stage("Trigger downstream pipelines") {
+            when {
+                expression {
+                    return continue_build
+                }
+            }
             parallel {
                 stage('Agnostic Linux') {
                     steps {
