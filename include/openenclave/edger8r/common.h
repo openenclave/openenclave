@@ -182,6 +182,18 @@ done:
 
 #define OE_WRITE_IN_OUT_PARAM OE_WRITE_IN_PARAM
 
+#define OE_WRITE_IN_PARAM_WITH_BARRIER(argname, argcount, argsize, argtype) \
+    if (argname)                                                            \
+    {                                                                       \
+        size_t _size = 0;                                                   \
+        OE_COMPUTE_ARG_SIZE(_size, argcount, argsize);                      \
+        _args.argname = (argtype)(_input_buffer + _input_buffer_offset);    \
+        OE_ADD_SIZE(_input_buffer_offset, _size);                           \
+        oe_memcpy_with_barrier((void*)_args.argname, argname, _size);       \
+    }
+
+#define OE_WRITE_IN_OUT_PARAM_WITH_BARRIER OE_WRITE_IN_PARAM_WITH_BARRIER
+
 #define OE_WRITE_DEEPCOPY_OUT_PARAM(argname, argcount, argsize)                \
     if (argname)                                                               \
     {                                                                          \

@@ -14,28 +14,28 @@
  * oe_host_worker_context_t is used both by the host (windows/linux) and the
  * enclave (ELF). Lock down the layout.
  */
-OE_STATIC_ASSERT(sizeof(oe_host_worker_context_t) == 40);
+OE_STATIC_ASSERT(sizeof(oe_host_worker_context_t) == 48);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_host_worker_context_t, call_arg) == 0);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_host_worker_context_t, enc) == 8);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_host_worker_context_t, is_stopping) == 16);
-OE_STATIC_ASSERT(OE_OFFSETOF(oe_host_worker_context_t, event) == 20);
-OE_STATIC_ASSERT(OE_OFFSETOF(oe_host_worker_context_t, spin_count) == 24);
-OE_STATIC_ASSERT(OE_OFFSETOF(oe_host_worker_context_t, total_spin_count) == 32);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_host_worker_context_t, event) == 24);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_host_worker_context_t, spin_count) == 32);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_host_worker_context_t, total_spin_count) == 40);
 
 /**
  * oe_enclave_worker_context_t is used both by the host (windows/linux) and the
  * enclave (ELF). Lock down the layout.
  */
-OE_STATIC_ASSERT(sizeof(oe_enclave_worker_context_t) == 48);
+OE_STATIC_ASSERT(sizeof(oe_enclave_worker_context_t) == 56);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_worker_context_t, call_arg) == 0);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_worker_context_t, enc) == 8);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_worker_context_t, is_stopping) == 16);
-OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_worker_context_t, event) == 20);
-OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_worker_context_t, spin_count) == 24);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_worker_context_t, event) == 24);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_worker_context_t, spin_count) == 32);
 OE_STATIC_ASSERT(
-    OE_OFFSETOF(oe_enclave_worker_context_t, spin_count_threshold) == 32);
+    OE_OFFSETOF(oe_enclave_worker_context_t, spin_count_threshold) == 40);
 OE_STATIC_ASSERT(
-    OE_OFFSETOF(oe_enclave_worker_context_t, total_spin_count) == 40);
+    OE_OFFSETOF(oe_enclave_worker_context_t, total_spin_count) == 48);
 
 typedef struct _oe_switchless_call_manager
 {

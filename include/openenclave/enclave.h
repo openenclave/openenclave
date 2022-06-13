@@ -22,6 +22,7 @@
 #include "bits/module.h"
 #include "bits/properties.h"
 #include "bits/result.h"
+#include "bits/security.h"
 #include "bits/types.h"
 
 /**
