@@ -218,7 +218,7 @@ done:
  */
 oe_result_t oe_handle_call_enclave_function(uint64_t arg_in)
 {
-    oe_call_enclave_function_args_t args = {0}, *args_ptr;
+    oe_call_enclave_function_args_t args = {0}, *args_host_ptr = NULL;
     oe_call_function_return_args_t* return_args_ptr = NULL;
     oe_result_t result = OE_OK;
     oe_ecall_func_t func = NULL;
@@ -235,21 +235,21 @@ oe_result_t oe_handle_call_enclave_function(uint64_t arg_in)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // Copy args to enclave memory to avoid TOCTOU issues.
-    args_ptr = (oe_call_enclave_function_args_t*)arg_in;
-    args = *args_ptr;
+    args_host_ptr = (oe_call_enclave_function_args_t*)arg_in;
+    args = *args_host_ptr;
 
-    // Ensure that input buffer is valid.
-    // Input buffer must be able to hold atleast an oe_result_t.
-    if (args.input_buffer == NULL ||
-        args.input_buffer_size < sizeof(oe_result_t) ||
-        !oe_is_outside_enclave(args.input_buffer, args.input_buffer_size))
+    // Ensure that input buffer is valid (oe_is_outside_enclave ensures
+    // the buffer is not NULL).
+    // The buffer size must at least equal to oe_call_function_args_t
+    if (!oe_is_outside_enclave(args.input_buffer, args.input_buffer_size) ||
+        args.input_buffer_size < sizeof(oe_call_function_return_args_t))
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    // Ensure that output buffer is valid.
-    // Output buffer must be able to hold atleast an oe_result_t.
-    if (args.output_buffer == NULL ||
-        args.output_buffer_size < sizeof(oe_result_t) ||
-        !oe_is_outside_enclave(args.output_buffer, args.output_buffer_size))
+    // Ensure that output buffer is valid (oe_is_outside_enclave ensures
+    // the buffer is not NULL).
+    // The buffer size must at least equal to oe_call_function_return_args_t
+    if (!oe_is_outside_enclave(args.output_buffer, args.output_buffer_size) ||
+        args.output_buffer_size < sizeof(oe_call_function_return_args_t))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // Validate output and input buffer sizes.
@@ -341,38 +341,49 @@ oe_result_t oe_handle_call_enclave_function(uint64_t arg_in)
 
             void* host_buffer =
                 oe_host_malloc(return_args_ptr->deepcopy_out_buffer_size);
+
             /* Copy the deep-copied content to host memory. */
-            memcpy(
+            OE_CHECK(oe_memcpy_s_with_barrier(
                 host_buffer,
+                return_args_ptr->deepcopy_out_buffer_size,
                 return_args_ptr->deepcopy_out_buffer,
-                return_args_ptr->deepcopy_out_buffer_size);
+                return_args_ptr->deepcopy_out_buffer_size));
+
             /* Release the memory on the enclave heap. */
             oe_free(return_args_ptr->deepcopy_out_buffer);
+
             return_args_ptr->deepcopy_out_buffer = host_buffer;
         }
 
         // Copy outputs to host memory.
-        memcpy(args.output_buffer, output_buffer, args.output_buffer_size);
+        OE_CHECK(oe_memcpy_s_with_barrier(
+            args.output_buffer,
+            args.output_buffer_size,
+            output_buffer,
+            args.output_buffer_size));
 
         // The ecall succeeded.
-        args_ptr->output_bytes_written = output_bytes_written;
-        args_ptr->result = OE_OK;
+        OE_WRITE_VALUE_WITH_BARRIER(
+            &args_host_ptr->output_bytes_written, output_bytes_written);
+        OE_WRITE_VALUE_WITH_BARRIER(&args_host_ptr->result, OE_OK);
     }
 
 done:
-    if (buffer)
-        oe_free(buffer);
-
     if (result != OE_OK && return_args_ptr && args.output_buffer)
     {
         return_args_ptr->result = result;
         return_args_ptr->deepcopy_out_buffer = NULL;
         return_args_ptr->deepcopy_out_buffer_size = 0;
-        memcpy(
+
+        oe_memcpy_s_with_barrier(
             args.output_buffer,
+            args.output_buffer_size,
             return_args_ptr,
             sizeof(oe_call_function_return_args_t));
     }
+
+    if (buffer)
+        oe_free(buffer);
 
     return result;
 }
@@ -716,6 +727,9 @@ static void _exit_enclave(uint64_t arg1, uint64_t arg2)
                 host_ecall_context, sizeof(*host_ecall_context)))
         {
             uint64_t* frame = (uint64_t*)__builtin_frame_address(0);
+
+            /* NOTE: host memory writes that is only for debugging purposes,
+             * no need for using write with barrier */
             host_ecall_context->debug_eexit_rbp = frame[0];
             // The caller's RSP is always given by this equation
             //   RBP + 8 (caller frame pointer) + 8 (caller return address)
@@ -848,11 +862,19 @@ oe_result_t oe_call_host_function_internal(
     bool switchless)
 {
     oe_result_t result = OE_UNEXPECTED;
-    oe_call_host_function_args_t* args = NULL;
-    oe_call_function_return_args_t return_args, *return_args_ptr = NULL;
+    oe_call_host_function_args_t args, *args_host_ptr = NULL;
+    oe_call_function_return_args_t return_args, *return_args_host_ptr = NULL;
 
-    /* Reject invalid parameters */
-    if (!input_buffer || input_buffer_size == 0)
+    /* Ensure input buffer is outside the enclave memory and its size is valid
+     */
+    if (!oe_is_outside_enclave(input_buffer, input_buffer_size) ||
+        input_buffer_size < sizeof(oe_call_function_return_args_t))
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Ensure output buffer is outside the enclave memory and its size is
+     * valid */
+    if (!oe_is_outside_enclave(output_buffer, output_buffer_size) ||
+        output_buffer_size < sizeof(oe_call_function_return_args_t))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /*
@@ -861,32 +883,38 @@ oe_result_t oe_call_host_function_internal(
      * Therefore, for switchless calls, allocate args in the arena so that it is
      * is not overwritten by oe_post_switchless_ocall.
      */
-    args =
-        (oe_call_host_function_args_t*)(switchless ? oe_arena_malloc(sizeof(*args)) : oe_ecall_context_get_ocall_args());
+    args_host_ptr =
+        (oe_call_host_function_args_t*)(switchless ? oe_arena_malloc(sizeof(*args_host_ptr)) : oe_ecall_context_get_ocall_args());
 
-    if (args == NULL)
+    if (!oe_is_outside_enclave(
+            (const void*)args_host_ptr, sizeof(oe_call_host_function_args_t)))
     {
         /* Fail if the enclave is crashing. */
         OE_CHECK(__oe_enclave_status);
         OE_RAISE(OE_UNEXPECTED);
     }
 
-    args->function_id = function_id;
-    args->input_buffer = input_buffer;
-    args->input_buffer_size = input_buffer_size;
-    args->output_buffer = output_buffer;
-    args->output_buffer_size = output_buffer_size;
-    args->result = OE_UNEXPECTED;
+    /* Prepare a local copy of args */
+    args.function_id = function_id;
+    args.input_buffer = input_buffer;
+    args.input_buffer_size = input_buffer_size;
+    args.output_buffer = output_buffer;
+    args.output_buffer_size = output_buffer_size;
+    args.result = OE_UNEXPECTED;
+
+    /* Copy the local copy of args to host memory */
+    OE_CHECK(oe_memcpy_s_with_barrier(
+        args_host_ptr, sizeof(*args_host_ptr), &args, sizeof(args)));
 
     /* Call the host function with this address */
     if (switchless && oe_is_switchless_initialized())
     {
-        oe_result_t post_result = oe_post_switchless_ocall(args);
+        oe_result_t post_result = oe_post_switchless_ocall(args_host_ptr);
 
         // Fall back to regular OCALL if host worker threads are unavailable
         if (post_result == OE_CONTEXT_SWITCHLESS_OCALL_MISSED)
-            OE_CHECK(
-                oe_ocall(OE_OCALL_CALL_HOST_FUNCTION, (uint64_t)args, NULL));
+            OE_CHECK(oe_ocall(
+                OE_OCALL_CALL_HOST_FUNCTION, (uint64_t)args_host_ptr, NULL));
         else
         {
             OE_CHECK(post_result);
@@ -894,7 +922,8 @@ oe_result_t oe_call_host_function_internal(
             while (true)
             {
                 OE_ATOMIC_MEMORY_BARRIER_ACQUIRE();
-                if (__atomic_load_n(&args->result, __ATOMIC_SEQ_CST) !=
+
+                if (__atomic_load_n(&args_host_ptr->result, __ATOMIC_SEQ_CST) !=
                     __OE_RESULT_MAX)
                     break;
 
@@ -905,16 +934,17 @@ oe_result_t oe_call_host_function_internal(
     }
     else
     {
-        OE_CHECK(oe_ocall(OE_OCALL_CALL_HOST_FUNCTION, (uint64_t)args, NULL));
+        OE_CHECK(oe_ocall(
+            OE_OCALL_CALL_HOST_FUNCTION, (uint64_t)args_host_ptr, NULL));
     }
 
     /* Check the result */
-    OE_CHECK(args->result);
+    OE_CHECK(args_host_ptr->result);
 
-    return_args_ptr = (oe_call_function_return_args_t*)output_buffer;
+    return_args_host_ptr = (oe_call_function_return_args_t*)output_buffer;
     /* Copy the marshaling struct from the host memory to avoid TOCTOU issues.
      */
-    return_args = *return_args_ptr;
+    return_args = *return_args_host_ptr;
 
     if (return_args.result == OE_OK)
     {
@@ -951,32 +981,47 @@ oe_result_t oe_call_host_function_internal(
 
             void* enclave_buffer =
                 oe_malloc(return_args.deepcopy_out_buffer_size);
+
+            if (!enclave_buffer)
+                OE_RAISE(OE_OUT_OF_MEMORY);
+
             /* Copy the deep-copied content to enclave memory. */
             memcpy(
                 enclave_buffer,
                 return_args.deepcopy_out_buffer,
                 return_args.deepcopy_out_buffer_size);
+
             /* Release the memory on host heap. */
             oe_host_free(return_args.deepcopy_out_buffer);
+
             /*
              * Update the deepcopy_out_buffer field.
              * Note that the field is still in host memory. Currently, the
              * oeedger8r-generated code will perform an additional check that
              * ensures the buffer stays within the enclave memory.
              */
-            return_args_ptr->deepcopy_out_buffer = enclave_buffer;
+            OE_WRITE_VALUE_WITH_BARRIER(
+                &(return_args_host_ptr->deepcopy_out_buffer), enclave_buffer);
         }
     }
 
-    *output_bytes_written = args->output_bytes_written;
+    *output_bytes_written = args_host_ptr->output_bytes_written;
     result = OE_OK;
 
 done:
-    if (result != OE_OK && return_args_ptr)
+    if (result != OE_OK && return_args_host_ptr)
     {
-        return_args_ptr->result = result;
-        return_args_ptr->deepcopy_out_buffer = NULL;
-        return_args_ptr->deepcopy_out_buffer_size = 0;
+        /* Set up the local return_args for the failing case */
+        return_args.result = result;
+        return_args.deepcopy_out_buffer = NULL;
+        return_args.deepcopy_out_buffer_size = 0;
+
+        /* Copy the return_args to host memory */
+        oe_memcpy_s_with_barrier(
+            return_args_host_ptr,
+            sizeof(*return_args_host_ptr),
+            &return_args,
+            sizeof(return_args));
     }
 
     return result;
@@ -1317,6 +1362,9 @@ void oe_abort_with_td(oe_sgx_td_t* td)
                 host_ecall_context, sizeof(*host_ecall_context)))
         {
             uint64_t* frame = (uint64_t*)__builtin_frame_address(0);
+
+            /* NOTE: host memory writes that is only for debugging purposes,
+             * no need for using write with barrier */
             host_ecall_context->debug_eexit_rbp = frame[0];
             // The caller's RSP is always given by this equation
             //   RBP + 8 (caller frame pointer) + 8 (caller return address)

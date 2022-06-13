@@ -433,15 +433,15 @@ static oe_result_t _switchless_call_enclave_function_impl(
                     //
                     // If event is 1, that indicates a pending wake
                     // notification.
-                    uint32_t oldval = 0;
-                    uint32_t newval = 1;
+                    int64_t oldval = 0;
+                    int64_t newval = 1;
                     // Weak operation could sporadically fail.
                     // We need a strong operation.
-                    if (oe_atomic_compare_and_swap_32(
-                            (uint32_t*)&contexts[tries].event, oldval, newval))
+                    if (oe_atomic_compare_and_swap(
+                            &contexts[tries].event, oldval, newval))
                     {
-                        // The pevious value of the event was 0 which means that
-                        // the worker was previously sleeping. Wake it.
+                        // The previous value of the event was 0 which means
+                        // that the worker was previously sleeping. Wake it.
                         oe_enclave_worker_wake(&contexts[tries]);
                     }
 

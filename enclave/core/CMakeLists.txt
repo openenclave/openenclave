@@ -87,6 +87,7 @@ if (OE_SGX)
     sgx/thread.c
     sgx/threadlocal.c
     sgx/tracee.c
+    sgx/writebarrier.c
     sgx/xstate.c)
 
   # Functions in td_basic.c will change the status of td and may trigger

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "arena.h"
+#include <openenclave/bits/sgx/writebarrier.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/edger8r/common.h>
 #include <openenclave/internal/print.h>
@@ -115,7 +116,7 @@ void* oe_arena_calloc(size_t num, size_t size)
     void* ptr = oe_arena_malloc(total);
     if (ptr != NULL)
     {
-        memset(ptr, 0, total);
+        oe_memset_with_barrier(ptr, 0, total);
     }
     return ptr;
 }

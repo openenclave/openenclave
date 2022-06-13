@@ -7,14 +7,14 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 
-static void _worker_wait(volatile int* event)
+static void _worker_wait(volatile int64_t* event)
 {
     // If event is 1, it means that there a pending wake notification from
     // enclave. Consume it by setting event to 0. Don't wait.
     //
     // If event is 0, then wait until event is 1.
-    int32_t oldval = 1;
-    int32_t newval = 0;
+    int64_t oldval = 1;
+    int64_t newval = 0;
 
     // Weak operations can fail spuriously.
     // We want a strong operation.
@@ -37,7 +37,7 @@ static void _worker_wait(volatile int* event)
     }
 }
 
-static void _worker_wake(volatile int* event)
+static void _worker_wake(volatile int64_t* event)
 {
     *event = 1;
     syscall(
