@@ -51,8 +51,8 @@ pipeline {
                         string(name: 'DOCKER_TAG', value: DOCKER_TAG),
                         string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
                         string(name: 'SGX_VERSION', value: params.SGX_VERSION),
-                        booleanParam(name: 'PUBLISH_DOCKER_HUB', value: false)
-                        booleanParam(name: 'TAG_LATEST', value: false)
+                        booleanParam(name: 'PUBLISH_DOCKER_HUB', value: false),
+                        booleanParam(name: 'TAG_LATEST', value: false),
                         booleanParam(name: 'PUBLISH', value: false)
                     ]
             }
