@@ -79,7 +79,7 @@ static void _host_signal_handler(
         // Exception has been handled.
         return;
     }
-    else if (g_previous_sigaction[sig_num].sa_handler == SIG_DFL)
+    else if (g_previous_sigaction[sig_num].sa_handler == SIG_DFL || g_previous_sigaction[sig_num].sa_handler == SIG_IGN)
     {
         // Bypass if the signal is part of the optional set and is
         // sent to the host and the host does not install the corresponding
@@ -94,7 +94,7 @@ static void _host_signal_handler(
 
         // If not an enclave exception, and no valid previous signal handler is
         // set, raise it again, and let the default signal handler handle it.
-        signal(sig_num, SIG_DFL);
+        signal(sig_num, g_previous_sigaction[sig_num].sa_handler);
         raise(sig_num);
     }
     else
