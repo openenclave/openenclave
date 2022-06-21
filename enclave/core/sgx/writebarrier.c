@@ -164,7 +164,7 @@ static void* _memcpy_unaligned_with_barrier(
 
             while ((gap_count = next_aligned_addr - dest_addr))
             {
-                if (gap_count >= 4)
+                if (gap_count >= 4 && (src_addr % 4) == 0)
                 {
                     OE_WRITE_VALUE_WITH_BARRIER(
                         (void*)dest_addr, *(uint32_t*)src_addr);
@@ -172,7 +172,7 @@ static void* _memcpy_unaligned_with_barrier(
                     src_addr += 4;
                     count -= 4;
                 }
-                else if (gap_count >= 2)
+                else if (gap_count >= 2 && (src_addr % 2) == 0)
                 {
                     OE_WRITE_VALUE_WITH_BARRIER(
                         (void*)dest_addr, *(uint16_t*)src_addr);
@@ -196,14 +196,14 @@ static void* _memcpy_unaligned_with_barrier(
      * the reset of the memory */
     while (count)
     {
-        if (count >= 4)
+        if (count >= 4 && (src_addr % 4) == 0)
         {
             OE_WRITE_VALUE_WITH_BARRIER((void*)dest_addr, *(uint32_t*)src_addr);
             dest_addr += 4;
             src_addr += 4;
             count -= 4;
         }
-        else if (count >= 2)
+        else if (count >= 2 && (src_addr % 2) == 0)
         {
             OE_WRITE_VALUE_WITH_BARRIER((void*)dest_addr, *(uint16_t*)src_addr);
             dest_addr += 2;
