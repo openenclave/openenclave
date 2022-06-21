@@ -65,6 +65,7 @@ else ()
   set(PYTHON "python")
 endif ()
 
+add_subdirectory(log)
 add_subdirectory(mem)
 add_subdirectory(safecrt)
 add_subdirectory(safemath)
