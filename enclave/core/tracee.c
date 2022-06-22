@@ -139,7 +139,6 @@ oe_result_t oe_log(oe_log_level_t level, const char* fmt, ...)
     oe_va_list ap;
     int n = 0;
     int bytes_written = 0;
-    char* message = NULL;
     bool locked = false;
 
     // Skip logging for non-debug-allowed enclaves
@@ -177,7 +176,7 @@ oe_result_t oe_log(oe_log_level_t level, const char* fmt, ...)
     if (n < 0)
         goto done;
 
-    result = _log_enclave_message(level, message);
+    result = _log_enclave_message(level, _trace_buffer);
 
 done:
     if (locked)
