@@ -20,7 +20,7 @@ library "OpenEnclaveJenkinsLibrary@${params.OECI_LIB_VERSION}"
  * @param os_release       The distribution version without "." (e.g. 1804)
  */
 
-def ubuntuPublishRelease(String release_version, String os_release) {
+def ubuntuReleaseSetup(String os_release) {
 
     helpers.WaitForAptLock()
     withCredentials([file(credentialsId: 'azure-repoapi-client', variable: 'repoapiclient'),
@@ -72,25 +72,67 @@ EOF
                 repoclient -c ${WORKSPACE}/config-Ubuntu${OS_RELEASE}.json repo list
             '''
         }
-        script {
-            // Download and publish open-enclave and open-enclave-hostverify packages if PUBLISH_RELEASE is true
-            def os_id = 'Ubuntu'
-            if (params.PUBLISH_RELEASE) {
-                helpers.releaseDownloadLinux(release_version, "open-enclave", 'GitHub', os_id, os_release)
-                helpers.releaseDownloadLinux(release_version, "open-enclave-hostverify", 'GitHub', os_id, os_release)
-                sh """#!/bin/bash
-                    echo "Publishing OpenEnclave ${release_version}"
-                    repoclient -c ${WORKSPACE}/config-Ubuntu${os_release}.json package add "${WORKSPACE}/${release_version}/${os_id}_${os_release}/${os_id}_${os_release}_open-enclave_${release_version}_amd64.deb"
-                    repoclient -c ${WORKSPACE}/config-Ubuntu${os_release}.json package add "${WORKSPACE}/${release_version}/${os_id}_${os_release}/${os_id}_${os_release}_open-enclave-hostverify_${release_version}_amd64.deb"
-                """
-            }
-        }
-        cleanWs()
     }
 }
 
+def release_openenclave(String release_version, String os_release) {
+    // Download and publish open-enclave and open-enclave-hostverify packages if PUBLISH_RELEASE is true
+    def os_id = 'Ubuntu'
+    helpers.releaseDownloadLinux(release_version, "open-enclave", 'GitHub', os_id, os_release)
+    helpers.releaseDownloadLinux(release_version, "open-enclave-hostverify", 'GitHub', os_id, os_release)
+    sh """#!/bin/bash
+        echo "Publishing OpenEnclave ${release_version}"
+        repoclient -c ${WORKSPACE}/config-Ubuntu${os_release}.json package add "${WORKSPACE}/${release_version}/${os_id}_${os_release}/${os_id}_${os_release}_open-enclave_${release_version}_amd64.deb"
+        repoclient -c ${WORKSPACE}/config-Ubuntu${os_release}.json package add "${WORKSPACE}/${release_version}/${os_id}_${os_release}/${os_id}_${os_release}_open-enclave-hostverify_${release_version}_amd64.deb"
+    """
+}
+
+def release_mystikos(String release_version, String os_release) {
+    def os_id = 'Ubuntu'
+    releaseDownloadMystikosLinuxGitHub(release_version, os_id, os_release)
+    sh """#!/bin/bash
+        echo "Publishing Mystikos ${release_version}"
+        repoclient -c ${WORKSPACE}/config-Ubuntu${os_release}.json package add "${WORKSPACE}/${release_version}/${os_id}-${os_release}_mystikos-${release_version}-x86_64.deb"
+    """
+}
+
+def releaseDownloadMystikosLinuxGitHub(String release_version, String os_id, String os_release) {
+    sh """#!/bin/bash -x
+        CHANGED=0
+        valid_url_regex='^https?://[-A-Za-z0-9\\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\\+&@#/%=~_|]\$'
+        ${helpers.WaitForAptLock()}
+        sudo apt-get install -y jq
+        urls=\$(curl -sS https://api.github.com/repos/deislabs/mystikos/releases/tags/v${release_version} | jq --raw-output --compact-output '.assets | map(.browser_download_url) | .[]')
+        for url in \${urls}; do
+            # Check if url is valid
+            if echo "\${url}" | grep -E '^https?://[-A-Za-z0-9\\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\\+&@#/%=~_|]\$'; then
+                # Filter packages specific to current distribution and version
+                if echo "\${url}" | grep "${os_id}-${os_release}_mystikos-${release_version}"; then
+                    wget --no-verbose --directory-prefix="${release_version}" \${url}
+                    if [[ -f "${release_version}/\$(basename \${url})" ]]; then
+                        echo "Downloaded to ${release_version}/\$(basename \${url})"
+                        CHANGED=1
+                    else
+                        echo "[Error] Failed to download from \${url}"
+                        exit 1
+                    fi
+                fi
+            else
+                echo "[Error] Encountered invalid URL: \${url}"
+                exit 1
+            fi
+        done
+        if [[ \${CHANGED} -eq 0 ]]; then
+            echo "[Error] No files were downloaded!"
+            exit 1
+        fi
+    """
+}
+
 pipeline {
-    agent any
+    agent {
+        label 'nonsgx-ubuntu-2004'
+    }
     options {
         timeout(time: 120, unit: 'MINUTES')
         buildDiscarder(
@@ -105,16 +147,67 @@ pipeline {
         string(name: 'BRANCH', defaultValue: 'master', description: 'GitHub repository branch to checkout', trim: true)
         booleanParam(name: "PUBLISH_RELEASE", defaultValue: false, description: 'Publish to public repositories?')
         string(name: "OE_RELEASE_VERSION", defaultValue: '', description: 'Open Enclave Release Version', trim: true)
+        string(name: "MYST_RELEASE_VERSION", defaultValue: '', description: 'Open Enclave Release Version', trim: true)
         string(name: "OECI_LIB_VERSION", defaultValue: 'master', description: 'Version of OE Libraries to use', trim: true)
     }
     stages {
-        stage('Publish Open Enclave Release') {
-            parallel {
-                stage('Publish Ubuntu 20.04') { steps { node('nonsgx-ubuntu-2004') { ubuntuPublishRelease(params.OE_RELEASE_VERSION, '2004') } }}
-                stage('Publish Ubuntu 18.04') { steps { node('nonsgx-ubuntu-1804') { ubuntuPublishRelease(params.OE_RELEASE_VERSION, '1804') } }}
-                // Todo: Add NuGet stage and function
+        stage('Setup') {
+            steps {
+                script {
+                    ubuntuReleaseSetup('2004')
+                    ubuntuReleaseSetup('1804')
+                }
             }
         }
+        stage('Release OE') {
+            when {
+                allOf {
+                    expression { return params.PUBLISH_RELEASE }
+                    expression { return params.OE_RELEASE_VERSION }
+                }
+            }
+            parallel {
+                stage('OE - 18.04') {
+                    steps {
+                        script {
+                            release_openenclave(params.OE_RELEASE_VERSION, '1804')
+                        }
+                    }
+                }
+                stage('OE - 20.04') {
+                    steps {
+                        script {
+                            release_openenclave(params.OE_RELEASE_VERSION, '2004')
+                        }
+                    }
+                }
+            }
+        }
+        stage('Release Mystikos') {
+            when {
+                allOf {
+                    expression { return params.PUBLISH_RELEASE }
+                    expression { return params.MYST_RELEASE_VERSION }
+                }
+            }
+            parallel {
+                stage('Mystikos - 18.04') {
+                    steps {
+                        script {
+                            release_mystikos(params.MYST_RELEASE_VERSION, '1804')
+                        }
+                    }
+                }
+                stage('Mystikos - 20.04') {
+                    steps {
+                        script {
+                            release_mystikos(params.MYST_RELEASE_VERSION, '2004')
+                        }
+                    }
+                }
+            }
+        }
+        // Todo: Add NuGet stage and function
     }
     post {
         always {
