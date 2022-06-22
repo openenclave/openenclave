@@ -17,6 +17,8 @@ if __name__ == "__main__":
     arg_parser.add_argument('--security_version', default="1", type=str, help="Value for the SecurityVersion property. Defaults to 1.")
     arg_parser.add_argument('--extended_product_id', type=str, help="Value for the ExtendedProductID property. Defaults to empty string")
     arg_parser.add_argument('--family_id', type=str, help="Value for the FamilyID property. Defaults to empty string.")
+    arg_parser.add_argument('--create_zero_base_enclave', default="0", type=str, help="Value for the CreateZeroBaseEnclave property. Defaults to 0.")
+    arg_parser.add_argument('--start_address', default="131072", type=str, help="Value for the StartAddress property. Defaults to 131072(0x20000).")
 
     args = arg_parser.parse_args()
     print("Generating {} ...".format(args.config_file))
@@ -33,4 +35,8 @@ if __name__ == "__main__":
         out_file.write("ExtendedProductID={}\n".format(args.extended_product_id))
     if args.family_id:
         out_file.write("FamilyID={}\n".format(args.family_id))
+    if args.create_zero_base_enclave:
+        out_file.write("CreateZeroBaseEnclave={}\n".format(args.create_zero_base_enclave))
+    if args.start_address:
+        out_file.write("StartAddress={}\n".format(args.start_address))
     out_file.close()

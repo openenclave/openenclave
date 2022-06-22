@@ -11,24 +11,21 @@
 #include <sys/socket.h>
 #endif
 
-#include <string.h>
-
 #include <openenclave/attestation/sgx/report.h>
 #include <openenclave/attestation/verifier.h>
-#include <openenclave/host.h>
 #include <openssl/bio.h>
 #include <openssl/err.h>
 #include <openssl/x509_vfy.h>
+#include <string.h>
+#include "cert_verify_config.h"
 #include "common.h"
-#include "tls_server_enc_mrenclave.h"
-#include "tls_server_enc_pubkey.h"
 
 /**
  * Helper function used to make the claim-finding process more convenient. Given
  * the claim name, claim list, and its size, returns the claim with that claim
  * name in the list.
  */
-const oe_claim_t* find_claim(
+static const oe_claim_t* find_claim(
     const oe_claim_t* claims,
     size_t claims_size,
     const char* name)
@@ -41,7 +38,7 @@ const oe_claim_t* find_claim(
     return nullptr;
 }
 
-bool verify_signer_id(
+static bool verify_signer_id(
     const char* pem_key_buffer,
     size_t pem_key_buffer_len,
     uint8_t* expected_signer,
@@ -108,7 +105,7 @@ oe_result_t enclave_claims_verifier(
     if (claim->value_size != sizeof(uint32_t))
     {
         printf(
-            "security_version size(%lu) checking failed\n", claim->value_size);
+            "security_version size(%zu) checking failed\n", claim->value_size);
         goto done;
     }
     printf(TLS_SERVER "\nsecurity_version = %d\n", *claim->value);
@@ -124,26 +121,16 @@ oe_result_t enclave_claims_verifier(
     if (claim->value_size != OE_UNIQUE_ID_SIZE)
     {
         printf(
-            TLS_CLIENT "unique_id size(%lu) checking failed\n",
+            TLS_CLIENT "unique_id size(%zu) checking failed\n",
             claim->value_size);
         goto done;
     }
-    printf(TLS_CLIENT "\nverify unique_id:\n");
-    for (size_t i = 0; i < claim->value_size; i++)
+
+    if (verify_claim_value(claim) != OE_OK)
     {
-        printf("0x%0x ", (uint8_t)claim->value[i]);
-        if (SERVER_ENCLAVE_MRENCLAVE[i] != (uint8_t)claim->value[i])
-        {
-            printf(
-                TLS_CLIENT "unique_id[%lu] expected: 0x%0x  found: 0x%0x ",
-                i,
-                SERVER_ENCLAVE_MRENCLAVE[i],
-                (uint8_t)claim->value[i]);
-            printf(TLS_CLIENT "failed: unique_id not equal\n");
-            goto done;
-        }
+        printf(TLS_ENCLAVE "failed: unique_id not equal\n");
+        goto done;
     }
-    printf("\n" TLS_CLIENT "unique_id validation passed\n");
 
     // The Product ID for the enclave, for SGX enclaves, this is the ISVPRODID
     // value
@@ -156,7 +143,7 @@ oe_result_t enclave_claims_verifier(
     if (claim->value_size != OE_PRODUCT_ID_SIZE)
     {
         printf(
-            TLS_CLIENT "product_id size(%lu) checking failed\n",
+            TLS_CLIENT "product_id size(%zu) checking failed\n",
             claim->value_size);
         goto done;
     }
@@ -176,7 +163,7 @@ oe_result_t enclave_claims_verifier(
     if (claim->value_size != OE_SIGNER_ID_SIZE)
     {
         printf(
-            TLS_CLIENT "signer_id size(%lu) checking failed\n",
+            TLS_CLIENT "signer_id size(%zu) checking failed\n",
             claim->value_size);
         goto done;
     }
@@ -210,9 +197,11 @@ done:
 int verify_callback(int preverify_ok, X509_STORE_CTX* ctx)
 {
     int ret = 0;
-    int der_len = 0;
-    unsigned char* der = nullptr;
-    unsigned char* buff = nullptr;
+    int certificate_size = 0;
+    unsigned char* certificate = nullptr;
+    unsigned char* buffer = nullptr;
+    oe_claim_t* claims = nullptr;
+    size_t claims_length = 0;
     oe_result_t result = OE_FAILURE;
     X509* crt = nullptr;
     int err = X509_V_ERR_UNSPECIFIED;
@@ -241,54 +230,74 @@ int verify_callback(int preverify_ok, X509_STORE_CTX* ctx)
     }
 
     // convert a cert into a buffer in DER format
-    der_len = i2d_X509(crt, nullptr);
-    buff = (unsigned char*)malloc(der_len);
-    if (buff == nullptr)
+    certificate_size = i2d_X509(crt, nullptr);
+    buffer = (unsigned char*)malloc((size_t)certificate_size);
+    if (buffer == nullptr)
     {
-        printf(TLS_CLIENT "malloc failed (der_len=%d)\n", der_len);
+        printf(
+            TLS_CLIENT "malloc failed (certificate_size=%d)\n",
+            certificate_size);
         goto done;
     }
-    der = buff;
-    der_len = i2d_X509(crt, &buff);
-    if (der_len < 0)
+    certificate = buffer;
+    certificate_size = i2d_X509(crt, &buffer);
+    if (certificate_size < 0)
     {
-        printf(TLS_CLIENT "i2d_X509 failed(der_len=%d)\n", der_len);
+        printf(
+            TLS_CLIENT "i2d_X509 failed(certificate_size=%d)\n",
+            certificate_size);
         goto done;
     }
 
     // note: i2d_X509() updates the pointer to the buffer so that following the
-    // call to i2d_X509(), buff is pointing to the "end" of the data buffer
-    // pointed by buff That is, buff = buff + der_len;
+    // call to i2d_X509(), buffer is pointing to the "end" of the data buffer
+    // pointed by buffer That is, buffer = buffer + certificate_size;
     printf(
-        TLS_CLIENT "der=%p buff=%p buff moved by %d offset der_len=%d\n",
-        der,
-        buff,
-        (int)(buff - der),
-        der_len);
+        TLS_CLIENT "certificate=%p buffer=%p buffer moved by %d offset "
+                   "certificate_size=%d\n",
+        certificate,
+        buffer,
+        (int)(buffer - certificate),
+        certificate_size);
 
-#if 1 // for debugging purpose
-    {
-        // output the whole cer in DER format
-        FILE* file = fopen("./cert.der", "wb");
-        fwrite(der, 1, der_len, file);
-        fclose(file);
-    }
-#endif
-
+    printf(" verifying certificate start \n");
     // verify tls certificate
     oe_verifier_initialize();
-    result = oe_verify_attestation_certificate_with_evidence(
-        der, der_len, enclave_claims_verifier, nullptr);
+    result = oe_verify_attestation_certificate_with_evidence_v2(
+        certificate,
+        (size_t)certificate_size,
+        nullptr,
+        0,
+        nullptr,
+        0,
+        &claims,
+        &claims_length);
+
     if (result != OE_OK)
     {
-        printf(TLS_CLIENT "result=%s\n", oe_result_str(result));
+        printf(
+            TLS_CLIENT "oe_verify_attestation_certificate_with_evidence_v2 "
+                       "failed with result=%s\n",
+            oe_result_str(result));
         goto done;
     }
+
+    result = enclave_claims_verifier(claims, claims_length, nullptr);
+
+    if (result != OE_OK)
+    {
+        printf(
+            TLS_CLIENT "enclave_claims_verifier failed with result=%s\n",
+            oe_result_str(result));
+        goto done;
+    }
+
+    printf(" verifying certificate end\n");
     ret = 1;
 done:
 
-    if (der)
-        free(der);
+    free(certificate);
+    oe_free_claims(claims, claims_length);
 
     if (err != X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT)
     {

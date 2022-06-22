@@ -73,6 +73,7 @@ void output_certificate(const uint8_t* data, size_t data_len)
 
 void decode_certificate_pem(FILE* file, const uint8_t* data, size_t data_len)
 {
+#ifdef TEXT_CERT
     X509* x509;
     BIO* input = BIO_new_mem_buf(data, (int)data_len);
     x509 = PEM_read_bio_X509(input, NULL, 0, NULL);
@@ -83,16 +84,23 @@ void decode_certificate_pem(FILE* file, const uint8_t* data, size_t data_len)
             XN_FLAG_COMPAT,
             XN_FLAG_SEP_CPLUS_SPC | XN_FLAG_DUMP_UNKNOWN_FIELDS);
     BIO_free_all(input);
+#else
+    fprintf(file, "%.*s\n", (int)data_len, data);
+#endif
 }
 
 void decode_crl_pem(const uint8_t* data, size_t data_len)
 {
+#ifdef TEXT_CERT
     X509_CRL* x509;
     BIO* input = BIO_new_mem_buf(data, (int)data_len);
     x509 = PEM_read_bio_X509_CRL(input, NULL, NULL, NULL);
     if (x509)
         X509_CRL_print_fp(log_file, x509);
     BIO_free_all(input);
+#else
+    log("%.*s\n", (int)data_len, data);
+#endif
 }
 
 void parse_certificate_extension(const uint8_t* data, size_t data_len)
@@ -101,29 +109,15 @@ void parse_certificate_extension(const uint8_t* data, size_t data_len)
     oe_cert_chain_t cert_chain = {0};
     oe_cert_t leaf_cert = {0};
     ParsedExtensionInfo extension_info = {{0}};
-    size_t buffer_size = 1024;
-    uint8_t* buffer = NULL;
 
     // get leaf cert to parse sgx extension
     oe_cert_chain_read_pem(&cert_chain, data, data_len);
     oe_cert_chain_get_leaf_cert(&cert_chain, &leaf_cert);
 
-    // Try parsing the extensions.
-    buffer = (uint8_t*)malloc(buffer_size);
-    if (buffer == NULL)
-        OE_RAISE(OE_OUT_OF_MEMORY);
-    result =
-        ParseSGXExtensions(&leaf_cert, buffer, &buffer_size, &extension_info);
+    result = oe_parse_sgx_extensions(&leaf_cert, &extension_info);
+    if (result != OE_OK)
+        goto done;
 
-    if (result == OE_BUFFER_TOO_SMALL)
-    {
-        free(buffer);
-        buffer = (uint8_t*)malloc(buffer_size);
-        if (buffer == NULL)
-            OE_RAISE(OE_OUT_OF_MEMORY);
-        result = ParseSGXExtensions(
-            &leaf_cert, buffer, &buffer_size, &extension_info);
-    }
     printf(
         "\n    parsed qe certificate extension (%s) {\n",
         SGX_EXTENSION_OID_STR);
@@ -154,7 +148,6 @@ void parse_certificate_extension(const uint8_t* data, size_t data_len)
         extension_info.opt_smt_enabled ? "true" : "false");
     printf("    } qe cert extension \n");
 done:
-    free(buffer);
     oe_cert_chain_free(&cert_chain);
     oe_cert_free(&leaf_cert);
 }
@@ -217,18 +210,9 @@ void oecertdump_quote_provider_log(
 void set_log_callback()
 {
 #if defined(__linux__)
-    extern oe_sgx_quote_provider_t provider;
-
     // Initialize quote provider and set log callback
     oe_initialize_quote_provider();
-
-    sgx_ql_set_logging_function_t set_log_fcn =
-        (sgx_ql_set_logging_function_t)dlsym(
-            provider.handle, "sgx_ql_set_logging_function");
-    if (set_log_fcn != nullptr)
-    {
-        set_log_fcn(oecertdump_quote_provider_log);
-    }
+    oe_sgx_set_quote_provider_logger(oecertdump_quote_provider_log);
 #endif
 }
 
@@ -305,14 +289,22 @@ oe_result_t output_sgx_report(const uint8_t* report, size_t report_size)
     printf("            cpusvn (hex): ");
     oe_hex_dump(report_body->cpusvn, OE_COUNTOF(report_body->cpusvn));
     printf("            miscselect: 0x%x\n", report_body->miscselect);
+    printf("            isvextprodid (hex): ");
+    oe_hex_dump(
+        report_body->isvextprodid, OE_COUNTOF(report_body->isvextprodid));
     printf("            attributes (hex): ");
     oe_hex_dump(&report_body->attributes, sizeof(report_body->attributes));
     printf("            mrenclave (hex): ");
-    oe_hex_dump(report_body->mrenclave, sizeof(report_body->mrenclave));
+    oe_hex_dump(report_body->mrenclave, OE_COUNTOF(report_body->mrenclave));
     printf("            mrsigner (hex): ");
-    oe_hex_dump(report_body->mrsigner, sizeof(report_body->mrsigner));
+    oe_hex_dump(report_body->mrsigner, OE_COUNTOF(report_body->mrsigner));
+    printf("            configid (hex): ");
+    oe_hex_dump(report_body->configid, OE_COUNTOF(report_body->configid));
     printf("            isvprodid: 0x%x\n", report_body->isvprodid);
     printf("            isvsvn: 0x%x\n", report_body->isvsvn);
+    printf("            configsvn: 0x%x\n", report_body->configsvn);
+    printf("            isvfamilyid (hex): ");
+    oe_hex_dump(report_body->isvfamilyid, OE_COUNTOF(report_body->isvfamilyid));
     printf("            report_data (hex): ");
     oe_hex_dump(&report_body->report_data, sizeof(report_body->report_data));
     printf("        } report_body\n");
@@ -337,9 +329,10 @@ oe_result_t output_sgx_report(const uint8_t* report, size_t report_size)
     oe_hex_dump(
         &qe_report_body->attributes, sizeof(qe_report_body->attributes));
     printf("                    mrenclave (hex): ");
-    oe_hex_dump(qe_report_body->mrenclave, sizeof(qe_report_body->mrenclave));
+    oe_hex_dump(
+        qe_report_body->mrenclave, OE_COUNTOF(qe_report_body->mrenclave));
     printf("                    mrsigner (hex): ");
-    oe_hex_dump(qe_report_body->mrsigner, sizeof(qe_report_body->mrsigner));
+    oe_hex_dump(qe_report_body->mrsigner, OE_COUNTOF(qe_report_body->mrsigner));
     printf("                    isvprodid: 0x%x\n", qe_report_body->isvprodid);
     printf("                    isvsvn: 0x%x\n", qe_report_body->isvsvn);
     printf("                    report_data (hex): ");
@@ -417,6 +410,8 @@ oe_result_t generate_sgx_report(oe_enclave_t* enclave, bool verbose)
             result = oe_get_sgx_endorsements(
                 (const uint8_t*)quote,
                 quote_size,
+                NULL,
+                0,
                 &endorsements_data,
                 &endorsements_data_size);
             if (result != OE_OK)
@@ -542,7 +537,7 @@ oe_result_t get_sgx_report_from_certificate(
 {
     oe_result_t result = OE_OK;
     uint8_t* report_buffer = nullptr;
-    size_t report_buffer_size = certificate_in_der_length;
+    size_t report_buffer_size = 0;
     oe_cert_t certificate = {0};
 
     result = oe_cert_read_der(
@@ -550,15 +545,11 @@ oe_result_t get_sgx_report_from_certificate(
     if (result != OE_OK)
         return result;
 
-    report_buffer = (uint8_t*)malloc(report_buffer_size);
-    if (!report_buffer)
-        return OE_OUT_OF_MEMORY;
-
     // find the extension
     result = oe_cert_find_extension(
         &certificate,
-        X509_OID_FOR_QUOTE_STRING,
-        report_buffer,
+        X509_OID_FOR_NEW_QUOTE_STRING,
+        &report_buffer,
         &report_buffer_size);
 
     if (result == OE_OK)
@@ -568,8 +559,7 @@ oe_result_t get_sgx_report_from_certificate(
     }
     else
     {
-        if (!report_buffer)
-            free(report_buffer);
+        free(report_buffer);
     }
 
     return result;

@@ -38,6 +38,18 @@ OE_EXTERNC_BEGIN
 #define OE_UUID_SIZE 16
 
 /**
+ * The maximum size of UEID in bytes.
+ */
+#define OE_UEID_SIZE 33
+
+/**
+ * UEID types.
+ */
+#define OE_UEID_TYPE_RAND 0x01
+#define OE_UEID_TYPE_IEEE_EUI 0x02
+#define OE_UEID_TYPE_IMEI 0x03
+
+/**
  * Struct containing the definition for an UUID.
  */
 typedef struct _oe_uuid_t
@@ -60,7 +72,7 @@ typedef struct _oe_claim
  */
 
 /**
- * Claims version.
+ * Version of the structure to represent the identity of an enclave.
  */
 #define OE_CLAIM_ID_VERSION "id_version"
 
@@ -114,6 +126,18 @@ extern const char* OE_REQUIRED_CLAIMS[OE_REQUIRED_CLAIMS_COUNT];
  */
 
 /**
+ * The status of the evidence's TCB level (::oe_sgx_tcb_status_t for SGX).
+ * This status comes from the endorsement.
+ */
+#define OE_CLAIM_TCB_STATUS "tcb_status"
+
+/**
+ * The date and time when the evidence's TCB level was certified. This time
+ * comes from the endorsement.
+ */
+#define OE_CLAIM_TCB_DATE "tcb_date"
+
+/**
  * Overall datetime from which the evidence and endorsements are valid.
  */
 #define OE_CLAIM_VALIDITY_FROM "validity_from"
@@ -124,11 +148,21 @@ extern const char* OE_REQUIRED_CLAIMS[OE_REQUIRED_CLAIMS_COUNT];
 #define OE_CLAIM_VALIDITY_UNTIL "validity_until"
 
 /**
+ * Universal entity identity.
+ */
+#define OE_CLAIM_UEID "ueid"
+
+/**
+ * Hardware Model.
+ */
+#define OE_CLAIM_HARDWARE_MODEL "hardware_model"
+
+/**
  * @cond DEV
  *
  */
 
-#define OE_OPTIONAL_CLAIMS_COUNT 2
+#define OE_OPTIONAL_CLAIMS_COUNT 6
 // This array is needed for tests
 extern const char* OE_OPTIONAL_CLAIMS[OE_OPTIONAL_CLAIMS_COUNT];
 
@@ -154,7 +188,16 @@ typedef enum _oe_policy_type
      *
      * The policy will be in the form of `oe_datetime_t`.
      */
-    OE_POLICY_ENDORSEMENTS_TIME = 1
+    OE_POLICY_ENDORSEMENTS_TIME = 1,
+
+    /**
+     * Enforces a baseline of endorsements that is defined and used
+     * by third party endorsements info caching service.
+     *
+     * The policy can only be specified once, having multiple polices of this
+     * type will result in API error.
+     */
+    OE_POLICY_ENDORSEMENTS_BASELINE = 2
 } oe_policy_type_t;
 
 /**

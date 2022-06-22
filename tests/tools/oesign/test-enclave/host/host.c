@@ -4,26 +4,11 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/load.h>
+#include <openenclave/internal/sgx/tests.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
-#include "../host/sgx/cpuid.h"
 
 #include "oesign_test_u.h"
-
-static bool _is_kss_supported()
-{
-    uint32_t eax, ebx, ecx, edx;
-    eax = ebx = ecx = edx = 0;
-
-    // Obtain feature information using CPUID
-    oe_get_cpuid(0x12, 0x1, &eax, &ebx, &ecx, &edx);
-
-    // Check if KSS (bit 7) is supported by the processor
-    if (!(eax & (1 << 7)))
-        return false;
-    else
-        return true;
-}
 
 int main(int argc, const char* argv[])
 {
@@ -41,7 +26,7 @@ int main(int argc, const char* argv[])
 
     // Create the enclave
     uint32_t flags = oe_get_create_flags();
-    bool is_kss_supported = _is_kss_supported();
+    bool is_kss_supported = oe_sgx_is_kss_supported();
 
     /* Load the ELF image */
     if ((result = oe_load_enclave_image(argv[1], &oeimage)) != OE_OK)
@@ -50,10 +35,18 @@ int main(int argc, const char* argv[])
     }
 
     /* Load the SGX enclave properties */
-    if ((result = oe_sgx_load_enclave_properties(
-             &oeimage, OE_INFO_SECTION_NAME, &properties)) != OE_OK)
+    if ((result = oe_sgx_load_enclave_properties(&oeimage, &properties)) !=
+        OE_OK)
     {
         oe_put_err("oe_sgx_load_enclave_properties(): result=%u", result);
+    }
+
+    if (properties.config.flags.create_zero_base_enclave &&
+        (properties.config.attributes & OE_ENCLAVE_FLAG_SIMULATE))
+    {
+        printf("0-base enclave creation is not supported in simulation-mode. "
+               "Test not run.");
+        return 0;
     }
 
     if ((result = oe_create_oesign_test_enclave(
@@ -93,7 +86,10 @@ int main(int argc, const char* argv[])
         }
     }
 
-    if (_is_kss_supported())
+    /* check_kss_extended_ids currently assumes the quote provider is available.
+     * Skip if there is no quote provider for now.
+     */
+    if (is_kss_supported && oe_sgx_has_quote_provider())
     {
         result = check_kss_extended_ids(
             enclave,

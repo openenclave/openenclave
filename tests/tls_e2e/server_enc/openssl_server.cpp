@@ -49,6 +49,7 @@ int launch_tls_client(
 int create_listener_socket(uint16_t port, int& server_socket)
 {
     int ret = -1;
+    const int reuse = 1;
     struct sockaddr_in addr;
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
@@ -58,6 +59,17 @@ int create_listener_socket(uint16_t port, int& server_socket)
     if (server_socket < 0)
     {
         OE_TRACE_ERROR(TLS_SERVER "socket creation failed \n");
+        goto exit;
+    }
+
+    if (setsockopt(
+            server_socket,
+            SOL_SOCKET,
+            SO_REUSEADDR,
+            (const void*)&reuse,
+            sizeof(reuse)) < 0)
+    {
+        OE_TRACE_ERROR(TLS_SERVER "setsocket failed \n");
         goto exit;
     }
 
@@ -194,7 +206,7 @@ int setup_tls_server(struct tls_control_args* config, char* server_port)
         goto exit;
     }
 
-    sscanf(server_port, "%d", &server_port_num); // conver to char* to int
+    server_port_num = (uint16_t)atoi(server_port);
     if (create_listener_socket(server_port_num, server_socket_fd) != 0)
     {
         OE_TRACE_ERROR(TLS_SERVER
@@ -246,6 +258,6 @@ OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
     true, /* Debug */
-    512,  /* NumHeapPages */
-    128,  /* NumStackPages */
+    1024, /* NumHeapPages */
+    512,  /* NumStackPages */
     1);   /* NumTCS */

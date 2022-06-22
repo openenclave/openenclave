@@ -42,14 +42,17 @@ whether one will be needed, we suggest reaching out to a member of
 [SIG-Architecture](sig-architecture/README.md) to get their opinion before you get too
 far with the implementation.
 
-Weekly Issue Triage
--------------------
+Weekly Issue Triage and Community Meeting
+-----------------------------------------
 
-Once a week, a [Triage meeting](triage/README.md) is held to review
+Once a week, a [Triage and Community meeting](triage/README.md) is held to review
 newly-open issues and ensure they are classified correctly. Generally speaking,
 if you've filed an issue or opened a PR and have not had any response within a
 week, you are invited to politely poke the project maintainers; we try to get to
 everything by the next Triage meeting, but it doesn't always happen.
+During the triage and community meeting, developers can also discuss any
+problems w.r.t contributing and also bring up PRs they would like to get
+traction for.
 
 Help Wanted
 ------------

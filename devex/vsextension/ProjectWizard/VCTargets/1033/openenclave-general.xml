@@ -35,6 +35,16 @@
                   Category="General">
   </StringProperty>
 
+  <EnumProperty Name="CryptoLib"
+                DisplayName="Crypto Library"
+                Description="Crypto Library to link with."
+                Category="General"
+                IsRequired="true"
+                Default="mbedtls">
+    <EnumValue Name="mbedtls" DisplayName="Mbed TLS" />
+    <EnumValue Name="openssl" DisplayName="OpenSSL" />
+  </EnumProperty>
+
   <BoolProperty Name="UseLldLink"
                 DisplayName="Use lld-link"
                 Description="Use lld-link for linking.  If this option is disabled, the Microsoft linker (link.exe) will be used instead."

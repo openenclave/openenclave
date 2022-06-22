@@ -10,35 +10,13 @@
 #ifndef _OE_DEBUGRT_HOST_H
 #define _OE_DEBUGRT_HOST_H
 
-#include <openenclave/bits/defs.h>
-#include <openenclave/bits/result.h>
-#include <openenclave/internal/defs.h> // For OE_STATIC_ASSERT
+#include <openenclave/internal/debugrt/common.h>
 #include <stdint.h>
 #include <wchar.h>
 
-/**
- * If debugrt is built as a shared library, then symbols are exported.
- * Otherwise, symbols are not exported.
- *
- * In Linux, debugrt is built as a static library that the host application
- * links against. The debugrt is subsumed by the host application.
- *
- * In Windows, debugrt is built as a shared library. The host application
- * dynamically loads oedebugrt.dll and calls functions via a bridge.
- * This allows applications to be executed even when oedeburt.dll is not found
- * on the system. Additionally, release enclaves are completely decoupled from
- * oedeburt.dll. See host/sgx/windows/debugrtbridge.c
- */
-
-#ifdef OE_BUILDING_DEBUGRT_SHARED_LIBRARY
-#define OE_DEBUGRT_EXPORT OE_EXPORT
-#else
-#define OE_DEBUGRT_EXPORT
-#endif
-
 OE_EXTERNC_BEGIN
 
-#define OE_DEBUG_ENCLAVE_VERSION 1
+#define OE_DEBUG_ENCLAVE_VERSION 2
 
 #define OE_DEBUG_ENCLAVE_MAGIC 0xabc540ee14fa48ce
 
@@ -47,22 +25,31 @@ OE_EXTERNC_BEGIN
 
 typedef struct _debug_enclave_t
 {
+    // Magic value and version.
     uint64_t magic;
-
     uint64_t version;
 
+    // The next enclave in the global list of enclaves.
     struct _debug_enclave_t* next;
 
+    // Path to the enclave's binary file and length of the path.
+    // UTF-8 encoding.
     const char* path;
     uint64_t path_length;
 
+    // The address at which the enclave has been loaded.
     const void* base_address;
     uint64_t size;
 
+    // Array of TCS addresses.
     struct _sgx_tcs** tcs_array;
-    uint64_t num_tcs;
+    uint64_t tcs_count;
 
+    // Enclave flags. Debug, Simulate etc.
     uint64_t flags;
+
+    // The list of secondary modules.
+    oe_debug_module_t* modules;
 } oe_debug_enclave_t;
 
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, magic) == 0);
@@ -73,8 +60,9 @@ OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, path_length) == 32);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, base_address) == 40);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, size) == 48);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, tcs_array) == 56);
-OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, num_tcs) == 64);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, tcs_count) == 64);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, flags) == 72);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, modules) == 80);
 
 #define OE_DEBUG_THREAD_BINDING_MAGIC 0x24cb0317d077d636
 
@@ -156,6 +144,31 @@ OE_DEBUGRT_EXPORT extern oe_debug_thread_binding_t*
  * passed as the sole element of the argument array.
  */
 #define OE_DEBUGRT_ENCLAVE_TERMINATED_EVENT 0x0edeb647
+
+/**
+ * The following event is raised by the runtime after a module is loaded:
+ *   ULONG_PTR args[1] = { oe_debug_module_t_ptr };
+ *   RaiseException(OE_DEBUGRT_MODULE_LOADED_EVENT,
+ *                  0,  // dwExceptionFlags
+ *                  1,  // always 1 (number of argument)
+ *                  args)
+ * The oe_debug_module_t structure corresponding to the loaded module is
+ * passed as the sole element of the argument array.
+ */
+#define OE_DEBUGRT_MODULE_LOADED_EVENT 0x0edeb648
+
+/**
+ * The following event is raised by the runtime after a module has been
+ * unloaded:
+ *   ULONG_PTR args[1] = { oe_debug_module_t_ptr };
+ *   RaiseException(OE_DEBUGRT_MODULE_UNLOADED_EVENT,
+ *                  0,  // dwExceptionFlags
+ *                  1,  // always 1 (number of argument)
+ *                  args)
+ * The oe_debug_module_t structure corresponding to the unloaded module is
+ * passed as the sole element of the argument array.
+ */
+#define OE_DEBUGRT_MODULE_UNLOADED_EVENT 0x0edeb649
 
 #endif
 

@@ -336,13 +336,14 @@ done:
 oe_result_t oe_get_sgx_endorsements(
     const uint8_t* remote_report,
     size_t remote_report_size,
+    const oe_policy_t* policies,
+    size_t policies_size,
     uint8_t** endorsements_buffer,
     size_t* endorsements_buffer_size)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_get_sgx_quote_verification_collateral_args_t
         quote_verification_collateral = {0};
-
     const uint8_t* pem_pck_certificate = NULL;
     size_t pem_pck_certificate_size = 0;
     oe_cert_chain_t pck_cert_chain = {0};
@@ -358,6 +359,21 @@ oe_result_t oe_get_sgx_endorsements(
 
     *endorsements_buffer = NULL;
     *endorsements_buffer_size = 0;
+
+    // check if there is any endorsement baseline specified
+    if (policies_size > 0 && policies)
+    {
+        for (size_t i = 0; i < policies_size; ++i)
+        {
+            if (policies[i].type == OE_POLICY_ENDORSEMENTS_BASELINE)
+            {
+                quote_verification_collateral.baseline = policies[i].policy;
+                quote_verification_collateral.baseline_size =
+                    policies[i].policy_size;
+                break;
+            }
+        }
+    }
 
     // Get PCK cert chain from the quote.
     OE_CHECK_MSG(
@@ -393,7 +409,7 @@ oe_result_t oe_get_sgx_endorsements(
             &quote_verification_collateral,
             (oe_endorsements_t**)endorsements_buffer,
             endorsements_buffer_size),
-        "Failed to create SGX endorsements.",
+        "Failed to create SGX endorsements. %s",
         oe_result_str(result));
 
     result = OE_OK;

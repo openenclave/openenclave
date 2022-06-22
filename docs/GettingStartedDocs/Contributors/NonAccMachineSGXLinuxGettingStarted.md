@@ -4,9 +4,9 @@
 This document is to provide a viable solution to enable Open Enclave SGX DCAP remote attestation to run on non-Azure Confidential Computing (ACC) machines. It relies on several Intel components and services which are subject to Intel's changes.
 
 ## 1. Platform requirements
-- Ubuntu 18.04-LTS 64-bits (should also work on 16.04 LTS but hasn't been tested).
+- Ubuntu 18.04-LTS or Ubuntu 20.04-LTS 64-bit.
 - SGX1 capable system with Flexible Launch Control support. This feature is only available on Intel Coffee Lake processor (8th gen) or newer.
-- Strongly recommend to update your BIOS to newest version before start. With the setup described by this document, all attestation will be against the most recent collateral. Old BIOS versions, which may have lower CPU SVN, will cause attestation to fail.
+- It is strongly recommended to update your BIOS to newest version before start. With the setup described by this document, all attestation will be against the most recent collateral. Old BIOS versions, which may have lower CPU SVN, will cause attestation to fail.
 
 ## 2. Set up openenclave environment
 ### 2.1 Clone Open Enclave SDK repo from GitHub
@@ -40,7 +40,7 @@ NOTE: The Ansible playbook commands from above will try to execute tasks with s
 ### 3.1 Install Intel DCAP Quote Provider Library
 To install Intel DCAP Quote Provider Library, you can choose to install it from the Intel SGX repository (recommended), or install it manually with dpkg.
 
-- Install Intel DCAP Quote Provider Library from the Intel SGX APT repository
+#### Option 1: Install Intel DCAP Quote Provider Library from the Intel SGX APT repository
 
 If you set up your environment by keeping following this documentation, then the Intel SGX APT source repository has been added. Directly run the following command to install it.
 
@@ -52,12 +52,12 @@ NOTE: In case the Intel SGX APT source repository is not added to your system. R
 
 On Ubuntu 18.04:
 ```bash
-echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu bionic main' | sudo tee /etc/apt/sources.list.d/intelsgx.list
+echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu bionic main' | sudo tee /etc/apt/sources.list.d/intel-sgx.list
 ```
 
-On Ubuntu 16.04:
+On Ubuntu 20.04:
 ```bash
-echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu xenial main' | sudo tee /etc/apt/sources.list.d/intelsgx.list
+echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu focal main' | sudo tee /etc/apt/sources.list.d/intel-sgx.list
 ```
 
 Add the key to the list of trusted keys used by the apt to authenticate packages:
@@ -65,14 +65,18 @@ Add the key to the list of trusted keys used by the apt to authenticate packages
 wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | sudo apt-key add -
 ```
 
-Update the apt
+Update apt package database
 ```bash
 sudo apt-get update
 ```
 
-- Or Install Intel DCAP Quote Provider with dpkg manually
+#### Option 2: Install Intel DCAP Quote Provider with dpkg manually
 
-The [libsgx-dcap-default-qpl directory](https://download.01.org/intel-sgx/sgx-dcap/1.8/linux/distro/ubuntu18.04-server/debian_pkgs/libs/libsgx-dcap-default-qpl/) lists all different version of libsgx-dcap-default-qpl, please download the most recent version that matches your OS version. For Ubuntu 18.04 (code name [Bionic Beaver](https://wiki.ubuntu.com/BionicBeaver)), please download the version libsgx-dcap-default-qpl_{version}-bionic1_amd64.deb. For Ubuntu 16.04 (code name [Xenial Xerus](https://wiki.ubuntu.com/XenialXerus)), please download the version libsgx-dcap-default-qpl_{version}-xenial1_amd64.deb.
+Intel DCAP Quote Provider package can be installed manually by finding the appropriate libsgx-dcap-default-qpl package in [the Intel SGX DCAP repository](https://download.01.org/intel-sgx/sgx-dcap/). As there are multiple different versions available, please download the version that matches Intel SGX version and your OS version. 
+
+For Ubuntu 18.04 (code name [Bionic Beaver](https://wiki.ubuntu.com/BionicBeaver)), please download the version `libsgx-dcap-default-qpl_{VERSION}-bionic1_amd64.deb`. Example: Ubuntu 18.04 with Intel SGX DCAP 1.10.3 would download [libsgx-dcap-default-qpl_1.10.103.1-bionic1_amd64.deb](https://download.01.org/intel-sgx/sgx-dcap/1.10.3/linux/distro/ubuntu18.04-server/debian_pkgs/libs/libsgx-dcap-default-qpl/libsgx-dcap-default-qpl_1.10.103.1-bionic1_amd64.deb).
+
+For Ubuntu 20.04 (code name [Focal Fossa](https://wiki.ubuntu.com/FocalFossa)), please download the version `libsgx-dcap-default-qpl_{VERSION}-focal1_amd64.deb`. For example: Ubuntu 20.04 with Intel SGX DCAP 1.10.3 would download [libsgx-dcap-default-qpl_1.10.103.1-focal1_amd64.deb](https://download.01.org/intel-sgx/sgx-dcap/1.10.3/linux/distro/ubuntu18.04-server/debian_pkgs/libs/libsgx-dcap-default-qpl/libsgx-dcap-default-qpl_1.10.103.1-focal1_amd64.deb).
 
 In this document, we use libsgx-dcap-default-qpl_1.8.100.2-bionic1_amd64.deb as an example, run the command below to download the package
 ```bash
@@ -103,14 +107,14 @@ sudo ln -s libdcap_quoteprov.so.1.8.100.2 libdcap_quoteprov.so
 
 NOTES TO USERS WHO HAVE ALREADY INSTALLED AZURE DCAP CLIENT:
 
-If you have Azure DCAP client installed before trying these instructions, please make sure the Azure one is renamed to something else.
+If you have [Azure DCAP Client](https://github.com/microsoft/Azure-DCAP-Client) installed before trying these instructions, please make sure the Azure one is renamed to something else.
 
 To check if you have it installed, run the following command.
 ```bash
 dpkg --list | grep az-dcap-client
 ```
 
-If you don't have the Azure DCAP client installed previously, please skip the content below.
+If you don't have the Azure DCAP Client installed previously, please skip the content below.
 
 In most cases the Azure version of libdcap_quoteprov.so is located in /usr/lib. Check your path before changing. Here we use /usr/lib as an example.
 
@@ -167,15 +171,19 @@ sudo apt-get install -y nodejs
 
 To install PCCS, you can choose to install it from the Intel SGX repository (recommended), or install it manually with dpkg.
 
-- Install PCCS from the Intel SGX repository
+#### Option 1: Install PCCS from the Intel SGX repository
 ```bash
 sudo apt install sgx-dcap-pccs
 ```
 NOTE: In case the Intel SGX APT source repository is not added to your system. See how to add it in Section 3.1.
 
-- Or Install PCCS with dpkg manually
+#### Option 2: Install PCCS with dpkg manually
 
-From the [list of different versions of pccs](https://download.01.org/intel-sgx/sgx-dcap/1.8/linux/distro/ubuntu18.04-server/debian_pkgs/web/sgx-dcap-pccs/), please download the most recent version that matches your OS version.
+PCCS can be installed manually by finding the appropriate sgx-dcap-pccs package in [the Intel SGX DCAP repository](https://download.01.org/intel-sgx/sgx-dcap/). As there are multiple different versions available, please download the version that matches Intel SGX version and your OS version. 
+
+For Ubuntu 18.04, please download the version `sgx-dcap-pccs_{VERSION}-bionic1_amd64.deb`. Example: Ubuntu 18.04 with Intel SGX DCAP 1.10.3 would download [sgx-dcap-pccs_1.10.103.1-bionic1_amd64.deb](https://download.01.org/intel-sgx/sgx-dcap/1.10.3/linux/distro/ubuntu18.04-server/debian_pkgs/web/sgx-dcap-pccs/sgx-dcap-pccs_1.10.103.1-bionic1_amd64.deb).
+
+For Ubuntu 20.04, please download the version `sgx-dcap-pccs_{VERSION}-focal1_amd64.deb`. For example: Ubuntu 20.04 with Intel SGX DCAP 1.10.3 would download [sgx-dcap-pccs_1.10.103.1-focal1_amd64.deb](https://download.01.org/intel-sgx/sgx-dcap/1.10.3/linux/distro/ubuntu20.04-server/debian_pkgs/web/sgx-dcap-pccs/sgx-dcap-pccs_1.10.103.1-focal1_amd64.deb).
 
 In this document, we use sgx-dcap-pccs_1.8.100.2-bionic1_amd64.deb as an example.  Run the command below to download the package
 ```bash

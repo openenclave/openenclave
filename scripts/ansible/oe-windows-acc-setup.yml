@@ -8,26 +8,26 @@
   tasks:
     - name: OE setup | Set installer URLs from the OE storage account
       set_fact:
-        intel_psw_url:       "https://oejenkins.blob.core.windows.net/oejenkins/Intel%20SGX%20PSW%20for%20Windows%20v2.11.100.3.exe"
-        intel_psw_hash:      "72D0C5DCFC24E0DB5B9FB3C2CB5B0242002D1A0DE2A8D4B4AEC862D88C7CBC13"
-        intel_dcap_url:      "https://oejenkins.blob.core.windows.net/oejenkins/Intel%20SGX%20DCAP%20for%20Windows%20v1.9.100.3.exe"
-        intel_dcap_hash:     "7B09D4455FDFC3DE10B6BC7F4645C16E2E450E41118D0C3E69878078192B4BA4"
-        git_url:             "https://oejenkins.blob.core.windows.net/oejenkins/Git-2.19.1-64-bit.exe"
-        git_hash:            "5E11205840937DD4DFA4A2A7943D08DA7443FAA41D92CCC5DAFBB4F82E724793"
+        intel_psw_url:       "https://registrationcenter-download.intel.com/akdlm/irc_nas/18651/Intel%20SGX%20PSW%20for%20Windows%20v2.15.100.4.exe"
+        intel_psw_hash:      "E541F3E248D5B17E52C764B93699BE94EBB4FE2CE3A151058CDF1F6B291873F9"
+        intel_dcap_url:      "https://registrationcenter-download.intel.com/akdlm/irc_nas/18650/Intel%20SGX%20DCAP%20for%20Windows%20v1.13.100.4.exe"
+        intel_dcap_hash:     "3FCE53D44CB9FF03DE9C369F878949AC48E8BC19F9E2C0116059C0368477C672"
+        git_url:             "https://oejenkins.blob.core.windows.net/oejenkins/Git-2.31.1-64-bit.exe"
+        git_hash:            "C43611EB73AD1F17F5C8CC82AE51C3041A2E7279E0197CCF5F739E9129CE426E"
         seven_zip_url:       "https://oejenkins.blob.core.windows.net/oejenkins/7z1806-x64.msi"
         seven_zip_hash:      "F00E1588ED54DDF633D8652EB89D0A8F95BD80CCCFC3EED362D81927BEC05AA5"
         vs_buildtools:       "https://oejenkins.blob.core.windows.net/oejenkins/vs_buildtools_2017.exe"
         vs_buildtools_hash:  "9822B4C851E14D9658BABD1533F66F518C6169196E985FE5713B2774128832AE"
-        clang7_url:          "https://oejenkins.blob.core.windows.net/oejenkins/LLVM-7.0.1-win64.exe"
-        clang7_hash:         "672E4C420D6543A8A9F8EC5F1E5F283D88AC2155EF4C57232A399160A02BFF57"
+        clang_url:           "https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/LLVM-10.0.0-win64.exe"
+        clang_hash:          "893f8a12506f8ad29ca464d868fb432fdadd782786a10655b86575fc7fc1a562"
         shellcheck_url:      "https://oejenkins.blob.core.windows.net/oejenkins/shellcheck-v0.7.0.zip"
         shellcheck_hash:     "02CFA14220C8154BB7C97909E80E74D3A7FE2CBB7D80AC32ADCAC7988A95E387"
         nuget_url:           "https://oejenkins.blob.core.windows.net/oejenkins/nuget-3.4.3.nupkg"
         nuget_hash:          "2D4D38666E5C7D27EE487C60C9637BD9DD63795A117F0E0EDC68C55EE6DFB71F"
         devcon_package_url:  "https://oejenkins.blob.core.windows.net/oejenkins/devcon_package.cab"
         devcon_package_hash: "A38E409617FC89D0BA1224C31E42AF4344013FEA046D2248E4B9E03F67D5908A"
-        az_dcap_client_url:  "https://oejenkins.blob.core.windows.net/oejenkins/microsoft.azure.dcap.1.6.0.nupkg"
-        az_dcap_client_hash: "CC6D4071CE03B9E6922C3265D99FB1C0E56FCDB3409CBCEDB5A76F4886A3964A"
+        az_dcap_client_url:  "https://oejenkins.blob.core.windows.net/oejenkins/microsoft.azure.dcap.1.10.0.nupkg"
+        az_dcap_client_hash: "4B416DA557C1102CBC9FFD5D39B6B344762F8DFD17BA2BB0D0EDC0ACABE2C06B"
         nsis_url:            "https://oejenkins.blob.core.windows.net/oejenkins/nsis-3.05-setup.exe"
         nsis_hash:           "1A3CC9401667547B9B9327A177B13485F7C59C2303D4B6183E7BC9E6C8D6BFDB"
 
@@ -46,8 +46,8 @@
         -SevenZipHash        "{{ seven_zip_hash }}"
         -VSBuildToolsURL     "{{ vs_buildtools }}"
         -VSBuildToolsHash    "{{ vs_buildtools_hash }}"
-        -Clang7URL           "{{ clang7_url }}"
-        -Clang7Hash          "{{ clang7_hash }}"
+        -ClangURL            "{{ clang_url }}"
+        -ClangHash           "{{ clang_hash }}"
         -ShellCheckURL       "{{ shellcheck_url }}"
         -ShellCheckHash      "{{ shellcheck_hash }}"
         -NugetURL            "{{ nuget_url }}"
@@ -58,6 +58,7 @@
         -AzureDCAPNupkgHash  "{{ az_dcap_client_hash }}"
         -NSISURL             "{{ nsis_url }}"
         -NSISHash            "{{ nsis_hash }}"
+        -InstallDocker
 
      # One way to ensure the system is reliable just after a reboot, is to set WinRM to a delayed startup
     - name: Ensure WinRM starts when the system has settled and is ready to work reliably
@@ -65,17 +66,19 @@
         name: WinRM
         start_mode: delayed
 
-    - name: Install all security, critical, and rollup updates without a scheduled task
-      win_updates:
-        category_names:
-          - SecurityUpdates
-          - CriticalUpdates
-          - UpdateRollups
-        reboot: yes
-        reboot_timeout: 3600
-
-    - name: OE setup | Reboot the node
-      win_reboot:
+    - name: OE setup | Windows Updates
+      block:
+        - name: Install all security, critical, and rollup updates without a scheduled task
+          win_updates:
+            category_names:
+              - SecurityUpdates
+              - CriticalUpdates
+              - UpdateRollups
+            reboot: yes
+            reboot_timeout: 3600
+      always:
+        - name: OE setup | Reboot the node
+          win_reboot:
 
     - import_role:
         name: windows/openenclave

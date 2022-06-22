@@ -490,6 +490,15 @@ done:
     return -1;
 }
 
+static int _consolefs_ftruncate(oe_fd_t* file, oe_off_t length)
+{
+    OE_UNUSED(file);
+    OE_UNUSED(length);
+    OE_RAISE_ERRNO(OE_EINVAL);
+done:
+    return -1;
+}
+
 static int _consolefs_fsync(oe_fd_t* file)
 {
     OE_UNUSED(file);
@@ -513,6 +522,7 @@ static oe_file_ops_t _ops = {
     .pwrite = _consolefs_pwrite,
     .getdents64 = _consolefs_getdents64,
     .fstat = _consolefs_fstat,
+    .ftruncate = _consolefs_ftruncate,
     .fsync = _consolefs_fsync,
     .fdatasync = _consolefs_fsync,
 };

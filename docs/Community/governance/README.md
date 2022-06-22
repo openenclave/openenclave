@@ -19,17 +19,24 @@ Members
 
 | Name                 | Company     | Email                         | GitHub Alias   |
 |----------------------|-------------|-------------------------------|----------------|
-| Aeva van der Veen    | Microsoft   | aeva@dont.io                  | AevaOnline     |
+| Aeva Black           | Microsoft   | aeva@dont.io                  | AevaOnline     |
+| Anand Krishnamoorthi | Microsoft   | anakrish@microsoft.com        | anakrish       |
+| Dave Thaler          | Microsoft   | dthaler@microsoft.com         | dthaler        |
+| Mark Shanahan        | Intel       | mark.shanahan@intel.com       | MWShan         |
+| Radhika Jandhyala    | Microsoft   | radhikaj@microsoft.com        | radhikaj       |
+| Felix Schuster       | Edgeless    | fs@edgeless.systems           | flxflx         |
+
+Emeritus Members
+----------------
+
+| Name                 | Company     | Email                         | GitHub Alias   |
+|----------------------|-------------|-------------------------------|----------------|
 | Akash Gupta          | Microsoft   | akagup@microsoft.com          | gupta-ak       |
 | Amaury Chamayou      | Microsoft   | amaury.chamayou@microsoft.com | achamayou      |
-| Anand Krishnamoorthi | Microsoft   | anakrish@microsoft.com        | anakrish       |
 | Andrew Schwartzmeyer | Microsoft   | andrew@schwartzmeyer.com      | andschwa       |
-| Dave Thaler          | Microsoft   | dthaler@microsoft.com         | dthaler        |
 | John Kordich         | Independent | jkordich@gmail.com            | johnkord       |
 | Mike Brasher         | Microsoft   | mikbras@microsoft.com         | mikbras        |
-| Radhika Jandhyala    | Microsoft   | radhikaj@microsoft.com        | radhikaj       |
 | Simon Leet           | Microsoft   | simon.leet@microsoft.com      | CodeMonkeyLeet |
-
 
 TODO
 ----

@@ -62,10 +62,9 @@ exit:
 
 int ecall_dispatcher::get_enclave_format_settings(
     const oe_uuid_t* format_id,
-    uint8_t** format_settings_buffer,
-    size_t* format_settings_buffer_size)
+    format_settings_t* format_settings)
 {
-    uint8_t* format_settings = nullptr;
+    uint8_t* format_settings_buffer = nullptr;
     size_t format_settings_size = 0;
     int ret = 1;
 
@@ -79,25 +78,33 @@ int ecall_dispatcher::get_enclave_format_settings(
     // settings can attest this enclave.
     TRACE_ENCLAVE("get_enclave_format_settings");
     if (m_attestation->get_format_settings(
-            format_id, &format_settings, &format_settings_size) == false)
+            format_id, &format_settings_buffer, &format_settings_size) == false)
     {
         TRACE_ENCLAVE("get_enclave_format_settings failed");
         goto exit;
     }
 
-    // Allocate memory on the host and copy the format settings over.
-    // TODO: the following code is not TEE-agnostic, as it assumes the
-    // enclave can directly write into host memory
-    *format_settings_buffer = (uint8_t*)oe_host_malloc(format_settings_size);
-    if (*format_settings_buffer == nullptr)
+    if (format_settings_buffer && format_settings_size)
     {
-        ret = OE_OUT_OF_MEMORY;
-        TRACE_ENCLAVE("copying format_settings failed, out of memory");
-        goto exit;
+        format_settings->buffer = (uint8_t*)malloc(format_settings_size);
+        if (format_settings->buffer == nullptr)
+        {
+            ret = OE_OUT_OF_MEMORY;
+            TRACE_ENCLAVE("copying format_settings failed, out of memory");
+            goto exit;
+        }
+        memcpy(
+            format_settings->buffer,
+            format_settings_buffer,
+            format_settings_size);
+        format_settings->size = format_settings_size;
+        oe_verifier_free_format_settings(format_settings_buffer);
     }
-    memcpy(*format_settings_buffer, format_settings, format_settings_size);
-    *format_settings_buffer_size = format_settings_size;
-    oe_verifier_free_format_settings(format_settings);
+    else
+    {
+        format_settings->buffer = nullptr;
+        format_settings->size = 0;
+    }
     ret = 0;
 
 exit:
@@ -114,17 +121,13 @@ exit:
  */
 int ecall_dispatcher::get_evidence_with_public_key(
     const oe_uuid_t* format_id,
-    uint8_t* format_settings,
-    size_t format_settings_size,
-    uint8_t** pem_key,
-    size_t* pem_key_size,
-    uint8_t** evidence_buffer,
-    size_t* evidence_buffer_size)
+    format_settings_t* format_settings,
+    pem_key_t* pem_key,
+    evidence_t* evidence)
 {
     uint8_t pem_public_key[512];
-    uint8_t* evidence = nullptr;
+    uint8_t* evidence_buffer = nullptr;
     size_t evidence_size = 0;
-    uint8_t* key_buffer = nullptr;
     int ret = 1;
 
     TRACE_ENCLAVE("get_evidence_with_public_key");
@@ -140,42 +143,37 @@ int ecall_dispatcher::get_evidence_with_public_key(
     // receives the key can attest this enclave.
     if (m_attestation->generate_attestation_evidence(
             format_id,
-            format_settings,
-            format_settings_size,
+            format_settings->buffer,
+            format_settings->size,
             pem_public_key,
             sizeof(pem_public_key),
-            &evidence,
+            &evidence_buffer,
             &evidence_size) == false)
     {
         TRACE_ENCLAVE("get_evidence_with_public_key failed");
         goto exit;
     }
 
-    // Allocate memory on the host and copy the evidence over.
-    // TODO: the following code is not TEE-agnostic, as it assumes the
-    // enclave can directly write into host memory
-    *evidence_buffer = (uint8_t*)oe_host_malloc(evidence_size);
-    if (*evidence_buffer == nullptr)
+    evidence->buffer = (uint8_t*)malloc(evidence_size);
+    if (evidence->buffer == nullptr)
     {
         ret = OE_OUT_OF_MEMORY;
         TRACE_ENCLAVE("copying evidence_buffer failed, out of memory");
         goto exit;
     }
-    memcpy(*evidence_buffer, evidence, evidence_size);
-    *evidence_buffer_size = evidence_size;
-    oe_free_evidence(evidence);
+    memcpy(evidence->buffer, evidence_buffer, evidence_size);
+    evidence->size = evidence_size;
+    oe_free_evidence(evidence_buffer);
 
-    key_buffer = (uint8_t*)oe_host_malloc(512);
-    if (key_buffer == nullptr)
+    pem_key->buffer = (uint8_t*)malloc(sizeof(pem_public_key));
+    if (pem_key->buffer == nullptr)
     {
         ret = OE_OUT_OF_MEMORY;
         TRACE_ENCLAVE("copying key_buffer failed, out of memory");
         goto exit;
     }
-    memcpy(key_buffer, pem_public_key, sizeof(pem_public_key));
-
-    *pem_key = key_buffer;
-    *pem_key_size = sizeof(pem_public_key);
+    memcpy(pem_key->buffer, pem_public_key, sizeof(pem_public_key));
+    pem_key->size = sizeof(pem_public_key);
 
     ret = 0;
     TRACE_ENCLAVE("get_evidence_with_public_key succeeded");
@@ -183,22 +181,26 @@ int ecall_dispatcher::get_evidence_with_public_key(
 exit:
     if (ret != 0)
     {
+        if (evidence_buffer)
+            oe_free_evidence(evidence_buffer);
+        if (pem_key)
+        {
+            free(pem_key->buffer);
+            pem_key->size = 0;
+        }
         if (evidence)
-            oe_free_evidence(evidence);
-        if (key_buffer)
-            oe_host_free(key_buffer);
-        if (*evidence_buffer)
-            oe_host_free(*evidence_buffer);
+        {
+            free(evidence->buffer);
+            evidence->size = 0;
+        }
     }
     return ret;
 }
 
 int ecall_dispatcher::verify_evidence_and_set_public_key(
     const oe_uuid_t* format_id,
-    uint8_t* pem_key,
-    size_t pem_key_size,
-    uint8_t* evidence,
-    size_t evidence_size)
+    pem_key_t* pem_key,
+    evidence_t* evidence)
 {
     int ret = 1;
 
@@ -210,13 +212,20 @@ int ecall_dispatcher::verify_evidence_and_set_public_key(
 
     // Attest the evidence and accompanying key.
     if (m_attestation->attest_attestation_evidence(
-            format_id, evidence, evidence_size, pem_key, pem_key_size) == false)
+            format_id,
+            evidence->buffer,
+            evidence->size,
+            pem_key->buffer,
+            pem_key->size) == false)
     {
         TRACE_ENCLAVE("verify_evidence_and_set_public_key failed.");
         goto exit;
     }
 
-    memcpy(m_crypto->get_the_other_enclave_public_key(), pem_key, pem_key_size);
+    memcpy(
+        m_crypto->get_the_other_enclave_public_key(),
+        pem_key->buffer,
+        pem_key->size);
 
     ret = 0;
     TRACE_ENCLAVE("verify_evidence_and_set_public_key succeeded.");
@@ -225,11 +234,11 @@ exit:
     return ret;
 }
 
-int ecall_dispatcher::generate_encrypted_message(uint8_t** data, size_t* size)
+int ecall_dispatcher::generate_encrypted_message(message_t* message)
 {
     uint8_t encrypted_data_buffer[1024];
     size_t encrypted_data_size;
-    uint8_t* host_buffer;
+    uint8_t* buffer;
     int ret = 1;
 
     if (m_initialized == false)
@@ -250,30 +259,27 @@ int ecall_dispatcher::generate_encrypted_message(uint8_t** data, size_t* size)
         goto exit;
     }
 
-    // TODO: the following code is not TEE-agnostic, as it assumes the
-    // enclave can directly write into host memory
-    host_buffer = (uint8_t*)oe_host_malloc(encrypted_data_size);
-    if (host_buffer == nullptr)
+    buffer = (uint8_t*)malloc(encrypted_data_size);
+    if (buffer == nullptr)
     {
         ret = OE_OUT_OF_MEMORY;
         TRACE_ENCLAVE("copying host_buffer failed, out of memory");
         goto exit;
     }
-    memcpy(host_buffer, encrypted_data_buffer, encrypted_data_size);
+    memcpy(buffer, encrypted_data_buffer, encrypted_data_size);
     TRACE_ENCLAVE(
         "enclave: generate_encrypted_message: encrypted_data_size = %ld",
         encrypted_data_size);
-    *data = host_buffer;
-    *size = encrypted_data_size;
+
+    message->data = buffer;
+    message->size = encrypted_data_size;
 
     ret = 0;
 exit:
     return ret;
 }
 
-int ecall_dispatcher::process_encrypted_message(
-    uint8_t* encrypted_data,
-    size_t encrypted_data_size)
+int ecall_dispatcher::process_encrypted_message(message_t* message)
 {
     uint8_t data[1024];
     size_t data_size = 0;
@@ -286,8 +292,7 @@ int ecall_dispatcher::process_encrypted_message(
     }
 
     data_size = sizeof(data);
-    if (m_crypto->decrypt(
-            encrypted_data, encrypted_data_size, data, &data_size))
+    if (m_crypto->decrypt(message->data, message->size, data, &data_size))
     {
         // This is where the business logic for verifying the data should be.
         // In this sample, both enclaves start with identical data in

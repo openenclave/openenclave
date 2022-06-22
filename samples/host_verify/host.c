@@ -157,6 +157,7 @@ oe_result_t verify_evidence(
     oe_result_t result = OE_FAILURE;
     uint8_t *evidence = NULL, *endorsements = NULL;
     size_t evidence_size = 0, endorsements_size = 0;
+    static const oe_uuid_t _uuid_sgx_ecdsa = {OE_FORMAT_UUID_SGX_ECDSA};
 
     if (read_binary_file(evidence_filename, &evidence, &evidence_size))
     {
@@ -171,7 +172,7 @@ oe_result_t verify_evidence(
         size_t claims_length = 0;
 
         result = oe_verify_evidence(
-            NULL,
+            &_uuid_sgx_ecdsa,
             evidence,
             evidence_size,
             endorsements,
@@ -189,7 +190,7 @@ oe_result_t verify_evidence(
     return result;
 }
 
-oe_result_t sgx_enclave_claims_verifier(
+oe_result_t enclave_claims_verifier(
     oe_claim_t* claims,
     size_t claims_length,
     void* arg)
@@ -197,7 +198,7 @@ oe_result_t sgx_enclave_claims_verifier(
     oe_result_t result = OE_VERIFY_FAILED;
 
     (void)arg;
-    printf("sgx_enclave_claims_verifier is called with claims:\n");
+    printf("enclave_claims_verifier is called with claims:\n");
 
     for (size_t i = 0; i < claims_length; i++)
     {
@@ -240,17 +241,37 @@ oe_result_t verify_cert(const char* filename)
     oe_result_t result = OE_FAILURE;
     size_t cert_file_size = 0;
     uint8_t* cert_data = NULL;
+    uint8_t* endorsements_buffer = NULL;
+    size_t endorsements_buffer_size = 0;
+    oe_policy_t* policies = NULL;
+    size_t policies_size = 0;
+    oe_claim_t* claims = NULL;
+    size_t claims_length = 0;
 
     if (read_binary_file(filename, &cert_data, &cert_file_size))
     {
-        result = oe_verify_attestation_certificate_with_evidence(
-            cert_data, cert_file_size, sgx_enclave_claims_verifier, NULL);
+        result = oe_verify_attestation_certificate_with_evidence_v2(
+            cert_data,
+            cert_file_size,
+            endorsements_buffer,
+            endorsements_buffer_size,
+            policies,
+            policies_size,
+            &claims,
+            &claims_length);
+
+        if (result == OE_OK)
+        {
+            result = enclave_claims_verifier(claims, claims_length, NULL);
+        }
     }
 
     if (cert_data != NULL)
     {
         free(cert_data);
     }
+
+    oe_free_claims(claims, claims_length);
 
     return result;
 }
@@ -268,8 +289,8 @@ void print_syntax(const char* program_name)
         program_name);
     fprintf(
         stdout,
-        "Verify the integrity of enclave remote report or attestation "
-        "certificate.\n");
+        "Verify the integrity of enclave remote report, enclave attestation "
+        "evidence in SGX_ECDSA format, or attestation certificate.\n");
     fprintf(
         stdout,
         "WARNING: %s does not have a stable CLI interface. Use with "

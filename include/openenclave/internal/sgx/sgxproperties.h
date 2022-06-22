@@ -3,7 +3,18 @@
 
 #ifndef _OE_INTERNAL_SGX_PROPERTIES_H
 #define _OE_INTERNAL_SGX_PROPERTIES_H
+#include <openenclave/internal/constants_x64.h>
 #include <string.h>
+
+/* OE_SGX_ENCLAVE_SIZE_OFFSET is defined in constants_x64.h
+ * and is used by enter.S. Enforce the check here such that
+ * enter.S does not need to depend on the public sgxproperties.h
+ * header (required by oe_sgx_enclave_properties_t and
+ * oe_sgx_enclave_image_info_t) */
+OE_STATIC_ASSERT(
+    OE_SGX_ENCLAVE_SIZE_OFFSET ==
+    OE_OFFSETOF(oe_sgx_enclave_properties_t, image_info) +
+        OE_OFFSETOF(oe_sgx_enclave_image_info_t, enclave_size));
 
 OE_INLINE bool oe_sgx_is_valid_product_id(uint16_t x)
 {
@@ -28,6 +39,11 @@ OE_INLINE bool oe_sgx_is_valid_num_stack_pages(uint64_t x)
 OE_INLINE bool oe_sgx_is_valid_num_tcs(uint64_t x)
 {
     return x <= OE_SGX_MAX_TCS;
+}
+
+OE_INLINE bool oe_sgx_is_valid_start_address(uint64_t x)
+{
+    return ((x != 0) && !(x % OE_PAGE_SIZE));
 }
 
 OE_INLINE bool oe_sgx_is_unset_uuid(uint8_t* x)

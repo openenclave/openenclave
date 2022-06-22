@@ -8,7 +8,8 @@ add_custom_command(
   DEPENDS ${EDL_FILE} edger8r
   COMMAND
     edger8r --untrusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
-    ${DEFINE_OE_SGX} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
+    ${DEFINE_OE_SGX} ${DEFINE_OE_CODE_COVERAGE} --search-path
+    ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(PLATFORM_EDL_FILE ../edl/header.edl)
 add_custom_command(

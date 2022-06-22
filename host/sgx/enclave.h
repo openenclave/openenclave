@@ -20,6 +20,27 @@
 #include <windows.h>
 #endif
 
+#define OE_VZEROUPPER              \
+    asm volatile("vzeroupper \n\t" \
+                 :                 \
+                 :                 \
+                 : "ymm0",         \
+                   "ymm1",         \
+                   "ymm2",         \
+                   "ymm3",         \
+                   "ymm4",         \
+                   "ymm5",         \
+                   "ymm6",         \
+                   "ymm7",         \
+                   "ymm8",         \
+                   "ymm9",         \
+                   "ymm10",        \
+                   "ymm11",        \
+                   "ymm12",        \
+                   "ymm13",        \
+                   "ymm14",        \
+                   "ymm15")
+
 typedef struct _enclave_event
 {
 #if defined(__linux__)
@@ -99,8 +120,12 @@ typedef struct _oe_enclave
     /* Path of the enclave file */
     char* path;
 
-    /* Base address of enclave within enclave address space (BASEADDR) */
-    uint64_t addr;
+    /* Base address of enclave address range (BASEADDR). If not,
+     * a 0-based enclave, currently base_address = start_address */
+    uint64_t base_address;
+
+    /* Enclave image start address within enclave address space */
+    uint64_t start_address;
 
     /* Size of enclave in bytes */
     uint64_t size;
@@ -125,6 +150,7 @@ typedef struct _oe_enclave
 
     /* Meta-data needed by debugrt  */
     oe_debug_enclave_t* debug_enclave;
+    oe_debug_module_t* debug_modules;
 
     /* Manager for switchless calls */
     oe_switchless_call_manager_t* switchless_manager;
@@ -137,5 +163,15 @@ typedef struct _oe_enclave
 
 /* Get the event for the given TCS */
 EnclaveEvent* GetEnclaveEvent(oe_enclave_t* enclave, uint64_t tcs);
+
+/**
+ * Size of ocall buffers passed in ecall_contexts. Large enough for most ocalls.
+ * If an ocall requires more than this size, then the enclave will make an
+ * ocall to allocate the buffer instead of using the ecall_context's buffer.
+ * Note: Currently, quotes are about 10KB.
+ */
+#define OE_DEFAULT_OCALL_BUFFER_SIZE (16 * 1024)
+
+void oe_setup_ecall_context(oe_ecall_context_t* ecall_context);
 
 #endif /* _OE_HOST_ENCLAVE_H */

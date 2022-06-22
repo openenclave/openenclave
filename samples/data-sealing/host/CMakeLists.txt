@@ -1,13 +1,7 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-add_custom_command(
-  OUTPUT datasealing_u.h datasealing_u.c datasealing_args.h
-  DEPENDS ${CMAKE_SOURCE_DIR}/datasealing.edl
-  COMMAND
-    openenclave::oeedger8r --untrusted ${CMAKE_SOURCE_DIR}/datasealing.edl
-    --search-path ${OE_INCLUDEDIR} --search-path
-    ${OE_INCLUDEDIR}/openenclave/edl/sgx)
+add_edl(../datasealing.edl UNTRUSTED .)
 
 add_executable(data-sealing_host host.cpp
                                  ${CMAKE_CURRENT_BINARY_DIR}/datasealing_u.c)

@@ -22,6 +22,13 @@ OE_INLINE bool oe_sgx_is_debug_load_context(
     return (context && (context->attributes.flags & OE_ENCLAVE_FLAG_DEBUG));
 }
 
+OE_INLINE bool oe_sgx_is_debug_auto_load_context(
+    const oe_sgx_load_context_t* context)
+{
+    return (
+        context && (context->attributes.flags & OE_ENCLAVE_FLAG_DEBUG_AUTO));
+}
+
 OE_INLINE bool oe_sgx_is_kss_load_context(const oe_sgx_load_context_t* context)
 {
     return (context && (context->attributes.flags & OE_ENCLAVE_FLAG_SGX_KSS));

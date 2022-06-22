@@ -29,8 +29,8 @@ macro (add_enclave_library NAME)
   add_library(${NAME} ${ARGN})
   if (LVI_MITIGATION MATCHES ControlFlow)
     add_library(${NAME}-lvi-cfg ${ARGN})
-    # Compiler options are only applicable to non-interface library.
-    if (NOT ${ARGV1} MATCHES INTERFACE)
+    # Compiler options are only applicable to non-interface, non-imported libraries.
+    if ((NOT ${ARGV1} MATCHES INTERFACE) AND (NOT ${ARGV2} MATCHES IMPORTED))
       apply_lvi_mitigation(${NAME}-lvi-cfg)
     endif ()
   endif ()
@@ -80,10 +80,11 @@ function (enclave_link_libraries NAME)
     endif ()
     target_link_libraries(${NAME} ${type} ${lib})
     if (TARGET ${NAME}-lvi-cfg)
-      # Directly apply compiler options and interface or lvi-mitigated libraries.
+      # Directly apply compiler options and interface, lvi-mitigated, or shared libraries
       if (lib MATCHES "^-"
           OR lib MATCHES "include"
-          OR lib MATCHES "-lvi-cfg")
+          OR lib MATCHES "-lvi-cfg"
+          OR lib MATCHES "\.so")
         target_link_libraries(${NAME}-lvi-cfg ${type} ${lib})
         continue()
       endif ()
@@ -119,7 +120,7 @@ endmacro (set_enclave_property)
 # Wrapper of `install`. Note that this wrapper only supports the subset
 # of `install` supported arguments, which is sufficient for current needs.
 function (install_enclaves)
-  set(options ARCHIVE)
+  set(options ARCHIVE OBJECTS)
   set(onevalueArgs EXPORT DESTINATION)
   set(multiValueArgs TARGETS)
   cmake_parse_arguments(ENCLAVE "${options}" "${onevalueArgs}"
@@ -135,6 +136,17 @@ function (install_enclaves)
           TARGETS ${target}-lvi-cfg
           EXPORT ${ENCLAVE_EXPORT}
           ARCHIVE DESTINATION ${ENCLAVE_DESTINATION})
+      endif ()
+    elseif (ENCLAVE_OBJECTS AND ENCLAVE_DESTINATION)
+      install(
+        TARGETS ${target}
+        EXPORT ${ENCLAVE_EXPORT}
+        OBJECTS DESTINATION ${ENCLAVE_DESTINATION})
+      if (TARGET ${target}-lvi-cfg)
+        install(
+          TARGETS ${target}-lvi-cfg
+          EXPORT ${ENCLAVE_EXPORT}
+          OBJECTS DESTINATION ${ENCLAVE_DESTINATION})
       endif ()
     else ()
       install(TARGETS ${target} EXPORT ${ENCLAVE_EXPORT})

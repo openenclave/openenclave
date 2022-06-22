@@ -73,7 +73,7 @@ enclave
             oe_host_fd_t sockfd,
             [out, size=addrlen_in] struct oe_sockaddr* addr,
             oe_socklen_t addrlen_in,
-            [out, count=1] oe_socklen_t* addrlen_out)
+            [out] oe_socklen_t* addrlen_out)
             propagate_errno;
 
         int oe_syscall_bind_ocall(
@@ -91,13 +91,13 @@ enclave
             oe_host_fd_t sockfd,
             [out, size=msg_namelen] void* msg_name,
             oe_socklen_t msg_namelen,
-            [out, count=1] oe_socklen_t* msg_namelen_out,
+            [out] oe_socklen_t* msg_namelen_out,
             [in, out, size=msg_iov_buf_size] void* msg_iov_buf,
             size_t msg_iovlen,
             size_t msg_iov_buf_size,
             [out, size=msg_controllen] void* msg_control,
             size_t msg_controllen,
-            [out, count=1] size_t* msg_controllen_out,
+            [out] size_t* msg_controllen_out,
             int flags)
             propagate_errno;
 
@@ -127,7 +127,7 @@ enclave
             int flags,
             [out, size=addrlen_in] struct oe_sockaddr* src_addr,
             oe_socklen_t addrlen_in,
-            [out, count=1] oe_socklen_t* addrlen_out)
+            [out] oe_socklen_t* addrlen_out)
             propagate_errno;
 
         ssize_t oe_syscall_send_ocall(
@@ -199,21 +199,21 @@ enclave
         int oe_syscall_getaddrinfo_open_ocall(
             [in, string] const char* node,
             [in, string] const char* service,
-            [in, count=1] const struct oe_addrinfo* hints,
-            [out, count=1] uint64_t* handle)
+            [in] const struct oe_addrinfo* hints,
+            [out] uint64_t* handle)
             propagate_errno;
 
         int oe_syscall_getaddrinfo_read_ocall(
             uint64_t handle,
-            [out, count=1] int* ai_flags,
-            [out, count=1] int* ai_family,
-            [out, count=1] int* ai_socktype,
-            [out, count=1] int* ai_protocol,
+            [out] int* ai_flags,
+            [out] int* ai_family,
+            [out] int* ai_socktype,
+            [out] int* ai_protocol,
             oe_socklen_t ai_addrlen_in,
-            [out, count=1] oe_socklen_t* ai_addrlen,
+            [out] oe_socklen_t* ai_addrlen,
             [out, size=ai_addrlen_in] struct oe_sockaddr* ai_addr,
             size_t ai_canonnamelen_in,
-            [out, count=1] size_t* ai_canonnamelen,
+            [out] size_t* ai_canonnamelen,
             [out, size=ai_canonnamelen_in] char* ai_canonname)
             propagate_errno;
 

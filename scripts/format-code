@@ -158,11 +158,11 @@ check_version()
 ##==============================================================================
 check_clang-format()
 {
-    # First check explicitly for the clang-format-7 executable.
-    cf=$(command -v clang-format-7 2> /dev/null)
+    # First check explicitly for the clang-format-10 executable.
+    cf=$(command -v clang-format-10 2> /dev/null)
 
     if [[ -x ${cf} ]]; then
-        cf="clang-format-7"
+        cf="clang-format-10"
         return
     else
         cf=$(command -v clang-format 2> /dev/null)
@@ -173,7 +173,7 @@ check_clang-format()
         cf="clang-format"
     fi
 
-    local required_cfver='7.0.1'
+    local required_cfver='10.0.1'
     # shellcheck disable=SC2155
     local cfver=$(${cf} --version | grep -o -E '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
     check_version "${required_cfver}" "${cfver}"

@@ -6,7 +6,7 @@ but not for development and building.
 
 ## Platform Requirements
 
-- Ubuntu 16.04 LTS (64-bit) or 18.04 LTS (64-bit)
+- Ubuntu 18.04 LTS (64-bit)
 
 ## Clone the Open Enclave SDK
 

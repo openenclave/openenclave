@@ -47,6 +47,8 @@ OE_EXTERNC_BEGIN
 #define SGX_SECINFO_TCS 0x0000000000000000100
 #define SGX_SECINFO_REG 0x0000000000000000200
 
+#define SGX_SECS_MISCSELECT_EXINFO 0x0000000000000001UL
+
 #define SGX_SE_EPID_SIG_RL_VERSION 0x200
 #define SGX_SE_EPID_SIG_RL_ID 0xE00
 
@@ -54,7 +56,7 @@ OE_EXTERNC_BEGIN
 
 #define SGX_UNMASKED_EVENT 128 /* SGX EINIT error code */
 
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_STATIC_ASSERT(SGX_FLAGS_DEBUG == OE_SGX_FLAGS_DEBUG);
 OE_STATIC_ASSERT(SGX_FLAGS_MODE64BIT == OE_SGX_FLAGS_MODE64BIT);
 #endif
@@ -132,10 +134,11 @@ OE_CHECK_SIZE(sizeof(sgx_attributes_t), 16);
 
 /* sgx_sigstruct_t.miscmask */
 #define SGX_SIGSTRUCT_MISCMASK 0xffffffff
+#define SGX_SIGSTRUCT_MISCMASK_EXINFO 0xfffffffe
 
 /* sgx_sigstruct_t.flags */
-/* Mask all bits except bit 2 for MODE64BIT */
-#define SGX_SIGSTRUCT_ATTRIBUTEMASK_FLAGS 0XfffffffffffffffbULL
+/* Mask all bits except bit 2 for MODE64BIT, bit 8 for kss attribute mask */
+#define SGX_SIGSTRUCT_ATTRIBUTEMASK_FLAGS 0Xffffffffffffff7bULL
 
 /* sgx_sigstruct_t.xfrm */
 /* Mask all bits except for OS-controlled AVX enablement bits:
@@ -234,7 +237,7 @@ OE_PACK_END
 
 OE_CHECK_SIZE(sizeof(sgx_sigstruct_t), 1808);
 
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 OE_CHECK_SIZE(sizeof(sgx_sigstruct_t), OE_SGX_SIGSTRUCT_SIZE);
 #endif
 
@@ -279,20 +282,22 @@ void __sgx_dump_sigstruct(const sgx_sigstruct_t* p);
 
 typedef struct _sgx_secs
 {
-    uint64_t size;          /* 0 */
-    uint64_t base;          /* 8 */
-    uint32_t ssaframesize;  /* 16 */
-    uint32_t misc_select;   /* 20 */
-    uint8_t reserved1[24];  /* 24 */
-    uint64_t flags;         /* 48 */
-    uint64_t xfrm;          /* 56 */
-    uint32_t mrenclave[8];  /* 64 */
-    uint8_t reserved2[32];  /* 96 */
-    uint32_t mrsigner[8];   /* 128 */
-    uint8_t reserved3[96];  /* 160 */
-    uint16_t isvvprodid;    /* 256 */
-    uint16_t isvsvn;        /* 258 */
-    uint8_t reserved[3836]; /* 260 */
+    uint64_t size;           /* 0 */
+    uint64_t base;           /* 8 */
+    uint32_t ssaframesize;   /* 16 */
+    uint32_t misc_select;    /* 20 */
+    uint8_t reserved1[24];   /* 24 */
+    uint64_t flags;          /* 48 */
+    uint64_t xfrm;           /* 56 */
+    uint32_t mrenclave[8];   /* 64 */
+    uint8_t reserved2[32];   /* 96 */
+    uint32_t mrsigner[8];    /* 128 */
+    uint8_t reserved3[32];   /* 160 */
+    uint8_t config_id[64];   /* 192 */
+    uint16_t isvvprodid;     /* 256 */
+    uint16_t isvsvn;         /* 258 */
+    uint16_t config_svn;     /* 260 */
+    uint8_t reserved4[3834]; /* 262 */
 } sgx_secs_t;
 
 OE_CHECK_SIZE(sizeof(sgx_secs_t), 4096);
@@ -319,7 +324,8 @@ typedef struct _sgx_secinfo
 **==============================================================================
 */
 
-typedef union {
+typedef union
+{
     struct
     {
         uint32_t vector : 8;
@@ -366,6 +372,17 @@ typedef struct sgx_ssa_gpr_t
     uint64_t gs_base;
 } sgx_ssa_gpr_t, *PSGX_SsaGpr;
 
+typedef struct _sgx_exinfo_t
+{
+    /*
+     * The naming and size of the members follows the Table 37-13 in the Intel
+     * Software Developer's Manual Volume 3.
+     */
+    uint64_t maddr;
+    uint32_t errcd;
+    uint8_t reserved[4];
+} sgx_exinfo_t;
+
 /*
 **==============================================================================
 **
@@ -390,6 +407,7 @@ typedef struct _sgx_launch_token
 #define SGX_CPUSVN_SIZE 16
 #define SGX_KEYID_SIZE 32
 #define SGX_MAC_SIZE 16
+#define SGX_USERDATA_SIZE 20
 
 OE_PACK_BEGIN
 typedef struct _sgx_einittoken
@@ -489,7 +507,8 @@ typedef struct _sgx_tcs
     uint32_t gslimit;
 
     /* (72) reserved */
-    union {
+    union
+    {
         uint8_t reserved[4024];
 
         /* (72) Enclave's entry point (defaults to _start) */
@@ -672,7 +691,7 @@ typedef struct _sgx_quote
     uint8_t uuid[16];
 
     /* (28) */
-    uint8_t user_data[20];
+    uint8_t user_data[SGX_USERDATA_SIZE];
 
     /* (48) */
     sgx_report_body_t report_body;
@@ -1050,7 +1069,7 @@ typedef struct _sgx_key
 
 /* Enclave MISCSELECT Flags Bit Masks, additional information to an SSA frame */
 /* If set, then the enclave page fault and general protection exception are
- * reported*/
+ * reported */
 #define SGX_MISC_FLAGS_PF_GP_EXIT_INFO 0x0000000000000001ULL
 
 /* Enclave Flags Bit Masks */
@@ -1097,6 +1116,16 @@ typedef enum _quote3_error_t {
     SGX_QL_ERROR_MAX = SGX_QL_MK_ERROR(0x00FF),                      ///< Indicate max error to allow better translation.
 } quote3_error_t;
 // clang-format on
+
+/*
+ * Define sgx_enclave_elrange_t, used by enclave_create_ex.
+ */
+typedef struct sgx_enclave_elrange
+{
+    uint64_t enclave_image_address;
+    uint64_t elrange_start_address;
+    uint64_t elrange_size;
+} sgx_enclave_elrange_t;
 
 OE_EXTERNC_END
 

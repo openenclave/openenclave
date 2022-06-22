@@ -77,22 +77,23 @@ entry_t _dot = {
     .size = sizeof(cpio_header_t) + 2,
 };
 
-entry_t _trailer = {.header.magic = "070701",
-                    .header.ino = "00000000",
-                    .header.mode = "00000000",
-                    .header.uid = "00000000",
-                    .header.gid = "00000000",
-                    .header.nlink = "00000002",
-                    .header.mtime = "00000000",
-                    .header.filesize = "00000000",
-                    .header.devmajor = "00000000",
-                    .header.devminor = "00000000",
-                    .header.rdevmajor = "00000000",
-                    .header.rdevminor = "00000000",
-                    .header.namesize = "0000000B",
-                    .header.check = "00000000",
-                    .name = "TRAILER!!!",
-                    .size = sizeof(cpio_header_t) + 11};
+entry_t _trailer = {
+    .header.magic = "070701",
+    .header.ino = "00000000",
+    .header.mode = "00000000",
+    .header.uid = "00000000",
+    .header.gid = "00000000",
+    .header.nlink = "00000002",
+    .header.mtime = "00000000",
+    .header.filesize = "00000000",
+    .header.devmajor = "00000000",
+    .header.devminor = "00000000",
+    .header.rdevmajor = "00000000",
+    .header.rdevminor = "00000000",
+    .header.namesize = "0000000B",
+    .header.check = "00000000",
+    .name = "TRAILER!!!",
+    .size = sizeof(cpio_header_t) + 11};
 
 #if 0
 static void _dump(const uint8_t* data, size_t size)

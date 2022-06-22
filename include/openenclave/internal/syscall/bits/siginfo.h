@@ -7,7 +7,8 @@ typedef struct
     int oe_si_signo;
     int oe_si_errno;
     int oe_si_code;
-    union {
+    union
+    {
         int __oe_si_pad[__OE_SI_PAD_SIZE];
 
         /* kill() */

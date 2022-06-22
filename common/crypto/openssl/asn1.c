@@ -206,18 +206,19 @@ oe_result_t oe_asn1_string_to_date(const char* str, oe_datetime_t* date)
 
     /* Convert the month string to integer */
     {
-        static const char* _month[] = {"Jan",
-                                       "Feb",
-                                       "Mar",
-                                       "Apr",
-                                       "May",
-                                       "Jun",
-                                       "Jul",
-                                       "Aug",
-                                       "Sep",
-                                       "Oct",
-                                       "Nov",
-                                       "Dec"};
+        static const char* _month[] = {
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec"};
 
         date->month = UINT_MAX;
 

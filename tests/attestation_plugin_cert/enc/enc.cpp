@@ -29,7 +29,7 @@
 // This is the claims validation callback. A TLS connecting party (client or
 // server) can verify the passed in claims to decide whether to
 // accept a connection request
-oe_result_t sgx_enclave_claims_verifier(
+oe_result_t enclave_claims_verifier(
     oe_claim_t* claims,
     size_t claims_length,
     void* arg)
@@ -37,7 +37,7 @@ oe_result_t sgx_enclave_claims_verifier(
     oe_result_t result = OE_VERIFY_FAILED;
 
     (void)arg;
-    OE_TRACE_INFO("sgx_enclave_claims_verifier is called with claims:\n");
+    OE_TRACE_INFO("enclave_claims_verifier is called with claims:\n");
 
     for (size_t i = 0; i < claims_length; i++)
     {
@@ -138,16 +138,21 @@ oe_result_t get_tls_cert_signed_with_key(
     size_t* cert_size)
 {
     oe_result_t result = OE_FAILURE;
-    uint8_t* host_cert_buf = nullptr;
+    uint8_t* host_certificate_buffer = nullptr;
 
-    uint8_t* output_cert = nullptr;
-    size_t output_cert_size = 0;
+    uint8_t* output_certificate = nullptr;
+    size_t output_certificate_size = 0;
 
     uint8_t* private_key = nullptr;
     size_t private_key_size = 0;
     uint8_t* public_key = nullptr;
     size_t public_key_size = 0;
+    uint8_t* optional_parameters = nullptr;
+    size_t optional_parameters_size = 0;
     const oe_uuid_t format = {OE_FORMAT_UUID_SGX_ECDSA};
+
+    oe_claim_t* claims = nullptr;
+    size_t claims_length = 0;
 
     OE_TRACE_INFO("called into enclave\n");
 
@@ -175,43 +180,69 @@ oe_result_t get_tls_cert_signed_with_key(
     // Initialize built-in OE attesters.
     oe_attester_initialize();
 
-    result = oe_get_attestation_certificate_with_evidence(
+    result = oe_get_attestation_certificate_with_evidence_v2(
         &format,
         (const unsigned char*)"CN=Open Enclave SDK,O=OESDK TLS,C=US",
         private_key,
         private_key_size,
         public_key,
         public_key_size,
-        &output_cert,
-        &output_cert_size);
+        optional_parameters,
+        optional_parameters_size,
+        &output_certificate,
+        &output_certificate_size);
     if (result != OE_OK)
     {
-        OE_TRACE_ERROR(" failed with %s\n", oe_result_str(result));
+        OE_TRACE_ERROR(
+            "oe_get_attestation_certificate_with_evidence_v2 failed with %s\n",
+            oe_result_str(result));
         goto done;
     }
 
-    OE_TRACE_INFO("output_cert_size = 0x%x", output_cert_size);
+    OE_TRACE_INFO("output_certificate_size = 0x%x", output_certificate_size);
 
     oe_verifier_initialize();
     // validate cert inside the enclave
-    result = oe_verify_attestation_certificate_with_evidence(
-        output_cert, output_cert_size, sgx_enclave_claims_verifier, nullptr);
+    result = oe_verify_attestation_certificate_with_evidence_v2(
+        output_certificate,
+        output_certificate_size,
+        nullptr,
+        0,
+        nullptr,
+        0,
+        &claims,
+        &claims_length);
+
     OE_TRACE_INFO(
-        "\nFrom inside enclave: verifying the certificate... %s\n",
-        result == OE_OK ? "Success" : "Fail");
+        "\nFrom inside enclave: "
+        "oe_verify_attestation_certificate_with_evidence_v2 verifying the "
+        "certificate... %s\n",
+        oe_result_str(result));
+
+    OE_CHECK(result);
+
+    result = enclave_claims_verifier(claims, claims_length, nullptr);
+
+    OE_TRACE_INFO(
+        "\nFrom inside enclave: enclave_claims_verifier verifying the "
+        "claims... %s\n",
+        oe_result_str(result));
+
+    OE_CHECK(result);
 
     // copy cert to host memory
-    host_cert_buf = (uint8_t*)oe_host_malloc(output_cert_size);
-    if (host_cert_buf == nullptr)
+    host_certificate_buffer = (uint8_t*)oe_host_malloc(output_certificate_size);
+    if (host_certificate_buffer == nullptr)
     {
         result = OE_OUT_OF_MEMORY;
         goto done;
     }
 
     // copy to the host for host-side validation test
-    memcpy(host_cert_buf, output_cert, output_cert_size);
-    *cert_size = output_cert_size;
-    *cert = host_cert_buf;
+    memcpy(
+        host_certificate_buffer, output_certificate, output_certificate_size);
+    *cert_size = output_certificate_size;
+    *cert = host_certificate_buffer;
     OE_TRACE_INFO("*cert = %p", *cert);
     OE_TRACE_INFO("*cert_size = 0x%x", *cert_size);
 
@@ -219,9 +250,12 @@ done:
 
     free(private_key);
     free(public_key);
+    oe_free_claims(claims, claims_length);
+
     oe_attester_shutdown();
     oe_verifier_shutdown();
-    oe_free_attestation_certificate(output_cert);
+
+    oe_free_attestation_certificate(output_certificate);
 
     return result;
 }

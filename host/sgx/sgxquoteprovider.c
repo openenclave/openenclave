@@ -10,6 +10,8 @@
 #include <string.h>
 
 #include "../hostthread.h"
+#include "openenclave/bits/result.h"
+#include "openenclave/internal/report.h"
 #include "sgxquoteprovider.h"
 
 /**
@@ -64,7 +66,15 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
 
     uint8_t* fmspc = args->fmspc;
     uint16_t fmspc_size = sizeof(args->fmspc);
+    uint16_t baseline_size = 0;
 
+    if (args->baseline_size > OE_USHRT_MAX)
+    {
+        result = OE_OUT_OF_BOUNDS;
+        goto done;
+    }
+
+    baseline_size = (uint16_t)args->baseline_size;
     if (args->collateral_provider == CRL_CA_PROCESSOR)
         ca_type = "processor";
     else if (args->collateral_provider == CRL_CA_PLATFORM)
@@ -74,7 +84,10 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
 
     OE_CHECK(oe_initialize_quote_provider());
 
-    if (!provider.get_sgx_quote_verification_collateral ||
+    // Either get_sgx_quote_verification_collateral or
+    // get_sgx_quote_verification_collateral_with_params must be available
+    if (!(provider.get_sgx_quote_verification_collateral ||
+          provider.get_sgx_quote_verification_collateral_with_parameters) ||
         !provider.free_sgx_quote_verification_collateral)
     {
         OE_TRACE_WARNING("Warning: Quote verification collateral was not "
@@ -83,20 +96,38 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
         goto done;
     }
 
-    // fetch collateral information
-    r = provider.get_sgx_quote_verification_collateral(
-        fmspc, fmspc_size, ca_type, &collateral);
+    // Fetch collateral information
+    if (provider.get_sgx_quote_verification_collateral_with_parameters)
+    {
+        r = provider.get_sgx_quote_verification_collateral_with_parameters(
+            fmspc,
+            fmspc_size,
+            ca_type,
+            args->baseline,
+            baseline_size,
+            &collateral);
+    }
+    else
+    {
+        // Fallback to get_sgx_quote_verification_collateral if
+        // get_sgx_quote_verification_collateral_with_parameters is not
+        // supported
+        r = provider.get_sgx_quote_verification_collateral(
+            fmspc, fmspc_size, ca_type, &collateral);
+    }
+
     if (r != SGX_PLAT_ERROR_OK || collateral == NULL)
     {
         OE_RAISE(OE_QUOTE_PROVIDER_CALL_ERROR);
     }
 
-    if (collateral->version != SGX_QL_QVE_COLLATERAL_VERSION)
+    if (collateral->version != SGX_QL_QVE_COLLATERAL_VERSION_1 &&
+        collateral->version != SGX_QL_QVE_COLLATERAL_VERSION_3_0 &&
+        collateral->version != SGX_QL_QVE_COLLATERAL_VERSION_3_1)
     {
         OE_RAISE_MSG(
             OE_INVALID_ENDORSEMENT,
-            "Expected version to be %d, but got %d",
-            SGX_QL_QVE_COLLATERAL_VERSION,
+            "Invalid collateral version %d",
             collateral->version);
     }
 
@@ -198,8 +229,13 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
             args->pck_crl_size,
             collateral->pck_crl,
             collateral->pck_crl_size));
-        // Add null terminator
-        args->pck_crl[args->pck_crl_size - 1] = 0;
+        /*
+         * Add null terminator.
+         * NOTE: SGX v3.1 removed the null terminator at the end of pck crl.
+         * OE must not enforce null terminator for v3.1.
+         */
+        if (collateral->version != SGX_QL_QVE_COLLATERAL_VERSION_3_1)
+            args->pck_crl[args->pck_crl_size - 1] = 0;
         p += args->pck_crl_size;
         OE_TRACE_INFO("pck_crl_size = %ld\n", args->pck_crl_size);
     }

@@ -48,7 +48,7 @@ int main(int argc, const char* argv[])
         oe_put_err("oe_create_enclave(): result=%u", result);
     }
 
-    if (oe_has_sgx_quote_provider())
+    if (oe_sgx_has_quote_provider())
     {
         run_parse_advisoryids_json_test();
         run_qe_identity_test_cases(enclave);

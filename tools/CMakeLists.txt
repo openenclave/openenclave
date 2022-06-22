@@ -11,16 +11,39 @@ check_submodule_not_empty(oeedger8r-cpp)
 # would trigger a rebuild.
 include(ExternalProject)
 set(BINARY
-    ${CMAKE_CURRENT_BINARY_DIR}/oeedger8r-cpp/oeedger8r${CMAKE_EXECUTABLE_SUFFIX}
+    ${CMAKE_CURRENT_BINARY_DIR}/oeedger8r-cpp/src/oeedger8r${CMAKE_EXECUTABLE_SUFFIX}
 )
+
+if (OE_SGX)
+  # For SGX, use the same compilers as OE SDK.
+  set(EDGER8R_C_COMPILER ${CMAKE_C_COMPILER})
+  set(EDGER8R_CXX_COMPILER ${CMAKE_CXX_COMPILER})
+else ()
+  # For OPTEE, CMAKE_C_COMPILER and CMAKE_CXX_COMPILERS are set up as
+  # cross-compilers, and ought not be used. Determine host compilers to use.
+  # Prefer clang, but fallback to GCC since, unlike SGX, we cannot be sure that
+  # clang exists in the build environment for OPTEE.
+  find_program(EDGER8R_C_COMPILER clang-10 clang gcc)
+  find_program(EDGER8R_CXX_COMPILER clang++-10 clang++ g++)
+endif ()
 
 ExternalProject_Add(
   oeedger8r-cpp
   SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/oeedger8r-cpp
   BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/oeedger8r-cpp
   CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-  BUILD_ALWAYS on
-  TEST_BEFORE_INSTALL on
+             -DCMAKE_C_COMPILER=${EDGER8R_C_COMPILER}
+             -DCMAKE_CXX_COMPILER=${EDGER8R_CXX_COMPILER}
+  # cmake can evaluate dependencies of oeedger8r-cpp since
+  # it is a rather straight forward external project.
+  # There is no need to always build it.
+  BUILD_ALWAYS off
+  # Since tests in tests/oeedger8r are run on actual hardware,
+  # there is no benefit to running edger8r's "virtual environment"
+  # tests as part of OE SDK build. Additionallt, while ninja ensures
+  # that these tests would run only once, make runs them every time it
+  # is invoked. Hence TEST_BEFORE_INSTALL is off.
+  TEST_BEFORE_INSTALL off
   INSTALL_COMMAND ""
   BUILD_BYPRODUCTS ${BINARY})
 
@@ -38,8 +61,13 @@ install(
   RENAME oeedger8r${CMAKE_EXECUTABLE_SUFFIX}
   DESTINATION ${CMAKE_INSTALL_BINDIR})
 
+add_subdirectory(oeapkman)
+
 if (OE_SGX)
   add_subdirectory(oesgx)
   add_subdirectory(oesign)
   add_subdirectory(oeverify)
+  if (BUILD_OEUTIL_TOOL)
+    add_subdirectory(oeutil)
+  endif ()
 endif ()

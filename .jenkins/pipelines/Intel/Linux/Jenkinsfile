@@ -1,0 +1,66 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+//
+// This job uses a backend API to call and trigger jobs behind Intel's firewall through a webpoller, 
+// test logic is not located here. This trigger uses a versioned docker image to call the webpoller. 
+// Script is https://github.com/openenclave/test-infra/blob/master/scripts/intel/jenkins_trigger.py
+
+if ( params.OECI_LIB_VERSION ) {
+    library "OpenEnclaveJenkinsLibrary@${params.OECI_LIB_VERSION}"
+} else {
+    library "OpenEnclaveJenkinsLibrary@master"
+    OECI_LIB_VERSION = "master"
+}
+
+def TriggerIntelJob(String jobname) {
+    stage("${jobname}") {
+        withCredentials([
+                usernamePassword(credentialsId: 'intel-jenkins-builder', passwordVariable: 'INTEL_TOKEN', usernameVariable: 'JENKINS_USER'),
+                string(credentialsId: 'intel-jenkins-url', variable: 'INTEL_URL')]) {
+            // This image contains tools for interacting with webpollers and does not impact the logic of the testing enforced. As different parties 
+            // have different IT and infrastracture requirements, this was easier to version and maintain via containers that are publicly accessible and debuggable.
+            def image = docker.image('openenclave/jenkinsoperator:intel')
+            image.pull()
+            image.inside() {
+                withEnv(["JOBNAME=${jobname}"]) {
+                    dir("${WORKSPACE}") {
+                        sh '''
+                        /usr/bin/env python3 /scripts/intel/jenkins_trigger.py --job OpenEnclave/job/$JOBNAME --jenkins-user $JENKINS_USER --url $INTEL_URL --jenkins-password $INTEL_TOKEN --sleep 60
+                        '''
+                    }
+                }
+            }
+        }
+    }
+}
+
+pipeline {
+    parameters {
+        string(name: 'PULL_NUMBER', defaultValue: 'master')
+        booleanParam(name: 'FULL_TEST_SUITE', defaultValue: 'false')
+    }
+    agent {
+        label globalvars.AGENTS_LABELS["ubuntu-nonsgx"]
+    }
+    options {
+        // Use this to make sure this pipeline does not cause
+        // a bottleneck.
+        timeout(time: 90, unit: 'MINUTES')
+    }
+    stages {
+        stage("Jenkins trigger") {
+            when {
+                expression { return params.FULL_TEST_SUITE }
+            }
+            steps {
+                script {
+                    parallel ([
+                        "SGX1-LLC":     { TriggerIntelJob('SGX1-LLC')},
+                        "SGX1-FLC":     { TriggerIntelJob('SGX1-FLC')},
+                        "SGX1-FLC-KSS": { TriggerIntelJob('SGX1-FLC-KSS')}
+                    ])
+                }
+            }
+        }
+    }
+}

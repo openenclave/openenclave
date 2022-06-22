@@ -50,7 +50,7 @@
     url: "{{ jenkins_url }}"
     user: "{{ jenkins_admin_name }}"
     password: "{{ jenkins_admin_password }}"
-  when: (script_output.output.lstrip('Result:') | trim) == ""
+  when: (script_output.output.lstrip('Result:') | trim) | length == 0
 
 - name: Jenkins | Extract the Jenkins agent secret
   jenkins_script:

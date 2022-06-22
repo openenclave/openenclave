@@ -5,7 +5,7 @@
 Intel® X86-64bit architecture
 
 A version of Windows OS :
-- For server: Windows Server 2016 or 2019
+- For server: Windows Server 2019
 - For client: Windows 10 64-bit version 1709 or newer
 - To check your Windows version, run `winver` from the command line
 

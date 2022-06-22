@@ -83,6 +83,7 @@ oe_syscall_link_ocall | link | - |
 oe_syscall_unlink_ocall | unlink | - |
 oe_syscall_rename_ocall | rename | - |
 oe_syscall_truncate_ocall | truncate | - |
+oe_syscall_ftruncate_ocall | ftruncate | - |
 oe_syscall_mkdir_ocall | mkdir | - |
 oe_syscall_rmdir_ocall | rmdir | - |
 oe_syscall_fcntl_ocall | fcntl | - |
@@ -135,6 +136,7 @@ oe_syscall_getnameinfo_ocall | N/A | Used by internal APIs to resolve `addrinfo`
 Ocall | Dependent syscall | Comments |
 :---|:---:|:---|
 oe_syscall_nanosleep_ocall | nanosleep | - |
+oe_syscall_clock_nanosleep_ocall | clock_nanosleep | In Windows, only flag = 0 is supported. |
 
 ### unistd.edl
 Ocall | Dependent syscall | Comments |
@@ -182,6 +184,11 @@ oe_sgx_get_cpuid_table_ocall | N/A | Required by enclave initialization. |
 Ocall | Dependent Public APIs | Comments |
 :---|:---:|:---|
 oe_sgx_backtrace_symbols_ocall | backtrace, backtrace_symbols | Part of libc APIs. |
+
+## sgx/entropy.edl
+Ocall | Dependent Public APIs | Comments |
+:---|:---:|:---|
+oe_sgx_get_additional_host_entropy_ocall | N/A | Required by the SymCrypt FIPS module. |
 
 ## sgx/switchless/edl
 Ecall | Dependent Public APIs | Comments |

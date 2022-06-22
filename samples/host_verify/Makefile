@@ -3,8 +3,8 @@
 
 include ../config.mk
 
-CFLAGS=$(shell pkg-config oehost-$(COMPILER) --cflags)
-LDFLAGS=$(shell pkg-config oehost-$(COMPILER) --libs)
+CFLAGS=$(shell pkg-config oehostverify-$(COMPILER) --cflags)
+LDFLAGS=$(shell pkg-config oehostverify-$(COMPILER) --libs)
 
 EXISTS_FILE=0
 EXISTS_SGX_CERT_EC=0

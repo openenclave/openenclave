@@ -2,15 +2,19 @@
  The audience is assumed to be familiar:
  [What is an Attested TLS channel](AttestedTLSREADME.md#what-is-an-attested-tls-channel)
 
-# The attested_tls sample
+# The Attested TLS sample
 
 It has the following properties:
 
 - Demonstrates attested TLS feature
   - between two enclaves
   - between an enclave application and a non enclave application
-- Use of mbedTLS within enclaves for TLS
-- Enclave APIs used:
+- Use of MbedTLS/OpenSSL crypto libraries within enclaves for TLS
+- Select between MbedTLS and OpenSSL crypto libraries by setting an environment variable `OE_CRYPTO_LIB` to `mbedtls` or `openssl` at build time (Note that `OE_CRYPTO_LIB` is case sensitive).
+- If the `OE_CRYPTO_LIB` not set, Mbed TLS will be used by default (see [Makefile](Makefile#L8) and [CMakeLists.txt](CMakeLists.txt#L10)).
+- To use FIPS-enabled OpenSSL based on SymCrypt, setting the `OE_CRYPTO_LIB` to `openssl_symcrypt_fips`
+- Configure both the server and the client with recommended cipher suites and elliptic curves (refer to the [section](#recommended-tls-configurations-when-using-openssl) for more details).
+- Use of following Enclave APIs
   - oe_get_attestation_certificate_with_evidence
   - oe_free_attestation_certificate
   - oe_verify_attestation_certificate_with_evidence
@@ -34,8 +38,8 @@ Note: Both of them can run on the same machine or separate machines.
   - Host part (tls_server_host)
     - Instantiate an enclave before transitioning the control into the enclave via an ecall.
   - Enclave (tls_server_enclave.signed)
-    - Calls oe_get_attestation_certificate_with_evidence to generate an certificate
-    - Use Mbedtls API to configure an TLS server after configuring above certificate as the server's certificate
+    - Call oe_get_attestation_certificate_with_evidence to generate an certificate
+    - Use the MbedTLS/OpenSSL API to configure a TLS server using the generated certificate
     - Launch a TLS server and wait for client connection request
     - Read client payload and reply with server payload
   - How to launch a server instance
@@ -46,8 +50,8 @@ Note: Both of them can run on the same machine or separate machines.
   - Host part (tls_client_host)
     - Instantiate an enclave before transitioning the control into the enclave via an ecall.
   - Enclave (tls_client_enclave.signed)
-    - Calls oe_get_attestation_certificate_with_evidence to generate an certificate
-    - Use Mbedtls API to configure an TLS client after configuring above certificate as the client's certificate
+    - Call oe_get_attestation_certificate_with_evidence to generate an certificate
+    - Use MbedTLS/OpenSSL API to configure an TLS client after configuring above certificate as the client's certificate
     - Launch a TLS client and connect to the server
     - Send client payload and wait for server's payload
   - How to launch a client instance
@@ -68,9 +72,83 @@ Note: Both of them can run on the same machine or separate machines.
 
 ## Build and run
 
-To build and run the samples, refer to documentation in the main [README file](../README.md#building-the-samples.md).
+### Linux
 
-Note: This sample uses an OE SDK customized version of mbedtls library for TLS channel connection. It has MBEDTLS_NET_C component enabled, which has a dependency on the newly added [socket support](../../docs/UsingTheIOSubsystem.md#socketh) in 0.6.0 OE SDK release (for more details see [Using the Open Enclave I/O subsystem](../../docs/UsingTheIOSubsystem.md#opting-in) for details). So in order to build successfully, you would need to link with liboehostsock and libhostresolver libraries to satisfy the dependency.
+#### CMake
+- Use Mbed TLS
+  ```bash
+  mkdir build
+  cd build
+  cmake -DOE_CRYPTO_LIB=mbedtls ..
+  make
+  make run
+  ```
+- Use OpenSSL
+  ```bash
+  mkdir build
+  cd build
+  cmake -DOE_CRYPTO_LIB=openssl ..
+  make
+  make run
+  ```
+
+- Use FIPS-enabled OpenSSL based on SymCrypt
+  ```bash
+  mkdir build
+  cd build
+  cmake -DOE_CRYPTO_LIB=openssl_symcrypt_fips ..
+  make
+  make run
+  ```
+
+#### GNU Make
+- Use Mbed TLS
+  ```bash
+  make OE_CRYPTO_LIB=mbedtls build
+  make run
+  ```
+- Use OpenSSL
+  ```bash
+  make OE_CRYPTO_LIB=openssl build
+  make run
+  ```
+
+- Use FIPS-enabled OpenSSL based on SymCrypt
+  ```bash
+  make OE_CRYPTO_LIB=openssl_symcrypt_fips build
+  make run
+  ```
+
+### Windows
+
+#### CMake
+- Use Mbed TLS
+  ```bash
+  mkdir build
+  cd build
+  cmake -G Ninja -DOE_CRYPTO_LIB=mbedtls ..
+  ninja
+  ninja run
+  ```
+- Use OpenSSL
+  ```bash
+  mkdir build
+  cd build
+  cmake -G Ninja -DOE_CRYPTO_LIB=openssl ..
+  ninja
+  ninja run
+  ```
+
+- Use FIPS-enabled OpenSSL based on SymCrypt
+  ```bash
+  mkdir build
+  cd build
+  cmake -G Ninja -DOE_CRYPTO_LIB=openssl_symcrypt_fips ..
+  ninja
+  ninja run
+  ```
+
+Note: This sample has a dependency on the [socket support](../../docs/UsingTheIOSubsystem.md#a-socket-example) added in the OE SDK v0.6.0 release, so it needs to be linked against the liboehostsock and libhostresolver libraries. For more details, see [Using the Open Enclave I/O subsystem](../../docs/UsingTheIOSubsystem.md#opting-in).
 
 ### Running attested TLS server in loop
 By default the server exits after completing a TLS session with a client. `-server-in-loop` run-time option changes this behavior to allow the TLS server to handle multiple client requests.
@@ -88,3 +166,28 @@ On Windows after building the sample as described in the [README file](../README
 ```cmd
 .\server\host\tls_server_host .\server\enc\tls_server_enc.signed -port:12341 -server-in-loop
 ```
+### Recommended TLS configurations when using OpenSSL
+
+  It is strongly recommended that developers configure OpenSSL to restrict the TLS versions, cipher suites and elliptic curves to be used for TLS connections to enclave:
+
+  - TLS protocol versions
+    - TLS 1.2
+    - TLS 1.3
+  - TLS 1.3 cipher suites (in the exact order)
+    - TLS13-AES-256-GCM-SHA384
+    - TLS13-AES-128-GCM-SHA256
+  - TLS 1.2 cipher suites (in the exact order)
+    - ECDHE-ECDSA-AES128-GCM-SHA256
+    - ECDHE-ECDSA-AES256-GCM-SHA384
+    - ECDHE-RSA-"AES128-GCM-SHA256
+    - ECDHE-RSA-AES256-GCM-SHA384
+    - ECDHE-ECDSA-AES128-SHA256
+    - ECDHE-ECDSA-AES256-SHA384
+    - ECDHE-RSA-AES128-SHA256
+    - ECDHE-RSA-AES256-SHA384
+  - Elliptic curves
+    - P-521
+    - P-384
+    - P-256
+
+  This sample illustrates how to use [`initalize_ssl_context()`](common/openssl_utility.cpp#L118) to configure the `SSL_CTX` as suggested in both the [server](server/enc/openssl_server.cpp#L147) and the [client](client/enc/openssl_client.cpp#L200) modules.

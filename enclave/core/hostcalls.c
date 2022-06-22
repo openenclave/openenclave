@@ -67,20 +67,6 @@ void* oe_host_malloc(size_t size)
     return (void*)arg_out;
 }
 
-void* oe_host_calloc(size_t nmemb, size_t size)
-{
-    size_t total_size;
-    if (oe_safe_mul_sizet(nmemb, size, &total_size) != OE_OK)
-        return NULL;
-
-    void* ptr = oe_host_malloc(total_size);
-
-    if (ptr)
-        oe_memset_s(ptr, nmemb * size, 0, nmemb * size);
-
-    return ptr;
-}
-
 oe_result_t _oe_realloc_ocall(void** retval, void* ptr, size_t size)
 {
     OE_UNUSED(retval);
@@ -113,33 +99,6 @@ void* oe_host_realloc(void* ptr, size_t size)
 void oe_host_free(void* ptr)
 {
     oe_ocall(OE_OCALL_FREE, (uint64_t)ptr, NULL);
-}
-
-char* oe_host_strndup(const char* str, size_t n)
-{
-    char* p;
-    size_t len;
-
-    if (!str)
-        return NULL;
-
-    len = oe_strlen(str);
-
-    if (n < len)
-        len = n;
-
-    /* Would be an integer overflow in the next statement. */
-    if (len == OE_SIZE_MAX)
-        return NULL;
-
-    if (!(p = oe_host_malloc(len + 1)))
-        return NULL;
-
-    if (oe_memcpy_s(p, len + 1, str, len) != OE_OK)
-        return NULL;
-    p[len] = '\0';
-
-    return p;
 }
 
 int oe_host_vfprintf(int device, const char* fmt, oe_va_list ap_)

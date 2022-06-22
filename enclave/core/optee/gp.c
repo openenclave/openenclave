@@ -185,8 +185,8 @@ static TEE_Result _handle_call_enclave_function(
     }
 
     /* __oe_calls_table is defined in the oeedger8r-generated code. */
-    ecall_table.ecalls = __oe_ecalls_table;
-    ecall_table.num_ecalls = __oe_ecalls_table_size;
+    ecall_table.ecalls = oe_ecalls_table;
+    ecall_table.num_ecalls = oe_ecalls_table_size;
 
     /* Fetch matching function */
     if (args.function_id >= ecall_table.num_ecalls)

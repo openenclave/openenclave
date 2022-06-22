@@ -33,19 +33,19 @@ void test_errno_edl_ocalls()
     OE_TEST(errno == 0x1111);
 
     // Mashalling structs for ocalls marked with propagate_errno should have an
-    // int _ocall_errno field. If not the case, the following code will not
+    // int ocall_errno field. If not the case, the following code will not
     // compile.
     {
         ocall_errno_args_t args1;
-        check_type<int>(args1._ocall_errno);
+        check_type<int>(args1.ocall_errno);
 
         ocall_noop_args_t args2;
-        check_type<int>(args2._ocall_errno);
+        check_type<int>(args2.ocall_errno);
     }
 
     // Marshalling structs without the propagate_errno annotation will not have
-    // the _ocall_errno field.
-    assert_no_field__ocall_errno<ocall_set_host_errno_args_t>();
+    // the ocall_errno field.
+    assert_no_field_ocall_errno<ocall_set_host_errno_args_t>();
 
     printf("=== test_errno_edl_ocalls passed\n");
 }

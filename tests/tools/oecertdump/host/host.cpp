@@ -131,7 +131,9 @@ oe_result_t generate_certificate(oe_enclave_t* enclave, bool verbose)
         if (verbose)
         {
             printf("\n");
+#ifdef TEXT_CERT
             output_certificate(certificate, certificate_size);
+#endif
 
             if (get_sgx_report_from_certificate(
                     certificate, certificate_size, &report, &report_size) ==
@@ -275,7 +277,7 @@ int main(int argc, const char* argv[])
 {
     int ret = 0;
 
-    if (!oe_has_sgx_quote_provider())
+    if (!oe_sgx_has_quote_provider())
     {
         fprintf(
             stderr, "FAILURE: DCAP libraries must be present for this test.\n");

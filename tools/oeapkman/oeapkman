@@ -1,0 +1,297 @@
+#!/bin/bash
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+# Default alpine linux version.
+# Can be overridden via --alpine option.
+ALPINE_MAJOR_VERSION=3.14
+ALPINE_MINOR_VERSION=1
+
+# By default, assume current arch.
+# Can be overridden via --optee option.
+ARCH=$(arch)
+optee=0
+
+# Process
+PARAMS=""
+
+# Filter out options.
+while (( "$#" )); do
+    case "$1" in
+	--optee)
+	    # Optee support requires QEMU user-space emulation.
+	    if ! command -v qemu-aarch64-static > /dev/null; then
+		echo "install qemu-user-static package for optee support."
+		exit 1
+	    fi
+	    optee=1
+	    ARCH='aarch64'
+	    ;;
+	--alpine)
+	    shift
+	    ALPINE_MAJOR_VERSION="${1%.*}"
+	    ALPINE_MINOR_VERSION="${1##*.}"
+	    ;;
+	*)
+	 PARAMS="$PARAMS $1"
+    esac
+    shift
+done
+
+# Set processed arguments.
+eval set -- "$PARAMS"
+
+# Use a recent version of proot. With older versions, apk would
+# report messages like "2 errors", that are innocuous, but catch
+# the eye.
+PROOT_URL="https://proot.gitlab.io/proot/bin/proot"
+
+# URL to fetch alpine root fs from About 2.5 MB download.
+ALPINE_ROOTFS_URL="https://dl-cdn.alpinelinux.org/alpine/\
+v${ALPINE_MAJOR_VERSION}/releases/$ARCH/\
+alpine-minirootfs-${ALPINE_MAJOR_VERSION}.${ALPINE_MINOR_VERSION}-${ARCH}.tar.gz"
+
+# Version ID is a combination of alpine version and arch.
+VERSION_ID="${ALPINE_MAJOR_VERSION}.${ALPINE_MINOR_VERSION}-${ARCH}"
+
+# Name of the folder where root filesystem will be extracted to.
+ALPINE_FS="alpine-fs-${VERSION_ID}"
+
+# Figure out the user's home folder. If the command is executed
+# as sudo, then we use $SUDO_USER's home folder and not the
+# root's home folder.
+if [ -n "$SUDO_USER" ]; then
+    HOME_DIR=/home/${SUDO_USER}
+else
+    HOME_DIR=~
+fi
+
+OEAPKMAN_DIR=${HOME_DIR}/.oeapkman
+CURRENT_DIR=$(pwd)
+ROOTFS_PATH="${OEAPKMAN_DIR}/${ALPINE_FS}"
+
+LOCK_FILE="${OEAPKMAN_DIR}/oeapkman.lock"
+
+print_usage()
+{
+    usage="\
+oeapkman -  package manager and toolbox for enclave development.
+            version 0.1a, alpine linux ${VERSION_ID}
+
+oeapkman uses \`unshare\`/\`proot\` to manage an installation of alpine-linux.
+Alpine linux exists as a normal directory on the host machine and thus headers
+and libraries can be transparently used to build enclaves on the host machine.
+oeapkman also sets up the a development environment for fine-tuning and building
+packages specifically for enclaves.
+
+Links:
+Open Enclave SDK  : https://openenclave.io/sdk/
+Alpine Linux Wiki : https://wiki.alpinelinux.org/wiki/Main_Page
+Package Search    : https://pkgs.alpinelinux.org/packages
+Search Contents   : https://pkgs.alpinelinux.org/contents
+Proot             : https://proot-me.github.io/
+
+
+usage: oeapkman [--optee] [--alpine version] COMMAND [<ARGUMENTS>]
+
+oeapkman's usage is modeled after Alpine Linux's package manager (apk).
+Most of the commands are forwarded to the corresponding apk commands.
+
+The \`--optee\` flag is used to target OP-TEE.
+
+The \`--alpine\` option is used to specify Alpine Linux version to use.
+  E.g: \`oeapkman --alpine 3.12.3 ...\` or \`oeapkman --alpine 3.14.1 ...\`.
+It is thus possible to have multiple instances of Alpine Linux file systems
+based off of different Alpine Linux versions.
+
+Package installation and removal:
+  search     Search for packages matching given patterns.
+             E.g.:
+                oeapkman search sqlite quickjs
+             Hint: Search for static and dev versions of libraries.
+             Hint: Use the \`Search Contents\` link above to find out what package
+                   contains the header/library files you are looking for.
+  add        Install packages
+             E.g.:
+                oeapkman add sqlite-static sqlite-dev
+                oeapkman add quickjs
+  del        Remove given packages.
+
+Using packages:
+  root       The root folder of this alpine-linux instance. Header and library paths
+             can be specified relative to the root path.
+             E.g.:
+             Specify header paths to compiler:
+                -I \`oeapkman root\`/usr/include/c++/10.2.1 -I \`oeapkman root\`/usr/include
+             Specify library paths to linker:
+                -L \`oeapkman root\`/usr/lib
+
+Execute commands:
+  exec       Execute a command in the current working directory. Current user's
+             home folder made as well as /home is made  available to Alpine
+             Linux. Tools in the alpine-linux distribution can thus be run on
+             any file under the home folder.
+             E.g.:
+                 oeapkman exec clang -c foo.c
+                 Compile foo.c in current folder using the clang compiler from
+                 the alpine install.
+
+
+Help:
+ help       Print usage.
+"
+
+    echo "$usage"
+}
+
+setup_alpine_fs()
+{
+    mkdir -p "$OEAPKMAN_DIR" && cd "$OEAPKMAN_DIR" || exit 1
+    if ! test -d "${ALPINE_FS}"; then
+        rm -f "alpine-minirootfs-${VERSION_ID}.tar.gz"
+
+        if ! command -v tar > /dev/null; then
+            echo "Install tar to proceed." && exit 1
+        fi
+        if ! command -v curl > /dev/null; then
+            if ! command -v wget > /dev/null; then
+                echo "Install curl or wget to proceed." && exit 1
+            fi
+        fi
+
+	echo "Downloading ${ALPINE_ROOTFS_URL}"
+        if command -v curl > /dev/null; then
+            curl --fail -L -o "alpine-minirootfs-${VERSION_ID}.tar.gz" "$ALPINE_ROOTFS_URL"
+        elif command -v wget > /dev/null; then
+            wget -nv -O "alpine-minirootfs-${VERSION_ID}.tar.gz"  "$ALPINE_ROOTFS_URL"
+        else
+            echo "Install curl or wget to proceed." && exit 1
+        fi
+
+        sh -c "mkdir -p tmp && cd tmp && tar xf ../alpine-minirootfs-${VERSION_ID}.tar.gz" || exit 1
+        cp /etc/resolv.conf tmp/etc/resolv.conf
+        echo "https://dl-cdn.alpinelinux.org/alpine/edge/testing" >> tmp/etc/apk/repositories
+        mv tmp "${ALPINE_FS}"
+
+        if [ $optee -eq 1 ]; then
+            # Once qemu user-space binary is copied to /usr/bin of alpine-fs, then
+            # unshare/chroot will work across architecture and invoke the emulator
+            # as needed.
+            cp /usr/bin/qemu-aarch64-static "${ALPINE_FS}/usr/bin/qemu-aarch64-static"
+        fi
+
+        if test -f dist/proot; then
+	    echo "Existing proot installation found."
+	    MODE="proot"
+	else
+            echo "Checking if unshare works..."
+            if ! alpine_exec echo "unshare works" 2>/dev/null; then
+		# Download and use proot
+		echo "unshare doesn't work"
+		mkdir dist
+		if command -v curl > /dev/null; then
+                    curl -L -o dist/proot "$PROOT_URL"
+		else
+                    wget -O dist/proot "$PROOT_URL"
+		fi
+		chmod +x dist/proot
+		MODE="proot"
+            else
+		MODE="unshare"
+            fi
+	fi
+
+        # Initialize apk
+        alpine_exec sh -c "apk update && apk add bash"
+        echo "oeapkman configured to use \`$MODE\`"
+    fi
+}
+
+alpine_exec()
+{
+    export SHELL=/bin/sh
+    export TERM=xterm-256color
+    export PS1="oeapkman \w$ "
+    export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
+
+    if test -f dist/proot; then
+        if [ $optee -eq 1 ]; then
+            qemu_spec="-q qemu-aarch64-static"
+        else
+            qemu_spec=""
+        fi
+        # Root home folder is /root. Therefore bind both $HOME and /home
+        dist/proot -b /dev -b /dev/pts -b /proc -b /sys -b /dev/shm \
+                   -b "$HOME" \
+                   -b /home \
+                   -b /opt \
+                   -r "$ALPINE_FS" \
+                   -0 \
+                   -w "$CURRENT_DIR" \
+                   $qemu_spec \
+                    "$@"
+
+    else
+        ALPINE_EXEC_CMD="
+            mount --rbind /home \"$ALPINE_FS/home\"
+            mount --rbind /opt \"$ALPINE_FS/opt\"
+            mount -t proc /proc \"$ALPINE_FS/proc\"
+            mount --rbind /dev \"$ALPINE_FS/dev\"
+            mount --rbind  /sys \"$ALPINE_FS/sys\"
+            chroot \"$ALPINE_FS\" sh -c 'cd \"$CURRENT_DIR\" && \"\$@\"' oeapkman \"\$@\"
+        "
+        unshare --map-root-user --pid --fork --mount --propagation unchanged \
+                sh -c "$ALPINE_EXEC_CMD" oeapkman "$@"
+    fi
+}
+
+
+# Setup alpine file system.
+mkdir -p "${OEAPKMAN_DIR}" || exit 1
+(
+    flock -x 200
+    setup_alpine_fs
+) 200>"$LOCK_FILE.setup_alpine_fs"
+cd "$OEAPKMAN_DIR" || exit 1
+
+case "$1" in
+    "add")
+        alpine_exec flock "$LOCK_FILE" apk "$@" && exit 0
+        ret=$?
+        if [ "$ret" -gt 0 ]; then
+            echo "Safe to ignore above error(s) when running in a container."
+        else
+            exit $ret
+        fi
+        ;;
+
+    "del")
+        alpine_exec flock "$LOCK_FILE" apk "$@"
+        ;;
+
+    "exec")
+        shift
+        alpine_exec "$@"
+        ;;
+
+    "help")
+        print_usage
+        ;;
+
+    "root")
+        echo "$ROOTFS_PATH"
+        ;;
+
+    "search")
+        alpine_exec flock "$LOCK_FILE" apk "$@" -v | sort
+        ;;
+
+    "")
+        exit 0
+        ;;
+
+    *)
+        print_usage
+        exit 1
+        ;;
+esac

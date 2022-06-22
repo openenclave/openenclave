@@ -30,12 +30,6 @@ elseif (WIN32)
   set(OE_ASM ASM_MASM)
 endif ()
 
-# Set compiler search order to prefer Clang
-# This has to be done before `project`
-# http://cmake.3232098.n2.nabble.com/Prefer-clang-over-gcc-td7597742.html
-set(CMAKE_C_COMPILER_NAMES clang-7 cc)
-set(CMAKE_CXX_COMPILER_NAMES clang++-7 c++)
-
 # Will be overwritten during the cmake initialization.
 set(LVI_MITIGATION
     "None"
@@ -43,14 +37,28 @@ set(LVI_MITIGATION
 set(LVI_MITIGATION_BINDIR
     "None"
     CACHE STRING "Path to the LVI mitigation bindir.")
-# On Unix, configuring cmake to adopt the customized compilation toolchain for LVI mitigation.
-# Note that this has be done before `project`.
-if (UNIX AND LVI_MITIGATION MATCHES ControlFlow)
-  if (${LVI_MITIGATION_BINDIR} MATCHES None)
-    message(FATAL_ERROR "LVI_MITIGATION_BINDIR is not specified.")
+
+# On Unix, configuring cmake to use the preferred compiler.
+# Note that this must be done before the `project` command.
+if (UNIX)
+  if (LVI_MITIGATION MATCHES ControlFlow)
+    # If the LVI mitigation is enabled, use the customized compilation toolchain.
+    if (${LVI_MITIGATION_BINDIR} MATCHES None)
+      message(FATAL_ERROR "LVI_MITIGATION_BINDIR is not specified.")
+    endif ()
+    include(configure_lvi_mitigation_build)
+    configure_lvi_mitigation_build(BINDIR ${LVI_MITIGATION_BINDIR})
+  else ()
+    # For the normal build, if the CC environment variable has been specified or if
+    # the CMAKE_C_COMPILER cmake variable has been passed to cmake, use the C compiler
+    # that has been specified. Otherwise, prefer clang. Same for C++ compiler.
+    if (NOT DEFINED ENV{CC} AND NOT DEFINED CMAKE_C_COMPILER)
+      find_program(CMAKE_C_COMPILER clang-10 clang)
+    endif ()
+    if (NOT DEFINED ENV{CXX} AND NOT DEFINED CMAKE_CXX_COMPILER)
+      find_program(CMAKE_CXX_COMPILER clang++-10 clang++)
+    endif ()
   endif ()
-  include(configure_lvi_mitigation_build)
-  configure_lvi_mitigation_build(BINDIR ${LVI_MITIGATION_BINDIR})
 endif ()
 
 project(
@@ -93,6 +101,13 @@ string(TOUPPER "${CMAKE_BUILD_TYPE}" uppercase_CMAKE_BUILD_TYPE)
 list(APPEND uppercase_build_type "DEBUG" "RELEASE" "RELWITHDEBINFO")
 if (NOT uppercase_CMAKE_BUILD_TYPE IN_LIST uppercase_build_type)
   message(FATAL_ERROR "UNKNOWN CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
+endif ()
+
+if (uppercase_CMAKE_BUILD_TYPE STREQUAL "RELEASE")
+  message(
+    WARNING "The `Release` build type has been deprecated. "
+            "Build problems may occur. Consider using `RelWithDebInfo` instead."
+  )
 endif ()
 
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
@@ -158,10 +173,9 @@ else () # NOT OE_SGX
   endif ()
 endif ()
 
-option(BUILD_OPENSSL "[EXPERIMENTAL] Build OpenSSL libraries." OFF)
-
-if (BUILD_OPENSSL AND OE_TRUSTZONE)
-  message(FATAL_ERROR "BUILD_OPENSSL is not supported on ARM yet.")
+if (OE_SGX)
+  # Currently we only support OpenSSL on SGX.
+  set(BUILD_OPENSSL ON)
 endif ()
 
 set(DEFAULT_TEST_ENCLAVE_CRYPTO_LIB
@@ -254,6 +268,9 @@ include(package_settings)
 # See `cmake/add_enclave.cmake` for enclave creation logic
 include(add_enclave)
 
+# See `cmake/fuzzer_settings.cmake` to build target with fuzzing flags enabled
+include(fuzzer_settings)
+
 # TODO: See #756: Fix this because it is incompatible with
 # multi-configuration generators
 if (uppercase_CMAKE_BUILD_TYPE STREQUAL "DEBUG")
@@ -286,6 +303,8 @@ if (NOT USE_SNMALLOC)
 endif ()
 
 option(BUILD_TESTS "Build OE tests" ON)
+option(ENABLE_FUZZING "Build OE with fuzzing flags enabled" OFF)
+option(BUILD_OEUTIL_TOOL "Build oeutil tool" ON)
 
 # For EEID see https://github.com/openenclave/openenclave/pull/2647
 option(
@@ -389,21 +408,15 @@ include(add_enclave_test)
 add_subdirectory(include)
 add_subdirectory(host)
 
-if (BUILD_TESTS AND (NOT COMPONENT MATCHES OEHOSTVERIFY))
-  add_subdirectory(tests)
-endif ()
-
 # Skip samples when enabling the code coverage test.
 # Otherwise, all the samples need to explicitly link against the libgcov library.
 if (NOT CODE_COVERAGE)
   add_subdirectory(samples)
 endif ()
 
-if (NOT COMPONENT MATCHES OEHOSTVERFIY)
-  add_subdirectory(tools)
-endif ()
+add_subdirectory(tools)
 
-if (BUILD_ENCLAVES AND (NOT COMPONENT MATCHES OEHOSTVERIFY))
+if (BUILD_ENCLAVES)
   add_subdirectory(enclave)
   add_subdirectory(3rdparty)
   add_subdirectory(libc)
@@ -411,8 +424,12 @@ if (BUILD_ENCLAVES AND (NOT COMPONENT MATCHES OEHOSTVERIFY))
   add_subdirectory(syscall)
 endif ()
 
-if (OE_SGX AND (NOT COMPONENT MATCHES OEHOSTVERIFY))
+if (OE_SGX)
   add_subdirectory(debugger)
+endif ()
+
+if (BUILD_TESTS)
+  add_subdirectory(tests)
 endif ()
 
 if (UNIX)
@@ -425,12 +442,18 @@ if (WIN32)
           DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/)
   install(FILES ./scripts/install-windows-prereqs.ps1
           DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/)
-  install(FILES ./cmake/maybe_build_using_clangw.cmake
-          DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
-  install(FILES ./cmake/add_dcap_client_target.cmake
-          DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
-  install(FILES ./cmake/copy_oedebugrt_target.cmake
-          DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
+  install(
+    FILES ./cmake/maybe_build_using_clangw.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
+    COMPONENT OEHOSTVERIFY)
+  install(
+    FILES ./cmake/add_dcap_client_target.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
+    COMPONENT OEHOSTVERIFY)
+  install(
+    FILES ./cmake/copy_oedebugrt_target.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
+    COMPONENT OEHOSTVERIFY)
 endif ()
 
 # Install necessary files for LVI mitigation.

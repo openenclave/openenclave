@@ -11,6 +11,7 @@ enclave {
 #endif
 
     trusted {
+        public void enclave_set_oe_is_avx_enabled(bool enabled);
         public double enclave_add_float();
         public double enclave_check_abi();
     };

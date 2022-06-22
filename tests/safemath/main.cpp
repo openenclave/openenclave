@@ -794,23 +794,26 @@ void _test_unsigned()
 
 void _test_signed()
 {
-    SignedTest<int16_t> s16 = {oe_safe_add_s16,
-                               oe_safe_sub_s16,
-                               oe_safe_mul_s16,
-                               OE_INT16_MIN,
-                               OE_INT16_MAX};
+    SignedTest<int16_t> s16 = {
+        oe_safe_add_s16,
+        oe_safe_sub_s16,
+        oe_safe_mul_s16,
+        OE_INT16_MIN,
+        OE_INT16_MAX};
 
-    SignedTest<int32_t> s32 = {oe_safe_add_s32,
-                               oe_safe_sub_s32,
-                               oe_safe_mul_s32,
-                               OE_INT32_MIN,
-                               OE_INT32_MAX};
+    SignedTest<int32_t> s32 = {
+        oe_safe_add_s32,
+        oe_safe_sub_s32,
+        oe_safe_mul_s32,
+        OE_INT32_MIN,
+        OE_INT32_MAX};
 
-    SignedTest<int64_t> s64 = {oe_safe_add_s64,
-                               oe_safe_sub_s64,
-                               oe_safe_mul_s64,
-                               OE_INT64_MIN,
-                               OE_INT64_MAX};
+    SignedTest<int64_t> s64 = {
+        oe_safe_add_s64,
+        oe_safe_sub_s64,
+        oe_safe_mul_s64,
+        OE_INT64_MIN,
+        OE_INT64_MAX};
 
     s16.Run();
     s32.Run();

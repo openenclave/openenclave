@@ -18,6 +18,7 @@
 #include <openenclave/internal/syscall/sys/stat.h>
 #include <openenclave/internal/syscall/unistd.h>
 #include <stdio.h>
+#include <sys/file.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -81,6 +82,11 @@ class oe_fd_file_system
         return oe_fdatasync(file);
     }
 
+    int flock(file_handle file, int operation)
+    {
+        return oe_flock(file, operation);
+    }
+
     int close(file_handle file)
     {
         return oe_close(file);
@@ -131,12 +137,12 @@ class oe_fd_file_system
         return oe_rmdir(pathname);
     }
 
-    int stat(const char* pathname, struct oe_stat_t* buf)
+    int stat(const char* pathname, stat_type* buf)
     {
         return oe_stat(pathname, buf);
     }
 
-    int fstat(file_handle file, struct oe_stat_t* buf)
+    int fstat(file_handle file, stat_type* buf)
     {
         return oe_fstat(file, buf);
     }
@@ -144,6 +150,16 @@ class oe_fd_file_system
     int truncate(const char* path, off_t length)
     {
         return oe_truncate(path, length);
+    }
+
+    int ftruncate(file_handle file, off_t length)
+    {
+        return oe_ftruncate(file, length);
+    }
+
+    int access(const char* pathname, int mode)
+    {
+        return oe_access(pathname, mode);
     }
 
   private:
@@ -187,7 +203,7 @@ class fd_file_system
   public:
     typedef int file_handle;
     typedef DIR* dir_handle;
-    typedef struct oe_stat_t stat_type;
+    typedef struct stat stat_type;
     typedef struct dirent dirent_type;
 
     static constexpr file_handle invalid_file_handle = -1;
@@ -241,6 +257,11 @@ class fd_file_system
         return ::fdatasync(file);
     }
 
+    int flock(file_handle file, int operation)
+    {
+        return ::flock(file, operation);
+    }
+
     int close(file_handle file)
     {
         return ::close(file);
@@ -291,12 +312,12 @@ class fd_file_system
         return ::rmdir(pathname);
     }
 
-    int stat(const char* pathname, struct oe_stat_t* buf)
+    int stat(const char* pathname, stat_type* buf)
     {
         return ::stat(pathname, (struct stat*)buf);
     }
 
-    int fstat(file_handle file, struct oe_stat_t* buf)
+    int fstat(file_handle file, stat_type* buf)
     {
         return ::fstat(file, (struct stat*)buf);
     }
@@ -304,6 +325,16 @@ class fd_file_system
     int truncate(const char* path, off_t length)
     {
         return ::truncate(path, length);
+    }
+
+    int ftruncate(file_handle file, off_t length)
+    {
+        return ::ftruncate(file, length);
+    }
+
+    int access(const char* pathname, int mode)
+    {
+        return ::access(pathname, mode);
     }
 
   private:
@@ -519,6 +550,11 @@ class stream_file_system
         return fflush(file);
     }
 
+    int flock(file_handle file, int operation)
+    {
+        return ::flock(fileno(file), operation);
+    }
+
     int close(file_handle file)
     {
         return ::fclose(file);
@@ -569,12 +605,12 @@ class stream_file_system
         return ::rmdir(pathname);
     }
 
-    int stat(const char* pathname, struct stat* buf)
+    int stat(const char* pathname, stat_type* buf)
     {
         return ::stat(pathname, buf);
     }
 
-    int fstat(file_handle file, struct stat* buf)
+    int fstat(file_handle file, stat_type* buf)
     {
         return ::fstat(fileno(file), buf);
     }
@@ -582,6 +618,16 @@ class stream_file_system
     int truncate(const char* path, off_t length)
     {
         return ::truncate(path, length);
+    }
+
+    int ftruncate(file_handle file, off_t length)
+    {
+        return ::ftruncate(fileno(file), length);
+    }
+
+    int access(const char* pathname, int mode)
+    {
+        return ::access(pathname, mode);
     }
 
   private:

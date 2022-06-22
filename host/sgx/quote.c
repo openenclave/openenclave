@@ -115,16 +115,16 @@ done:
 }
 
 oe_result_t sgx_get_supported_attester_format_ids(
-    void* format_ids,
+    void** format_ids_data,
     size_t* format_ids_size)
 {
     oe_result_t result = OE_UNEXPECTED;
 
-    if (!format_ids && !format_ids_size)
+    if (!format_ids_data || !format_ids_size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    result =
-        oe_sgx_get_supported_attester_format_ids(format_ids, format_ids_size);
+    result = oe_sgx_get_supported_attester_format_ids(
+        format_ids_data, format_ids_size);
 
 done:
     return result;
@@ -247,12 +247,14 @@ oe_result_t sgx_verify_quote(
     if (p_qve_report_info != NULL)
     {
         OE_TRACE_INFO(
-            "SGX DCAP QvE-based quote verification is used, res: %s\n", result);
+            "SGX DCAP QvE-based quote verification is used, res: %s\n",
+            oe_result_str(result));
     }
     else
     {
         OE_TRACE_INFO(
-            "SGX DCAP QVL-based quote verification is used, res: %s\n", result);
+            "SGX DCAP QVL-based quote verification is used, res: %s\n",
+            oe_result_str(result));
     }
 done:
 

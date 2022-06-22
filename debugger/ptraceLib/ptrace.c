@@ -8,7 +8,6 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/ptrace.h>
 #include <sys/stat.h>
 #include <sys/uio.h>
 #include <sys/user.h>
@@ -16,14 +15,18 @@
 #include "enclave_context.h"
 #include "inferior_status.h"
 
+// ptrace has slightly different signatures on various platforms.
+// The first parameter is an int or an enum. Mangle the name
+// so that we can declare it with the type we want.
+#define ptrace ptrace_
+#include <sys/ptrace.h>
+#undef ptrace
+
 #define COUNTOF(arr) (sizeof(arr) / sizeof((arr)[0]))
 
 // Function pointer definitions.
-typedef int64_t (*sgx_ptrace_func_t)(
-    enum __ptrace_request request,
-    pid_t pid,
-    void* addr,
-    void* data);
+typedef int64_t (
+    *sgx_ptrace_func_t)(int request, pid_t pid, void* addr, void* data);
 
 typedef pid_t (*sgx_waitpid_func_t)(pid_t pid, int* status, int options);
 
@@ -253,9 +256,64 @@ static int64_t sgx_single_step_handler(pid_t pid, void* addr, void* data)
     return g_system_ptrace(PTRACE_SINGLESTEP, pid, addr, data);
 }
 
+static int64_t sgx_peek_user_handler(pid_t pid, void* addr, void* data)
+{
+    // Get the gpr from host thread.
+    struct user_regs_struct regs;
+    if (g_system_ptrace(PTRACE_GETREGS, pid, 0, &regs) == -1)
+    {
+        return -1;
+    }
+
+    // Fetch  xstate values of the enclave thread if the pc is an AEP.
+    if (sgx_is_aep(pid, &regs))
+    {
+        uint64_t offset = (uint64_t)addr;
+        if (offset < sizeof(regs))
+        {
+            // Fetch actual registers
+            if (sgx_get_enclave_thread_gpr(pid, (void*)regs.rbx, &regs) == 0)
+            {
+                return *(int64_t*)((int8_t*)&regs + offset);
+            }
+        }
+    }
+
+    return g_system_ptrace(PTRACE_PEEKUSER, pid, addr, data);
+}
+
+static int64_t sgx_poke_user_handler(pid_t pid, void* addr, void* data)
+{
+    // Get the gpr from host thread.
+    struct user_regs_struct regs;
+    if (g_system_ptrace(PTRACE_GETREGS, pid, 0, &regs) == -1)
+    {
+        return -1;
+    }
+
+    uint64_t rbx = regs.rbx;
+    // Set xstate values of the enclave thread if the pc is an AEP.
+    if (sgx_is_aep(pid, &regs))
+    {
+        uint64_t offset = (uint64_t)addr;
+        if (offset < sizeof(regs))
+        {
+            // Fetch actual registers
+            if (sgx_get_enclave_thread_gpr(pid, (void*)rbx, &regs) == 0)
+            {
+                *(int64_t*)((int8_t*)&regs + offset) = (int64_t)data;
+                if (sgx_set_enclave_thread_gpr(pid, (void*)rbx, &regs) == 0)
+                    return 0;
+            }
+        }
+    }
+
+    return g_system_ptrace(PTRACE_POKEUSER, pid, addr, data);
+}
+
 // Customized ptrace request handler table.
 typedef int64_t (*sgx_ptrace_request_handler)(pid_t, void*, void*);
-typedef enum __ptrace_request sgx_ptrace_request_type;
+typedef int sgx_ptrace_request_type;
 
 struct
 {
@@ -279,6 +337,10 @@ struct
     {PTRACE_GETREGSET, sgx_get_reg_set_handler},
     {PTRACE_SETREGSET, sgx_set_reg_set_handler},
 
+    // User area request to access registers
+    {PTRACE_PEEKUSER, sgx_peek_user_handler},
+    {PTRACE_POKEUSER, sgx_poke_user_handler},
+
     // Single step request.
     {PTRACE_SINGLESTEP, sgx_single_step_handler},
 };
@@ -293,7 +355,7 @@ struct
 **
 **==============================================================================
 */
-
+int64_t ptrace(sgx_ptrace_request_type __request, ...);
 int64_t ptrace(sgx_ptrace_request_type __request, ...)
 {
     pid_t pid;

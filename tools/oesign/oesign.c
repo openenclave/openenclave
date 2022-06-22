@@ -1,6 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 #include <ctype.h>
+#include <openenclave/host.h>
 #include <openenclave/internal/properties.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxcreate.h>
@@ -49,6 +50,9 @@ typedef struct _config_file_options
     optional_uint16_t security_version;
     optional_oe_uuid_t family_id;
     optional_oe_uuid_t extended_product_id;
+    optional_bool_t capture_pf_gp_exceptions;
+    optional_bool_t create_zero_base_enclave;
+    optional_uint64_t start_address;
 } config_file_options_t;
 
 int uuid_from_string(str_t* str, uint8_t* uuid, size_t expected_size);
@@ -311,6 +315,85 @@ static int _load_config_file(const char* path, config_file_options_t* options)
             memcpy(&options->extended_product_id.value, &id, sizeof(id));
             options->extended_product_id.has_value = true;
         }
+        else if (strcmp(str_ptr(&lhs), "CapturePFGPExceptions") == 0)
+        {
+            uint64_t value;
+
+            if (options->capture_pf_gp_exceptions.has_value)
+            {
+                oe_err(
+                    "%s(%zu): Duplicate 'CapturePFGPExceptions' value provided",
+                    path,
+                    line);
+                goto done;
+            }
+
+            // CapturePFGPExceptions must be 0 or 1
+            if (str_u64(&rhs, &value) != 0 || (value > 1))
+            {
+                oe_err(
+                    "%s(%zu): 'CapturePFGPExceptions' value must be 0 or 1",
+                    path,
+                    line);
+                goto done;
+            }
+
+            options->capture_pf_gp_exceptions.value = (bool)value;
+            options->capture_pf_gp_exceptions.has_value = true;
+        }
+        else if (strcmp(str_ptr(&lhs), "CreateZeroBaseEnclave") == 0)
+        {
+            uint64_t value;
+
+            if (options->create_zero_base_enclave.has_value)
+            {
+                oe_err(
+                    "%s(%zu): Duplicate 'CreateZeroBaseEnclave' value provided",
+                    path,
+                    line);
+                goto done;
+            }
+
+            // CreateZeroBaseEnclave must be 0 or 1
+            if (str_u64(&rhs, &value) != 0 || (value > 1))
+            {
+                oe_err(
+                    "%s(%zu): 'CreateZeroBaseEnclave' value must be 0 or 1",
+                    path,
+                    line);
+                goto done;
+            }
+
+            options->create_zero_base_enclave.value = (bool)value;
+            options->create_zero_base_enclave.has_value = true;
+        }
+        else if (strcmp(str_ptr(&lhs), "StartAddress") == 0)
+        {
+            uint64_t n;
+
+            if (options->start_address.has_value)
+            {
+                oe_err(
+                    "%s(%zu): Duplicate 'StartAddress' value provided",
+                    path,
+                    line);
+                goto done;
+            }
+
+            if (str_ptr(&rhs)[0] == '-' || str_u64(&rhs, &n) != 0 ||
+                !oe_sgx_is_valid_start_address(n))
+            {
+                oe_err(
+                    "%s(%zu): bad value for 'StartAddress': %s",
+                    path,
+                    line,
+                    str_ptr(&rhs));
+                goto done;
+            }
+
+            options->start_address.value = n;
+            options->start_address.has_value = true;
+        }
         else
         {
             oe_err("%s(%zu): unknown setting: %s", path, line, str_ptr(&rhs));
@@ -454,15 +537,21 @@ void _merge_config_file_options(
             properties->config.family_id,
             &options->family_id.value,
             sizeof(options->family_id.value));
+    else
+        memset(properties->config.family_id, 0, sizeof(oe_uuid_t));
 
     if (options->extended_product_id.has_value)
         memcpy(
             properties->config.extended_product_id,
             &options->extended_product_id.value,
             sizeof(options->extended_product_id.value));
+    else
+        memset(properties->config.extended_product_id, 0, sizeof(oe_uuid_t));
 
     if (options->family_id.has_value || options->extended_product_id.has_value)
         properties->config.attributes |= SGX_FLAGS_KSS;
+    else
+        properties->config.attributes &= ~SGX_FLAGS_KSS;
 
     /* If NumHeapPages option is present */
     if (options->num_heap_pages.has_value)
@@ -477,6 +566,23 @@ void _merge_config_file_options(
     /* If NumTCS option is present */
     if (options->num_tcs.has_value)
         properties->header.size_settings.num_tcs = options->num_tcs.value;
+
+    /* If the CapturePFGPExceptions option is present */
+    if (options->capture_pf_gp_exceptions.has_value)
+        properties->config.flags.capture_pf_gp_exceptions = 1;
+    else
+        properties->config.flags.capture_pf_gp_exceptions = 0;
+
+    /* If the CreateZeroBaseEnclave option is present */
+    if (options->create_zero_base_enclave.value == 1)
+        properties->config.flags.create_zero_base_enclave = 1;
+    else
+        properties->config.flags.create_zero_base_enclave = 0;
+
+    /* If create_zero_base_enclave is enabled and StartAddress is provided */
+    if (options->create_zero_base_enclave.value == 1 &&
+        options->start_address.has_value)
+        properties->config.start_address = options->start_address.value;
 }
 
 oe_result_t _initialize_enclave_properties(
@@ -525,6 +631,28 @@ done:
     return result;
 }
 
+static uint64_t _map_attributes(const oe_sgx_enclave_properties_t* properties)
+{
+    /*
+     * This function maps the attributes set by oesign from
+     * SGX_FLAGS_* to OE_ENCLAVE_FLAG_* before calling into
+     * OE specific functions.
+     */
+    uint64_t attributes = 0;
+
+    if (properties->config.attributes & SGX_FLAGS_DEBUG)
+    {
+        attributes |= OE_ENCLAVE_FLAG_DEBUG;
+    }
+
+    if (properties->config.attributes & SGX_FLAGS_KSS)
+    {
+        attributes |= OE_ENCLAVE_FLAG_SGX_KSS;
+    }
+
+    return attributes;
+}
+
 oe_result_t _get_sgx_enclave_hash(
     const char* enclave,
     const oe_sgx_enclave_properties_t* properties,
@@ -537,7 +665,7 @@ oe_result_t _get_sgx_enclave_hash(
     /* Initialize the context parameters for measurement only */
     OE_CHECK_ERR(
         oe_sgx_initialize_load_context(
-            &context, OE_SGX_LOAD_TYPE_MEASURE, properties->config.attributes),
+            &context, OE_SGX_LOAD_TYPE_MEASURE, _map_attributes(properties)),
         "oe_sgx_initialize_load_context(): result=%s (%#x)",
         oe_result_str(result),
         result);
@@ -597,6 +725,7 @@ int oesign(
     const char* conffile,
     const char* keyfile,
     const char* digest_signature,
+    const char* output_file,
     const char* x509,
     const char* engine_id,
     const char* engine_load_path,
@@ -625,6 +754,7 @@ int oesign(
                 properties.config.attributes,
                 properties.config.product_id,
                 properties.config.security_version,
+                &properties.config.flags,
                 engine_id,
                 engine_load_path,
                 key_id,
@@ -659,6 +789,7 @@ int oesign(
             properties.config.attributes,
             properties.config.product_id,
             properties.config.security_version,
+            &properties.config.flags,
             pem_data,
             pem_size,
             signature_data,
@@ -701,6 +832,7 @@ int oesign(
                 properties.config.attributes,
                 properties.config.product_id,
                 properties.config.security_version,
+                &properties.config.flags,
                 pem_data,
                 pem_size,
                 properties.config.family_id,
@@ -713,7 +845,7 @@ int oesign(
 
     /* Create signature section and write out new file */
     OE_CHECK_ERR(
-        oe_write_oeinfo_sgx(enclave, &properties),
+        oe_write_oeinfo_sgx(enclave, output_file, &properties),
         "oe_write_oeinfo_sgx(): result=%s (%#x)",
         oe_result_str(result),
         result);
@@ -750,6 +882,7 @@ int oedigest(const char* enclave, const char* conffile, const char* digest_file)
             properties.config.attributes,
             properties.config.product_id,
             properties.config.security_version,
+            &properties.config.flags,
             properties.config.family_id,
             properties.config.extended_product_id,
             &digest),

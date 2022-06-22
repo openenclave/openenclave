@@ -58,7 +58,7 @@ add_executable(
 
 # The tests intentionally use floats etc in size context.
 # Disable warnings.
-if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
+if (CMAKE_CXX_COMPILER_ID MATCHES Clang)
   set_source_files_properties(
     all_u_wrapper.cpp PROPERTIES COMPILE_FLAGS
                                  "-Wno-conversion -Wno-sign-compare")
@@ -70,7 +70,8 @@ target_include_directories(edl_host PUBLIC ${CMAKE_CURRENT_BINARY_DIR}
                                            ${CMAKE_CURRENT_SOURCE_DIR}/..)
 if (NOT WIN32)
   # Re-enable strict aliasing. TODO: Remove this when #1717 is resolved.
-  target_compile_options(edl_host PUBLIC -fstrict-aliasing
-                                         -Werror=strict-aliasing)
+  target_compile_options(
+    edl_host PUBLIC -fstrict-aliasing -Werror=strict-aliasing
+                    -Wno-unused-parameter)
 endif ()
 target_link_libraries(edl_host oehost)

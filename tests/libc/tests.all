@@ -28,6 +28,7 @@
 3rdparty/musl/libc-test/src/functional/pthread_cancel-points.c
 3rdparty/musl/libc-test/src/functional/pthread_cond.c
 3rdparty/musl/libc-test/src/functional/pthread_mutex.c
+3rdparty/musl/libc-test/src/functional/pthread_mutex_pi.c
 3rdparty/musl/libc-test/src/functional/pthread_robust.c
 3rdparty/musl/libc-test/src/functional/pthread_tsd.c
 3rdparty/musl/libc-test/src/functional/qsort.c
@@ -45,6 +46,7 @@
 3rdparty/musl/libc-test/src/functional/sscanf.c
 3rdparty/musl/libc-test/src/functional/sscanf_long.c
 3rdparty/musl/libc-test/src/functional/stat.c
+3rdparty/musl/libc-test/src/functional/strftime.c
 3rdparty/musl/libc-test/src/functional/string.c
 3rdparty/musl/libc-test/src/functional/string_memcpy.c
 3rdparty/musl/libc-test/src/functional/string_memmem.c
@@ -52,6 +54,7 @@
 3rdparty/musl/libc-test/src/functional/string_strchr.c
 3rdparty/musl/libc-test/src/functional/string_strcspn.c
 3rdparty/musl/libc-test/src/functional/string_strstr.c
+3rdparty/musl/libc-test/src/functional/strptime.c
 3rdparty/musl/libc-test/src/functional/strtod.c
 3rdparty/musl/libc-test/src/functional/strtod_long.c
 3rdparty/musl/libc-test/src/functional/strtod_simple.c
@@ -65,8 +68,10 @@
 3rdparty/musl/libc-test/src/functional/tls_align_dlopen.c
 3rdparty/musl/libc-test/src/functional/tls_init.c
 3rdparty/musl/libc-test/src/functional/tls_init_dlopen.c
+3rdparty/musl/libc-test/src/functional/tls_local_exec.c
 3rdparty/musl/libc-test/src/functional/udiv.c
 3rdparty/musl/libc-test/src/functional/ungetc.c
+3rdparty/musl/libc-test/src/functional/utime.c
 3rdparty/musl/libc-test/src/functional/vfork.c
 3rdparty/musl/libc-test/src/functional/wcsstr.c
 3rdparty/musl/libc-test/src/functional/wcstol.c
@@ -287,6 +292,7 @@
 3rdparty/musl/libc-test/src/regression/inet_pton-empty-last-field.c
 3rdparty/musl/libc-test/src/regression/iswspace-null.c
 3rdparty/musl/libc-test/src/regression/lrand48-signextend.c
+3rdparty/musl/libc-test/src/regression/lseek-large.c
 3rdparty/musl/libc-test/src/regression/malloc-0.c
 3rdparty/musl/libc-test/src/regression/malloc-brk-fail.c
 3rdparty/musl/libc-test/src/regression/malloc-oom.c
@@ -299,6 +305,7 @@
 3rdparty/musl/libc-test/src/regression/printf-fmt-g-round.c
 3rdparty/musl/libc-test/src/regression/printf-fmt-g-zeros.c
 3rdparty/musl/libc-test/src/regression/printf-fmt-n.c
+3rdparty/musl/libc-test/src/regression/pthread_atfork-errno-clobber.c
 3rdparty/musl/libc-test/src/regression/pthread_cancel-sem_wait.c
 3rdparty/musl/libc-test/src/regression/pthread_condattr_setclock.c
 3rdparty/musl/libc-test/src/regression/pthread_cond-smasher.c
@@ -323,9 +330,11 @@
 3rdparty/musl/libc-test/src/regression/scanf-match-literal-eof.c
 3rdparty/musl/libc-test/src/regression/scanf-nullbyte-char.c
 3rdparty/musl/libc-test/src/regression/setenv-oom.c
+3rdparty/musl/libc-test/src/regression/setvbuf-unget.c
 3rdparty/musl/libc-test/src/regression/sigaltstack.c
 3rdparty/musl/libc-test/src/regression/sigprocmask-internal.c
 3rdparty/musl/libc-test/src/regression/sigreturn.c
+3rdparty/musl/libc-test/src/regression/sscanf-eof.c
 3rdparty/musl/libc-test/src/regression/statvfs.c
 3rdparty/musl/libc-test/src/regression/strverscmp.c
 3rdparty/musl/libc-test/src/regression/syscall-sign-extend.c

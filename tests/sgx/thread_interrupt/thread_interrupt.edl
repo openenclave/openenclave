@@ -1,0 +1,24 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave {
+    from "openenclave/edl/logging.edl" import oe_write_ocall;
+    from "openenclave/edl/fcntl.edl" import *;
+    from "openenclave/edl/sgx/platform.edl" import *;
+
+    trusted {
+        public void enc_thread_interrupt_nonblocking();
+        public void enc_thread_interrupt_blocking();
+        public void enc_run_thread_nonblocking(int tid);
+        public void enc_run_thread_blocking(int tid);
+    };
+
+    untrusted {
+        void host_send_interrupt(int tid, int signal_number);
+        void host_create_thread(uint64_t blocking);
+        void host_join_thread();
+        int host_get_tid();
+        void host_sleep_msec(
+            uint32_t msec);
+    };
+};

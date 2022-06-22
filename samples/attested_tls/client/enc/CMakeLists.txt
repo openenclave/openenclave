@@ -8,7 +8,7 @@ add_custom_command(
   COMMAND
     openenclave::oeedger8r --trusted ${CMAKE_SOURCE_DIR}/client/tls_client.edl
     --search-path ${OE_INCLUDEDIR} --search-path
-    ${OE_INCLUDEDIR}/openenclave/edl/sgx)
+    ${OE_INCLUDEDIR}/openenclave/edl/sgx ${EDL_USE_HOST_ENTROPY})
 
 # Sign enclave
 add_custom_command(
@@ -19,13 +19,29 @@ add_custom_command(
     ${CMAKE_SOURCE_DIR}/client/enc/enc.conf -k
     ${CMAKE_SOURCE_DIR}/client/enc/private.pem)
 
-add_definitions(-DCLIENT_CERT_VERIFY_CALLBACK)
-
-add_executable(
-  tls_client_enc
-  ecalls.cpp client.cpp ../../common/cert_verifier.cpp
-  ../../common/identity_verifier.cpp ../../common/utility.cpp
-  ${CMAKE_CURRENT_BINARY_DIR}/tls_client_t.c)
+# Cover both openssl and openssl_symcrypt_fips
+if (${OE_CRYPTO_LIB} MATCHES "openssl")
+  add_executable(
+    tls_client_enc
+    ecalls.cpp
+    openssl_client.cpp
+    cert_verify_config.cpp
+    ../../common/verify_callback.cpp
+    ../../common/utility.cpp
+    ../../common/openssl_utility.cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/tls_client_t.c)
+elseif (${OE_CRYPTO_LIB} MATCHES "mbedtls")
+  add_executable(
+    tls_client_enc
+    ecalls.cpp
+    mbedtls_client.cpp
+    cert_verify_config.cpp
+    ../../common/cert_verifier.cpp
+    ../../common/identity_verifier.cpp
+    ../../common/utility.cpp
+    ../../common/mbedtls_utility.cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/tls_client_t.c)
+endif ()
 
 add_dependencies(tls_client_enc tls_server_sign_enc)
 
@@ -40,8 +56,31 @@ target_include_directories(
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}
           ${CMAKE_BINARY_DIR}/client/enc)
 
-target_link_libraries(
-  tls_client_enc openenclave::oeenclave openenclave::oecryptombedtls
-  openenclave::oelibcxx openenclave::oehostsock openenclave::oehostresolver)
+if (${OE_CRYPTO_LIB} STREQUAL "openssl")
+  target_link_libraries(
+    tls_client_enc openenclave::oeenclave openenclave::oecryptoopenssl
+    openenclave::oelibcxx openenclave::oehostsock openenclave::oehostresolver)
+elseif (${OE_CRYPTO_LIB} STREQUAL "mbedtls")
+  target_link_libraries(
+    tls_client_enc openenclave::oeenclave openenclave::oecryptombedtls
+    openenclave::oelibcxx openenclave::oehostsock openenclave::oehostresolver)
+elseif (${OE_CRYPTO_LIB} STREQUAL "openssl_symcrypt_fips")
+  add_custom_command(
+    TARGET tls_client_enc
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/libsymcrypt.so.101
+            ${CMAKE_CURRENT_BINARY_DIR}/libsymcrypt.so.101)
+
+  target_link_libraries(
+    tls_client_enc
+    openenclave::oeenclave
+    openenclave::oesymcryptengine
+    openenclave::oecryptoopenssl
+    # Workaround: refer to the root of the build location so that we don't rely on the
+    # order of copy
+    ${CMAKE_BINARY_DIR}/libsymcrypt.so.101
+    openenclave::oelibcxx
+    openenclave::oehostsock
+    openenclave::oehostresolver)
+endif ()
 
 add_custom_target(tls_client_sign_enc ALL DEPENDS tls_client_enc.signed)

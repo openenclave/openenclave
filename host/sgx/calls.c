@@ -102,16 +102,17 @@ static oe_result_t _enter_sim(
     oe_sgx_td_t* td = NULL;
 
     /* Reject null parameters */
-    if (!enclave || !enclave->addr || !tcs || !tcs->oentry || !tcs->gsbase)
+    if (!enclave || !enclave->start_address || !tcs || !tcs->oentry ||
+        !tcs->gsbase)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    tcs->u.entry = (void (*)(void))(enclave->addr + tcs->oentry);
+    tcs->u.entry = (void (*)(void))(enclave->start_address + tcs->oentry);
 
     if (!tcs->u.entry)
         OE_RAISE(OE_NOT_FOUND);
 
     /* Set oe_sgx_td_t.simulate flag */
-    td = (oe_sgx_td_t*)(enclave->addr + tcs->gsbase);
+    td = (oe_sgx_td_t*)(enclave->start_address + tcs->gsbase);
     td->simulate = true;
 
     /* Call into enclave */
@@ -121,7 +122,14 @@ static oe_result_t _enter_sim(
     if (arg4)
         *arg4 = 0;
 
+#if defined(__linux__)
+    /* On Linux, use oe_enter (aliased to __morestack) to
+     * conform the GDB contract (see linx/enter.c) */
+    oe_enter(tcs, aep, arg1, arg2, arg3, arg4, enclave);
+#else // _WIN32
     oe_enter_sim(tcs, aep, arg1, arg2, arg3, arg4, enclave);
+#endif
+
     result = OE_OK;
 
 done:
@@ -190,7 +198,7 @@ static oe_result_t _do_eenter(
         }
         else
         {
-            oe_enter(tcs, aep, arg1, arg2, &arg3, &arg4, enclave);
+            OE_CHECK(oe_enter(tcs, aep, arg1, arg2, &arg3, &arg4, enclave));
         }
 
         *code_out = oe_get_code_from_call_arg1(arg3);
@@ -304,7 +312,8 @@ static const char* oe_ecall_str(oe_func_t ecall)
         "DESTRUCTOR",
         "INIT_ENCLAVE",
         "CALL_ENCLAVE_FUNCTION",
-        "VIRTUAL_EXCEPTION_HANDLER"
+        "VIRTUAL_EXCEPTION_HANDLER",
+        "CALL_AT_EXIT_FUNCTIONS"
     };
     // clang-format on
 
@@ -345,7 +354,7 @@ static oe_result_t _handle_ocall(
         OE_LOG_LEVEL_VERBOSE,
         "%s 0x%x %s: %s\n",
         enclave->path,
-        enclave->addr,
+        enclave->start_address,
         func == OE_OCALL_CALL_HOST_FUNCTION ? "EDL_OCALL" : "OE_OCALL",
         oe_ocall_str(func));
 
@@ -604,7 +613,7 @@ oe_result_t oe_ecall(
         OE_LOG_LEVEL_VERBOSE,
         "%s 0x%x %s: %s\n",
         enclave->path,
-        enclave->addr,
+        enclave->start_address,
         func == OE_ECALL_CALL_ENCLAVE_FUNCTION ? "EDL_ECALL" : "OE_ECALL",
         oe_ecall_str(func));
 

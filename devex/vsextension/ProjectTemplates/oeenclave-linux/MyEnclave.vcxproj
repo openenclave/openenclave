@@ -57,9 +57,9 @@
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(NoInherit)</IncludePath>
     <LibraryPath>$(NoInherit)</LibraryPath>
-    <RemoteCCompileToolExe>clang-7</RemoteCCompileToolExe>
-    <RemoteCppCompileToolExe>clang-7</RemoteCppCompileToolExe>
-    <RemoteLdToolExe>clang-7</RemoteLdToolExe>
+    <RemoteCCompileToolExe>clang-10</RemoteCCompileToolExe>
+    <RemoteCppCompileToolExe>clang-10</RemoteCppCompileToolExe>
+    <RemoteLdToolExe>clang-10</RemoteLdToolExe>
     <RemoteLdCommmandTimeout />
     <TargetExt />
     <TargetName>$(ProjectName)</TargetName>
@@ -70,9 +70,9 @@
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(NoInherit)</IncludePath>
     <LibraryPath>$(NoInherit)</LibraryPath>
-    <RemoteCCompileToolExe>clang-7</RemoteCCompileToolExe>
-    <RemoteCppCompileToolExe>clang-7</RemoteCppCompileToolExe>
-    <RemoteLdToolExe>clang-7</RemoteLdToolExe>
+    <RemoteCCompileToolExe>clang-10</RemoteCCompileToolExe>
+    <RemoteCppCompileToolExe>clang-10</RemoteCppCompileToolExe>
+    <RemoteLdToolExe>clang-10</RemoteLdToolExe>
     <RemoteLdCommmandTimeout />
     <TargetExt />
     <TargetName>$(ProjectName)</TargetName>
@@ -83,9 +83,9 @@
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(NoInherit)</IncludePath>
     <LibraryPath>$(NoInherit)</LibraryPath>
-    <RemoteCCompileToolExe>clang-7</RemoteCCompileToolExe>
-    <RemoteCppCompileToolExe>clang-7</RemoteCppCompileToolExe>
-    <RemoteLdToolExe>clang-7</RemoteLdToolExe>
+    <RemoteCCompileToolExe>clang-10</RemoteCCompileToolExe>
+    <RemoteCppCompileToolExe>clang-10</RemoteCppCompileToolExe>
+    <RemoteLdToolExe>clang-10</RemoteLdToolExe>
     <RemoteLdCommmandTimeout />
     <TargetExt />
     <TargetName>$(ProjectName)</TargetName>
@@ -96,9 +96,9 @@
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(NoInherit)</IncludePath>
     <LibraryPath>$(NoInherit)</LibraryPath>
-    <RemoteCCompileToolExe>clang-7</RemoteCCompileToolExe>
-    <RemoteCppCompileToolExe>clang-7</RemoteCppCompileToolExe>
-    <RemoteLdToolExe>clang-7</RemoteLdToolExe>
+    <RemoteCCompileToolExe>clang-10</RemoteCCompileToolExe>
+    <RemoteCppCompileToolExe>clang-10</RemoteCppCompileToolExe>
+    <RemoteLdToolExe>clang-10</RemoteLdToolExe>
     <RemoteLdCommmandTimeout />
     <TargetExt />
     <TargetName>$(ProjectName)</TargetName>
@@ -169,12 +169,12 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\open-enclave-cross.0.12.0.2\build\native\open-enclave-cross.targets" Condition="Exists('..\packages\open-enclave-cross.0.12.0.2\build\native\open-enclave-cross.targets')" />
+    <Import Project="..\packages\open-enclave-cross.0.17.0\build\native\open-enclave-cross.targets" Condition="Exists('..\packages\open-enclave-cross.0.17.0\build\native\open-enclave-cross.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\open-enclave-cross.0.12.0.2\build\native\open-enclave-cross.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\open-enclave-cross.0.12.0.2\build\native\open-enclave-cross.targets'))" />
+    <Error Condition="!Exists('..\packages\open-enclave-cross.0.17.0\build\native\open-enclave-cross.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\open-enclave-cross.0.17.0\build\native\open-enclave-cross.targets'))" />
   </Target>
 </Project>

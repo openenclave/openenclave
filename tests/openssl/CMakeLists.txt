@@ -62,6 +62,12 @@ copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_ecc.txt
 # Note that the EOL of the *.pem files does not affect the test results. However,
 # because the test uses a same path to retrieve *.sct and *.pem files, we copy the *.pem
 # files as well.
+copy_test_data(${OPENSSL_DIR}/test/certs/bad.pem
+               ${CMAKE_CURRENT_BINARY_DIR}/certs/bad.pem)
+copy_test_data(${OPENSSL_DIR}/test/certs/ca-cert.pem
+               ${CMAKE_CURRENT_BINARY_DIR}/certs/ca-cert.pem)
+copy_test_data(${OPENSSL_DIR}/test/certs/ee-cert.pem
+               ${CMAKE_CURRENT_BINARY_DIR}/certs/ee-cert.pem)
 copy_test_data(${OPENSSL_DIR}/test/certs/embeddedSCTs1.pem
                ${CMAKE_CURRENT_BINARY_DIR}/certs/embeddedSCTs1.pem)
 copy_test_data(${OPENSSL_DIR}/test/certs/embeddedSCTs1.sct
@@ -76,8 +82,16 @@ copy_test_data(${OPENSSL_DIR}/test/certs/embeddedSCTs3_issuer.pem
                ${CMAKE_CURRENT_BINARY_DIR}/certs/embeddedSCTs3_issuer.pem)
 copy_test_data(${OPENSSL_DIR}/test/certs/leaf.pem
                ${CMAKE_CURRENT_BINARY_DIR}/certs/leaf.pem)
+copy_test_data(${OPENSSL_DIR}/test/certs/rootCA.pem
+               ${CMAKE_CURRENT_BINARY_DIR}/certs/rootCA.pem)
+copy_test_data(${OPENSSL_DIR}/test/certs/roots.pem
+               ${CMAKE_CURRENT_BINARY_DIR}/certs/roots.pem)
+copy_test_data(${OPENSSL_DIR}/test/certs/sroot-cert.pem
+               ${CMAKE_CURRENT_BINARY_DIR}/certs/sroot-cert.pem)
 copy_test_data(${OPENSSL_DIR}/test/certs/subinterCA.pem
                ${CMAKE_CURRENT_BINARY_DIR}/certs/subinterCA.pem)
+copy_test_data(${OPENSSL_DIR}/test/certs/untrusted.pem
+               ${CMAKE_CURRENT_BINARY_DIR}/certs/untrusted.pem)
 copy_test_data(${OPENSSL_DIR}/test/ct/tls1.sct
                ${CMAKE_CURRENT_BINARY_DIR}/ct/tls1.sct)
 
@@ -101,12 +115,24 @@ foreach (testcase ${buildtests})
   get_testcase_name(${testcase} name "../../3rdparty/openssl/openssl/test/")
   add_enclave_test(tests/openssl/${name} openssl_host openssl-${name}_enc
                    ${name})
+  if ((NOT "${name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
+      AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
+    add_enclave_test(tests/openssl/${name}_symcrypt openssl_host
+                     openssl-${name}_symcrypt_enc ${name})
+  endif ()
 endforeach (testcase)
+
+file(STRINGS "tests.unsupported.symcrypt" UNSUPPORTED_SYMCRYPT_TESTS)
 
 # Helper for adding tests with arguments.
 macro (add_openssl_test TEST_NAME NAME)
   add_enclave_test(tests/openssl/${TEST_NAME} openssl_host openssl-${NAME}_enc
                    ${TEST_NAME} ${ARGN})
+  if ((NOT "${TEST_NAME}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
+      AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
+    add_enclave_test(tests/openssl/${TEST_NAME}_symcrypt openssl_host
+                     openssl-${NAME}_symcrypt_enc ${TEST_NAME} ${ARGN})
+  endif ()
 endmacro (add_openssl_test)
 
 # Add the rest of the tests.
@@ -163,6 +189,16 @@ foreach (testcase ${openssltests})
       ENVIRONMENT
       "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;CT_DIR=${TEST_DATA_DIR}/ct;CERTS_DIR=${TEST_DATA_DIR}/certs"
     )
+    if ((NOT "${name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
+        AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
+      set_enclave_tests_properties(
+        tests/openssl/${name}_symcrypt
+        PROPERTIES
+        ENVIRONMENT
+        "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;CT_DIR=${TEST_DATA_DIR}/ct;CERTS_DIR=${TEST_DATA_DIR}/certs"
+      )
+    endif ()
+
     continue()
   endif ()
 
@@ -269,122 +305,274 @@ foreach (testcase ${openssltests})
   endif ()
 
   if ("${name}" STREQUAL ssl_test)
-    add_openssl_test("${name}-simple" "${name}"
+    set(subtest_name "${name}-simple")
+    add_openssl_test("${subtest_name}" "${name}"
                      ${OPENSSL_TEST_DIR}/ssl-tests/01-simple.conf)
     set_enclave_tests_properties(
-      tests/openssl/${name}-simple
+      tests/openssl/${subtest_name}
       PROPERTIES
       ENVIRONMENT
       "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
     )
-    add_openssl_test("${name}-client_auth" "${name}"
+    if ((NOT "${subtest_name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
+        AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
+      set_enclave_tests_properties(
+        tests/openssl/${subtest_name}_symcrypt
+        PROPERTIES
+        ENVIRONMENT
+        "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
+      )
+    endif ()
+
+    set(subtest_name "${name}-client_auth")
+    add_openssl_test("${subtest_name}" "${name}"
                      ${OPENSSL_TEST_DIR}/ssl-tests/04-client_auth.conf)
     set_enclave_tests_properties(
-      tests/openssl/${name}-client_auth
+      tests/openssl/${subtest_name}
       PROPERTIES
       ENVIRONMENT
       "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
     )
-    add_openssl_test("${name}-sni" "${name}"
+    if ((NOT "${subtest_name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
+        AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
+      set_enclave_tests_properties(
+        tests/openssl/${subtest_name}_symcrypt
+        PROPERTIES
+        ENVIRONMENT
+        "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
+      )
+    endif ()
+
+    set(subtest_name "${name}-sni")
+    add_openssl_test("${subtest_name}" "${name}"
                      ${OPENSSL_TEST_DIR}/ssl-tests/05-sni.conf)
     set_enclave_tests_properties(
-      tests/openssl/${name}-sni
+      tests/openssl/${subtest_name}
       PROPERTIES
       ENVIRONMENT
       "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
     )
-    add_openssl_test("${name}-dtls_resumption" "${name}"
+    if ((NOT "${subtest_name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
+        AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
+      set_enclave_tests_properties(
+        tests/openssl/${subtest_name}_symcrypt
+        PROPERTIES
+        ENVIRONMENT
+        "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
+      )
+    endif ()
+
+    set(subtest_name "${name}-dtls_resumption")
+    add_openssl_test("${subtest_name}" "${name}"
                      ${OPENSSL_TEST_DIR}/ssl-tests/11-dtls_resumption.conf)
     set_enclave_tests_properties(
-      tests/openssl/${name}-dtls_resumption
+      tests/openssl/${subtest_name}
       PROPERTIES
       ENVIRONMENT
       "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
     )
-    add_openssl_test("${name}-dtls-certstatus" "${name}"
+    if ((NOT "${subtest_name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
+        AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
+      set_enclave_tests_properties(
+        tests/openssl/${subtest_name}_symcrypt
+        PROPERTIES
+        ENVIRONMENT
+        "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
+      )
+    endif ()
+
+    set(subtest_name "${name}-dtls-certstatus")
+    add_openssl_test("${subtest_name}" "${name}"
                      ${OPENSSL_TEST_DIR}/ssl-tests/16-dtls-certstatus.conf)
     set_enclave_tests_properties(
-      tests/openssl/${name}-dtls-certstatus
+      tests/openssl/${subtest_name}
       PROPERTIES
       ENVIRONMENT
       "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
     )
-    add_openssl_test("${name}-renegotiate" "${name}"
+    if ((NOT "${subtest_name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
+        AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
+      set_enclave_tests_properties(
+        tests/openssl/${subtest_name}_symcrypt
+        PROPERTIES
+        ENVIRONMENT
+        "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
+      )
+    endif ()
+
+    set(subtest_name "${name}-renegotiate")
+    add_openssl_test("${subtest_name}" "${name}"
                      ${OPENSSL_TEST_DIR}/ssl-tests/17-renegotiate.conf)
     set_enclave_tests_properties(
-      tests/openssl/${name}-renegotiate
+      tests/openssl/${subtest_name}
       PROPERTIES
       ENVIRONMENT
       "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
     )
-    add_openssl_test("${name}-dtls-renegotiate" "${name}"
+    if ((NOT "${subtest_name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
+        AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
+      set_enclave_tests_properties(
+        tests/openssl/${subtest_name}_symcrypt
+        PROPERTIES
+        ENVIRONMENT
+        "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
+      )
+    endif ()
+
+    set(subtest_name "${name}-dtls-renegotiate")
+    add_openssl_test("${subtest_name}" "${name}"
                      ${OPENSSL_TEST_DIR}/ssl-tests/18-dtls-renegotiate.conf)
     set_enclave_tests_properties(
-      tests/openssl/${name}-dtls-renegotiate
+      tests/openssl/${subtest_name}
       PROPERTIES
       ENVIRONMENT
       "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
     )
-    add_openssl_test("${name}-mac-then-encrypt" "${name}"
+    if ((NOT "${subtest_name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
+        AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
+      set_enclave_tests_properties(
+        tests/openssl/${subtest_name}_symcrypt
+        PROPERTIES
+        ENVIRONMENT
+        "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
+      )
+    endif ()
+
+    set(subtest_name "${name}-mac-then-encrypt")
+    add_openssl_test("${subtest_name}" "${name}"
                      ${OPENSSL_TEST_DIR}/ssl-tests/19-mac-then-encrypt.conf)
     set_enclave_tests_properties(
-      tests/openssl/${name}-mac-then-encrypt
+      tests/openssl/${subtest_name}
       PROPERTIES
       ENVIRONMENT
       "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
     )
-    add_openssl_test("${name}-ticket-appdata" "${name}"
+    if ((NOT "${subtest_name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
+        AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
+      set_enclave_tests_properties(
+        tests/openssl/${subtest_name}_symcrypt
+        PROPERTIES
+        ENVIRONMENT
+        "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
+      )
+    endif ()
+
+    set(subtest_name "${name}-ticket-appdata")
+    add_openssl_test("${subtest_name}" "${name}"
                      ${OPENSSL_TEST_DIR}/ssl-tests/27-ticket-appdata.conf)
     set_enclave_tests_properties(
-      tests/openssl/${name}-ticket-appdata
+      tests/openssl/${subtest_name}
       PROPERTIES
       ENVIRONMENT
       "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
     )
-    add_openssl_test("${name}-seclevel" "${name}"
+    if ((NOT "${subtest_name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
+        AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
+      set_enclave_tests_properties(
+        tests/openssl/${subtest_name}_symcrypt
+        PROPERTIES
+        ENVIRONMENT
+        "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
+      )
+    endif ()
+
+    set(subtest_name "${name}-seclevel")
+    add_openssl_test("${subtest_name}" "${name}"
                      ${OPENSSL_TEST_DIR}/ssl-tests/28-seclevel.conf)
     set_enclave_tests_properties(
-      tests/openssl/${name}-seclevel
+      tests/openssl/${subtest_name}
       PROPERTIES
       ENVIRONMENT
       "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
     )
+    if ((NOT "${subtest_name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
+        AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
+      set_enclave_tests_properties(
+        tests/openssl/${subtest_name}_symcrypt
+        PROPERTIES
+        ENVIRONMENT
+        "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
+      )
+    endif ()
 
     # Test following tests require sufficient heap memory (e.g., 6144 pages) with DEBUG MALLOC.
-    add_openssl_test("${name}-protocol-version" "${name}"
+    set(subtest_name "${name}-protocol-version")
+    add_openssl_test("${subtest_name}" "${name}"
                      ${OPENSSL_TEST_DIR}/ssl-tests/02-protocol-version.conf)
     set_enclave_tests_properties(
-      tests/openssl/${name}-protocol-version
+      tests/openssl/${subtest_name}
       PROPERTIES
       ENVIRONMENT
       "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
     )
+    if ((NOT "${subtest_name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
+        AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
+      set_enclave_tests_properties(
+        tests/openssl/${subtest_name}_symcrypt
+        PROPERTIES
+        ENVIRONMENT
+        "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
+      )
+    endif ()
+
     # Test following tests require sufficient heap memory (e.g., 2048 pages) with DEBUG MALLOC.
+    set(subtest_name "${name}-dtls-protocol-version")
     add_openssl_test(
-      "${name}-dtls-protocol-version" "${name}"
+      "${subtest_name}" "${name}"
       ${OPENSSL_TEST_DIR}/ssl-tests/07-dtls-protocol-version.conf)
     set_enclave_tests_properties(
-      tests/openssl/${name}-dtls-protocol-version
+      tests/openssl/${subtest_name}
       PROPERTIES
       ENVIRONMENT
       "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
     )
-    add_openssl_test("${name}-resumption" "${name}"
+    if ((NOT "${subtest_name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
+        AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
+      set_enclave_tests_properties(
+        tests/openssl/${subtest_name}_symcrypt
+        PROPERTIES
+        ENVIRONMENT
+        "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
+      )
+    endif ()
+
+    set(subtest_name "${name}-resumption")
+    add_openssl_test("${subtest_name}" "${name}"
                      ${OPENSSL_TEST_DIR}/ssl-tests/10-resumption.conf)
     set_enclave_tests_properties(
-      tests/openssl/${name}-resumption
+      tests/openssl/${subtest_name}
       PROPERTIES
       ENVIRONMENT
       "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
     )
-    add_openssl_test("${name}-cert-select" "${name}"
+    if ((NOT "${subtest_name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
+        AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
+      set_enclave_tests_properties(
+        tests/openssl/${subtest_name}_symcrypt
+        PROPERTIES
+        ENVIRONMENT
+        "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
+      )
+    endif ()
+
+    set(subtest_name "${name}-cert-select")
+    add_openssl_test("${subtest_name}" "${name}"
                      ${OPENSSL_TEST_DIR}/ssl-tests/20-cert-select.conf)
     set_enclave_tests_properties(
-      tests/openssl/${name}-cert-select
+      tests/openssl/${subtest_name}
       PROPERTIES
       ENVIRONMENT
       "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
     )
+    if ((NOT "${subtest_name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
+        AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
+      set_enclave_tests_properties(
+        tests/openssl/${subtest_name}_symcrypt
+        PROPERTIES
+        ENVIRONMENT
+        "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
+      )
+    endif ()
 
     continue()
   endif ()
@@ -420,6 +608,13 @@ foreach (testcase ${openssltests})
     set_enclave_tests_properties(
       tests/openssl/${name} PROPERTIES ENVIRONMENT
       OPENSSL_CONF=${OPENSSL_TEST_DIR}/sysdefault.cnf)
+    if ((NOT "${name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
+        AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
+      set_enclave_tests_properties(
+        tests/openssl/${name}_symcrypt PROPERTIES ENVIRONMENT
+        OPENSSL_CONF=${OPENSSL_TEST_DIR}/sysdefault.cnf)
+    endif ()
+
     continue()
   endif ()
 
@@ -435,9 +630,7 @@ foreach (testcase ${openssltests})
   endif ()
 
   if ("${name}" STREQUAL verify_extra_test)
-    add_openssl_test(
-      "${name}" "${name}" ${OPENSSL_TEST_DIR}/certs/roots.pem
-      ${OPENSSL_TEST_DIR}/certs/untrusted.pem ${OPENSSL_TEST_DIR}/certs/bad.pem)
+    add_openssl_test("${name}" "${name}" ${OPENSSL_TEST_DIR}/certs/)
     continue()
   endif ()
 
@@ -480,7 +673,17 @@ foreach (testcase ${openssltests})
       ${OPENSSL_TEST_DIR}/certs/roots.pem
       ${OPENSSL_TEST_DIR}/certs/root+anyEKU.pem
       ${OPENSSL_TEST_DIR}/certs/root-anyEKU.pem
-      ${OPENSSL_TEST_DIR}/certs/root-cert.pem)
+      ${OPENSSL_TEST_DIR}/certs/root-cert.pem
+      ${OPENSSL_TEST_DIR}/certs/invalid-cert.pem)
+    continue()
+  endif ()
+
+  if ("${name}" STREQUAL ec_internal_test)
+    if (WIN32)
+      add_openssl_test("${name}" "${name}" ${TEST_DATA_DIR} ${WIN32})
+    else ()
+      add_openssl_test("${name}" "${name}" ${TEST_DATA_DIR})
+    endif ()
     continue()
   endif ()
 

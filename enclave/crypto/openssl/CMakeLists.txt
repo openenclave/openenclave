@@ -18,24 +18,24 @@ add_enclave_library(
   ${PROJECT_SOURCE_DIR}/common/crypto/openssl/rsa.c
   ${PROJECT_SOURCE_DIR}/common/crypto/openssl/sha.c
   cert.c
-  init.c)
+  entropy.c
+  gcm.c
+  init.c
+  symcrypt_engine.c)
 
 maybe_build_using_clangw(oecryptoopenssl)
 
 enclave_enable_code_coverage(oecryptoopenssl)
 
-enclave_include_directories(oecryptoopenssl PUBLIC
-                            $<BUILD_INTERFACE:${OE_INCDIR}/openenclave>)
-
 enclave_include_directories(
-  oecryptoopenssl PRIVATE
+  oecryptoopenssl PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include>
   $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/3rdparty/mbedtls>)
 
 enclave_link_libraries(oecryptoopenssl PUBLIC openssl)
 
 # Enforce the correct build dependency such that OpenSSL will be built first.
-add_enclave_dependencies(oecryptoopenssl opensslcrypto)
+add_enclave_dependencies(oecryptoopenssl openssl)
 
 set_enclave_property(TARGET oecryptoopenssl PROPERTY ARCHIVE_OUTPUT_DIRECTORY
                      ${OE_LIBDIR}/openenclave/enclave)

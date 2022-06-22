@@ -50,31 +50,47 @@ oe_enter:
     mov _td_from_tcs_offset(%rip), %r11
     add %rbx, %r11
 
+.check_aborted:
+    cmpq $TD_STATE_ABORTED, td_state(%r11)
+    je .abort
+
+    // Get the first ssa address from tcs
+    lea OE_SSA_FROM_TCS_BYTE_OFFSET(%rbx), %r10
+
 .save_host_registers:
-    // Backup the current host rbp, rsp, and context to previous.
-    mov td_host_rbp(%r11), %r8
-    mov %r8, td_host_previous_rbp(%r11)
-    mov td_host_rsp(%r11), %r8
-    mov %r8, td_host_previous_rsp(%r11)
+    // Backup the current ecall context to previous
     mov td_host_ecall_context(%r11), %r8
     mov %r8, td_host_previous_ecall_context(%r11)
 
     // Save host registers (restored on EEXIT)
+    mov %rax, td_eenter_rax(%r11) // cssa set by EENTER
     mov %rcx, td_host_rcx(%r11) // host return address here
-    mov %rsp, td_host_rsp(%r11)
-    mov %rbp, td_host_rbp(%r11)
     mov %rdx, td_host_ecall_context(%r11)
 
 .determine_entry_type:
-    // Check if this is exception dispatching request.
-    // exception-dispatching-request-check
-    cmp $0, %rax
-    jne .exception_entry
+    // Check if this is exception dispatching request
+    // Return on the eenter if cssa greater than one, which
+    // should not occur because OE assumes the enclave with nssa=2
+    cmp $1, %rax
+    je .exception_entry
+    ja .return
 
     // Stop speculative execution at fallthrough of conditional
     // exception-dispatching-request-check.
     lfence
 
+.update_td_state_on_normal_entry:
+    // Do not update the state if the enclave enters in the middle
+    // the exception handling (e.g., making an ocall)
+    cmpq $TD_STATE_SECOND_LEVEL_EXCEPTION_HANDLING, td_state(%r11)
+    je .check_entry_nesting_level
+
+    // Update state and clear previous state on normal entries
+    movq $TD_STATE_NULL, td_previous_state(%r11)
+    movq $TD_STATE_ENTERED, td_state(%r11)
+
+.check_entry_nesting_level:
+    lfence
     // Check whether this is a clean entry or a nested entry
     // clean-entry-check.
     mov td_depth(%r11), %r8
@@ -87,25 +103,142 @@ oe_enter:
     // after exception-dispatching-request-check.
     lfence
 
-    // Get the first ssa address from tcs.
-    lea OE_SSA_FROM_TCS_BYTE_OFFSET(%rbx), %r10
+    // Abort if SSA[0].GPRSGX.RSP equals to SSA[0].GPRSGX.URSP
+    mov SGX_SSA_RSP_OFFSET(%r10), %r8
+    mov SGX_SSA_URSP_OFFSET(%r10), %r9
+    cmp %r8, %r9
+    je .return
 
-    // Get the offset of current SSA from the begining of the SSA.
-    dec %rax
-    shl $0x0c, %rax
+    // Calculate the base address of the enclave
+    lea _enclave_rva(%rip), %r12
+    mov (%r12), %r13
+    sub %r13, %r12
 
-    // Get the address of current SSA.
-    add %r10, %rax
+    // Calculate the end of the enclave address (base + enclave_size)
+    lea oe_enclave_properties_sgx(%rip), %r13
+    mov OE_SGX_ENCLAVE_SIZE_OFFSET(%r13), %r13
+    add %r12, %r13
 
-    // Get the saved rsp. We can't depend on the TLS value to get the enclave rsp in exception entry since the value may
-    // not be set correctly.
-    mov SGX_SSA_RSP_OFFSET(%r10), %rsp
+    // Abort if SSA[0].GPRSGX.URSP is within the enclave memory range
+    cmp %r12, %r9
+    jb .exception_handler_stack_check
+    cmp %r13, %r9
+    jae .exception_handler_stack_check
+    jmp .return
 
-    // align stack.
-    and $-16, %rsp
+    // Reaching this point implies SSA[0].GPRSGX.RSP is within the enclave
+    // memory range so we do not need additional checks.
 
-    // Start the new stack under the red zone.
-    sub $ABI_REDZONE_BYTE_SIZE, %rsp
+.exception_handler_stack_check:
+    // Stop speculative execution at target of conditional jump
+    lfence
+
+    // Get the exception_handler_stack_check range
+    mov td_exception_handler_stack(%r11), %r14
+    mov td_exception_handler_stack_size(%r11), %r15
+    test %r15, %r15
+    jz .exception_stack_setup // check if size is zero
+    add %r14, %r15
+    jc .exception_stack_setup // check for overflow
+
+    // Check if the stack range is within the enclave memory range
+    // If the check fails, fallback to the default behavior (i.e.,
+    // re-using the stack pointer saved in the SSA)
+    cmp %r12, %r14
+    jb .exception_stack_setup
+    cmp %r13, %r15
+    ja .exception_stack_setup
+
+    // Check passes, use the exception handler stack
+    mov %r15, %r8
+
+    // Align the stack
+    and $-16, %r8
+
+    // Proceed without the red zone
+    jmp .state_machine_check
+
+.exception_stack_setup:
+    // Stop speculative execution at target of conditional jump
+    lfence
+
+    // Align the stack
+    and $-16, %r8
+
+    // Start the new stack under the red zone
+    sub $ABI_REDZONE_BYTE_SIZE, %r8
+
+.state_machine_check:
+    cmpq $0, td_exception_nesting_level(%r11)
+    jne .state_machine_check_nested_exception
+
+.state_machine_check_non_nested_exception:
+    // Expect the state to be RUNNING on a non-nested exception
+    // entry
+    cmpq $TD_STATE_RUNNING, td_state(%r11)
+    jne .return
+    jmp .check_host_signal_request
+
+.state_machine_check_nested_exception:
+    lfence
+    // Expect the state to be SECOND_LEVEL_EXCEPTION_HANDLING
+    // on a nested exception entry
+    cmpq $TD_STATE_SECOND_LEVEL_EXCEPTION_HANDLING, td_state(%r11)
+    jne .return
+
+.check_host_signal_request:
+    movq td_state(%r11), %r12
+
+    // Input value falls in the range of [1, 64] indicates
+    // a host signal request
+    cmp $0, %rsi
+    je .update_td_state
+    cmp $MAX_SIGNAL_NUMBER, %rsi
+    ja .update_td_state
+
+    // Proceed if the host_signal_unmasked flag is set
+    cmpq $1, td_host_signal_unmasked(%r11)
+    jne .return
+
+    // Proceed if the corresponding bit of the signal
+    // (i.e., signal number - 1) is set in the bitmask
+    mov td_host_signal_bitmask(%r11), %r13
+    mov %rsi, %r14
+    dec %r14
+    bt %r14, %r13
+    jnc .return
+
+    // Proceed only if the state is RUNNING
+    cmp $TD_STATE_RUNNING, %r12
+    jne .return
+
+    // Proceed if the thread is currently not handling a host signal
+    cmpq $1, td_is_handling_host_signal(%r11)
+    je .return
+
+    // Proceed if the exception entry is not nested
+    cmpq $0, td_exception_nesting_level(%r11)
+    jne .return
+
+    lfence
+
+    // Set the flag if the request is accepted
+    movq $1, td_is_handling_host_signal(%r11)
+
+    // Store the host-passed signal number
+    mov %rsi, td_host_signal(%r11)
+
+.update_td_state:
+    lfence
+
+    // Keep the state before the exception so that we can restore the
+    // state in the illegal instruction emulation flow
+    mov %r12, td_previous_state(%r11)
+    movq $TD_STATE_FIRST_LEVEL_EXCEPTION_HANDLING, td_state(%r11)
+
+    // Increase the nesting level, which will be decreased before resuming
+    // the execution (see exception.c)
+    incq td_exception_nesting_level(%r11)
     jmp .call_function
 
 .nested_entry:
@@ -114,13 +247,13 @@ oe_enter:
     lfence
 
     // Restore stack pointer and enclave registers:
-    mov td_last_sp(%r11), %rsp
+    mov td_last_sp(%r11), %r8
 
     // align the stack
-    and $-16, %rsp
+    and $-16, %r8
 
     // Start the new stack under the red zone.
-    sub $ABI_REDZONE_BYTE_SIZE, %rsp
+    sub $ABI_REDZONE_BYTE_SIZE, %r8
     jmp .call_function
 
 .clean_entry:
@@ -129,16 +262,33 @@ oe_enter:
     lfence
 
     // Calculate stack base relative to TCS (subtract guard page size)
-    mov %rbx, %rsp
-    sub $PAGE_SIZE, %rsp
-    mov %rsp, %rbp
+    mov %rbx, %r8
+    sub $PAGE_SIZE, %r8
 
 .call_function:
-    // Get the host stack pointer.
-    mov td_host_rsp(%r11), %r8
-    mov td_host_rbp(%r11), %r9
+    // Stop speculative execution for the fallthrough cases
+    lfence
 
-    // Construct the frame and align the stack.
+    // Set the rsp to the in-enclave stack
+    mov %r8, %rsp
+
+    cmp $1, %rax
+    je .locate_next_ssa
+    jmp .construct_stack_frame
+
+.locate_next_ssa:
+    // Stop speculative execution at fallthrough of conditional
+    // rax (cssa) check.
+    lfence
+
+    add $PAGE_SIZE, %r10
+
+.construct_stack_frame:
+    // Get the host stack pointer from SSA
+    mov SGX_SSA_URSP_OFFSET(%r10), %r8
+    mov SGX_SSA_URBP_OFFSET(%r10), %r9
+
+    // Construct the frame and align the stack
     pushq $0
     pushq %r8
     pushq %rcx
@@ -148,26 +298,14 @@ oe_enter:
     mov %rsp, %rbp
 .cfi_def_cfa_register   rbp
 
-#define OM_STACK_LENGTH             0X30
-#define OM_HOST_RSP                 (-1*8)(%rbp)
-#define OM_HOST_RBP                 (-2*8)(%rbp)
-#define OM_HOST_OUTPUT_ARG1         (-3*8)(%rbp)
-#define OM_HOST_OUTPUT_ARG2         (-4*8)(%rbp)
-#define OM_ENC_TD                   (-5*8)(%rbp)
-#define OM_HOST_RETURN_ADDR         (-6*8)(%rbp)
+// 16-byte alignment
+#define OM_STACK_LENGTH             0X20
+#define OM_HOST_OUTPUT_ARG1         (-1*8)(%rbp)
+#define OM_HOST_OUTPUT_ARG2         (-2*8)(%rbp)
+#define OM_ENC_TD                   (-3*8)(%rbp)
 
     // Allocate stack.
     sub $OM_STACK_LENGTH, %rsp
-
-    // Save the host stack pointers to enclave stack.
-    mov td_host_rsp(%r11), %r8
-    mov td_host_rbp(%r11), %r9
-    mov %r8, OM_HOST_RSP
-    mov %r9, OM_HOST_RBP
-
-    // Save the host return address to enclave stack.
-    mov td_host_rcx(%r11), %r8
-    mov %r8, OM_HOST_RETURN_ADDR
 
     // Save reference to the td structure to enclave stack.
     mov %r11, OM_ENC_TD
@@ -188,78 +326,43 @@ oe_enter:
     mov OM_HOST_OUTPUT_ARG2, %rsi
 
     // Restore td pointer
-    mov OM_ENC_TD, %r11
+    mov OM_ENC_TD, %rdx
+    // Set the argument aborting=0 for oe_asm_exit
+    xor %rcx, %rcx
+    jmp .eexit
 
-.determine_exit_type:
-
-    // Check the depth of the ECALL stack (zero for clean exit)
-    // exit-type-check.
-    mov td_depth(%r11), %r8
-    cmp $0, %r8
-    je .clean_exit
-
-.nested_exit:
-    // Stop speculative execution at fallthrough of conditional
-    // exit-type-check.
+.abort:
     lfence
 
-    mov %rsp, td_last_sp(%r11)
+    // Set argument 2 for oe_asm_exit
+    mov $CODE_ENCLAVE_ABORTING, %rsi
 
-    jmp .clear_enclave_registers
+    // Update the global enclave status
+    mov %rsi, __oe_enclave_status(%rip)
 
-.clean_exit:
-    // Stop speculative execution at target of conditional jump
-    // after exit-type-check.
+    jmp .prepare_eexit
+
+.return:
     lfence
 
-    // Clear the oe_sgx_td_t.last_sp field (force oe_enter to calculate stack pointer)
-    movq $0, td_last_sp(%r11)
+    // Set argument 2 for oe_asm_exit
+    mov $CODE_EXCEPTION_CONTINUE_EXECUTION, %rsi
 
-.clear_enclave_registers:
+.prepare_eexit:
+#define ARG1_CODE_ERET        0x2 // OE_CODE_ERET in oe_code_t
+#define ARG1_CODE_BIT_OFFSET  0x30 // Refer to oe_make_call_arg1 in calls.h
 
-    oe_cleanup_registers
+    // Set argument 1 for oe_asm_exit
+    mov $ARG1_CODE_ERET, %rdi
+    shl $ARG1_CODE_BIT_OFFSET, %rdi
+    mov %r11, %rdx
+    mov $1, %rcx // direct_return=1
 
-.restore_host_registers:
+.eexit:
+    // Invoke oe_asm_exit with (ARG1=RDI, ARG2=RSI, TD=RDX, ABORTING=RCX)
+    jmp oe_asm_exit
 
-    mov OM_HOST_RETURN_ADDR, %rcx
-    mov OM_HOST_RETURN_ADDR, %rbx
-    mov OM_HOST_RSP, %rsp
-    mov OM_HOST_RBP, %rbp
-
-.execute_eexit:
-
-    // Check oe_sgx_td_t.simulate flag
-    // simulation-flag-check.
-    mov td_simulate(%r11), %rax
-    cmp $0, %rax
-    jz .execute_eexit_instruction
-
-.execute_eexit_sim:
-    // Stop speculative execution at fallthrough of conditional
-    // simulate-flag-check.
-    lfence
-
-    // Clear %r11 which was being used to maintain td pointer
-    xor %r11, %r11
-
-    // Jump to return address:
-    mov $1, %rax
-    jmp *%rcx
-    ud2
-
-.execute_eexit_instruction:
-    // Stop speculative execution at target of conditional jump
-    // simulate-flag-check.
-    lfence
-
-    // Clear %r11 which was being used to maintain td pointer
-    xor %r11, %r11
-
-    // EEXIT(RAX=EEXIT, RBX=RETADDR, RCX=AEP, RDI=ARG1, RSI=ARG2)
-    //mov %rcx, %rbx
-    mov $ENCLU_EEXIT, %rax
-    ENCLU
-    ud2
+    // Should never reach here because oe_asm_exit does not return
 
 .forever:
     jmp .forever
@@ -294,6 +397,16 @@ oe_enter:
 .type oe_exception_dispatcher, @function
 oe_exception_dispatcher:
 .cfi_startproc
+
+    // Dummy operations to ensure the red zone does not bypass the guard page.
+    // This could happen when setting the exception handler stack but not
+    // registering the stack for #PF. In this case, when the stack overflow
+    // occurs, the first-stage handler will use the exception handler stack and
+    // then continue the execution to this point with the corrupted stack,
+    // pointing to near the end of the guard page.
+    push %rbp
+    pop %rbp
+
     // Start the new stack under the red zone.
     sub $ABI_REDZONE_BYTE_SIZE, %rsp
 

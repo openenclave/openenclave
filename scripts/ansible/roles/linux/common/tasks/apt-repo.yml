@@ -2,16 +2,20 @@
 # Licensed under the MIT License.
 
 ---
+- name: Include distribution vars
+  ansible.builtin.include_vars:
+    file: "{{ ansible_distribution | lower }}/{{ ansible_distribution_release | lower }}.yml"
+
 - name: Install apt-transport-https APT package
-  apt:
+  ansible.builtin.apt:
     name: apt-transport-https
     state: latest
-  retries: 10
+  retries: 100
   register: add_transport
   until: add_transport is success
 
 - name: Add APT repository key
-  apt_key:
+  ansible.builtin.apt_key:
     url: "{{ apt_key_url }}"
     state: present
   retries: 10
@@ -19,7 +23,7 @@
   until: add_key is success
 
 - name: Add APT repository
-  apt_repository:
+  ansible.builtin.apt_repository:
     repo: "{{ apt_repository }}"
     state: present
     update_cache: yes

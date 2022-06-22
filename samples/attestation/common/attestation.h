@@ -5,9 +5,11 @@
 #define OE_SAMPLES_ATTESTATION_ENC_ATTESTATION_H
 
 #include <openenclave/enclave.h>
+#include "attestation_args.h"
 #include "crypto.h"
 
 #define ENCLAVE_SECRET_DATA_SIZE 16
+
 class Attestation
 {
   private:

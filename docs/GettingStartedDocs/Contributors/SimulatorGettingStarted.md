@@ -2,9 +2,8 @@
 
 ## Platform requirement
 
-- Ubuntu 16.04-LTS 64-bits or Ubuntu 18.04-LTS 64-bits
+- Ubuntu 18.04-LTS or Ubuntu 20.04 64-bit.
 - A machine with an Intel processor
-- For RHEL8 support, please see [ExperimentalSupportRHEL8.md](ExperimentalSupportRHEL8.md).
 
 ## Clone Open Enclave SDK repo from GitHub
 
@@ -67,12 +66,12 @@ You will see test logs similar to the following:
 ```bash
 ~/openenclave/build$ OE_SIMULATION=1 ctest
 Test project /home/youradminusername/openenclave/build
-        Start   1: tests/aesm
-        1/123 Test   #1: tests/aesm ...............................................................................................................***Skipped   0.00 sec
-        Start   2: tests/mem
-        2/123 Test   #2: tests/mem ................................................................................................................   Passed    0.00 sec
-        Start   3: tests/str
-        3/123 Test   #3: tests/str ................................................................................................................   Passed    0.00 sec
+Start   1: tests/aesm
+1/123 Test   #1: tests/aesm ...............................................................................................................***Skipped   0.00 sec
+Start   2: tests/mem
+2/123 Test   #2: tests/mem ................................................................................................................   Passed    0.00 sec
+Start   3: tests/str
+3/123 Test   #3: tests/str ................................................................................................................   Passed    0.00 sec
 ....
 ....
 ....
@@ -94,7 +93,7 @@ The following tests FAILED:
                 9 - tests/nodebug-unsigned (Not Run)
                 33 - tests/report (Not Run)
                 37 - tests/sealKey (Not Run)
-        115 - tests/VectorException (Not Run)
+                115 - tests/VectorException (Not Run)
 Errors while running CTest
 ```
 

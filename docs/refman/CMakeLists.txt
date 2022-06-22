@@ -41,7 +41,7 @@ if (ENABLE_REFMAN)
   set(DOXYGEN_GENERATE_LATEX NO)
   set(DOXYGEN_MACRO_EXPANSION YES)
   set(DOXYGEN_EXPAND_ONLY_PREDEF YES)
-  set(DOXYGEN_PREDEFINED "=OE_ALIGNED(x)=;OE_EXTERNC_BEGIN=")
+  set(DOXYGEN_PREDEFINED "OE_ALIGNED(x)=;OE_EXTERNC_BEGIN=;OE_EXTERNC_END=")
 
   doxygen_add_docs(
     doxygen
@@ -59,6 +59,8 @@ if (ENABLE_REFMAN)
     bits/types.h
     bits/exception.h
     bits/module.h
+    seal.h
+    sgx/seal.h
     ../../docs/refman/MainPage.md
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/include/openenclave/
     COMMENT "Generating refman HTML documentation")

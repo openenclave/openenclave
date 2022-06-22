@@ -22,31 +22,57 @@ if (NOT HAVE_GETOPT_LONG)
   list(APPEND SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/getopt_long.c)
 endif ()
 
-if (NOT COMPONENT MATCHES OEHOSTVERIFY)
-  add_executable(oesign ${SOURCES})
+add_executable(oesign ${SOURCES})
 
-  if (NOT HAVE_GETOPT_LONG)
-    target_include_directories(oesign PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-  endif ()
+if (NOT HAVE_GETOPT_LONG)
+  target_include_directories(oesign PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+endif ()
 
-  # Link oesign against liboehostmr, which has no dependency on
-  # lib_sgx_enclave_common and libsgx_dcap_ql.
-  target_link_libraries(oesign oehostmr)
+# Link oesign against liboehostmr, which has no dependency on
+# lib_sgx_enclave_common and libsgx_dcap_ql.
+target_link_libraries(oesign oehostmr)
 
-  # assemble into proper collector dir
-  set_property(TARGET oesign PROPERTY RUNTIME_OUTPUT_DIRECTORY ${OE_BINDIR})
+# assemble into proper collector dir
+set_property(TARGET oesign PROPERTY RUNTIME_OUTPUT_DIRECTORY ${OE_BINDIR})
 
-  if (WIN32)
-    set_target_properties(oesign PROPERTIES LINK_FLAGS "/Guard:CF")
-  endif ()
+if (WIN32)
+  set_target_properties(oesign PROPERTIES LINK_FLAGS "/Guard:CF")
+endif ()
 
-  # install rule
-  install(
-    TARGETS oesign
-    EXPORT openenclave-targets
-    DESTINATION ${CMAKE_INSTALL_BINDIR})
+# install rule
+install(
+  TARGETS oesign
+  EXPORT openenclave-targets
+  DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-  if (WITH_EEID)
-    target_compile_definitions(oesign PRIVATE OE_WITH_EXPERIMENTAL_EEID)
-  endif ()
+if (WITH_EEID)
+  target_compile_definitions(oesign PRIVATE OE_WITH_EXPERIMENTAL_EEID)
+endif ()
+
+##==============================================================================
+##
+## Build a library out of the oesign sources
+##
+##==============================================================================
+
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${OE_LIBDIR}/openenclave/host")
+
+add_library(oesignlib ${SOURCES})
+
+target_compile_options(oesignlib PRIVATE -fPIC)
+
+set_target_properties(oesignlib PROPERTIES OUTPUT_NAME oesign)
+
+if (NOT HAVE_GETOPT_LONG)
+  target_include_directories(oesignlib PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+endif ()
+
+target_link_libraries(oesignlib PRIVATE oe_includes)
+
+set_property(TARGET oesignlib PROPERTY RUNTIME_OUTPUT_DIRECTORY ${OE_BINDIR})
+
+target_compile_definitions(oesignlib PRIVATE BUILD_LIBRARY)
+
+if (WITH_EEID)
+  target_compile_definitions(oesignlib PRIVATE OE_WITH_EXPERIMENTAL_EEID)
 endif ()

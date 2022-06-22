@@ -13,13 +13,12 @@ No regular meetings are scheduled.
 SIG Chair
 ---------
 
-Brett McLaren ([brmclaren](https://github.com/brmclaren))
 
 SIG Approvers
 -------------
 
 * Anand Krishnamoorthi ([anakrish](https://github.com/anakrish))
-* Simon Leet ([CodeMonkeyLeet](https://github.com/codemonkeyleet))
+* Chris Yan ([CyanDevs](https://github.com/CyanDevs))
 * Ming-Wei Shih ([mingweishih](https://github.com/mingweishih))
 * Rob Sanchez ([rs--](https://github.com/rs--))
 

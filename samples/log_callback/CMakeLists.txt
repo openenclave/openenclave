@@ -9,12 +9,28 @@ if (LVI_MITIGATION MATCHES ControlFlow)
   find_package(OpenEnclave-LVI-Mitigation CONFIG REQUIRED)
 endif ()
 
+# If the CC environment variable has been specified or if the CMAKE_C_COMPILER
+# cmake variable has been passed to cmake, use the C compiler that has been
+# specified. Otherwise, prefer clang. Same for C++ compiler.
+# This must be done before the `project` command.
+if (UNIX)
+  if (NOT DEFINED ENV{CC} AND NOT DEFINED CMAKE_C_COMPILER)
+    find_program(CMAKE_C_COMPILER clang-10 clang)
+  endif ()
+  if (NOT DEFINED ENV{CXX} AND NOT DEFINED CMAKE_CXX_COMPILER)
+    find_program(CMAKE_CXX_COMPILER clang++-10 clang++)
+  endif ()
+endif ()
+
 project("log_callback Sample" LANGUAGES C CXX)
 
 # Currently the `OpenEnclave` package depends on `project()`.
 find_package(OpenEnclave CONFIG REQUIRED)
 
 set(CMAKE_CXX_STANDARD 11)
+set(OE_CRYPTO_LIB
+    mbedtls
+    CACHE STRING "Crypto library used by enclaves.")
 
 add_subdirectory(enclave)
 add_subdirectory(host)

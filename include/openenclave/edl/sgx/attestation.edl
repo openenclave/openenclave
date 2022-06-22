@@ -23,6 +23,18 @@ enclave
     // contiguous memory.
     include "openenclave/bits/sgx/sgxtypes.h"
 
+    struct format_ids_t
+    {
+        [size=size] void* data;
+        size_t size;
+    };
+
+    struct oe_report_buffer_t
+    {
+        [size=size] uint8_t* buffer;
+        size_t size;
+    };
+
     trusted
     {
         public oe_result_t oe_get_sgx_report_ecall(
@@ -34,8 +46,7 @@ enclave
             uint32_t flags,
             [in, size=opt_params_size] const void* opt_params,
             size_t opt_params_size,
-            [out] uint8_t** report_buffer,
-            [out] size_t* report_buffer_size);
+            [out] oe_report_buffer_t* report);
 
         public oe_result_t oe_verify_local_report_ecall(
             [in, size=report_size] const uint8_t* report,
@@ -45,14 +56,9 @@ enclave
 
     untrusted
     {
-        // Input and output size values in number of bytes,
-        //    not number of UUIDs
-        // If format_ids buffer is NULL or too small,
-        // return needed buffer size in format_ids_size_out
+        // Output size values in number of bytes, not number of UUIDs
         oe_result_t oe_get_supported_attester_format_ids_ocall(
-            [out, size=format_ids_size] void* format_ids,
-            size_t format_ids_size,
-            [out] size_t* format_ids_size_out);
+            [out] format_ids_t* format_ids);
 
         oe_result_t oe_get_qetarget_info_ocall(
             [in] const oe_uuid_t* format_id,
@@ -72,6 +78,33 @@ enclave
         oe_result_t oe_get_quote_verification_collateral_ocall(
             [in] uint8_t fmspc[6],
             uint8_t collateral_provider,
+            [out, size=tcb_info_size] void* tcb_info,
+            size_t tcb_info_size,
+            [out] size_t* tcb_info_size_out,
+            [out, size=tcb_info_issuer_chain_size] void* tcb_info_issuer_chain,
+            size_t tcb_info_issuer_chain_size,
+            [out] size_t* tcb_info_issuer_chain_size_out,
+            [out, size=pck_crl_size] void* pck_crl,
+            size_t pck_crl_size,
+            [out] size_t* pck_crl_size_out,
+            [out, size=root_ca_crl_size] void* root_ca_crl,
+            size_t root_ca_crl_size,
+            [out] size_t* root_ca_crl_size_out,
+            [out, size=pck_crl_issuer_chain_size] void* pck_crl_issuer_chain,
+            size_t pck_crl_issuer_chain_size,
+            [out] size_t* pck_crl_issuer_chain_size_out,
+            [out, size=qe_identity_size] void* qe_identity,
+            size_t qe_identity_size,
+            [out] size_t* qe_identity_size_out,
+            [out, size=qe_identity_issuer_chain_size] void* qe_identity_issuer_chain,
+            size_t qe_identity_issuer_chain_size,
+            [out] size_t* qe_identity_issuer_chain_size_out);
+
+        oe_result_t oe_get_quote_verification_collateral_with_baseline_ocall(
+            [in] uint8_t fmspc[6],
+            uint8_t collateral_provider,
+            [in, size=baseline_size] void* baseline,
+            size_t baseline_size,
             [out, size=tcb_info_size] void* tcb_info,
             size_t tcb_info_size,
             [out] size_t* tcb_info_size_out,

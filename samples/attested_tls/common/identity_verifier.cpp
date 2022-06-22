@@ -4,21 +4,10 @@
 #include <openenclave/enclave.h>
 #include <stdlib.h>
 #include <string>
+#include "cert_verify_config.h"
 #include "utility.h"
 
-#if defined(CLIENT_CERT_VERIFY_CALLBACK)
-#include "tls_server_enc_mrenclave.h"
-#include "tls_server_enc_pubkey.h"
-#define TLS_ENCLAVE TLS_CLIENT
-#elif defined(SERVER_CERT_VERIFY_CALLBACK)
-#include "tls_client_enc_pubkey.h"
-#define TLS_ENCLAVE TLS_SERVER
-#else
-#error \
-    "Either one of compile time flags CLIENT_CERT_VERIFY_CALLBACK or SERVER_CERT_VERIFY_CALLBACK should be defined"
-#endif
-
-oe_result_t enclave_claims_verifier_callback(
+oe_result_t claims_verifier_callback(
     oe_claim_t* claims,
     size_t claims_length,
     void* arg)
@@ -29,7 +18,7 @@ oe_result_t enclave_claims_verifier_callback(
     const oe_claim_t* claim;
 
     printf(TLS_ENCLAVE
-           "enclave_claims_verifier_callback is called with enclave "
+           "claims_verifier_callback is called with enclave "
            "identity information extracted from the evidence claims:\n");
 
     // Enclave's security version
@@ -63,31 +52,12 @@ oe_result_t enclave_claims_verifier_callback(
             claim->value_size);
         goto exit;
     }
-#if defined(SERVER_CERT_VERIFY_CALLBACK)
-    printf(TLS_ENCLAVE "\nunique_id:\n");
-    for (size_t i = 0; i < claim->value_size; i++)
-        printf("0x%0x ", (uint8_t)claim->value[i]);
-    printf("\n");
-#endif
 
-#if defined(CLIENT_CERT_VERIFY_CALLBACK)
-    printf(TLS_ENCLAVE "\nverify unique_id:\n");
-    for (size_t i = 0; i < claim->value_size; i++)
+    if (verify_claim_value(claim) != OE_OK)
     {
-        printf("0x%0x ", (uint8_t)claim->value[i]);
-        if (SERVER_ENCLAVE_MRENCLAVE[i] != (uint8_t)claim->value[i])
-        {
-            printf(
-                TLS_ENCLAVE "\nunique_id[%lu] expected: 0x%0x  found: 0x%0x ",
-                i,
-                SERVER_ENCLAVE_MRENCLAVE[i],
-                (uint8_t)claim->value[i]);
-            printf(TLS_ENCLAVE "failed: unique_id not equal\n");
-            goto exit;
-        }
+        printf(TLS_ENCLAVE "failed: unique_id not equal\n");
+        goto exit;
     }
-    printf("\n" TLS_ENCLAVE "unique_id validation passed\n");
-#endif
 
     // The signer ID for the enclave, for SGX enclaves, this is the MRSIGNER
     // value

@@ -156,14 +156,20 @@ void* oe_allocate_switchless_ocall_buffer(size_t size);
 void oe_free_switchless_ocall_buffer(void* buffer);
 
 /**
+ * Forward declarations of malloc and free for deep-copy out parameter support.
+ */
+void* malloc(size_t size);
+void free(void* buffer);
+
+/**
  * For hand-written enclaves, that use the older calling mechanism, define empty
  * ecall tables.
  */
-#define OE_DEFINE_EMPTY_ECALL_TABLE()                             \
-    OE_EXPORT_CONST oe_ecall_func_t __oe_ecalls_table[] = {NULL}; \
-    OE_EXPORT_CONST size_t __oe_ecalls_table_size = 0
+#define OE_DEFINE_EMPTY_ECALL_TABLE()                           \
+    OE_EXPORT_CONST oe_ecall_func_t oe_ecalls_table[] = {NULL}; \
+    OE_EXPORT_CONST size_t oe_ecalls_table_size = 0
 
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 /**
  * Get the internal status of the enclave.
  *
@@ -178,7 +184,7 @@ OE_INLINE oe_result_t oe_get_enclave_status()
 #endif
 
 // Define oe_lfence for Spectre mitigation in x86-64 platforms.
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 
 // x86_64 processor.
 #if defined(__clang__) || defined(__ICC) || defined(__INTEL_COMPILER) || \

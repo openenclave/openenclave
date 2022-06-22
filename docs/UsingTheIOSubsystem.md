@@ -140,7 +140,7 @@ int create_alphabet_file(const char* path)
         return -1;
 
     /* Write the letters of the alphabet to the file. */
-    if (fwrite(alphabet, 1, sizeof(alphabet), stream) != sizeof(ALPHABET))
+    if (fwrite(ALPHABET, 1, sizeof(ALPHABET), stream) != sizeof(ALPHABET))
     {
         fclose(stream);
         return -1;
@@ -382,6 +382,7 @@ functions.
 | dup2              | none                                                     |
 | fdatasync         | none                                                     |
 | fsync             | none                                                     |
+| ftruncate         | none                                                     |
 | getcwd            | none                                                     |
 | getdomainname     | none                                                     |
 | getegid           | none                                                     |
@@ -401,6 +402,7 @@ functions.
 | read              | none                                                     |
 | rmdir             | none                                                     |
 | sleep             | none                                                     |
+| truncate          | none                                                     |
 | unlink            | none                                                     |
 | write             | none                                                     |
 |                   | <img width="1000">                                       |
@@ -471,7 +473,6 @@ functions.
 | closedir          | none                                                     |
 | opendir           | none                                                     |
 | readdir           | none                                                     |
-| readdir_r         | none                                                     |
 | rewinddir         | none                                                     |
 | telldir           | none                                                     |
 |                   | <img width="1000">                                       |

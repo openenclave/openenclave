@@ -3,12 +3,12 @@
 
 #include <host/ecall_ids.h>
 #include <host/hostthread.h>
+#include <math.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/tests.h>
-#include <cmath>
 #include "../abi_utils.h"
 #include "abi_u.h"
 
@@ -46,6 +46,8 @@ oe_result_t test_abi_roundtrip(oe_enclave_t* enclave)
     typedef struct _enclave_check_abi_args_t
     {
         oe_result_t _result;
+        void* deepcopy_out_buffer;
+        size_t deepcopy_out_buffer_size;
         double _retval;
     } enclave_check_abi_args_t;
 
@@ -69,7 +71,10 @@ oe_result_t test_abi_roundtrip(oe_enclave_t* enclave)
          .output_buffer_size = sizeof(args_template.check_abi_args),
          .output_bytes_written = 0,
          .result = OE_UNEXPECTED},
-        {._result = OE_UNEXPECTED, ._retval = 0}};
+        {._result = OE_UNEXPECTED,
+         .deepcopy_out_buffer = NULL,
+         .deepcopy_out_buffer_size = 0,
+         ._retval = 0}};
 
     /* Skip the ABI state test in simulation mode since OE SDK doesn't
      * provide special ABI handling on simulated enclave transition */
@@ -234,7 +239,7 @@ void test_mmx_abi_poison(oe_enclave_t* enclave)
     OE_TEST(enclave_add_float(enclave, &float_result) == OE_OK);
 
     printf("x87 FPU result = %f\n", float_result);
-    OE_TEST(!std::isnan(float_result));
+    OE_TEST(!isnan(float_result));
 }
 
 void test_fpu_stack_overflow(oe_enclave_t* enclave)
@@ -261,7 +266,7 @@ void test_fpu_stack_overflow(oe_enclave_t* enclave)
     OE_TEST(enclave_add_float(enclave, &float_result) == OE_OK);
 
     printf("x87 FPU result = %f\n", float_result);
-    OE_TEST(!std::isnan(float_result));
+    OE_TEST(!isnan(float_result));
 }
 
 int main(int argc, const char* argv[])
@@ -283,6 +288,10 @@ int main(int argc, const char* argv[])
     {
         oe_put_err("oe_create_abi_enclave(): result=%u", result);
     }
+
+    // oe_is_avx_enabled has already been setup by the host runtime.
+    // Pass it along to the enclave.
+    OE_TEST(enclave_set_oe_is_avx_enabled(enclave, oe_is_avx_enabled) == OE_OK);
 
     result = test_abi_roundtrip(enclave);
     OE_TEST(result == OE_OK || result == OE_UNSUPPORTED);

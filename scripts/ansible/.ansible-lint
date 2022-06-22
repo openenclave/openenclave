@@ -1,0 +1,7 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+---
+
+skip_list:
+  - 503
+  - 204

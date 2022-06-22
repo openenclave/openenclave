@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <assert.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
@@ -12,6 +13,7 @@
 #include <openenclave/internal/malloc.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/rsa.h>
+#include <openenclave/internal/syscall/declarations.h>
 #include <openenclave/internal/syscall/hook.h>
 #include <openenclave/internal/tests.h>
 #include <stdarg.h>
@@ -37,6 +39,139 @@ char* oe_host_strdup(const char* str)
     return dup;
 }
 
+// Tests need these syscall overrides.
+
+OE_DEFINE_SYSCALL2_M(SYS_openat)
+{
+    oe_va_list ap;
+    oe_va_start(ap, arg2);
+    long arg3 = oe_va_arg(ap, long);
+    long arg4 = oe_va_arg(ap, long);
+    oe_va_end(ap);
+    /* MUSL ORs 'flags' with O_LARGEFILE when forwarding sys_open to
+     * SYS_openat.
+     */
+    int rval = -1;
+    const int flags = (const int)arg3;
+    if (((flags & O_ACCMODE) == O_RDONLY))
+    {
+        OE_TEST(
+            OE_OK ==
+            f_openat(&rval, (int)arg1, (char*)arg2, (int)arg3, (int)arg4));
+    }
+    return -1;
+}
+
+#if defined(__x86_64__) || defined(_M_X64)
+OE_DEFINE_SYSCALL2_M(SYS_open)
+{
+    oe_va_list ap;
+    oe_va_start(ap, arg2);
+    errno = 0;
+    const int flags = (const int)arg2;
+    long arg3 = oe_va_arg(ap, long);
+    oe_va_end(ap);
+    if (flags == O_RDONLY)
+    {
+        int rval = -1;
+        OE_TEST(OE_OK == f_open(&rval, (char*)arg1, (int)arg2, (int)arg3));
+        return rval;
+    }
+    return -1;
+}
+#endif
+
+OE_DEFINE_SYSCALL3_M(SYS_read)
+{
+    errno = 0;
+    int rval = -1;
+    OE_TEST(OE_OK == f_read(&rval, (int)arg1, (char*)arg2, (size_t)arg3));
+    return rval;
+}
+
+OE_DEFINE_SYSCALL3_M(SYS_readv)
+{
+    /* Handle SYS_readv because fread invokes readv internally
+     * To avoid dealing with linux-specific readv semantics on Windows,
+     * marshal this as a synchronous C read() invocation.
+     */
+
+    struct iovec* iov = (struct iovec*)arg2;
+
+    // determine the total buffer size
+    size_t buffer_size = sizeof(struct iovec) * (size_t)arg3;
+    size_t data_size = 0;
+    for (size_t i = 0; i < (size_t)arg3; ++i)
+    {
+        data_size += iov[i].iov_len;
+    }
+    buffer_size += data_size;
+
+    // create the local buffer
+    struct iovec* iov_host = (struct iovec*)malloc(buffer_size);
+    char* data_position = (char*)iov_host + sizeof(struct iovec) * (size_t)arg3;
+
+    // initialize the buffers
+    char* buffer_position = data_position;
+    for (size_t i = 0; i < (size_t)arg3; ++i)
+    {
+        iov_host[i].iov_base = buffer_position;
+        iov_host[i].iov_len = iov[i].iov_len;
+        buffer_position += iov[i].iov_len;
+    }
+
+    // make the host call
+    int rval = -1;
+    OE_TEST(OE_OK == f_read(&rval, (int)arg1, data_position, data_size));
+
+    if (rval > 0)
+    {
+        // copy the data returned from the host
+        for (size_t i = 0; i < (size_t)arg3; ++i)
+        {
+            memcpy(iov[i].iov_base, iov_host[i].iov_base, iov[i].iov_len);
+        }
+    }
+
+    // release the local buffer
+    free(iov_host);
+    return rval;
+}
+
+OE_DEFINE_SYSCALL1_M(SYS_close)
+{
+    errno = 0;
+    int rval = -1;
+    OE_TEST(OE_OK == f_close(&rval, (int)arg1));
+    return rval;
+}
+
+static long _syscall_dispatch(
+    long number,
+    long arg1,
+    long arg2,
+    long arg3,
+    long arg4,
+    long arg5,
+    long arg6)
+{
+    OE_UNUSED(arg5);
+    OE_UNUSED(arg6);
+
+    switch (number)
+    {
+        OE_SYSCALL_DISPATCH(SYS_openat, arg1, arg2, arg3, arg4);
+#if defined(__x86_64__) || defined(_M_X64)
+        OE_SYSCALL_DISPATCH(SYS_open, arg1, arg2, arg3);
+#endif
+        OE_SYSCALL_DISPATCH(SYS_read, arg1, arg2, arg3);
+        OE_SYSCALL_DISPATCH(SYS_readv, arg1, arg2, arg3);
+        OE_SYSCALL_DISPATCH(SYS_close, arg1);
+        default:
+            return -1;
+    }
+}
+
 static oe_result_t _syscall_hook(
     long number,
     long arg1,
@@ -47,139 +182,15 @@ static oe_result_t _syscall_hook(
     long arg6,
     long* ret)
 {
-    oe_result_t result = OE_UNSUPPORTED;
-
-#if !defined(__aarch64__)
-    OE_UNUSED(arg4);
-#endif
-    OE_UNUSED(arg5);
-    OE_UNUSED(arg6);
-
+    oe_result_t result = OE_UNEXPECTED;
     if (ret)
-    {
         *ret = -1;
-    }
 
     if (!ret)
-    {
         OE_RAISE(OE_INVALID_PARAMETER);
-    }
 
-    switch (number)
-    {
-#if defined(__aarch64__)
-        case SYS_openat:
-        {
-            /* MUSL ORs 'flags' with O_LARGEFILE when forwarding sys_open to
-             * SYS_openat.
-             */
-            const int flags = (const int)arg3;
-            if (((flags & O_ACCMODE) == O_RDONLY))
-            {
-                int rval = -1;
-                OE_TEST(
-                    OE_OK ==
-                    f_openat(
-                        &rval, (int)arg1, (char*)arg2, (int)arg3, (int)arg4));
-                *ret = (long)rval;
-                result = OE_OK;
-            }
-            break;
-        }
-#else
-        case SYS_open:
-        {
-            const int flags = (const int)arg2;
-            if (flags == O_RDONLY)
-            {
-                int rval = -1;
-                OE_TEST(
-                    OE_OK == f_open(&rval, (char*)arg1, (int)arg2, (int)arg3));
-                *ret = (long)rval;
-                result = OE_OK;
-            }
-            break;
-        }
-#endif
-        case SYS_read:
-        {
-            int rval = -1;
-            OE_TEST(
-                OE_OK == f_read(&rval, (int)arg1, (char*)arg2, (size_t)arg3));
-            *ret = (long)rval;
-            result = OE_OK;
-            break;
-        }
-        case SYS_readv:
-        {
-            /* Handle SYS_readv because fread invokes readv internally
-             * To avoid dealing with linux-specific readv semantics on Windows,
-             * marshal this as a synchronous C read() invocation.
-             */
-
-            struct iovec* iov = (struct iovec*)arg2;
-
-            // determine the total buffer size
-            size_t buf_size = sizeof(struct iovec) * (size_t)arg3;
-            size_t data_size = 0;
-            for (size_t i = 0; i < (size_t)arg3; ++i)
-            {
-                data_size += iov[i].iov_len;
-            }
-            buf_size += data_size;
-
-            // create the local buffer
-            struct iovec* iov_host = (struct iovec*)malloc(buf_size);
-            char* data_pos =
-                (char*)iov_host + sizeof(struct iovec) * (size_t)arg3;
-
-            // initialize the buffers
-            char* buf_pos = data_pos;
-            for (size_t i = 0; i < (size_t)arg3; ++i)
-            {
-                iov_host[i].iov_base = buf_pos;
-                iov_host[i].iov_len = iov[i].iov_len;
-                buf_pos += iov[i].iov_len;
-            }
-
-            // make the host call
-            int rval = -1;
-            OE_TEST(OE_OK == f_read(&rval, (int)arg1, data_pos, data_size));
-            *ret = (long)rval;
-
-            if (rval > 0)
-            {
-                // copy the data returned from the host
-                for (size_t i = 0; i < (size_t)arg3; ++i)
-                {
-                    memcpy(
-                        iov[i].iov_base, iov_host[i].iov_base, iov[i].iov_len);
-                }
-            }
-
-            // release the local buffer
-            free(iov_host);
-
-            result = OE_OK;
-            break;
-        }
-        case SYS_close:
-        {
-            int rval = -1;
-            OE_TEST(OE_OK == f_close(&rval, (int)arg1));
-            *ret = (long)rval;
-            result = OE_OK;
-            break;
-        }
-        default:
-        {
-            /* Avoid OE_RAISE here to reduce error log volume since the
-             * syscall handler allows falling back to defaults */
-            OE_TRACE_VERBOSE("Unsupported _syscall_hook number:%#x\n", number);
-            break;
-        }
-    }
-
+    *ret = _syscall_dispatch(number, arg1, arg2, arg3, arg4, arg5, arg6);
+    result = OE_OK;
 done:
     return result;
 }

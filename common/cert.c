@@ -124,21 +124,13 @@ oe_result_t oe_get_crl_distribution_points(
     if (oe_align_pointer(buffer, sizeof(void*)) != buffer)
         OE_RAISE(OE_BAD_ALIGNMENT);
 
-    /* Determine the size of the extension */
-    if (oe_cert_find_extension(cert, _OID, NULL, &size) != OE_BUFFER_TOO_SMALL)
-        OE_RAISE(OE_FAILURE);
-
     /* Find all the CRL distribution points in this extension */
     {
         oe_asn1_t asn1;
         size_t urls_bytes;
 
         /* Find the extension */
-        data = (uint8_t*)oe_malloc(size);
-        if (!data)
-            OE_RAISE(OE_OUT_OF_MEMORY);
-
-        OE_CHECK(oe_cert_find_extension(cert, _OID, data, &size));
+        OE_CHECK(oe_cert_find_extension(cert, _OID, &data, &size));
 
         /* Determine the number of URLs */
         {

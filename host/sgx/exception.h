@@ -12,6 +12,8 @@ typedef struct _host_exception_context
     uint64_t rax;
     uint64_t rbx;
     uint64_t rip;
+    uint64_t signal_number;
+    uint64_t faulting_address;
 } oe_host_exception_context_t;
 
 /* Initialize the exception processing. */

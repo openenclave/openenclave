@@ -206,37 +206,25 @@ oe_result_t oe_get_report_v2_ecall(
     uint32_t flags,
     const void* opt_params,
     size_t opt_params_size,
-    uint8_t** report_buffer,
-    size_t* report_buffer_size)
+    oe_report_buffer_t* report)
 {
     oe_result_t result = OE_UNEXPECTED;
-    uint8_t* report = NULL;
-    uint8_t* report_host = NULL;
-    size_t report_size = 0;
 
-    if (!report_buffer || !report_buffer_size)
+    if (!report)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     OE_CHECK(oe_get_report_v2(
-        flags, NULL, 0, opt_params, opt_params_size, &report, &report_size));
-
-    report_host = oe_host_malloc(report_size);
-    if (!report_host)
-        OE_RAISE(OE_OUT_OF_MEMORY);
-
-    OE_CHECK(oe_memcpy_s(report_host, report_size, report, report_size));
-
-    *report_buffer = report_host;
-    *report_buffer_size = report_size;
-    report_host = NULL;
+        flags,
+        NULL,
+        0,
+        opt_params,
+        opt_params_size,
+        &report->buffer,
+        &report->size));
 
     result = OE_OK;
 
 done:
-    if (report)
-        oe_free_report(report);
-    if (report_host)
-        oe_free(report_host);
     return result;
 }
 

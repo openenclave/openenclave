@@ -2,6 +2,12 @@
 # Licensed under the MIT License.
 
 ---
+intel_dcap_driver_files:
+  - "/dev/sgx/provision"
+  - "/dev/sgx/enclave"
+  - "/dev/sgx_provision"
+  - "/dev/sgx_enclave"
+
 intel_sgx_packages:
   - "libsgx-enclave-common"
   - "libsgx-ae-qve"
@@ -14,6 +20,11 @@ intel_dcap_packages:
   - "libsgx-dcap-ql"
   - "libsgx-dcap-ql-dev"
   - "libsgx-urts"
+  - "libsgx-quote-ex"
+  - "sgx-aesm-service"
+  - "libsgx-aesm-ecdsa-plugin"
+  - "libsgx-aesm-pce-plugin"
+  - "libsgx-aesm-quote-ex-plugin"
 
 packages_validation_distribution_files:
   - "/usr/lib/x86_64-linux-gnu/libsgx_enclave_common.so.1"

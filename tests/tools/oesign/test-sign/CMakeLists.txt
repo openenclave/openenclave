@@ -16,13 +16,13 @@ add_custom_target(
 
 # Test oesign succeeds with valid short form of engine signing parameters
 set(OESIGN_SIGN_VALID_SHORT_ARGS
-    "[-c,${OESIGN_TEST_INPUTS_DIR}/valid.conf,-k,${OESIGN_TEST_INPUTS_DIR}/sign_key.private.pem]"
+    "[-c,${OESIGN_TEST_INPUTS_DIR}/valid.conf,-k,${OESIGN_TEST_INPUTS_DIR}/sign_key.private.pem,-o,test_enclave.signed]"
 )
 
 add_test(
   NAME tests/oesign-sign-valid-short-args
   COMMAND
-    python sign-and-verify.py --host-path $<TARGET_FILE:oesign_test_host>
+    ${PYTHON} sign-and-verify.py --host-path $<TARGET_FILE:oesign_test_host>
     --enclave-path $<TARGET_FILE:oesign_test_enc> --oesign-path
     $<TARGET_FILE:oesign> --oesign-args ${OESIGN_SIGN_VALID_SHORT_ARGS})
 
@@ -32,13 +32,13 @@ set_tests_properties(
 
 # Test oesign succeeds with valid long form of engine signing parameters
 set(OESIGN_SIGN_VALID_LONG_ARGS
-    "[--config-file,${OESIGN_TEST_INPUTS_DIR}/valid.conf,--key-file,${OESIGN_TEST_INPUTS_DIR}/sign_key.private.pem]"
+    "[--config-file,${OESIGN_TEST_INPUTS_DIR}/valid.conf,--key-file,${OESIGN_TEST_INPUTS_DIR}/sign_key.private.pem,--output-file,test_enclave.signed]"
 )
 
 add_test(
   NAME tests/oesign-sign-valid-long-args
   COMMAND
-    python sign-and-verify.py --host-path $<TARGET_FILE:oesign_test_host>
+    ${PYTHON} sign-and-verify.py --host-path $<TARGET_FILE:oesign_test_host>
     --enclave-path $<TARGET_FILE:oesign_test_enc> --oesign-path
     $<TARGET_FILE:oesign> --oesign-args ${OESIGN_SIGN_VALID_LONG_ARGS})
 
@@ -212,7 +212,7 @@ set(OESIGN_SIGN_VALID_KSS
 add_test(
   NAME tests/oesign-sign-valid-kss
   COMMAND
-    python sign-and-verify.py --host-path $<TARGET_FILE:oesign_test_host>
+    ${PYTHON} sign-and-verify.py --host-path $<TARGET_FILE:oesign_test_host>
     --enclave-path $<TARGET_FILE:oesign_test_enc> --oesign-path
     $<TARGET_FILE:oesign> --oesign-args ${OESIGN_SIGN_VALID_KSS})
 
@@ -267,3 +267,30 @@ add_test(
 set_tests_properties(
   tests/oesign-sign-familyid-tooshort PROPERTIES PASS_REGULAR_EXPRESSION
                                                  "bad value for 'FamilyID'")
+
+if (ENABLE_ZERO_BASE_TESTS)
+  # Test enclave creation at 0-base
+  add_test(
+    NAME tests/oesign-create-zero-base
+    COMMAND
+      oesign sign -e $<TARGET_FILE:oesign_test_enc> -c
+      ${OESIGN_TEST_INPUTS_DIR}/create_zero_base_enclave.conf -k
+      ${OESIGN_TEST_INPUTS_DIR}/sign_key.private.pem)
+
+  set_tests_properties(
+    tests/oesign-create-zero-base
+    PROPERTIES PASS_REGULAR_EXPRESSION "Created;Test not run."
+               FAIL_REGULAR_EXPRESSION "ERROR;Fail;Error")
+
+  add_test(
+    NAME tests/oesign-create-zero-base-start-address
+    COMMAND
+      oesign sign -e $<TARGET_FILE:oesign_test_enc> -c
+      ${OESIGN_TEST_INPUTS_DIR}/create_zero_base_enclave_w_start_address.conf
+      -k ${OESIGN_TEST_INPUTS_DIR}/sign_key.private.pem)
+
+  set_tests_properties(
+    tests/oesign-create-zero-base-start-address
+    PROPERTIES PASS_REGULAR_EXPRESSION "Created;Test not run."
+               FAIL_REGULAR_EXPRESSION "ERROR;Fail;Error")
+endif ()

@@ -75,6 +75,7 @@ typedef enum _oe_func
     OE_ECALL_INIT_ENCLAVE,
     OE_ECALL_CALL_ENCLAVE_FUNCTION,
     OE_ECALL_VIRTUAL_EXCEPTION_HANDLER,
+    OE_ECALL_CALL_AT_EXIT_FUNCTIONS,
     /* Caution: always add new ECALL function numbers here */
     OE_ECALL_MAX,
 
@@ -208,6 +209,21 @@ typedef struct _oe_call_host_function_args
     size_t output_bytes_written;
     oe_result_t result;
 } oe_call_host_function_args_t;
+
+/*
+**==============================================================================
+**
+** oe_call_function_return_args_t
+**
+**==============================================================================
+*/
+
+typedef struct _oe_call_function_return_args
+{
+    oe_result_t result;
+    void* deepcopy_out_buffer;
+    size_t deepcopy_out_buffer_size;
+} oe_call_function_return_args_t;
 
 /*
 **==============================================================================

@@ -150,7 +150,7 @@ int launch_tls_client(
     }
 
     OE_TRACE_INFO(TLS_CLIENT "new ssl conntection getting created \n");
-    sscanf(server_port, "%d", &server_port_num); // conver to char* to int
+    server_port_num = (uint16_t)atoi(server_port);
     if (create_socket(client_socket, server_name, server_port_num) != 0)
     {
         OE_TRACE_ERROR(
@@ -229,6 +229,6 @@ OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
     true, /* Debug */
-    512,  /* NumHeapPages */
-    128,  /* NumStackPages */
+    1024, /* NumHeapPages */
+    512,  /* NumStackPages */
     1);   /* NumTCS */

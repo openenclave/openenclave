@@ -3,7 +3,7 @@
 
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/globals.h> // for __oe_get_enclave_base()
+#include <openenclave/internal/globals.h> // for __oe_get_enclave_start_address()
 #include <openenclave/internal/tests.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
@@ -23,8 +23,8 @@ class static_init_ocaller
   public:
     static_init_ocaller() : m_result(OE_FAILURE)
     {
-        m_result =
-            init_ocall_handler(const_cast<void*>(__oe_get_enclave_base()));
+        m_result = init_ocall_handler(
+            const_cast<void*>(__oe_get_enclave_start_address()));
         OE_TEST(m_result == OE_OK);
     }
 
@@ -46,14 +46,14 @@ oe_result_t enc_get_init_ocall_result()
 }
 
 // Set custom enclave ID for later tracking
-oe_result_t enc_set_enclave_id(unsigned id, const void** base_addr)
+oe_result_t enc_set_enclave_id(unsigned id, const void** start_address)
 {
     oe_result_t result = OE_OK;
 
     if (g_enclave_id == ~0u)
     {
         g_enclave_id = id;
-        *base_addr = __oe_get_enclave_base();
+        *start_address = __oe_get_enclave_start_address();
     }
     else
     {

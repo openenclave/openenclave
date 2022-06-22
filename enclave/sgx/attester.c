@@ -27,9 +27,7 @@
  */
 oe_result_t _oe_get_supported_attester_format_ids_ocall(
     oe_result_t* _retval,
-    void* format_ids,
-    size_t format_ids_size,
-    size_t* format_ids_size_out);
+    format_ids_t* format_ids);
 
 /**
  * Make the following OCALL weak to support the system EDL opt-in.
@@ -40,13 +38,9 @@ oe_result_t _oe_get_supported_attester_format_ids_ocall(
  */
 oe_result_t _oe_get_supported_attester_format_ids_ocall(
     oe_result_t* _retval,
-    void* format_ids,
-    size_t format_ids_size,
-    size_t* format_ids_size_out)
+    format_ids_t* format_ids)
 {
     OE_UNUSED(format_ids);
-    OE_UNUSED(format_ids_size);
-    OE_UNUSED(format_ids_size_out);
 
     if (_retval)
         *_retval = OE_UNSUPPORTED;
@@ -193,6 +187,8 @@ static oe_result_t _get_evidence(
                 oe_get_sgx_endorsements(
                     header->report,
                     header->report_size,
+                    NULL,
+                    0,
                     &endorsements,
                     &endorsements_size),
                 "SGX Plugin: Failed to get endorsements: %s",
@@ -227,6 +223,8 @@ static oe_result_t _get_evidence(
                 oe_get_sgx_endorsements(
                     header->report,
                     header->report_size,
+                    NULL,
+                    0,
                     &endorsements,
                     &endorsements_size),
                 "SGX Plugin: Failed to get endorsements: %s",
@@ -343,8 +341,7 @@ static oe_result_t _get_attester_plugins(
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_result_t retval = OE_UNEXPECTED;
-    size_t temporary_buffer_size = 0;
-    uint8_t* temporary_buffer = NULL;
+    format_ids_t format_ids = {0};
     oe_uuid_t* uuid_list = NULL;
     size_t uuid_count = 0;
 
@@ -352,37 +349,11 @@ static oe_result_t _get_attester_plugins(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // Get the size of the needed buffer
-    result = oe_get_supported_attester_format_ids_ocall(
-        (uint32_t*)&retval, NULL, 0, &temporary_buffer_size);
-    OE_CHECK(result);
-    if (retval != OE_OK && retval != OE_BUFFER_TOO_SMALL)
-    {
-        OE_TRACE_ERROR("unexpected retval=%s", oe_result_str(retval));
-        OE_RAISE(retval);
-    }
-    // It's possible that there is no supported format
-    if (temporary_buffer_size >= sizeof(oe_uuid_t))
-    {
-        size_t allocated_buffer_size = temporary_buffer_size;
-        // Allocate buffer to held the format IDs
-        temporary_buffer = (uint8_t*)oe_malloc(temporary_buffer_size);
-        if (temporary_buffer == NULL)
-            OE_RAISE(OE_OUT_OF_MEMORY);
+    OE_CHECK(oe_get_supported_attester_format_ids_ocall(&retval, &format_ids));
+    OE_CHECK(retval);
 
-        // Get the format IDs
-        result = oe_get_supported_attester_format_ids_ocall(
-            (uint32_t*)&retval,
-            temporary_buffer,
-            allocated_buffer_size,
-            &temporary_buffer_size);
-        OE_CHECK(result);
-        OE_CHECK(retval);
-        if (temporary_buffer_size != allocated_buffer_size)
-            OE_RAISE(OE_UNEXPECTED);
-    }
-
-    uuid_list = (oe_uuid_t*)temporary_buffer;
-    uuid_count = temporary_buffer_size / sizeof(oe_uuid_t);
+    uuid_list = (oe_uuid_t*)format_ids.data;
+    uuid_count = format_ids.size / sizeof(oe_uuid_t);
 
     OE_TRACE_INFO("uuid_count=%lu", uuid_count);
 
@@ -425,10 +396,10 @@ done:
             "from \"openenclave/edl/sgx/attestation.edl\" import *;\n\n"
             "in the edl file.\n");
 
-    if (temporary_buffer)
+    if (format_ids.data)
     {
-        oe_free(temporary_buffer);
-        temporary_buffer = NULL;
+        oe_free(format_ids.data);
+        format_ids.data = NULL;
     }
     return result;
 }

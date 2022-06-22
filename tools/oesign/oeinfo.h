@@ -9,4 +9,5 @@ oe_result_t oe_read_oeinfo_sgx(
 
 oe_result_t oe_write_oeinfo_sgx(
     const char* path,
+    const char* output_file,
     const oe_sgx_enclave_properties_t* properties);

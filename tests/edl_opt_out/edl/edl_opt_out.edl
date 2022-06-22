@@ -3,6 +3,7 @@
 
 enclave {
     from "openenclave/edl/logging.edl" import oe_write_ocall; // Support OE_TEST
+#ifdef OE_CODE_COVERAGE
     from "openenclave/edl/fcntl.edl" import // Support code coverage analysis
         oe_syscall_open_ocall,
         oe_syscall_close_ocall,
@@ -11,6 +12,7 @@ enclave {
         oe_syscall_lseek_ocall,
         oe_syscall_dup_ocall,
         oe_syscall_flock_ocall;
+#endif
 #ifdef OE_SGX
     from "openenclave/edl/sgx/cpu.edl" import *;
 #else

@@ -43,6 +43,7 @@
 #include <openenclave/internal/syscall/unistd.h>
 #include <openenclave/internal/syscall/sys/stat.h>
 #include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/time.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/corelibc/limits.h>
 #include "../hostthread.h"
@@ -260,28 +261,30 @@ static struct tab_entry winsock2errno[] = {
 // defines are the same.
 static struct tab_entry musl2bsd_socket_level[] = {{1, SOL_SOCKET}, {0, 0}};
 
-static struct tab_entry musl2bsd_socket_option[] = {{1, SO_DEBUG},
-                                                    {2, SO_REUSEADDR},
-                                                    {3, SO_TYPE},
-                                                    {4, SO_ERROR},
-                                                    {5, SO_DONTROUTE},
-                                                    {6, SO_BROADCAST},
-                                                    {7, SO_SNDBUF},
-                                                    {8, SO_RCVBUF},
-                                                    {9, SO_KEEPALIVE},
-                                                    {10, SO_OOBINLINE},
-                                                    {13, SO_LINGER},
-                                                    {18, SO_RCVLOWAT},
-                                                    {19, SO_SNDLOWAT}};
+static struct tab_entry musl2bsd_socket_option[] = {
+    {1, SO_DEBUG},
+    {2, SO_REUSEADDR},
+    {3, SO_TYPE},
+    {4, SO_ERROR},
+    {5, SO_DONTROUTE},
+    {6, SO_BROADCAST},
+    {7, SO_SNDBUF},
+    {8, SO_RCVBUF},
+    {9, SO_KEEPALIVE},
+    {10, SO_OOBINLINE},
+    {13, SO_LINGER},
+    {18, SO_RCVLOWAT},
+    {19, SO_SNDLOWAT}};
 
-static struct tab_entry wsa2eai[] = {{WSATRY_AGAIN, OE_EAI_AGAIN},
-                                     {WSAEINVAL, OE_EAI_BADFLAGS},
-                                     {WSAEAFNOSUPPORT, OE_EAI_FAMILY},
-                                     {WSA_NOT_ENOUGH_MEMORY, OE_EAI_MEMORY},
-                                     {WSAHOST_NOT_FOUND, OE_EAI_NONAME},
-                                     {WSATYPE_NOT_FOUND, OE_EAI_SERVICE},
-                                     {WSAESOCKTNOSUPPORT, OE_EAI_SOCKTYPE},
-                                     {0, 0}};
+static struct tab_entry wsa2eai[] = {
+    {WSATRY_AGAIN, OE_EAI_AGAIN},
+    {WSAEINVAL, OE_EAI_BADFLAGS},
+    {WSAEAFNOSUPPORT, OE_EAI_FAMILY},
+    {WSA_NOT_ENOUGH_MEMORY, OE_EAI_MEMORY},
+    {WSAHOST_NOT_FOUND, OE_EAI_NONAME},
+    {WSATYPE_NOT_FOUND, OE_EAI_SERVICE},
+    {WSAESOCKTNOSUPPORT, OE_EAI_SOCKTYPE},
+    {0, 0}};
 
 static int _do_lookup(int key, int fallback, struct tab_entry* table)
 {
@@ -1832,7 +1835,8 @@ int oe_syscall_access_ocall(const char* pathname, int mode)
     // Obtain the file ACL
     dwSize = 0;
     if (!GetFileSecurityW(
-            wpathname, DACL_SECURITY_INFORMATION, NULL, 0, &dwSize))
+            wpathname, DACL_SECURITY_INFORMATION, NULL, 0, &dwSize) &&
+        GetLastError() != ERROR_INSUFFICIENT_BUFFER)
     {
         _set_errno(GetLastError());
         goto done;
@@ -1881,10 +1885,6 @@ done:
     if (wpathname)
     {
         free(wpathname);
-    }
-    if (pACL)
-    {
-        LocalFree(pACL);
     }
     if (pSD)
     {
@@ -2030,6 +2030,41 @@ done:
         free(wpathname);
     }
     return ret;
+}
+
+int oe_syscall_ftruncate_ocall(oe_host_fd_t fd, oe_off_t length)
+{
+    const HANDLE h = (HANDLE)fd;
+    LARGE_INTEGER new_offset = {0};
+    LARGE_INTEGER old_offset = {0};
+
+    if (!SetFilePointerEx(h, new_offset, &old_offset, FILE_CURRENT))
+    {
+        _set_errno(_winerr_to_errno(GetLastError()));
+        return -1;
+    }
+
+    new_offset.QuadPart = length;
+    if (!SetFilePointerEx(h, new_offset, NULL, FILE_BEGIN))
+    {
+        _set_errno(_winerr_to_errno(GetLastError()));
+        return -1;
+    }
+
+    if (!SetEndOfFile(h))
+    {
+        _set_errno(_winerr_to_errno(GetLastError()));
+        SetFilePointerEx(h, old_offset, NULL, FILE_BEGIN);
+        return -1;
+    }
+
+    if (!SetFilePointerEx(h, old_offset, NULL, FILE_BEGIN))
+    {
+        _set_errno(_winerr_to_errno(GetLastError()));
+        return -1;
+    }
+
+    return 0;
 }
 
 int oe_syscall_mkdir_ocall(const char* pathname, oe_mode_t mode)
@@ -3088,4 +3123,36 @@ int oe_syscall_nanosleep_ocall(struct oe_timespec* req, struct oe_timespec* rem)
 
     _set_errno(0);
     return 0;
+}
+
+/*
+**==============================================================================
+**
+** clock_nanosleep():
+**
+**==============================================================================
+*/
+
+int oe_syscall_clock_nanosleep_ocall(
+    oe_clockid_t clockid,
+    int flag,
+    struct oe_timespec* req,
+    struct oe_timespec* rem)
+{
+    /* Validate input */
+    if (flag != 0 || clockid == CLOCK_THREAD_CPUTIME_ID ||
+        clockid < CLOCK_REALTIME || clockid > CLOCK_BOOTTIME_ALARM)
+    {
+        /*
+         * In Windows, we do not support the feature to mention a future
+         * absolute time on the clock up to which to sleep (i.e., flag
+         * TIMER_ABSTIME is not supported).
+         * clockid = CLOCK_THREAD_CPUTIME_ID is not supported in both
+         * Windows and Linux.
+         */
+        _set_errno(OE_EINVAL);
+        return -1;
+    }
+
+    return oe_syscall_nanosleep_ocall(req, rem);
 }

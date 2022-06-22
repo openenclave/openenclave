@@ -910,17 +910,22 @@ done:
 oe_result_t oe_cert_find_extension(
     const oe_cert_t* cert,
     const char* oid,
-    uint8_t* data,
+    uint8_t** data,
     size_t* size)
 {
     oe_result_t result = OE_UNEXPECTED;
     const cert_t* impl = (const cert_t*)cert;
     const STACK_OF(X509_EXTENSION) * extensions;
     int num_extensions;
+    size_t extension_size = 0;
+    uint8_t* extension_data = NULL;
 
     /* Reject invalid parameters */
-    if (!_cert_is_valid(impl) || !oid || !size)
+    if (!_cert_is_valid(impl) || !oid || !size || !data)
         OE_RAISE(OE_INVALID_PARAMETER);
+
+    *size = 0;
+    *data = NULL;
 
     /* Set a pointer to the stack of extensions (possibly NULL) */
     if (!(extensions = X509_get0_extensions(impl->x509)))
@@ -957,33 +962,32 @@ oe_result_t oe_cert_find_extension(
             if (!(str = X509_EXTENSION_get_data(ext)))
                 OE_RAISE(OE_CRYPTO_ERROR);
 
-            /* If the caller's buffer is too small, raise error */
-            if ((size_t)str->length > *size)
-            {
-                *size = (size_t)str->length;
+            extension_size = (size_t)str->length;
+            extension_data = oe_malloc(extension_size);
+            if (!extension_data)
+                OE_RAISE(OE_OUT_OF_MEMORY);
 
-                if (data)
-                    OE_RAISE(OE_BUFFER_TOO_SMALL);
-                /* If data is null, this call is intented to get the correct
-                 * size so no need to trace OE_BUFFER_TOO_SMALL */
-                else
-                    OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
-            }
-
-            if (data)
-            {
-                OE_CHECK(
-                    oe_memcpy_s(data, *size, str->data, (size_t)str->length));
-                *size = (size_t)str->length;
-                result = OE_OK;
-                goto done;
-            }
+            OE_CHECK(oe_memcpy_s(
+                extension_data,
+                extension_size,
+                str->data,
+                (size_t)str->length));
+            *size = extension_size;
+            *data = extension_data;
+            result = OE_OK;
+            goto done;
         }
     }
 
     result = OE_NOT_FOUND;
 
 done:
+    if (result != OE_OK)
+    {
+        oe_free(extension_data);
+        extension_data = NULL;
+    }
+
     return result;
 }
 

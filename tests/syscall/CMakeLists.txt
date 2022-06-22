@@ -2,6 +2,11 @@
 # Licensed under the MIT License.
 
 add_subdirectory(cpio)
+# Though getrandom is a Linux-specific syscall, OE supports it
+# based on the TEE-specific rand API (i.e., oe_random_internal).
+# Therefore, the in-enclave getrandom should work on both Linux
+# and Windows.
+add_subdirectory(getrandom)
 add_subdirectory(resolver)
 add_subdirectory(socket)
 add_subdirectory(tool)

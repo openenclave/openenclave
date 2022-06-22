@@ -24,6 +24,10 @@ OE_EXTERNC_BEGIN
  *  to the dispatcher that it should stop searching and continue execution. */
 #define OE_EXCEPTION_CONTINUE_EXECUTION 0xFFFFFFFF
 
+/** Return value used by an enclave vectored exception handler to indicate
+ *  to the dispatcher that it should stop searching and abort the execution. */
+#define OE_EXCEPTION_ABORT_EXECUTION 0xFFFFFFF0
+
 /**
  * Divider exception code, used by vectored exception handler.
  */
@@ -75,6 +79,56 @@ OE_EXTERNC_BEGIN
  * exception
  */
 #define OE_EXCEPTION_FLAGS_SOFTWARE 0x2
+
+/**
+ * The following flags are used to interpret the error_code of the
+ * oe_exception_record_t struct when a PF or GP exception occurs. Note that
+ * these exceptions are captured only with SGX2 CPU and the MISCSELCT[0] is set
+ * to 1.
+ */
+
+/**
+ * Page-protection violation flag
+ * 0 - The fault was caused by a non-present page.
+ * 1 - The fault was caused by a page-protection violation.
+ */
+#define OE_SGX_PAGE_FAULT_P_FLAG 0x1
+/**
+ * Read/Write flag
+ * 0 - The fault was caused by a read.
+ * 1 - The fault was caused by a write.
+ */
+#define OE_SGX_PAGE_FAULT_WR_FLAG 0x2
+/**
+ * U/S flag
+ * 0 - The fault was caused by a supervisor-mode access.
+ * 1 - The fault was caused by a user-mode access.
+ */
+#define OE_SGX_PAGE_FAULT_US_FLAG 0x4
+/**
+ * RSVD flag
+ * 0 - The fault was not caused by a reserved bit violation.
+ * 1 - The fault was caused by a reserved bit set to 1
+ */
+#define OE_SGX_PAGE_FAULT_RSVD 0x8
+/**
+ * I/D flag
+ * 0 - The fault was not caused by an instruction fetch.
+ * 1 - The fault was caused by an instruction fetch.
+ */
+#define OE_SGX_PAGE_FAULT_ID_FLAG 0x10
+/**
+ * Protection Key flag
+ * 0 - The fault was not caused by protection keys.
+ * 1 - The fault was caused by protection-key violation.
+ */
+#define OE_SGX_PAGE_FAULT_PK_FLAG 0x20
+/**
+ * SGX flag
+ * 0 - The fault was not related to SGX.
+ * 1 - The fault is SGX-specific (e.g., access violation).
+ */
+#define OE_SGX_PAGE_FAULT_SGX_FLAG 0x8000
 
 /**
  * Blob that contains X87 and SSE data.
@@ -153,6 +207,18 @@ typedef struct _oe_exception_record
     uint32_t flags; /**< Exception flags */
 
     uint64_t address; /**< Exception address */
+
+    /* Information for PF/GP exceptions, which are only available
+     * for SGX2 and requires application opt-in (set CapturePFGPExceptions=1).
+     */
+    uint64_t faulting_address;
+    uint32_t error_code;
+
+    /* The signal number passed by the host. Some applications might
+     * want to implement special exception handling logic based
+     * on this information. However, please use with caution as the
+     * host-passed information is untrusted in the SGX threat model. */
+    uint16_t host_signal_number;
 
     oe_context_t* context; /**< Exception context */
 } oe_exception_record_t;

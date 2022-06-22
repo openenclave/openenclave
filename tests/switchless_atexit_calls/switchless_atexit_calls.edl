@@ -1,0 +1,21 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave {
+    from "openenclave/edl/logging.edl" import *;
+    from "openenclave/edl/fcntl.edl" import *;
+    from "openenclave/edl/sgx/platform.edl" import *;
+
+    enum num_tcs_t {
+        NUM_TCS = 10
+    };
+
+    trusted {
+        public int enc_ecall_switchless (void) transition_using_threads;
+    };
+
+    untrusted {
+        void host_ocall1_switchless(int value) transition_using_threads;
+        void host_ocall2_switchless(void) transition_using_threads;
+    };
+};

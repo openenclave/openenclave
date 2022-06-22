@@ -460,16 +460,40 @@ datetime range, `validity_from` and `validity_until` claims that applies to the 
 
 Current set of claims definitions:
 
-| Claim Name       | Claim Value Type   | Description                                                          |
-|:-----------------|:-------------------|:---------------------------------------------------------------------|
-| id_version       | uint32_t           | Claims version. Must be 0                                            |
-| security_version | uint32_t           | Security version of the enclave. (ISVN for SGX).                     |
-| attributes       | uint64_t           | Attributes flags for the evidence: <br/> `OE_REPORT_ATTRIBUTES_DEBUG`: The evidence is for a debug enclave.<br/> `OE_REPORT_ATTRIBUTES_REMOTE`: The evidence can be used for remote attestation.   |
-| unique_id        | uint8_t[32]        | The unique ID for the enclave (MRENCLAVE for SGX).                   |
-| signer_id        | uint8_t[32]        | The signer ID for the enclave (MRSIGNER for SGX).                    |
-| product_id       | uint8_t[32]        | The product ID for the enclave (ISVPRODID for SGX).                  |
-| validity_from    | oe_datetime_t      | Overall datetime from which the evidence and endorsements are valid. |
-| validity_until   | oe_datetime_t      | Overall datetime at which the evidence and endorsements expire.      |
+| Claim Name                 | Claim Value Type   | Category      | Description                                                         |
+|----------------------------|--------------------|---------------|---------------------------------------------------------------------|
+| id_version                 | uint32_t           | Mandatory     |Claims version. Must be 0                                            |
+| security_version           | uint32_t           | Mandatory     |Security version of the enclave. (ISVN for SGX).                     |
+| attributes                 | uint64_t           | Mandatory     |Attributes flags for the evidence: <br/> `OE_REPORT_ATTRIBUTES_DEBUG`: The evidence is for a debug enclave.<br/> `OE_REPORT_ATTRIBUTES_REMOTE`: The evidence can be used for remote attestation.   |
+| unique_id                  | uint8_t[32]        | Mandatory     |The unique ID for the enclave (MRENCLAVE for SGX).                   |
+| signer_id                  | uint8_t[32]        | Mandatory     |The signer ID for the enclave (MRSIGNER for SGX).                    |
+| product_id                 | uint8_t[32]        | Mandatory     |The product ID for the enclave (ISVPRODID for SGX).                  |
+| format_id                  | oe_uuid_t          | Mandatory     |The format ID of the evidence.                                       |
+| tcb_status                 | enum               | Remote Only   |The status of the evidence's TCB level (::oe_sgx_tcb_status_t for SGX).|
+| tcb_date                   | oe_datetime_t      | Remote Only   |The date and time when the evidence's TCB level was certified.       |
+| validity_from              | oe_datetime_t      | Remote Only   |Overall datetime from which the evidence and endorsements are valid. |
+| validity_until             | oe_datetime_t      | Remote Only   |Overall datetime at which the evidence and endorsements expire.      |
+| ueid                       | uint8_t[33]        | Remote Only   |Universal Entity Identity (qe_id for SGX).                           |
+| hardware_model             | uint8_t[6]         | Remote Only   |Hardware family/ model identity (fmspc for SGX).                     |
+| sgx_pf_gp_exit_info_enabled| bool               | SGX           |Whether the enclave page fault and general protection exception are reported.|
+| sgx_isv_extended_product_id| uint8_t[16]        | SGX           |Enclave extended production id.                                      |
+| sgx_is_mode64bit           | bool               | SGX           |Whether the enclave is in 64bit mode.                                |
+| sgx_has_provision_key      | bool               | SGX           |Whether the enclave has access to provision key.                     |
+| sgx_has_einittoken_key     | bool               | SGX           |Whether the enclave has access to EINITTOKEN key.                    |
+| sgx_uses_kss               | bool               | SGX           |Whether the enclave uses KSS.                                        |
+| sgx_config_id              | uint8_t[64]        | SGX           |Enclave configuration ID.                                            |
+| sgx_config_svn             | uint16_t           | SGX           |Enclave configuration security version.                              |
+| sgx_isv_family_id          | uint8_t[16]        | SGX           |Enclave family ID.                                                   |
+| sgx_cpu_svn                | uint8_t[16]        | SGX           |Enclave CPU security version from sgx_report_t.                      |
+| sgx_tcb_info               | uint8_t[dynamic]   | SGX Remote    |SGX TCB info in JSON format.                                         |
+| sgx_tcb_issuer_chain       | uint8_t[dynamic]   | SGX Remote    |SGX TCB info issuer certificates chain.                              |
+| sgx_pck_crl                | uint8_t[dynamic]   | SGX Remote    |CRL for SGX PCE certificates.                                        |
+| sgx_root_ca_crl            | uint8_t[dynamic]   | SGX Remote    |CRL for SGX Root CA certificates.                                    |
+| sgx_crl_issuer_chain       | uint8_t[dynamic]   | SGX Remote    |CRL for SGX issuer chain CA certificates.                            |
+| sgx_qe_id_info             | uint8_t[dynamic]   | SGX Remote    |Quoting Enclave Identity details in JSON format, **noted: this is different from sgx_qe_id**|
+| sgx_qe_id_issuer_chain     | uint8_t[dynamic]   | SGX Remote    |Issuer chain certificates for Quoting Enclave Identity sign certificate.|
+| sgx_pce_svn                | uint16_t[dynamic]  | SGX Remote    |PCE security version from quote.                                     |
+
 
 
 ### OE Host Verify Library

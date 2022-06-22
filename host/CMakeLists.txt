@@ -88,7 +88,7 @@ if (OE_SGX)
     OUTPUT platform_u.h platform_args.h
     DEPENDS ${SGX_EDL_FILE} edger8r
     COMMAND edger8r --header-only --search-path ${OE_INCLUDE_DIR} --untrusted
-            ${SGX_EDL_FILE})
+            ${SGX_EDL_FILE} -DOE_SGX_ENTROPY)
 
   add_custom_target(platform_untrusted_edl DEPENDS platform_u.h platform_args.h)
 endif ()
@@ -136,6 +136,8 @@ if (UNIX)
   list(APPEND PLATFORM_SDK_ONLY_SRC ${PROJECT_SOURCE_DIR}/common/asn1.c
        ${PROJECT_SOURCE_DIR}/common/crypto/openssl/hmac.c
        crypto/openssl/random.c linux/syscall.c)
+  set_source_files_properties(linux/syscall.c PROPERTIES COMPILE_FLAGS
+                                                         "-Wno-conversion")
 elseif (WIN32)
   list(
     APPEND
@@ -156,7 +158,17 @@ elseif (WIN32)
     APPEND
     PLATFORM_SDK_ONLY_SRC
     ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/bignum.c
-    ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/platform_util.c #Used by bignum.c
+    # The following files are the dependencies of bignum.c with the default configuration
+    # in mbedTLS 2.28. The OE's configuration is incompatible with Windows complier, but
+    # it is fine as this is the host library.
+    ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/constant_time.c
+    ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/md.c
+    ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/md5.c
+    ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/ripemd160.c
+    ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/sha1.c
+    ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/sha256.c
+    ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/sha512.c
+    ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/platform_util.c
     ${PROJECT_SOURCE_DIR}/common/asn1.c
     ${PROJECT_SOURCE_DIR}/common/cert.c
     crypto/bcrypt/cert.c
@@ -184,10 +196,11 @@ if (OE_SGX AND WIN32)
   # set up the frame pointer.
   add_custom_command(
     OUTPUT enter.obj
-    DEPENDS sgx/enter.c
+    DEPENDS sgx/windows/enter.c
     COMMAND
       clang -c -O2 -fomit-frame-pointer -m64 -I${PROJECT_SOURCE_DIR}/include
-      -I${OE_INCDIR} ${CMAKE_CURRENT_SOURCE_DIR}/sgx/enter.c -o enter.obj)
+      -I${OE_INCDIR} ${CMAKE_CURRENT_SOURCE_DIR}/sgx/windows/enter.c -o
+      enter.obj)
 endif ()
 
 # SGX specific files.
@@ -247,6 +260,20 @@ if (OE_SGX)
 
   # OS specific as well.
   if (UNIX)
+    # Download the sgx.h from Linux github repository. Currently use v5.13 tag.
+    file(
+      DOWNLOAD
+      https://raw.githubusercontent.com/torvalds/linux/v5.13/arch/x86/include/uapi/asm/sgx.h
+      ${CMAKE_CURRENT_BINARY_DIR}/sgx.h
+      EXPECTED_HASH
+        SHA256=4764b8ce858579d99f1b66bb1e5f04ba149a38aea15649fff19f65f8d9113fd0)
+
+    list(APPEND PLATFORM_SDK_ONLY_SRC sgx/linux/vdso.c)
+
+    set_source_files_properties(
+      oehost sgx/linux/vdso.c PROPERTIES COMPILE_FLAGS
+                                         "-O2 -fno-omit-frame-pointer")
+
     list(APPEND PLATFORM_HOST_ONLY_SRC sgx/linux/sgxquoteproviderloader.c
          sgx/linux/sgxquoteexloader.c)
 
@@ -254,7 +281,7 @@ if (OE_SGX)
       APPEND
       PLATFORM_SDK_ONLY_SRC
       sgx/linux/aep.S
-      sgx/enter.c
+      sgx/linux/enter.c
       sgx/linux/exception.c
       sgx/linux/sgxioctl.c
       sgx/linux/switchless.c
@@ -272,6 +299,7 @@ if (OE_SGX)
       sgx/windows/exception.c
       sgx/windows/switchless.c
       sgx/windows/sgxquoteexloader.c
+      sgx/windows/vdso_stub.c
       sgx/windows/xstate.c)
   endif ()
 
@@ -292,15 +320,6 @@ endif ()
 if (OE_SGX AND WIN32)
   # oedebugrt is accessed via a bridge on Win32 and need not be linked.
   list(APPEND PLATFORM_SDK_ONLY_SRC sgx/windows/debugrtbridge.c)
-
-  # __oe_dispatch_ocall function must have debug symbols for debuggers to
-  # stitch the ocall stack. Use /Z7 flag to embed the debugging information
-  # in the object file. When a host application is built, the linker will
-  # extract this debugging information and put it in the pdb for the host
-  # application. Using /Z7 avoids having to distribut oehost.pdb.
-  # Note: This is a temporary fix and debuggers will not have this requirement
-  # when ocall stack stitching is also done via the debugger contract.
-  set_source_files_properties(sgx/calls.c PROPERTIES COMPILE_FLAGS "/Z7")
 endif ()
 
 # Common host verification files that work on any OS/architecture.
@@ -351,10 +370,10 @@ target_link_libraries(oehost PUBLIC oe_includes)
 
 if (OE_SGX)
   target_include_directories(
-    oehost PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/sgxsdk/include)
+    oehost PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/sgxsdk/include
+                   ${CMAKE_CURRENT_BINARY_DIR})
   target_include_directories(
     oehostverify PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/sgxsdk/include)
-
 endif ()
 
 if (WIN32)
@@ -370,7 +389,8 @@ if (OE_SGX AND UNIX)
   # It is compiled with -O2 flag to retain the same generated assembly
   # code in both debug and release builds.
   set_source_files_properties(
-    oehost sgx/enter.c PROPERTIES COMPILE_FLAGS "-O2 -fno-omit-frame-pointer")
+    oehost sgx/linux/enter.c PROPERTIES COMPILE_FLAGS
+                                        "-O2 -fno-omit-frame-pointer")
 endif ()
 
 add_dependencies(oehost syscall_untrusted_edl)
@@ -435,7 +455,7 @@ endif ()
 # For including edge routines.
 target_include_directories(oehost PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-# Compile definitions and options
+# Compile definitions and options for oehost and oehostverify
 target_compile_definitions(
   oehost
   PUBLIC # NOTE: This definition is public to the rest of our project's
@@ -444,13 +464,18 @@ target_compile_definitions(
          $<BUILD_INTERFACE:OE_API_VERSION=2>
   PRIVATE OE_BUILD_UNTRUSTED OE_REPO_BRANCH_NAME="${GIT_BRANCH}"
           OE_REPO_LAST_COMMIT="${GIT_COMMIT}")
-
-if (USE_DEBUG_MALLOC)
-  target_compile_definitions(oehost PRIVATE OE_USE_DEBUG_MALLOC)
-endif ()
+target_compile_definitions(
+  oehostverify
+  PUBLIC # NOTE: This definition is public to the rest of our project's
+         # targets, but should not be exposed to consumers of our
+         # package.
+         $<BUILD_INTERFACE:OE_API_VERSION=2>
+  PRIVATE OE_BUILD_UNTRUSTED OE_REPO_BRANCH_NAME="${GIT_BRANCH}"
+          OE_REPO_LAST_COMMIT="${GIT_COMMIT}")
 
 if (WITH_EEID)
   target_compile_definitions(oehost PRIVATE OE_WITH_EXPERIMENTAL_EEID)
+  target_compile_definitions(oehostverify PRIVATE OE_WITH_EXPERIMENTAL_EEID)
 endif ()
 
 if (UNIX)
@@ -462,22 +487,20 @@ if (UNIX)
     oehost
     PRIVATE _GNU_SOURCE
     PUBLIC $<$<NOT:$<CONFIG:debug>>:_FORTIFY_SOURCE=2>)
+  target_compile_options(
+    oehostverify
+    PRIVATE -Wno-attributes -Wmissing-prototypes -fPIC ${PLATFORM_FLAGS}
+    PUBLIC -fstack-protector-strong)
+  target_compile_definitions(
+    oehostverify
+    PRIVATE _GNU_SOURCE
+    PUBLIC $<$<NOT:$<CONFIG:debug>>:_FORTIFY_SOURCE=2>)
 endif ()
 
 if (CMAKE_C_COMPILER_ID MATCHES GNU)
   target_compile_options(oehost PRIVATE -Wjump-misses-init)
+  target_compile_options(oehostverify PRIVATE -Wjump-misses-init)
 endif ()
-
-# Use the same the compile options and definitions from oehost.
-target_compile_options(
-  oehostverify
-  PRIVATE $<TARGET_PROPERTY:oehost,COMPILE_OPTIONS>
-  INTERFACE $<TARGET_PROPERTY:oehost,INTERFACE_COMPILE_OPTIONS>)
-
-target_compile_definitions(
-  oehostverify
-  PRIVATE $<TARGET_PROPERTY:oehost,COMPILE_DEFINITIONS>
-  INTERFACE $<TARGET_PROPERTY:oehost,INTERFACE_COMPILE_DEFINITIONS>)
 
 target_compile_definitions(oehostverify PUBLIC OE_BUILD_HOST_VERIFY)
 
@@ -494,13 +517,28 @@ endif ()
 install(
   TARGETS oehost
   EXPORT openenclave-targets
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host
-          COMPONENT OEHOSTVERIFY)
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host)
+if (WIN32)
+  # Install .pdb files to enable stepping into oehost srcs for Debug
+  # and RelWithDebInfo builds.
+  # Note: PDB_OUTPUT_DIRECTORY is defined only for shared library and
+  # executable targets.
+  string(FIND "${CMAKE_BUILD_TYPE}" "Deb" BUILD_TYPE_DEBUG)
+  if (${BUILD_TYPE_DEBUG} GREATER_EQUAL 0)
+    install(
+      FILES
+        ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/oehost.dir/oehost.pdb
+        ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/oehostverify.dir/oehostverify.pdb
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host)
+  endif ()
+endif ()
 
 install(
   TARGETS oehostverify
-  EXPORT openenclave-targets
+  EXPORT openenclave-hostverify-targets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host
           COMPONENT OEHOSTVERIFY)
 
 include(measure/CMakeLists.txt)
+
+host_enable_fuzzing(oehost)

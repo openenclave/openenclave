@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "arena.h"
+#include <openenclave/bits/sgx/writebarrier.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/edger8r/common.h>
 #include <openenclave/internal/print.h>
@@ -46,6 +47,11 @@ void* oe_arena_malloc(size_t size)
     if (arena->buffer == NULL)
     {
         arena->capacity = __atomic_load_n(&_capacity, __ATOMIC_SEQ_CST);
+        if (size > arena->capacity)
+        {
+            arena->capacity = oe_round_up_to_multiple(size, OE_PAGE_SIZE);
+        }
+
         void* buffer = oe_allocate_arena(arena->capacity);
         if (buffer == NULL)
         {
@@ -74,6 +80,28 @@ void* oe_arena_malloc(size_t size)
         arena->used = used_after;
         return addr;
     }
+    else
+    {
+        // If the arena does not contain any objects, then
+        // it is safe to resize the arena.
+        if (arena->used == 0)
+        {
+            void* buffer = arena->buffer;
+            arena->buffer = NULL;
+            oe_deallocate_arena(buffer);
+            arena->capacity = 0;
+            return oe_arena_malloc(size);
+        }
+        else
+        {
+            // Currently there are no scenarios where multiple objects are
+            // allocated in the arena. Hence, control will not reach here.
+            // In case, in future, the area is used for allocating multiple
+            // objects, the control can reach here. In such a case, the current
+            // behavior is preserved and the switchless call will fail.
+            // This can be handled in the future.
+        }
+    }
 
 done:
     return NULL;
@@ -88,7 +116,7 @@ void* oe_arena_calloc(size_t num, size_t size)
     void* ptr = oe_arena_malloc(total);
     if (ptr != NULL)
     {
-        memset(ptr, 0, total);
+        oe_memset_with_barrier(ptr, 0, total);
     }
     return ptr;
 }

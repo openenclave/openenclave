@@ -190,8 +190,9 @@ oe_result_t oe_validate_qe_identity(
 
     if (oe_datetime_compare(&parsed_info.issue_date, &from) > 0)
         from = parsed_info.issue_date;
-    if (oe_datetime_compare(&parsed_info.next_update, &until) < 0)
-        until = parsed_info.next_update;
+    // Do not check QEID "nextUpdate"
+    // if (oe_datetime_compare(&parsed_info.next_update, &until) < 0)
+    //    until = parsed_info.next_update;
 
     oe_datetime_log("QE identity issue date: ", &parsed_info.issue_date);
     oe_datetime_log("QE identity next update date: ", &parsed_info.next_update);

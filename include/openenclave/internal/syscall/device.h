@@ -133,7 +133,8 @@ struct _oe_device
     const char* name;
 
     /* Function table for this device. */
-    union {
+    union
+    {
         oe_device_ops_t device;
         oe_fs_device_ops_t fs;
         oe_socket_device_ops_t socket;

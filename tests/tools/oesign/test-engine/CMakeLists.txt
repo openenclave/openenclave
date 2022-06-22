@@ -31,7 +31,7 @@ set(OESIGN_ENGINE_VALID_SHORT_ARGS
 add_test(
   NAME tests/oesign-engine-valid-short-args
   COMMAND
-    python sign-and-verify.py --host-path $<TARGET_FILE:oesign_test_host>
+    ${PYTHON} sign-and-verify.py --host-path $<TARGET_FILE:oesign_test_host>
     --enclave-path $<TARGET_FILE:oesign_test_enc> --oesign-path
     $<TARGET_FILE:oesign> --oesign-args ${OESIGN_ENGINE_VALID_SHORT_ARGS})
 
@@ -47,7 +47,7 @@ set(OESIGN_ENGINE_VALID_LONG_ARGS
 add_test(
   NAME tests/oesign-engine-valid-long-args
   COMMAND
-    python sign-and-verify.py --host-path $<TARGET_FILE:oesign_test_host>
+    ${PYTHON} sign-and-verify.py --host-path $<TARGET_FILE:oesign_test_host>
     --enclave-path $<TARGET_FILE:oesign_test_enc> --oesign-path
     $<TARGET_FILE:oesign> --oesign-args ${OESIGN_ENGINE_VALID_LONG_ARGS})
 

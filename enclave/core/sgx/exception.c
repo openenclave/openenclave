@@ -6,12 +6,22 @@
 #include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/sgx/td.h>
 #include <openenclave/internal/thread.h>
+#include "../tracee.h"
 #include "context.h"
 #include "cpuid.h"
 #include "init.h"
 #include "td.h"
 
 #define MAX_EXCEPTION_HANDLER_COUNT 64
+
+/* Reserved stack size for the first-pass handler when the exception
+ * handler stack is enabled (regardless registered for any code).
+ * For now, one page is sufficient */
+#define FIRST_PASS_HANDLER_STACK_RESERVED_SIZE OE_PAGE_SIZE
+
+#define WRFSBASE64_OPCODE_1 0xAE0F48F3
+#define WRFSBASE64_OPCODE_2 0xAE0F49F3 // with REX.B bit set
+#define WRFSBASE64_MODRM_MASK 0xD0
 
 // The spin lock to synchronize the exception handler access.
 static oe_spinlock_t g_exception_lock = OE_SPINLOCK_INITIALIZER;
@@ -199,6 +209,62 @@ static struct
     {19, OE_EXCEPTION_SIMD_FLOAT_POINT},
 };
 
+static int _emulate_wrfsbase64(sgx_ssa_gpr_t* ssa_gpr)
+{
+    uint8_t modrm = 0;
+    uint8_t rex_b = 0;
+    uint8_t index = 0;
+    uint64_t registers[] = {
+        ssa_gpr->rax,
+        ssa_gpr->rcx,
+        ssa_gpr->rdx,
+        ssa_gpr->rbx,
+        ssa_gpr->rsp,
+        ssa_gpr->rbp,
+        ssa_gpr->rsi,
+        ssa_gpr->rdi,
+        ssa_gpr->r8,
+        ssa_gpr->r9,
+        ssa_gpr->r10,
+        ssa_gpr->r11,
+        ssa_gpr->r12,
+        ssa_gpr->r13,
+        ssa_gpr->r14,
+        ssa_gpr->r15,
+    };
+
+    modrm = ((uint8_t*)ssa_gpr->rip)[4];
+
+    /* validate the ModRM byte (starting with 11|010 bits (0xD0)) */
+    if ((modrm & WRFSBASE64_MODRM_MASK) != WRFSBASE64_MODRM_MASK)
+        return -1;
+
+    /* index decoding: REX.B (1 bit) | ModRM.rm (last 3 bits of the ModRM byte)
+     */
+    rex_b = ((uint8_t*)ssa_gpr->rip)[1] & 0x1;
+    index = (uint8_t)(rex_b << 3) | (modrm & 0x7);
+
+    /* emulate wrfsbase by updating fs_base and rip in SSA such that
+     * the CPU context will use these values after the execution resumes */
+    ssa_gpr->fs_base = registers[index];
+    ssa_gpr->rip += 5;
+
+    return 0;
+}
+
+static int _emulate_cpuid(sgx_ssa_gpr_t* ssa_gpr)
+{
+    if (oe_emulate_cpuid(
+            &ssa_gpr->rax, &ssa_gpr->rbx, &ssa_gpr->rcx, &ssa_gpr->rdx))
+        return -1;
+
+    /* emulation succeeded, update the rip in SSA to bypass the CPUID
+     * instruction after the execution resumes */
+    ssa_gpr->rip += 2;
+
+    return 0;
+}
+
 /*
 **==============================================================================
 **
@@ -211,11 +277,17 @@ static struct
 */
 int _emulate_illegal_instruction(sgx_ssa_gpr_t* ssa_gpr)
 {
-    // Emulate CPUID
+    // emulate CPUID
     if (*((uint16_t*)ssa_gpr->rip) == OE_CPUID_OPCODE)
     {
-        return oe_emulate_cpuid(
-            &ssa_gpr->rax, &ssa_gpr->rbx, &ssa_gpr->rcx, &ssa_gpr->rdx);
+        return _emulate_cpuid(ssa_gpr);
+    }
+
+    // emulate WRFSBASE64
+    if ((*(uint32_t*)ssa_gpr->rip) == WRFSBASE64_OPCODE_1 ||
+        (*(uint32_t*)ssa_gpr->rip) == WRFSBASE64_OPCODE_2)
+    {
+        return _emulate_wrfsbase64(ssa_gpr);
     }
 
     return -1;
@@ -237,7 +309,18 @@ int _emulate_illegal_instruction(sgx_ssa_gpr_t* ssa_gpr)
 */
 void oe_real_exception_dispatcher(oe_context_t* oe_context)
 {
-    oe_sgx_td_t* td = oe_sgx_get_td();
+    /* Bypass the FS check given that we cannot except the application
+     * to restore the FS before an exception (if the application has
+     * modified the FS) */
+    oe_sgx_td_t* td = oe_sgx_get_td_no_fs_check();
+
+    /* Validate the td state, which ensures the function
+     * is only invoked after oe_virtual_exception_dispatcher */
+    if (td->state != OE_TD_STATE_FIRST_LEVEL_EXCEPTION_HANDLING)
+    {
+        oe_abort();
+        return;
+    }
 
     // Change the rip of oe_context to the real exception address.
     oe_context->rip = td->exception_address;
@@ -249,16 +332,71 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
     oe_exception_record.code = td->exception_code;
     oe_exception_record.flags = td->exception_flags;
     oe_exception_record.address = td->exception_address;
+    oe_exception_record.faulting_address = td->faulting_address;
+    oe_exception_record.error_code = td->error_code;
     oe_exception_record.context = oe_context;
+    /* Only pass the host signal for non-nested exceptions */
+    if (td->exception_nesting_level == 1)
+        oe_exception_record.host_signal_number = (uint16_t)td->host_signal;
+    else
+        oe_exception_record.host_signal_number = 0;
 
-    // Refer to oe_enter in host/sgx/enter.c. The contract we defined for EENTER
-    // is the RBP should not change after return from EENTER.
-    // When the exception is handled, restores the host RBP, RSP to the
-    // value when regular ECALL happens before first pass exception
-    // handling.
-    td->host_rbp = td->host_previous_rbp;
-    td->host_rsp = td->host_previous_rsp;
+    // Refer to oe_enter in host/sgx/enter.c.
+    // Restore host_ecall_context from the first EENTER (cssa=0) that allows for
+    // correctly stitching the stack on EEXIT when the enclave is in the debug
+    // mode
     td->host_ecall_context = td->host_previous_ecall_context;
+
+    /* Proceed with the check if the exception handler stack is registered for
+     * the given exception type */
+    if (oe_sgx_td_exception_handler_stack_registered(td, td->exception_code))
+    {
+        uint64_t exception_handler_stack_start = td->exception_handler_stack;
+        uint64_t exception_handler_stack_end =
+            td->exception_handler_stack + td->exception_handler_stack_size;
+        uint64_t current_rsp;
+
+        asm volatile("mov %%rsp, %0" : "=r"(current_rsp));
+
+        /* At this point, the rsp should point to the enclave memory. We then
+         * check if the current rsp falls in the range of the exception handler
+         * stack reserved for the second-pass exception handler. The passing
+         * checks imply that we are on the exception handler stack now.
+         */
+        if (exception_handler_stack_start < exception_handler_stack_end &&
+            current_rsp > exception_handler_stack_start &&
+            current_rsp < (exception_handler_stack_end -
+                           FIRST_PASS_HANDLER_STACK_RESERVED_SIZE))
+        {
+            /* Restore rsp and rbp from td */
+            oe_exception_record.context->rsp = td->last_ssa_rsp;
+            oe_exception_record.context->rbp = td->last_ssa_rbp;
+        }
+    }
+
+    /* Compiler barrier to enfore the memory ordering */
+    asm volatile("" ::: "memory");
+
+    /* Update the state to prevent nested exceptions prior to this point
+     * that could cause oe_context on the stack and td states overwritten.
+     * That is, any exception occurs prior to this point will cause the
+     * following oe_enter performs the early return flow (i.e., oe_enter will
+     * early return if state is not OE_TD_STATE_SECOND_LEVEL_EXCEPTION_HANDLING
+     * for the case of nested exceptions) */
+    td->state = OE_TD_STATE_SECOND_LEVEL_EXCEPTION_HANDLING;
+
+    // Update the stitched callstack so that it points to the location that
+    // raised the exception.
+    if (oe_is_enclave_debug_allowed())
+    {
+        // Real exception dispatcher never returns. It is directly called by
+        // oe_exception_dispatcher. It is safe to modify its frame.
+        void** frame = (void**)__builtin_frame_address(0);
+
+        // Update the frame with rip, rbp from SSA.
+        frame[0] = (void*)oe_exception_record.context->rbp;
+        frame[1] = (void*)oe_exception_record.context->rip;
+    }
 
     // Traverse the existing exception handlers, stop when
     // OE_EXCEPTION_CONTINUE_EXECUTION is found.
@@ -272,6 +410,43 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
         }
     }
 
+    // Clear information after all the handlers are done
+    td->exception_code = 0;
+    td->exception_flags = 0;
+    td->exception_address = 0;
+    td->faulting_address = 0;
+    td->error_code = 0;
+    td->last_ssa_rsp = 0;
+    td->last_ssa_rbp = 0;
+
+    /* Validate and decrease the nesting level (increased by enter.S)
+     * after all the handlers finish */
+    if (td->exception_nesting_level == 0)
+    {
+        oe_abort();
+        return;
+    }
+    td->exception_nesting_level--;
+
+    if (td->exception_nesting_level == 0)
+    {
+        /* Clear the flag if it is set after non-nested exception handling
+         * is done */
+        if (td->is_handling_host_signal == 1)
+        {
+            td->is_handling_host_signal = 0;
+        }
+
+        td->host_signal = 0;
+
+        /* Compiler barrier to enforce the memory ordering */
+        asm volatile("" ::: "memory");
+
+        /* Retore the state */
+        td->state = OE_TD_STATE_RUNNING;
+    }
+    td->previous_state = OE_TD_STATE_NULL;
+
     // Jump to the point where oe_context refers to and continue.
     if (handler_ret == OE_EXCEPTION_CONTINUE_EXECUTION)
     {
@@ -281,9 +456,25 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
         oe_abort();
         return;
     }
+    else if (handler_ret == OE_EXCEPTION_ABORT_EXECUTION)
+    {
+        oe_abort();
+        return;
+    }
 
     // Exception can't be handled by trusted handlers, abort the enclave.
     // Let the oe_abort to run on the stack where the exception happens.
+    // oe_continue_execution uses a retq instruction to jump to the target
+    // address. Since no return address is being pushed to the stack, this
+    // can break x64 ABI compatibility which requires that RSP ought to
+    // be a multiple of 8 upon entry to the function. To ensure compatibility,
+    // first align the RSP to 16 bytes and the push the current rsp to fake
+    // a call.
+    oe_exception_record.context->rsp =
+        (oe_exception_record.context->rsp & (uint64_t)-16) - 8;
+    uint64_t current_rip = 0;
+    asm volatile("lea (%%rip), %0" : "=r"(current_rip));
+    *(uint64_t*)oe_exception_record.context->rsp = current_rip;
     oe_exception_record.context->rip = (uint64_t)oe_abort;
     oe_continue_execution(oe_exception_record.context);
 
@@ -308,7 +499,16 @@ void oe_virtual_exception_dispatcher(
     uint64_t* arg_out)
 {
     SSA_Info ssa_info = {0};
-    OE_UNUSED(arg_in);
+    oe_exception_record_t* oe_exception_record = NULL;
+
+    /* Validate the td state, which ensures the function
+     * is only invoked by the exception entry code path (see enter.S) */
+    if (td->state != OE_TD_STATE_FIRST_LEVEL_EXCEPTION_HANDLING)
+    {
+        td->state = OE_TD_STATE_ABORTED;
+        *arg_out = OE_EXCEPTION_CONTINUE_SEARCH;
+        return;
+    }
 
     // Verify if the first SSA has valid exception info.
     if (_get_enclave_thread_first_ssa_info(td, &ssa_info) != 0)
@@ -317,56 +517,221 @@ void oe_virtual_exception_dispatcher(
         return;
     }
 
-    sgx_ssa_gpr_t* ssa_gpr =
-        (sgx_ssa_gpr_t*)(((uint8_t*)ssa_info.base_address) + ssa_info.frame_byte_size - OE_SGX_GPR_BYTE_SIZE);
-    if (!ssa_gpr->exit_info.as_fields.valid)
+    /* arg_in could be either the value of the host signal when the enclave
+     * opts in the thread interrupt or the host pointer of a
+     * oe_exception_record_t that includes the information of page fault just
+     * occurred (debug mode only). */
+    if (td->exception_nesting_level == 1 && arg_in <= MAX_SIGNAL_NUMBER)
     {
-        // Not a valid/expected enclave exception;
-        *arg_out = OE_EXCEPTION_CONTINUE_SEARCH;
-        return;
+        /* Only keep the host signal for non-nested exceptions */
+        td->host_signal = arg_in;
+    }
+    else if (
+        oe_is_enclave_debug_allowed() &&
+        oe_is_outside_enclave((void*)arg_in, sizeof(oe_exception_record_t)))
+    {
+        oe_exception_record = (oe_exception_record_t*)arg_in;
     }
 
-    // Get the exception address, code, and flags.
+    uint64_t gprsgx_offset = (uint64_t)ssa_info.base_address +
+                             ssa_info.frame_byte_size - OE_SGX_GPR_BYTE_SIZE;
+    sgx_ssa_gpr_t* ssa_gpr = (sgx_ssa_gpr_t*)gprsgx_offset;
+
     td->exception_address = ssa_gpr->rip;
     td->exception_code = OE_EXCEPTION_UNKNOWN;
-    for (uint32_t i = 0; i < OE_COUNTOF(g_vector_to_exception_code_mapping);
-         i++)
+
+    // Update the stitched callstack so that it points to the location that
+    // raised the exception.
+    if (oe_is_enclave_debug_allowed())
     {
-        if (g_vector_to_exception_code_mapping[i].sgx_vector ==
-            ssa_gpr->exit_info.as_fields.vector)
+        // Start at the current frame.
+        void** frame = (void**)__builtin_frame_address(0);
+
+        // Look at only 20 caller frames. This ensures that the loop will
+        // terminate.
+        for (int i = 0; i < 20; ++i)
         {
-            td->exception_code =
-                g_vector_to_exception_code_mapping[i].exception_code;
-            break;
+            // Check if the frame is the first enclave frame. For the first
+            // frame, the caller will lie outside the enclave.
+            if (frame && oe_is_outside_enclave(frame[0], 1))
+            {
+                // Update the frame with rip, rbp from SSA.
+                frame[0] = (void*)ssa_gpr->rbp;
+                frame[1] = (void*)ssa_gpr->rip;
+                break;
+            }
+
+            // Move to previous frame.
+            frame = frame[0];
         }
     }
 
-    td->exception_flags = 0;
-    if (ssa_gpr->exit_info.as_fields.exit_type == SGX_EXIT_TYPE_HARDWARE)
+    /* Get the exception code and flags only if the exception type
+     * is recognized by the SGX hardware */
+    if (ssa_gpr->exit_info.as_fields.valid)
     {
-        td->exception_flags |= OE_EXCEPTION_FLAGS_HARDWARE;
+        for (uint32_t i = 0; i < OE_COUNTOF(g_vector_to_exception_code_mapping);
+             i++)
+        {
+            if (g_vector_to_exception_code_mapping[i].sgx_vector ==
+                ssa_gpr->exit_info.as_fields.vector)
+            {
+                td->exception_code =
+                    g_vector_to_exception_code_mapping[i].exception_code;
+                break;
+            }
+        }
+
+        td->exception_flags = 0;
+        if (ssa_gpr->exit_info.as_fields.exit_type == SGX_EXIT_TYPE_HARDWARE)
+        {
+            td->exception_flags |= OE_EXCEPTION_FLAGS_HARDWARE;
+        }
+        else if (
+            ssa_gpr->exit_info.as_fields.exit_type == SGX_EXIT_TYPE_SOFTWARE)
+        {
+            td->exception_flags |= OE_EXCEPTION_FLAGS_SOFTWARE;
+        }
     }
-    else if (ssa_gpr->exit_info.as_fields.exit_type == SGX_EXIT_TYPE_SOFTWARE)
+    else
     {
-        td->exception_flags |= OE_EXCEPTION_FLAGS_SOFTWARE;
+        /* If the enclave is in debug mode and the oe_exception_record
+         * has been set, simulate the page fault based on host-passed
+         * information. This can either happen if the enclave runs with
+         * SGX1 CPUs or set CapturePFGPExceptions=0 on SGX2 CPUs. */
+        if (oe_is_enclave_debug_allowed() && oe_exception_record)
+        {
+            td->exception_code = OE_EXCEPTION_PAGE_FAULT;
+            td->exception_flags |= OE_EXCEPTION_FLAGS_HARDWARE;
+
+            td->faulting_address = oe_exception_record->faulting_address;
+            td->error_code = OE_SGX_PAGE_FAULT_US_FLAG;
+        }
+        /* For the rest of cases, validate the states on the td to ensure that
+         * the thread is handling the host signal */
+        else if (
+            !oe_sgx_td_host_signal_registered(td, (int)td->host_signal) ||
+            td->exception_nesting_level != 1 ||
+            td->is_handling_host_signal != 1)
+        {
+            *arg_out = OE_EXCEPTION_CONTINUE_SEARCH;
+            return;
+        }
     }
 
     if (td->exception_code == OE_EXCEPTION_ILLEGAL_INSTRUCTION &&
         _emulate_illegal_instruction(ssa_gpr) == 0)
     {
-        // Restore the RBP & RSP as required by return from EENTER
-        td->host_rbp = td->host_previous_rbp;
-        td->host_rsp = td->host_previous_rsp;
+        /* Refer to oe_enter in host/sgx/enter.c.
+         * Restore host_ecall_context from the first EENTER (cssa=0) that allows
+         * for correctly stitching the stack on EEXIT when the enclave is in the
+         * debug mode */
         td->host_ecall_context = td->host_previous_ecall_context;
 
-        // Advance RIP to the next instruction for continuation
-        ssa_gpr->rip += 2;
+        /* Restore the state using the previous_state and update
+         * the previous_state. The latter allows the exiting flow
+         * to skip updating the state. */
+        td->state = td->previous_state;
+        td->previous_state = OE_TD_STATE_FIRST_LEVEL_EXCEPTION_HANDLING;
+
+        /* Validate and decrease the nesting level (increased by enter.S)
+         * after all the handlers finish */
+        if (td->exception_nesting_level == 0)
+        {
+            td->state = OE_TD_STATE_ABORTED;
+            *arg_out = OE_EXCEPTION_CONTINUE_SEARCH;
+            return;
+        }
+        td->exception_nesting_level--;
     }
     else
     {
+        /* The following codes can only be captured with SGX2 and the
+         * MISCSELECT[0] bit is set to 1. */
+        if (ssa_gpr->exit_info.as_fields.valid &&
+            (td->exception_code == OE_EXCEPTION_PAGE_FAULT ||
+             td->exception_code == OE_EXCEPTION_ACCESS_VIOLATION))
+        {
+            sgx_exinfo_t* exinfo =
+                (sgx_exinfo_t*)(gprsgx_offset - OE_SGX_MISC_BYTE_SIZE);
+            td->faulting_address = exinfo->maddr;
+            td->error_code = exinfo->errcd;
+        }
+
         // Modify the ssa_gpr so that e_resume will go to second pass exception
         // handler.
         ssa_gpr->rip = (uint64_t)oe_exception_dispatcher;
+
+        /* Proceed with the check if the exception handler stack is registered
+         * for the given exception type and the stack size is sufficient.
+         *
+         * Note that first-pass exception handler always uses the exception
+         * handler stack when it is set regardless any code is registered
+         * to use it. The region with FIRST_PASS_HANDLER_STACK_RESERVED_SIZE
+         * bytes at the bottom of the exception handler stack is reserved for
+         * the first-pass exception handler.
+         *
+         * If the td->exception_code is registered for the exception handler
+         * stack, the second-pass exception handler will start from
+         * 1. exception_handler_stack_end -
+         * FIRST_PASS_HANDLER_STACK_RESERVED_SIZE if ssa_gpr->rsp does not fall
+         * in the exception handler stack
+         * 2. ssa_gpr->rsp if it falls in the exception handler stack
+         * (indicating a nested exception occurs during the exception handler
+         * stack is used)
+         *
+         * If the td->exception_code is not registered for the exception handler
+         * stack, the second-pass exception handler will continue with
+         * ssa_gpr->rsp (the default behavior).
+         */
+        if (oe_sgx_td_exception_handler_stack_registered(
+                td, td->exception_code) &&
+            td->exception_handler_stack_size >
+                FIRST_PASS_HANDLER_STACK_RESERVED_SIZE)
+        {
+            uint64_t exception_handler_stack_first_pass_end =
+                td->exception_handler_stack + td->exception_handler_stack_size;
+            uint64_t exception_handler_stack_first_pass_start =
+                exception_handler_stack_first_pass_end -
+                FIRST_PASS_HANDLER_STACK_RESERVED_SIZE;
+            uint64_t exception_handler_stack_second_pass_end =
+                exception_handler_stack_first_pass_start;
+            uint64_t exception_handler_stack_second_pass_start =
+                td->exception_handler_stack;
+            uint64_t current_rsp;
+
+            asm volatile("mov %%rsp, %0" : "=r"(current_rsp));
+
+            /* At this point, the oe_enter logic has ensured that the rsp points
+             * to the enclave memory. We then check if the current rsp falls in
+             * the reserved region in the exception handler stack. The passing
+             * checks imply that the exception handler stack has been properly
+             * set.
+             */
+            if (exception_handler_stack_second_pass_start <
+                    exception_handler_stack_first_pass_end &&
+                current_rsp > exception_handler_stack_first_pass_start &&
+                current_rsp <= exception_handler_stack_first_pass_end)
+            {
+                /* Save the rsp and rbp in the SSA (used to resume the execution
+                 * after exception handling). Note that the oe_enter logic has
+                 * ensured that the rsp in the SSA points to the enclave
+                 * memory */
+                td->last_ssa_rsp = ssa_gpr->rsp;
+                td->last_ssa_rbp = ssa_gpr->rbp;
+
+                if (td->last_ssa_rsp <
+                        exception_handler_stack_second_pass_start ||
+                    td->last_ssa_rsp > exception_handler_stack_second_pass_end)
+                {
+                    /* Update ssa_gpr->rsp to exception handler stack that
+                     * skips the reserved stack for the first pass exception
+                     * handler
+                     */
+                    ssa_gpr->rsp = exception_handler_stack_second_pass_end;
+                }
+            }
+        }
     }
 
     // Cleanup the exception flag to avoid the exception handler is called

@@ -3,16 +3,14 @@
 
 ---
 - name: Include distribution vars
-  include_vars:
+  ansible.builtin.include_vars:
     file: "{{ ansible_distribution | lower }}/main.yml"
 
 - name: Include distribution release specific vars
-  include_vars:
+  ansible.builtin.include_vars:
     file: "{{ ansible_distribution | lower }}/{{ ansible_distribution_release | lower }}.yml"
 
-- name: Check for existing required directories
-  stat:
+- name: Check default driver files
+  ansible.builtin.stat:
     path: "{{ item }}"
-  with_items: "{{ driver_validation_directories }}"
-  register: directory
-  failed_when: directory.stat.isdir == False
+  loop: "{{ intel_dcap_driver_files }}"

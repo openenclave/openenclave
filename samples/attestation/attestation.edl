@@ -6,39 +6,55 @@ enclave {
     from "openenclave/edl/syscall.edl" import *;
     from "platform.edl" import *;
 
+    struct format_settings_t
+    {
+        [size=size] uint8_t* buffer;
+        size_t size;
+    };
+
+    struct pem_key_t
+    {
+        [size=size] uint8_t* buffer;
+        size_t size;
+    };
+
+    struct evidence_t
+    {
+        [size=size] uint8_t* buffer;
+        size_t size;
+    };
+
+    struct message_t
+    {
+        [size=size] uint8_t* data;
+        size_t size;
+    };
+
     trusted {
         public int get_enclave_format_settings(
             [in] const oe_uuid_t* format_id,
-            [out] uint8_t** format_settings,
-            [out] size_t* format_settings_size);
+            [out] format_settings_t* format_settings);
 
         // Return the public key of this enclave along with the enclave's evidence.
         // Another enclave can use the evidence to attest the enclave and verify
         // the integrity of the public key.
         public int get_evidence_with_public_key(
             [in] const oe_uuid_t* format_id,
-            [in, size=format_settings_size] uint8_t* format_settings_buffer,
-            size_t format_settings_size,
-            [out] uint8_t **pem_key,
-            [out] size_t *pem_key_size,
-            [out] uint8_t **evidence_buffer,
-            [out] size_t *evidence_buffer_size);
+            [in] format_settings_t* format_settings,
+            [out] pem_key_t *pem_key,
+            [out] evidence_t *evidence_buffer);
 
         // Attest and store the public key of another enclave
         public int verify_evidence_and_set_public_key(
             [in] const oe_uuid_t* format_id,
-            [in, count=pem_key_size] uint8_t *pem_key,
-            size_t pem_key_size,
-            [in, count=evidence_size] uint8_t *evidence,
-            size_t evidence_size);
+            [in] pem_key_t *pem_key,
+            [in] evidence_t *evidence);
 
         // Encrypt message for another enclave using the public key stored for it
-        public int generate_encrypted_message( [out] uint8_t** data,
-                                               [out] size_t*  size);
+        public int generate_encrypted_message([out] message_t* message);
 
         // Process encrypted message
-        public int process_encrypted_message(  [in, count=size] uint8_t* data,
-                                               size_t  size);
+        public int process_encrypted_message([in] message_t* message);
     };
 
     //untrusted {

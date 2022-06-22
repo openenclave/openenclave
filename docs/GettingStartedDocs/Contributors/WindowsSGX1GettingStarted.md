@@ -7,7 +7,7 @@ Intel® X86-64bit architecture with SGX1.
 Note: To check if your system has support for SGX1, please look [here](../SGXSupportLevel.md).
 
 A version of Windows OS with native support for SGX features:
-- For server: Windows Server 2016 or 2019
+- For server: Windows Server 2019
 - For client: Windows 10 64-bit version 1709 or newer
 - To check your Windows version, run `winver` from the command line
 
@@ -102,7 +102,7 @@ Similarly, to build release enclaves, specify the flag
 cd C:/Users/test/openenclave
 mkdir build/x64-Release
 cd build/x64-Release
-cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCMAKE_INSTALL_PREFIX=c:/openenclave ../..
+cmake -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCMAKE_INSTALL_PREFIX=c:/openenclave ../..
 ninja
 ```
 

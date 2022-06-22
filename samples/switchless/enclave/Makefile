@@ -6,6 +6,7 @@ include ../../config.mk
 CFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --cflags)
 LDFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --libs)
 INCDIR=$(shell pkg-config oeenclave-$(COMPILER) --variable=includedir)
+CRYPTO_LDFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --variable=${OE_CRYPTO_LIB}libs)
 
 all:
 	$(MAKE) build
@@ -19,7 +20,7 @@ build:
 		--search-path $(INCDIR)/openenclave/edl/sgx
 	$(CC) -g -c $(CFLAGS) -DOE_API_VERSION=2 enc.c -o enc.o
 	$(CC) -g -c $(CFLAGS) -DOE_API_VERSION=2 switchless_sample_t.c -o switchless_sample_t.o
-	$(CC) -o switchlessenc switchless_sample_t.o enc.o $(LDFLAGS)
+	$(CC) -o switchlessenc switchless_sample_t.o enc.o $(LDFLAGS) $(CRYPTO_LDFLAGS)
 
 sign:
 	oesign sign -e switchlessenc -c switchless.conf -k private.pem

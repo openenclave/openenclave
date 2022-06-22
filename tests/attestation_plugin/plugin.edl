@@ -16,6 +16,11 @@ enclave {
         public void register_sgx();
         public void unregister_sgx();
         public void test_sgx();
+        public void test_pck_crl_validation(
+            [in, size=evidence_size] const uint8_t* evidence,
+            size_t evidence_size,
+            [in, size=endorsements_size] const uint8_t* endorsements,
+            size_t endorsements_size);
     };
 
     untrusted {

@@ -55,7 +55,7 @@ signature once another signing process is defined for Open Enclave.
     PODSSClientCore.exe Sign -a "<comma-separated list of authorized approver usernames>" -s "<full path to the publish directory used in step 4>" -dn "Open Enclave VSIX" -du "https://github.com/openenclave/openenclave/blob/master/docs/GettingStartedDocs/visualstudio_dev.md" -c "100040160"
     ```
 
-    * So far the following are authorized approvers: dthaler, britel, jiria
+    * So far the following are authorized approvers: dthaler, anakrish, radhikaj
 
     * The status can be checked at https://dev.azure.com/esrptools/sign/_git/signv2/pullrequests?_a=mine
 

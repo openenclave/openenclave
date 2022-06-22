@@ -3,9 +3,9 @@ Certificate based attestation: with evidences
 
 This test validates the following OE public APIs:
 
-* oe_get_attestation_certificate_with_evidence
+* oe_get_attestation_certificate_with_evidence_v2
 * oe_free_attestation_certificate, and
-* oe_verify_attestation_certificate_with_evidence
+* oe_verify_attestation_certificate_with_evidence_v2
 
 Test scenario:
 
@@ -15,6 +15,6 @@ Test scenario:
   3. Once the certificate is received, call oe_verify_attestation_certificate_with_evidence to verify the certificate.
 
 - **Enclave side**
-  1. Implement get_tls_cert(), which calls oe_get_attestation_certificate_with_evidence API to generate a requested certificate
+  1. Implement get_tls_cert(), which calls oe_get_attestation_certificate_with_evidence_v2() API to generate a requested certificate
       based on a given format UUID
-  2. Call oe_verify_attestation_certificate_with_evidence on the generated certificate before returning from get_tls_cert call
+  2. Call oe_verify_attestation_certificate_with_evidence_v2() on the generated certificate before returning from get_tls_cert call

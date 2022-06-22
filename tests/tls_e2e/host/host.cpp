@@ -19,13 +19,6 @@
 #include <mutex>
 #include <thread>
 
-#if defined(_WIN32)
-#include <windows.h>
-#define sleep(x) Sleep(1000 * (x))
-#else
-#include <unistd.h>
-#endif
-
 #define SERVER_PORT "12345"
 #define SERVER_IP "127.0.0.1"
 
@@ -343,16 +336,6 @@ int run_scenarios_tests()
                 (unittests_configs[j].negative_test ? "negative" : "positive"),
                 (unittests_configs[j].negative_test ? "" : "no"));
 
-#ifdef OE_USE_OPENSSL
-            if (j == 1)
-                sleep(90);
-                // This delay is introduced intentionally.
-                // After successful OpenSSL client/server communication, sockets
-                // are staying in TIME_WAIT state for a minute.
-                // https://superuser.com/questions/173535/what-are-close-wait-and-time-wait-states
-                // Issue is observed on ubuntu too.
-#endif
-
             ret = run_test_with_config(&test_configs);
             if (ret)
             {
@@ -369,7 +352,7 @@ done:
 
 int main(int argc, const char* argv[])
 {
-    if (!oe_has_sgx_quote_provider())
+    if (!oe_sgx_has_quote_provider())
     {
         // this test should not run on any platforms where DCAP libraries are
         // not found.

@@ -20,7 +20,7 @@ oe<enclave|host>-<gcc|g++|clang|clang++>
 ```
 
 For example, if you have added the Open Enclave SDK `pkgconfig` to your `PKG_CONFIG_PATH`,
-you can specify in your Makefile how to build your C enclave using Clang-7:
+you can specify in your Makefile how to build your C enclave using Clang-8:
 
 ```make
 CFLAGS=$(shell pkg-config oeenclave-clang --cflags)
@@ -87,6 +87,13 @@ In addition, the following two properties are defined by the developer and map d
   can be used to prevent rollback attacks against sealing keys. This value should be
   incremented whenever a security fix is made to the enclave code.
 
+Optionally, to create a 0-based enclave (currently only available in SGX on Linux, with PSW version 2.14.1 or above) the following setting can be provided:
+
+- **CreateZeroBaseEnclave**: Should the enclave be created with base address 0x0? Defaults to 0.
+- **StartAddress**: When the enclave base address is 0x0 (CreateZeroBaseEnclave=1), the enclave image will be created at this address. The value needs to be aligned to OE_PAGE_SIZE (0x1000) and greater than mmap min address (/proc/sys/vm/mmap_min_addr).
+
+0-based enclaves guarantee NullPointerException behavior when 0-page is accessed. Applications that depend on this behavior can now be run inside an enclave (example, .NET runtime).
+
 Here is the example from helloworld.conf used in the helloworld sample:
 ```
 # Enclave settings:
@@ -113,20 +120,25 @@ FamilyID=47183823-2574-4bfd-b411-99ed177d3e43
 ExtendedProductID=2768c720-1e28-11eb-adc1-0242ac120002
 ```
 
-As a convenience, you can specify the enclave properties in code using the
-`OE_SET_ENCLAVE_SGX_KSS` macro if KSS properties are included.  For example, the equivalent properties could be
-defined in any .c or .cpp file compiled into the enclave:
+On SGX2 machines, developers can also specify whether to handle in-enclave exceptions or not using `CapturePFGPExceptions` field.
+- **CapturePFGPExceptions**: Whether in-enclave exception handler should be enabled (1) or not (0) to capture #PF and #GP exceptions (SGX2 feature, default value: 0)
+
+Also as a convenience, developers can specify the enclave properties in code using the `OE_SET_ENCLAVE_SGX2` macro to leverage SGX2 properties and enable KSS using `RequireKSS` field in the macro. Note that to set `FamilyID` and `ExtendedProductID` through `OE_SET_ENCLAVE_SGX2` macro, the corresponding fields should be enclosed in the parenthesis as shown below. For example, the equivalent properties could be defined in any .c or .cpp file compiled into the enclave:
 
 ```c
-OE_SET_ENCLAVE_SGX_KSS(
-    1,    /* ProductID */
-    1,    /* SecurityVersion */
-    1,    /* Debug */
-    47183823-2574-4bfd-b411-99ed177d3e43, /* FamilyID */
-    2768c720-1e28-11eb-adc1-0242ac120002, /* ExtendedProductID */
-    1024, /* NumHeapPages: heap size in units of 4KB pages */
-    1024, /* NumStackPages: stack size, in units of 4KB pages */
-    1);   /* NumTCS */
+OE_SET_ENCLAVE_SGX2(
+    1,     /* ProductID */
+    1,     /* SecurityVersion */
+    ({0x47, 0x18, 0x38, 0x23, 0x25, 0x74, 0x4b, 0xfd, 0xb4, 0x11, 0x99, 0xed, 0x17, 0x7d, 0x3e, 0x43}),   /* ExtendedProductID */
+    ({0x27, 0x68, 0xc7, 0x20, 0x1e, 0x28, 0x11, 0xeb, 0xad, 0xc1, 0x02, 0x42, 0xac, 0x12, 0x00, 0x02}),   /* FamilyID */
+    true,  /* Debug */
+    true,  /* CapturePFGPExceptions */
+    true   /* RequireKSS */
+    false, /* CreateZeroBaseEnclave */
+    0,     /* StartAddress */
+    1024,  /* NumHeapPages */
+    1024,  /* NumStackPages */
+    1);    /* NumTCS */
 ```
 
 You can also specify the enclave properties in code using the
@@ -148,10 +160,6 @@ to run an enclave in debug mode without signing it first. In this case, the encl
 is treated as having the standard signer ID (MRSIGNER) value of:
 
 > CA9AD7331448980AA28890CE73E433638377F179AB4456B2FE237193193A8D0A
-
-Any properties set in the code also serve as default values when the enclave is
-signed using oesign, so the signing `CONFFILE` only needs to specify override
-parameters during signing.
 
 **Since enclaves that run in debug mode are not confidential, you should disable
 the ability to run the enclave in debug mode before deploying it into production.**

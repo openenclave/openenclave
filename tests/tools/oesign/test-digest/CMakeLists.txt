@@ -57,7 +57,7 @@ set(OESIGN_DIGEST_VALID_SHORT_ARGS
 add_test(
   NAME tests/oesign-digest-valid-short-args
   COMMAND
-    python sign-and-verify.py --host-path $<TARGET_FILE:oesign_test_host>
+    ${PYTHON} sign-and-verify.py --host-path $<TARGET_FILE:oesign_test_host>
     --enclave-path $<TARGET_FILE:oesign_test_enc> --oesign-path
     $<TARGET_FILE:oesign> --digest-args ${OESIGN_DIGEST_VALID_SHORT_ARGS}
     --pkeyutl-args ${OESIGN_PKEYUTL_ARGS} --oesign-args
@@ -78,7 +78,7 @@ set(OESIGN_DIGEST_VALID_LONG_ARGS
 add_test(
   NAME tests/oesign-digest-valid-long-args
   COMMAND
-    python sign-and-verify.py --host-path $<TARGET_FILE:oesign_test_host>
+    ${PYTHON} sign-and-verify.py --host-path $<TARGET_FILE:oesign_test_host>
     --enclave-path $<TARGET_FILE:oesign_test_enc> --oesign-path
     $<TARGET_FILE:oesign> --digest-args ${OESIGN_DIGEST_VALID_LONG_ARGS}
     --pkeyutl-args ${OESIGN_PKEYUTL_ARGS} --oesign-args
@@ -101,7 +101,7 @@ set(OESIGN_DIGEST_VALID_DEV_CONFIG_ARGS
 add_test(
   NAME tests/oesign-digest-valid-dev-config-args
   COMMAND
-    python sign-and-verify.py --host-path $<TARGET_FILE:oesign_test_host>
+    ${PYTHON} sign-and-verify.py --host-path $<TARGET_FILE:oesign_test_host>
     --enclave-path $<TARGET_FILE:oesign_test_alt_enc> --oesign-path
     $<TARGET_FILE:oesign> --digest-args ${OESIGN_DIGEST_VALID_DEV_CONFIG_ARGS}
     --pkeyutl-args ${OESIGN_PKEYUTL_DEV_CONFIG_ARGS} --oesign-args

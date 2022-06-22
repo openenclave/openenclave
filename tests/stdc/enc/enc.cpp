@@ -224,6 +224,25 @@ static void _test_time_functions(void)
 
         OE_TEST(after > before);
     }
+
+    /* Test clock_nanosleep() */
+    {
+        const uint64_t SLEEP_SECS = 3;
+        clockid_t clockid = CLOCK_REALTIME;
+        uint64_t before, after;
+
+        /* Sleep for SLEEP_SECS seconds */
+        {
+            before = oe_get_time();
+            int flag = 0;
+            timespec req = {SLEEP_SECS, 0};
+            timespec rem;
+            OE_TEST(clock_nanosleep(clockid, flag, &req, &rem) == 0);
+            after = oe_get_time();
+        }
+
+        OE_TEST(after > before);
+    }
 }
 
 int test(char buf1[BUFSIZE], char buf2[BUFSIZE])

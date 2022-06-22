@@ -96,7 +96,7 @@ read_port:
     }
 
     printf("Host: calling setup_tls_server\n");
-    ret = setup_tls_server(enclave, &ret, server_port, keep_server_up);
+    ret = set_up_tls_server(enclave, &ret, server_port, keep_server_up);
     if (ret != 0)
     {
         printf("Host: setup_tls_server failed\n");

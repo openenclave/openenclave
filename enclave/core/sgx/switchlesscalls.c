@@ -17,7 +17,7 @@
 static size_t _host_worker_count = 0;
 
 // The array of host worker contexts. Initialized by host through ECALL
-static oe_host_worker_context_t* _host_worker_contexts = NULL;
+static volatile oe_host_worker_context_t* _host_worker_contexts = NULL;
 
 // Flag to denote if switchless calls have already been initialized.
 static bool _is_switchless_initialized = false;
@@ -132,6 +132,20 @@ oe_result_t oe_sgx_init_context_switchless_ecall(
     _host_worker_count = num_host_workers;
     _host_worker_contexts = host_worker_contexts;
 
+    for (uint64_t i = 0; i < _host_worker_count; i++)
+    {
+        /* To mitigate the MMIO vulnerability, the addresses of the call_arg
+         * and event to which the enclave will write should be 8-byte-aligned.
+         * This should have been guaranteed by the heap allocation done by the
+         * oehost library unless it has been intentionally modified. */
+
+        if ((uint64_t)&_host_worker_contexts[i].call_arg % 8)
+            OE_RAISE(OE_INVALID_PARAMETER);
+
+        if ((uint64_t)&_host_worker_contexts[i].event % 8)
+            OE_RAISE(OE_INVALID_PARAMETER);
+    }
+
     __atomic_store_n(&_is_switchless_initialized, true, __ATOMIC_SEQ_CST);
 
     result = OE_OK;
@@ -157,7 +171,9 @@ oe_result_t oe_post_switchless_ocall(oe_call_host_function_args_t* args)
     oe_result_t result = OE_UNEXPECTED;
 
     OE_ATOMIC_MEMORY_BARRIER_RELEASE();
-    args->result = __OE_RESULT_MAX; // Means the call hasn't been processed.
+
+    // Set the result to indicate that the call hasn't been processed
+    OE_WRITE_VALUE_WITH_BARRIER(&args->result, __OE_RESULT_MAX);
 
     // Cycle through the worker contexts until we find a free worker.
     size_t tries = _host_worker_count;
@@ -172,6 +188,7 @@ oe_result_t oe_post_switchless_ocall(oe_call_host_function_args_t* args)
             // failed, this means that the slot was grabbed by another
             // switchless ocall and therefore, we must scan for another worker
             // thread with a free slot.
+
             if (oe_atomic_compare_and_swap_ptr(
                     (void* volatile*)&_host_worker_contexts[tries].call_arg,
                     NULL,
@@ -184,18 +201,19 @@ oe_result_t oe_post_switchless_ocall(oe_call_host_function_args_t* args)
                 // making an ocall (oe_sgx_wake_switchless_worker_ocall).
                 // Note: it is important to use an atomic cas operation to set
                 // the value to 1 before making the ocall. Setting the value to
-                // 1 prevents the host worker from simulataneously going to
+                // 1 prevents the host worker from simultaneously going to
                 // sleep. If instead, just a compare operation is used to
                 // determine if the host thread is sleeping or not, the host
                 // thread could go to sleep after the enclave has determined
                 // that the host is not sleeping, causing a deadlock.
                 //
                 // If event is 1, that indicates a pending wake notification.
-                int32_t oldval = 0;
-                int32_t newval = 1;
+                int64_t oldval = 0;
+                int64_t newval = 1;
                 // Weak operation could sporadically fail.
                 // We need a strong operation.
                 bool weak = false;
+
                 if (__atomic_compare_exchange_n(
                         &_host_worker_contexts[tries].event,
                         &oldval,
@@ -208,7 +226,8 @@ oe_result_t oe_post_switchless_ocall(oe_call_host_function_args_t* args)
                     // worker was previously sleeping.
                     // Wake it via an ocall.
                     oe_sgx_wake_switchless_worker_ocall(
-                        &_host_worker_contexts[tries]);
+                        (oe_host_worker_context_t*)&_host_worker_contexts
+                            [tries]);
                 }
 
                 return OE_OK;
@@ -272,21 +291,31 @@ void oe_sgx_switchless_enclave_worker_thread_ecall(
             // After handling the switchless call, mark this worker thread
             // as free by clearing the slot.
             OE_ATOMIC_MEMORY_BARRIER_RELEASE();
-            context->call_arg = NULL;
+
+            OE_WRITE_VALUE_WITH_BARRIER(&context->call_arg, NULL);
 
             // Reset spin count for next message.
-            context->total_spin_count += context->spin_count;
-            context->spin_count = 0;
+            OE_WRITE_VALUE_WITH_BARRIER(
+                &context->total_spin_count,
+                context->total_spin_count + context->spin_count);
+
+            OE_WRITE_VALUE_WITH_BARRIER(&context->spin_count, (uint64_t)0);
         }
         else
         {
             // If there is no message, increment spin count until threshold is
             // reached.
-            if (++context->spin_count >= spin_count_threshold)
+            OE_WRITE_VALUE_WITH_BARRIER(
+                &context->spin_count, context->spin_count + 1);
+
+            if (context->spin_count >= spin_count_threshold)
             {
                 // Reset spin count and return to host to sleep.
-                context->total_spin_count += context->spin_count;
-                context->spin_count = 0;
+                OE_WRITE_VALUE_WITH_BARRIER(
+                    &context->total_spin_count,
+                    context->total_spin_count + context->spin_count);
+
+                OE_WRITE_VALUE_WITH_BARRIER(&context->spin_count, (uint64_t)0);
 
                 // Make an ocall to sleep until messages arrive.
                 oe_sgx_sleep_switchless_worker_ocall(context);

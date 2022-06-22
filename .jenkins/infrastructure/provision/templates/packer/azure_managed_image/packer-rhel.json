@@ -13,7 +13,9 @@
     "gallery_name": "{{ env `GALLERY_NAME` }}",
     "gallery_image_version": "{{ env `GALLERY_IMAGE_VERSION` }}",
     "managed_image_name_id": "{{ env `MANAGED_IMAGE_NAME_ID` }}",
-    "replication_regions": "{{ env `REPLICATION_REGIONS` }}"
+    "replication_regions": "{{ env `REPLICATION_REGIONS` }}",
+    "ssh_username": "{{ env `SSH_USERNAME` }}",
+    "ssh_password": "{{ env `SSH_PASSWORD` }}"
   },
   "builders": [{
     "type": "azure-arm",
@@ -30,6 +32,15 @@
       "image_version": "{{ user `gallery_image_version` }}",
       "replication_regions": "{{ user `replication_regions` }}"
     },
+
+    "shared_image_gallery": {
+      "subscription": "{{ user `subscription_id` }}",
+      "resource_group": "{{ user `resource_group` }}",
+      "gallery_name": "{{ user `base_gallery_name` }}",
+      "image_name": "{{ user `base_gallery_image_name` }}",
+      "image_version": "{{ user `base_gallery_image_version` }}"
+    },
+
     "shared_image_gallery_timeout": "180m",
 
     "managed_image_name": "{{ user `managed_image_name_id` }}-{{ user `managed_image_name_suffix` }}",
@@ -40,12 +51,11 @@
     "virtual_network_subnet_name": "{{ user `jenkins_subnet_name` }}",
 
     "os_type": "{{ user `os_type` }}",
-    "image_publisher": "{{ user `image_publisher` }}",
-    "image_offer": "{{ user `image_offer` }}",
-    "image_sku": "{{ user `image_sku` }}",
 
     "location": "{{ user `location` }}",
-    "vm_size": "{{ user `vm_size` }}"
+    "vm_size": "{{ user `vm_size` }}",
+    "ssh_username": "{{ user `ssh_username` }}",
+    "ssh_password": "{{ user `ssh_password` }}"
   }],
   "provisioners": [
     {
