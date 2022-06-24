@@ -167,41 +167,124 @@ typedef struct _oe_mutex_impl
     /* The thread that has locked this mutex */
     oe_sgx_td_t* owner;
 
+    /* The type of mutex (supported types: normal and recursive) */
+    uint32_t type;
+
     /* Queue of waiting threads (front holds the mutex) */
     Queue queue;
 } oe_mutex_impl_t;
 
-OE_STATIC_ASSERT(sizeof(oe_mutex_impl_t) <= sizeof(oe_mutex_t));
-
-oe_result_t oe_mutex_init(oe_mutex_t* mutex)
+typedef struct _oe_mutexattr_impl
 {
-    oe_mutex_impl_t* m = (oe_mutex_impl_t*)mutex;
-    oe_result_t result = OE_UNEXPECTED;
+    uint32_t type;
+} oe_mutexattr_impl_t;
 
-    if (!m)
-        return OE_INVALID_PARAMETER;
+OE_STATIC_ASSERT(sizeof(oe_mutex_impl_t) <= sizeof(oe_mutex_t));
+OE_STATIC_ASSERT(sizeof(oe_mutexattr_impl_t) <= sizeof(oe_mutexattr_t));
 
-    memset(m, 0, sizeof(oe_mutex_t));
-    m->lock = OE_SPINLOCK_INITIALIZER;
+static oe_result_t _validate_mutexattr_type(uint32_t type)
+{
+    oe_result_t result = OE_FAILURE;
+
+    switch (type)
+    {
+        case OE_MUTEX_NORMAL:
+        case OE_MUTEX_RECURSIVE:
+        case OE_MUTEX_ERRORCHECK:
+            break;
+        default:
+            OE_RAISE(OE_INVALID_PARAMETER);
+    };
 
     result = OE_OK;
 
+done:
+    return result;
+}
+
+oe_result_t oe_mutexattr_init(oe_mutexattr_t* attr)
+{
+    oe_mutexattr_impl_t* attr_impl = (oe_mutexattr_impl_t*)attr;
+    oe_result_t result = OE_FAILURE;
+
+    if (!attr_impl)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    memset(attr_impl, 0, sizeof(oe_mutexattr_t));
+
+    attr_impl->type = OE_MUTEX_DEFAULT;
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+oe_result_t oe_mutexattr_settype(oe_mutexattr_t* attr, int type)
+{
+    oe_mutexattr_impl_t* attr_impl = (oe_mutexattr_impl_t*)attr;
+    oe_result_t result = OE_FAILURE;
+
+    if (!attr_impl)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    OE_CHECK(_validate_mutexattr_type((uint32_t)type));
+
+    attr_impl->type = (uint32_t)type;
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+oe_result_t oe_mutex_init(oe_mutex_t* mutex, oe_mutexattr_t* attr)
+{
+    oe_mutex_impl_t* mutex_impl = (oe_mutex_impl_t*)mutex;
+    oe_mutexattr_impl_t* attr_impl = (oe_mutexattr_impl_t*)attr;
+    oe_result_t result = OE_UNEXPECTED;
+
+    if (!mutex_impl)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    memset(mutex_impl, 0, sizeof(oe_mutex_t));
+    mutex_impl->lock = OE_SPINLOCK_INITIALIZER;
+
+    if (!attr_impl)
+        mutex_impl->type = OE_MUTEX_DEFAULT;
+    else
+    {
+        OE_CHECK(_validate_mutexattr_type(attr_impl->type));
+
+        mutex_impl->type = attr_impl->type;
+    }
+
+    result = OE_OK;
+
+done:
     return result;
 }
 
 /* Caller manages the spinlock */
-static int _mutex_lock(oe_mutex_impl_t* m, oe_sgx_td_t* self)
+static oe_result_t _mutex_lock(oe_mutex_impl_t* m, oe_sgx_td_t* self)
 {
+    oe_result_t result = OE_NOT_OWNER;
+
     /* If this thread has already locked the mutex */
     if (m->owner == self)
     {
-        /* Increase the reference count */
-        m->refs++;
-        return 0;
+        if (m->type != OE_MUTEX_RECURSIVE)
+        {
+            OE_RAISE_NO_TRACE(OE_BUSY);
+        }
+        else
+        {
+            /* Increase the reference count if the mutex is recursive */
+            m->refs++;
+            result = OE_OK;
+        }
     }
-
-    /* If no thread has locked this mutex yet */
-    if (m->owner == NULL)
+    else if (m->owner == NULL) /* If no thread has locked this mutex yet */
     {
         /* If the waiters queue is empty */
         if (m->queue.front == NULL)
@@ -209,11 +292,10 @@ static int _mutex_lock(oe_mutex_impl_t* m, oe_sgx_td_t* self)
             /* Obtain the mutex */
             m->owner = self;
             m->refs = 1;
-            return 0;
+            result = OE_OK;
         }
-
-        /* If this thread is at the front of the waiters queue */
-        if (m->queue.front == self)
+        else if (m->queue.front == self) /* If this thread is at the front of
+                                            the waiters queue */
         {
             /* Remove this thread from front of the waiters queue */
             _queue_pop_front(&m->queue);
@@ -221,11 +303,12 @@ static int _mutex_lock(oe_mutex_impl_t* m, oe_sgx_td_t* self)
             /* Obtain the mutex */
             m->owner = self;
             m->refs = 1;
-            return 0;
+            result = OE_OK;
         }
     }
 
-    return -1;
+done:
+    return result;
 }
 
 oe_result_t oe_mutex_lock(oe_mutex_t* mutex)
@@ -242,8 +325,18 @@ oe_result_t oe_mutex_lock(oe_mutex_t* mutex)
         oe_spin_lock(&m->lock);
         {
             /* Attempt to acquire lock */
-            if (_mutex_lock(m, self) == 0)
+            oe_result_t result = _mutex_lock(m, self);
+
+            if (result == OE_BUSY)
             {
+                /* Deadlock */
+                OE_TRACE_ERROR("Recursively acquire a non-recursive lock");
+                continue;
+            }
+
+            if (result == OE_OK)
+            {
+                /* Successfully aquire the lock */
                 oe_spin_unlock(&m->lock);
                 return OE_OK;
             }
@@ -275,7 +368,7 @@ oe_result_t oe_mutex_trylock(oe_mutex_t* mutex)
     oe_spin_lock(&m->lock);
     {
         /* Attempt to acquire lock */
-        if (_mutex_lock(m, self) == 0)
+        if (_mutex_lock(m, self) == OE_OK)
         {
             oe_spin_unlock(&m->lock);
             return OE_OK;
