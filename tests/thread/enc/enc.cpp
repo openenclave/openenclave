@@ -15,8 +15,22 @@
 #include <atomic>
 #include "thread_t.h"
 
+static inline oe_mutex_t _mutex_initializer_recursive()
+{
+    oe_mutex_t m;
+    oe_mutexattr_t attr;
+    oe_mutexattr_init(&attr);
+    oe_mutexattr_settype(&attr, OE_MUTEX_RECURSIVE);
+    oe_mutex_init(&m, &attr);
+    return m;
+}
+
+#define OE_MUTEX_INITIALIZER_RECURSIVE _mutex_initializer_recursive()
+
 static oe_mutex_t mutex1 = OE_MUTEX_INITIALIZER;
 static oe_mutex_t mutex2 = OE_MUTEX_INITIALIZER;
+static oe_mutex_t recursive_mutex1 = OE_MUTEX_INITIALIZER_RECURSIVE;
+static oe_mutex_t recursive_mutex2 = OE_MUTEX_INITIALIZER_RECURSIVE;
 static size_t test_mutex_count1 = 0;
 static size_t test_mutex_count2 = 0;
 
@@ -40,18 +54,18 @@ static void _test_parallel_mallocs()
     }
 }
 
-void enc_test_mutex()
+void enc_test_recursive_mutex()
 {
-    OE_TEST(oe_mutex_lock(&mutex1) == 0);
-    OE_TEST(oe_mutex_lock(&mutex1) == 0);
+    OE_TEST(oe_mutex_lock(&recursive_mutex1) == 0);
+    OE_TEST(oe_mutex_lock(&recursive_mutex1) == 0);
     ++test_mutex_count1;
-    OE_TEST(oe_mutex_lock(&mutex2) == 0);
-    OE_TEST(oe_mutex_lock(&mutex2) == 0);
+    OE_TEST(oe_mutex_lock(&recursive_mutex2) == 0);
+    OE_TEST(oe_mutex_lock(&recursive_mutex2) == 0);
     ++test_mutex_count2;
-    OE_TEST(oe_mutex_unlock(&mutex1) == 0);
-    OE_TEST(oe_mutex_unlock(&mutex1) == 0);
-    OE_TEST(oe_mutex_unlock(&mutex2) == 0);
-    OE_TEST(oe_mutex_unlock(&mutex2) == 0);
+    OE_TEST(oe_mutex_unlock(&recursive_mutex1) == 0);
+    OE_TEST(oe_mutex_unlock(&recursive_mutex1) == 0);
+    OE_TEST(oe_mutex_unlock(&recursive_mutex2) == 0);
+    OE_TEST(oe_mutex_unlock(&recursive_mutex2) == 0);
 
     oe_host_printf("enc_test_mutex: %lld\n", OE_LLU(oe_thread_self()));
 }
@@ -197,9 +211,9 @@ void enc_relinquish_exclusive_access()
     oe_mutex_unlock(&ex_mutex);
 }
 
-static oe_mutex_t mutex_a = OE_MUTEX_INITIALIZER;
-static oe_mutex_t mutex_b = OE_MUTEX_INITIALIZER;
-static oe_mutex_t mutex_c = OE_MUTEX_INITIALIZER;
+static oe_mutex_t mutex_a = OE_MUTEX_INITIALIZER_RECURSIVE;
+static oe_mutex_t mutex_b = OE_MUTEX_INITIALIZER_RECURSIVE;
+static oe_mutex_t mutex_c = OE_MUTEX_INITIALIZER_RECURSIVE;
 
 static oe_thread_t a_owner = 0;
 static oe_thread_t b_owner = 0;

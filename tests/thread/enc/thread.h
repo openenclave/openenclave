@@ -10,13 +10,11 @@
 
 #include <pthread.h>
 
-/* Unlike OE threads, pthreads are not recursive by default */
-static __inline pthread_mutex_t __mutex_initializer_recursive()
+static __inline pthread_mutex_t __mutex_initializer_default()
 {
     pthread_mutex_t m;
     pthread_mutexattr_t attr;
     pthread_mutexattr_init(&attr);
-    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
     pthread_mutex_init(&m, &attr);
     return m;
 }
@@ -25,9 +23,16 @@ typedef pthread_t oe_thread_t;
 #define oe_thread_self pthread_self
 
 typedef pthread_mutex_t oe_mutex_t;
-#define OE_MUTEX_INITIALIZER __mutex_initializer_recursive()
+#define OE_MUTEX_INITIALIZER __mutex_initializer_default()
+#define oe_mutex_init pthread_mutex_init
 #define oe_mutex_lock pthread_mutex_lock
+#define oe_mutex_trylock pthread_mutex_trylock
 #define oe_mutex_unlock pthread_mutex_unlock
+
+typedef pthread_mutexattr_t oe_mutexattr_t;
+#define OE_MUTEX_RECURSIVE PTHREAD_MUTEX_RECURSIVE
+#define oe_mutexattr_init pthread_mutexattr_init
+#define oe_mutexattr_settype pthread_mutexattr_settype
 
 typedef pthread_spinlock_t oe_spinlock_t;
 #define OE_SPINLOCK_INITIALIZER 0
