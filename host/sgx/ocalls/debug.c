@@ -8,6 +8,8 @@
 #include <openenclave/internal/safemath.h>
 
 #include "../enclave.h"
+#include "openenclave/internal/trace.h"
+#include "openenclave/log.h"
 #include "platform_u.h"
 
 static char** _backtrace_symbols(
@@ -44,7 +46,7 @@ static char** _backtrace_symbols(
         /* Calculate space for each string */
         for (int i = 0; i < size; i++)
         {
-            const uint64_t vaddr = (uint64_t)buffer[i] - enclave->addr;
+            const uint64_t vaddr = (uint64_t)buffer[i] - enclave->start_address;
             const char* name = elf64_get_function_name(&elf, vaddr);
 
             if (!name)
@@ -73,7 +75,7 @@ static char** _backtrace_symbols(
     /* Copy strings into return buffer */
     for (int i = 0; i < size; i++)
     {
-        const uint64_t vaddr = (uint64_t)buffer[i] - enclave->addr;
+        const uint64_t vaddr = (uint64_t)buffer[i] - enclave->start_address;
         const char* name = elf64_get_function_name(&elf, vaddr);
 
         if (!name)
@@ -123,6 +125,42 @@ oe_result_t oe_sgx_backtrace_symbols_ocall(
         symbols_buffer,
         symbols_buffer_size,
         symbols_buffer_size_out));
+
+    result = OE_OK;
+
+done:
+
+    if (strings)
+        free(strings);
+
+    return result;
+}
+
+oe_result_t oe_sgx_log_backtrace_ocall(
+    oe_enclave_t* oe_enclave,
+    const uint64_t* buffer,
+    size_t size)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    char** strings = NULL;
+
+    oe_log(OE_LOG_LEVEL_INFO, "Backtrace:\n");
+
+    /* Reject invalid parameters. */
+    if (!oe_enclave || !buffer || size > OE_INT_MAX)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Convert the addresses into symbol strings. */
+    if (!(strings =
+              _backtrace_symbols(oe_enclave, (void* const*)buffer, (int)size)))
+    {
+        OE_RAISE(OE_FAILURE);
+    }
+
+    for (size_t i = 0; i < size; ++i)
+    {
+        oe_log(OE_LOG_LEVEL_INFO, "%s(): %p\n", strings[i], buffer[i]);
+    }
 
     result = OE_OK;
 

@@ -254,6 +254,17 @@ OE_INLINE oe_result_t oe_safe_mul_sizet(size_t a, size_t b, size_t* c)
     SAFE_MULTIPLY(a, b, c, 0, OE_SIZE_MAX);
 }
 
+OE_INLINE oe_result_t oe_safe_round_up_u64(uint64_t a, uint64_t b, uint64_t* c)
+{
+    if (!b)
+        return OE_INVALID_PARAMETER;
+    uint64_t value = 0;
+    oe_result_t result = oe_safe_add_u64(a, b - 1, &value);
+    if (result != OE_OK)
+        return result;
+    return oe_safe_mul_u64(value / b, b, c);
+}
+
 /* Re-enable GCC warnings for -Wtype-limits. */
 #ifdef __GNUC__
 #pragma GCC diagnostic pop

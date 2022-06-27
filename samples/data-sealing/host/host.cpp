@@ -55,57 +55,56 @@ void terminate_enclave(oe_enclave_t* enclave)
 
 int unseal_data_and_verify_result(
     oe_enclave_t* target_enclave,
-    sealed_data_t* sealed_data,
-    size_t sealed_data_size,
+    data_t* sealed_data,
+    const int optional_msg_flag,
     unsigned char* target_data,
     size_t target_data_size)
 {
-    oe_result_t result = OE_FAILURE;
-    int ret = 0;
-    unsigned char* data = NULL;
-    size_t data_size = 0;
+    oe_result_t result;
+    int ret;
+    data_t data;
 
     cout << "Host: enter unseal_data_and_verify_result " << endl;
 
     result = unseal_data(
-        target_enclave, &ret, sealed_data, sealed_data_size, &data, &data_size);
+        target_enclave, &ret, sealed_data, optional_msg_flag, &data);
     if ((result != OE_OK) || (ret != 0))
     {
         cout << "Host: ecall unseal_data returned " << oe_result_str(result)
-             << " ret = " << ret << (ret ? " (failed)" : "(success)") << endl;
+             << " ret = " << ret << (ret ? " (failed)" : " (success)") << endl;
+        ret = ERROR_SIGNATURE_VERIFY_FAIL;
         goto exit;
     }
 
     // print unsealed data
     cout << "Host: Unsealed result:" << endl;
-    printf("data=%s\n", data);
+    printf("data=%s", data.data);
 
-    printf("data_size=%zd\n", data_size);
+    printf("data_size=%zd\n", data.size);
+
     printf("target_data_size=%zd\n", target_data_size);
 
     if (strncmp(
-            (const char*)data, (const char*)target_data, target_data_size) != 0)
+            (const char*)data.data,
+            (const char*)target_data,
+            target_data_size) != 0)
     {
         cout << "Host: Unsealed data is not equal to the original data."
              << endl;
         ret = ERROR_UNSEALED_DATA_FAIL;
-        result = OE_FAILURE;
         goto exit;
     }
 exit:
-    if (data)
-        free(data);
+    if (data.data)
+        free(data.data);
 
-    if (ret != 0)
-        result = OE_FAILURE;
-
-    cout << "Host: exit unseal_data_and_verify_result with "
-         << oe_result_str(result) << endl;
+    cout << "Host: exit unseal_data_and_verify_result with " << ret << endl;
     return ret;
 }
 
 oe_result_t seal_unseal_by_policy(
     int policy,
+    const int optional_msg_flag,
     oe_enclave_t* enclave_a_v1,
     oe_enclave_t* enclave_a_v2,
     oe_enclave_t* enclave_b)
@@ -113,8 +112,7 @@ oe_result_t seal_unseal_by_policy(
     oe_result_t result = OE_OK;
     unsigned char* data = NULL;
     size_t data_size = 0;
-    sealed_data_t* sealed_data = NULL;
-    size_t sealed_data_size = 0;
+    data_t sealed_data;
     int ret = 0;
 
     // Seal data into enclave_a_v1
@@ -132,12 +130,11 @@ oe_result_t seal_unseal_by_policy(
         enclave_a_v1,
         &ret,
         policy,
-        (unsigned char*)g_opt_msg,
-        strlen(g_opt_msg),
+        (optional_msg_flag == 1) ? (unsigned char*)g_opt_msg : NULL,
+        (optional_msg_flag == 1) ? strlen(g_opt_msg) : 0,
         data,
         data_size,
-        &sealed_data,
-        &sealed_data_size);
+        &sealed_data);
     if ((result != OE_OK) || (ret != 0))
     {
         cout << "Host: seal_data failed with " << oe_result_str(result)
@@ -150,8 +147,8 @@ oe_result_t seal_unseal_by_policy(
     cout << "\n\nHost: Unseal data in the same enclave it was sealed " << endl;
     ret = unseal_data_and_verify_result(
         enclave_a_v1,
-        sealed_data,
-        sealed_data_size,
+        &sealed_data,
+        optional_msg_flag,
         (unsigned char*)g_plain_text,
         data_size);
     if (ret != 0)
@@ -178,8 +175,8 @@ oe_result_t seal_unseal_by_policy(
          << ((policy == POLICY_UNIQUE) ? "expected" : "not expected") << endl;
     ret = unseal_data_and_verify_result(
         enclave_a_v2,
-        sealed_data,
-        sealed_data_size,
+        &sealed_data,
+        optional_msg_flag,
         (unsigned char*)g_plain_text,
         data_size);
     if (policy == POLICY_UNIQUE)
@@ -213,8 +210,8 @@ oe_result_t seal_unseal_by_policy(
          << endl;
     ret = unseal_data_and_verify_result(
         enclave_b,
-        sealed_data,
-        sealed_data_size,
+        &sealed_data,
+        optional_msg_flag,
         (unsigned char*)g_plain_text,
         data_size);
     if (ret != ERROR_SIGNATURE_VERIFY_FAIL)
@@ -230,8 +227,8 @@ oe_result_t seal_unseal_by_policy(
 exit:
 
     // Free host memory allocated by the enclave.
-    if (sealed_data != NULL)
-        free(sealed_data);
+    if (sealed_data.data != NULL)
+        free(sealed_data.data);
 
     if (ret != 0)
         result = OE_FAILURE;
@@ -283,7 +280,7 @@ int main(int argc, const char* argv[])
     cout << "Host: Sealing data with POLICY_UNIQUE policy\n";
     cout << "------------------------------------------------\n";
     result = seal_unseal_by_policy(
-        POLICY_UNIQUE, enclave_a_v1, enclave_a_v2, enclave_b);
+        POLICY_UNIQUE, 1, enclave_a_v1, enclave_a_v2, enclave_b);
     if (result != OE_OK)
     {
         cout << "Host: Data sealing with POLICY_UNIQUE failed!" << ret << endl;
@@ -295,10 +292,24 @@ int main(int argc, const char* argv[])
     cout << "Host: Sealing data with POLICY_PRODUCT policy\n";
     cout << "------------------------------------------------\n";
     result = seal_unseal_by_policy(
-        POLICY_PRODUCT, enclave_a_v1, enclave_a_v2, enclave_b);
+        POLICY_PRODUCT, 1, enclave_a_v1, enclave_a_v2, enclave_b);
     if (result != OE_OK)
     {
-        cout << "Host: Data sealing with POLICY_UNIQUE failed!" << ret << endl;
+        cout << "Host: Data sealing with POLICY_PRODUCT failed!" << ret << endl;
+        goto exit;
+    }
+
+    //  POLICY_UNIQUE policy
+    cout << "------------------------------------------------\n";
+    cout << "Host: Sealing data with POLICY_UNIQUE policy, no optional data\n";
+    cout << "------------------------------------------------\n";
+    result = seal_unseal_by_policy(
+        POLICY_UNIQUE, 0, enclave_a_v1, enclave_a_v2, enclave_b);
+    if (result != OE_OK)
+    {
+        cout << "Host: Data sealing with POLICY_UNIQUE, no optional data "
+                "failed! "
+             << ret << endl;
         goto exit;
     }
     ret = 0;

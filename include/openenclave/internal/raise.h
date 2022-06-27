@@ -185,6 +185,33 @@ OE_EXTERNC_BEGIN
             OE_RAISE_MSG(_result_, fmt, ##__VA_ARGS__); \
     } while (0)
 
+// This macro checks the expression argument without considering the invalid
+// tcb level. It is used in OE attestation verification as an invalid TCB level
+// does not terminate the verification.
+#define OE_CHECK_NO_TCB_LEVEL(RESULT, EXPRESSION)              \
+    do                                                         \
+    {                                                          \
+        RESULT = (EXPRESSION);                                 \
+        if (RESULT != OE_OK && RESULT != OE_TCB_LEVEL_INVALID) \
+            OE_RAISE(RESULT);                                  \
+    } while (0)
+
+#define OE_CHECK_NO_TCB_LEVEL_NO_TRACE(RESULT, EXPRESSION)     \
+    do                                                         \
+    {                                                          \
+        RESULT = (EXPRESSION);                                 \
+        if (RESULT != OE_OK && RESULT != OE_TCB_LEVEL_INVALID) \
+            OE_RAISE_NO_TRACE(RESULT);                         \
+    } while (0)
+
+#define OE_CHECK_NO_TCB_LEVEL_MSG(RESULT, EXPRESSION, fmt, ...) \
+    do                                                          \
+    {                                                           \
+        RESULT = (EXPRESSION);                                  \
+        if (RESULT != OE_OK && RESULT != OE_TCB_LEVEL_INVALID)  \
+            OE_RAISE_MSG(RESULT, fmt, ##__VA_ARGS__);           \
+    } while (0)
+
 OE_EXTERNC_END
 
 #endif /* _OE_RAISE_H */

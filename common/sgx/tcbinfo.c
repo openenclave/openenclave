@@ -8,6 +8,17 @@
 #include <openenclave/internal/utils.h>
 #include "../common.h"
 
+#define SGX_TCB_STATUS_UP_TO_DATE "UpToDate"
+#define SGX_TCB_STATUS_OUT_OF_DATE "OutOfDate"
+#define SGX_TCB_STATUS_REVOKED "Revoked"
+#define SGX_TCB_STATUS_CONFIGURATION_NEEDED "ConfigurationNeeded"
+#define SGX_TCB_STATUS_OUT_OF_DATE_CONFIGURATION_NEEDED \
+    "OutOfDateConfigurationNeeded"
+#define SGX_TCB_STATUS_SW_HARDENING_NEEDED "SWHardeningNeeded"
+#define SGX_TCB_STATUS_CONFIGURATION_AND_SW_HARDENING_NEEDED \
+    "ConfigurationAndSWHardeningNeeded"
+#define SGX_TCB_STATUS_INVALID "Invalid"
+
 // Public key of Intel's root certificate.
 static const char* _trusted_root_key_pem =
     "-----BEGIN PUBLIC KEY-----\n"
@@ -221,41 +232,99 @@ done:
 }
 
 static oe_tcb_level_status_t _parse_tcb_status(
-    const uint8_t* str,
+    const uint8_t* tcb_status_string,
     size_t length)
 {
     oe_tcb_level_status_t status;
     status.AsUINT32 = OE_TCB_LEVEL_STATUS_UNKNOWN;
 
-    if (_json_str_equal(str, length, "UpToDate"))
+    if (_json_str_equal(tcb_status_string, length, SGX_TCB_STATUS_UP_TO_DATE))
         status.fields.up_to_date = 1;
-    else if (_json_str_equal(str, length, "OutOfDate"))
+    else if (_json_str_equal(
+                 tcb_status_string, length, SGX_TCB_STATUS_OUT_OF_DATE))
         status.fields.outofdate = 1;
-    else if (_json_str_equal(str, length, "Revoked"))
+    else if (_json_str_equal(tcb_status_string, length, SGX_TCB_STATUS_REVOKED))
         status.fields.revoked = 1;
-    else if (_json_str_equal(str, length, "ConfigurationNeeded"))
+    else if (_json_str_equal(
+                 tcb_status_string,
+                 length,
+                 SGX_TCB_STATUS_CONFIGURATION_NEEDED))
         status.fields.configuration_needed = 1;
-    else if (_json_str_equal(str, length, "OutOfDateConfigurationNeeded"))
+    else if (_json_str_equal(
+                 tcb_status_string,
+                 length,
+                 SGX_TCB_STATUS_OUT_OF_DATE_CONFIGURATION_NEEDED))
     {
-        status.fields.qe_identity_out_of_date = 1;
+        status.fields.outofdate = 1;
         status.fields.configuration_needed = 1;
     }
     // Due to sgx LVI update, UpToDate tcb would be marked as SWHardeningNeeded,
     // as sgx cannot tell if enclave writer has implemented SW mitigations for
     // LVI. Set status SWHardeningNeeded as up_to_date for now to make sure
     // services for those tcbs are not affected.
-    else if (_json_str_equal(str, length, "SWHardeningNeeded"))
+    else if (_json_str_equal(
+                 tcb_status_string, length, SGX_TCB_STATUS_SW_HARDENING_NEEDED))
     {
         status.fields.up_to_date = 1;
         status.fields.sw_hardening_needed = 1;
     }
-    else if (_json_str_equal(str, length, "ConfigurationAndSWHardeningNeeded"))
+    else if (_json_str_equal(
+                 tcb_status_string,
+                 length,
+                 SGX_TCB_STATUS_CONFIGURATION_AND_SW_HARDENING_NEEDED))
     {
         status.fields.configuration_needed = 1;
         status.fields.sw_hardening_needed = 1;
     }
 
     return status;
+}
+
+oe_sgx_tcb_status_t oe_tcb_level_status_to_sgx_tcb_status(
+    oe_tcb_level_status_t tcb_level_status)
+{
+    if (tcb_level_status.fields.revoked == 1)
+        return OE_SGX_TCB_STATUS_REVOKED;
+    if (tcb_level_status.fields.up_to_date == 1 &&
+        tcb_level_status.fields.sw_hardening_needed == 1)
+        return OE_SGX_TCB_STATUS_SW_HARDENING_NEEDED;
+    if (tcb_level_status.fields.up_to_date == 1)
+        return OE_SGX_TCB_STATUS_UP_TO_DATE;
+    if (tcb_level_status.fields.sw_hardening_needed == 1 &&
+        tcb_level_status.fields.configuration_needed == 1)
+        return OE_SGX_TCB_STATUS_CONFIGURATION_AND_SW_HARDENING_NEEDED;
+    if (tcb_level_status.fields.outofdate == 1 &&
+        tcb_level_status.fields.configuration_needed == 1)
+        return OE_SGX_TCB_STATUS_OUT_OF_DATE_CONFIGURATION_NEEDED;
+    if (tcb_level_status.fields.configuration_needed == 1)
+        return OE_SGX_TCB_STATUS_CONFIGURATION_NEEDED;
+    if (tcb_level_status.fields.outofdate == 1)
+        return OE_SGX_TCB_STATUS_OUT_OF_DATE;
+    return OE_SGX_TCB_STATUS_INVALID;
+}
+
+const char* oe_sgx_tcb_status_str(const oe_sgx_tcb_status_t sgx_tcb_status)
+{
+    switch (sgx_tcb_status)
+    {
+        case OE_SGX_TCB_STATUS_UP_TO_DATE:
+            return SGX_TCB_STATUS_UP_TO_DATE;
+        case OE_SGX_TCB_STATUS_OUT_OF_DATE:
+            return SGX_TCB_STATUS_OUT_OF_DATE;
+        case OE_SGX_TCB_STATUS_REVOKED:
+            return SGX_TCB_STATUS_REVOKED;
+        case OE_SGX_TCB_STATUS_CONFIGURATION_NEEDED:
+            return SGX_TCB_STATUS_CONFIGURATION_NEEDED;
+        case OE_SGX_TCB_STATUS_OUT_OF_DATE_CONFIGURATION_NEEDED:
+            return SGX_TCB_STATUS_OUT_OF_DATE_CONFIGURATION_NEEDED;
+        case OE_SGX_TCB_STATUS_SW_HARDENING_NEEDED:
+            return SGX_TCB_STATUS_SW_HARDENING_NEEDED;
+        case OE_SGX_TCB_STATUS_CONFIGURATION_AND_SW_HARDENING_NEEDED:
+            return SGX_TCB_STATUS_CONFIGURATION_AND_SW_HARDENING_NEEDED;
+        default:
+            break;
+    }
+    return SGX_TCB_STATUS_INVALID;
 }
 
 /**
@@ -277,22 +346,23 @@ static oe_result_t _read_tcb_info_tcb_level(
     oe_result_t result = OE_JSON_INFO_PARSE_ERROR;
     uint64_t value = 0;
 
-    static const char* _comp_names[] = {"sgxtcbcomp01svn",
-                                        "sgxtcbcomp02svn",
-                                        "sgxtcbcomp03svn",
-                                        "sgxtcbcomp04svn",
-                                        "sgxtcbcomp05svn",
-                                        "sgxtcbcomp06svn",
-                                        "sgxtcbcomp07svn",
-                                        "sgxtcbcomp08svn",
-                                        "sgxtcbcomp09svn",
-                                        "sgxtcbcomp10svn",
-                                        "sgxtcbcomp11svn",
-                                        "sgxtcbcomp12svn",
-                                        "sgxtcbcomp13svn",
-                                        "sgxtcbcomp14svn",
-                                        "sgxtcbcomp15svn",
-                                        "sgxtcbcomp16svn"};
+    static const char* _comp_names[] = {
+        "sgxtcbcomp01svn",
+        "sgxtcbcomp02svn",
+        "sgxtcbcomp03svn",
+        "sgxtcbcomp04svn",
+        "sgxtcbcomp05svn",
+        "sgxtcbcomp06svn",
+        "sgxtcbcomp07svn",
+        "sgxtcbcomp08svn",
+        "sgxtcbcomp09svn",
+        "sgxtcbcomp10svn",
+        "sgxtcbcomp11svn",
+        "sgxtcbcomp12svn",
+        "sgxtcbcomp13svn",
+        "sgxtcbcomp14svn",
+        "sgxtcbcomp15svn",
+        "sgxtcbcomp16svn"};
     OE_STATIC_ASSERT(
         OE_COUNTOF(_comp_names) == OE_COUNTOF(tcb_level->sgx_tcb_comp_svn));
 
@@ -518,6 +588,10 @@ static oe_result_t _read_tcb_info_tcb_level_v2(
         // Optimization
         if (platform_tcb_level->status.AsUINT32 != OE_TCB_LEVEL_STATUS_UNKNOWN)
         {
+            // tcb_date represents the date and time when the TCB level was
+            // certified.
+            platform_tcb_level->tcb_date = tcb_level->tcb_date;
+
             // Found matching TCB level, go to the end of the array.
             _move_to_end_of_tcb_levels(itr, end);
         }
@@ -724,10 +798,17 @@ oe_result_t oe_parse_tcb_info_json(
 
     OE_CHECK(_read('}', &itr, end));
 
+    // Finish TCB info parsing, check TCB status and advisory IDs
     if (itr == end)
     {
+        result = OE_OK;
+
         if (platform_tcb_level->status.fields.up_to_date != 1)
         {
+            oe_sgx_tcb_status_t sgx_tcb_status =
+                oe_tcb_level_status_to_sgx_tcb_status(
+                    platform_tcb_level->status);
+
             for (uint32_t i = 0;
                  i < OE_COUNTOF(platform_tcb_level->sgx_tcb_comp_svn);
                  ++i)
@@ -735,11 +816,14 @@ oe_result_t oe_parse_tcb_info_json(
                     "sgx_tcb_comp_svn[%d] = 0x%x",
                     i,
                     platform_tcb_level->sgx_tcb_comp_svn[i]);
-            OE_TRACE_VERBOSE("pce_svn = 0x%x", platform_tcb_level->pce_svn);
-            OE_RAISE_MSG(
-                OE_TCB_LEVEL_INVALID,
-                "Platform TCB (%d) is not up-to-date",
-                platform_tcb_level->status);
+
+            OE_TRACE_ERROR(
+                "Invalid platform TCB level: %s "
+                "(cpu_svn[0] = 0x%x, pce_svn = 0x%x)",
+                oe_sgx_tcb_status_str(sgx_tcb_status),
+                platform_tcb_level->sgx_tcb_comp_svn[0],
+                platform_tcb_level->pce_svn);
+            result = OE_TCB_LEVEL_INVALID;
         }
 
         // Display any advisory IDs as warnings
@@ -749,8 +833,6 @@ oe_result_t oe_parse_tcb_info_json(
                 "Found %d AdvisoryIDs for this tcb level.",
                 platform_tcb_level->advisory_ids_size);
         }
-
-        result = OE_OK;
     }
 done:
     return result;

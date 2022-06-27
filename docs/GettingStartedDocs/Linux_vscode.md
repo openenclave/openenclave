@@ -42,7 +42,7 @@ cp -R /opt/openenclave/share/openenclave/samples/helloworld ~/my_helloworld
 }
 ```
 
-5. Use the shortcut `Ctrl-Shift-P` and select `CMake: Configure` and choose the kit from the drop down to use, for example, the Clang-7 kit.
+5. Use the shortcut `Ctrl-Shift-P` and select `CMake: Configure` and choose the kit from the drop down to use, for example, the Clang-8 kit.
 
 ![Successful CMake Configure](images/VSCodeLinuxSuccessfulCMakeConfigure.png)
 

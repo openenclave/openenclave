@@ -110,7 +110,11 @@ void td_init(oe_sgx_td_t* td)
         /* List of callsites is initially empty */
         td->callsites = NULL;
 
-        oe_thread_local_init(td);
+        /* Set the exception handler stack to NULL */
+        oe_sgx_td_set_exception_handler_stack(td, NULL, 0);
+        td->exception_handler_stack_bitmask = 0;
+
+        oe_sgx_thread_local_init(td);
     }
 }
 
@@ -134,7 +138,7 @@ void td_clear(oe_sgx_td_t* td)
     // pthread_create_key.
     oe_thread_destruct_specific();
 
-    oe_thread_local_cleanup(td);
+    oe_sgx_thread_local_cleanup(td);
 
     // The call sites and depth are cleaned up after the thread-local storage is
     // cleaned up since thread-local dynamic destructors could make ocalls.
@@ -151,6 +155,9 @@ void td_clear(oe_sgx_td_t* td)
 
     /* Clear the magic number */
     td->magic = 0;
+
+    /* Clear td states */
+    oe_sgx_td_clear_states(td);
 
     /* Never clear oe_sgx_td_t.initialized nor host registers */
 }

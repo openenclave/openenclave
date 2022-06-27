@@ -3,9 +3,10 @@
 
 ---
 - name: Gather Ansible facts
-  setup:
+  ansible.builtin.gather_facts:
 
-- include_role:
+- name: Add Microsoft repository
+  ansible.builtin.include_role:
     name: linux/common
     tasks_from: apt-repo.yml
   vars:
@@ -13,7 +14,7 @@
     apt_repository: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/{{ ansible_distribution_version }}/prod {{ ansible_distribution_release }} main"
 
 - name: Install the official Open Enclave APT package
-  apt:
+  ansible.builtin.apt:
     name: open-enclave
     state: latest
     update_cache: yes

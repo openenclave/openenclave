@@ -20,12 +20,29 @@
 #include <unistd.h>
 #include "../asmdefs.h"
 #include "../enclave.h"
+#include "../vdso.h"
 
 #if !defined(_NSIG) && defined(_SIG_MAXSIG)
 #define _NSIG (_SIG_MAXSIG - 1)
 #endif
 
 static struct sigaction g_previous_sigaction[_NSIG];
+
+/* The set of default signals that we always forward to the
+ * enclave and is recognizable by the SGX hardware */
+static int default_signals[] = {SIGBUS, SIGFPE, SIGILL, SIGSEGV, SIGTRAP};
+
+#define DEFAULT_SIGNALS_NUMBER \
+    (sizeof(default_signals) / sizeof(default_signals[0]))
+
+/* The set of optional signals that we forward to the enclave
+ * but requires the enclave to explicitly register (otherwise
+ * the signal will be blocked) */
+static int optional_signals[] =
+    {SIGHUP, SIGABRT, SIGALRM, SIGPIPE, SIGPOLL, SIGUSR1, SIGUSR2};
+
+#define OPTIONAL_SIGNALS_NUMBER \
+    (sizeof(optional_signals) / sizeof(optional_signals[0]))
 
 static void _host_signal_handler(
     int sig_num,
@@ -37,6 +54,22 @@ static void _host_signal_handler(
     host_context.rax = (uint64_t)context->uc_mcontext.gregs[REG_RAX];
     host_context.rbx = (uint64_t)context->uc_mcontext.gregs[REG_RBX];
     host_context.rip = (uint64_t)context->uc_mcontext.gregs[REG_RIP];
+    /* si_addr (same as CR2) will have lower 12 bits cleared by the
+     * SGX hardware for an enclave faulting access. */
+    host_context.faulting_address = (uint64_t)sig_info->si_addr;
+
+    OE_TRACE_INFO("Host-side exception handler is called, signo=%d", sig_num);
+
+    host_context.signal_number = (uint64_t)sig_num;
+    for (size_t i = 0; i < DEFAULT_SIGNALS_NUMBER; i++)
+    {
+        if (sig_num == default_signals[i] && sig_num != SIGSEGV)
+        {
+            /* Do not pass the number of default signals except for SIGSEGV */
+            host_context.signal_number = 0;
+            break;
+        }
+    }
 
     // Call platform neutral handler.
     uint64_t action = oe_host_handle_exception(&host_context);
@@ -46,11 +79,24 @@ static void _host_signal_handler(
         // Exception has been handled.
         return;
     }
-    else if (g_previous_sigaction[sig_num].sa_handler == SIG_DFL)
+    else if (
+        g_previous_sigaction[sig_num].sa_handler == SIG_DFL ||
+        g_previous_sigaction[sig_num].sa_handler == SIG_IGN)
     {
+        // Bypass if the signal is part of the optional set and is
+        // sent to the host and the host does not install the corresponding
+        // handler
+        for (size_t i = 0; i < OPTIONAL_SIGNALS_NUMBER; i++)
+        {
+            // Do not bypass SIGABRT, which is expected to abort
+            // the host process
+            if (sig_num == optional_signals[i] && sig_num != SIGABRT)
+                return;
+        }
+
         // If not an enclave exception, and no valid previous signal handler is
         // set, raise it again, and let the default signal handler handle it.
-        signal(sig_num, SIG_DFL);
+        signal(sig_num, g_previous_sigaction[sig_num].sa_handler);
         raise(sig_num);
     }
     else
@@ -110,38 +156,45 @@ static void _register_signal_handlers(void)
         abort();
     }
 
-    // Unmask the signals we want to receive.
-    sigdelset(&sig_action.sa_mask, SIGSEGV);
-    sigdelset(&sig_action.sa_mask, SIGFPE);
-    sigdelset(&sig_action.sa_mask, SIGILL);
-    sigdelset(&sig_action.sa_mask, SIGBUS);
-    sigdelset(&sig_action.sa_mask, SIGTRAP);
-
-    // Set the signal handlers, and store the previous signal action into a
-    // global array.
-    if (sigaction(SIGSEGV, &sig_action, &g_previous_sigaction[SIGSEGV]) != 0)
+    /* Unmask the default set of signals when vDSO is not enabled.
+     * Note that the check may be redundant because the kernel will
+     * filter out these signals when vDSO is used. */
+    if (!oe_sgx_is_vdso_enabled)
     {
-        abort();
+        for (size_t i = 0; i < DEFAULT_SIGNALS_NUMBER; i++)
+        {
+            int signal_number = default_signals[i];
+            sigdelset(&sig_action.sa_mask, signal_number);
+
+            /* Set the signal handlers, and store the previous signal action
+             * into a global array. */
+            if (sigaction(
+                    signal_number,
+                    &sig_action,
+                    &g_previous_sigaction[signal_number]) != 0)
+            {
+                abort();
+            }
+        }
     }
 
-    if (sigaction(SIGFPE, &sig_action, &g_previous_sigaction[SIGFPE]) != 0)
+    /* Always unmask the optional set of signals so that we can support
+     * enclave thread interrupt with both regular and vDSO interfaces;
+     * i.e., the kernel will not filter out these signals when vDSO is used. */
+    for (size_t i = 0; i < OPTIONAL_SIGNALS_NUMBER; i++)
     {
-        abort();
-    }
+        int signal_number = optional_signals[i];
+        sigdelset(&sig_action.sa_mask, signal_number);
 
-    if (sigaction(SIGILL, &sig_action, &g_previous_sigaction[SIGILL]) != 0)
-    {
-        abort();
-    }
-
-    if (sigaction(SIGBUS, &sig_action, &g_previous_sigaction[SIGBUS]) != 0)
-    {
-        abort();
-    }
-
-    if (sigaction(SIGTRAP, &sig_action, &g_previous_sigaction[SIGTRAP]) != 0)
-    {
-        abort();
+        // Set the signal handlers, and store the previous signal action into a
+        // global array.
+        if (sigaction(
+                signal_number,
+                &sig_action,
+                &g_previous_sigaction[signal_number]) != 0)
+        {
+            abort();
+        }
     }
 
     return;

@@ -52,12 +52,15 @@ OE_STATIC_ASSERT(sizeof(pthread_rwlock_t) >= sizeof(oe_rwlock_t));
 
 static __thread struct __pthread _pthread_self = {.locale = C_LOCALE};
 
-pthread_t __pthread_self()
+pthread_t __get_tp()
 {
     return &_pthread_self;
 }
 
-OE_WEAK_ALIAS(__pthread_self, pthread_self);
+pthread_t pthread_self()
+{
+    return &_pthread_self;
+}
 
 static oe_pthread_hooks_t* _pthread_hooks;
 
@@ -101,4 +104,18 @@ int pthread_detach(pthread_t thread)
     }
 
     return _pthread_hooks->detach(thread);
+}
+
+// OpenSSL when configured with thread support (default) installs
+// fork handlers. Open Enclave does not support fork and any installed
+// handlers would never get called.
+int pthread_atfork(
+    void (*prepare)(void),
+    void (*parent)(void),
+    void (*child)(void))
+{
+    OE_UNUSED(prepare);
+    OE_UNUSED(parent);
+    OE_UNUSED(child);
+    return 0;
 }

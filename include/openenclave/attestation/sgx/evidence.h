@@ -4,7 +4,8 @@
 /**
  * @file attestation/sgx/evidence.h
  *
- * This file defines macros for SGX evidence format IDs and claims.
+ * This file defines macros and structures for SGX evidence format IDs and
+ * claims.
  *
  * A number of SGX specific format IDs are defined for evidence generation
  * and verification.
@@ -122,8 +123,27 @@ OE_EXTERNC_BEGIN
             0x00, 0x00, 0x00, 0x00, 0x00                                  \
     }
 
-// SGX specific claims: SGX Quote verification collateral.
+// SGX specific claims
+// Required: SGX report body fields that every SQX Quote verification should
+// output.
+// 1 boolean flag indicated by "sgx_misc_select_t"
+#define OE_CLAIM_SGX_PF_GP_EXINFO_ENABLED "sgx_pf_gp_exit_info_enabled"
+#define OE_CLAIM_SGX_ISV_EXTENDED_PRODUCT_ID "sgx_isv_extended_product_id"
+// 4 boolean flags indicated by "sgx_attributes_t"
+#define OE_CLAIM_SGX_IS_MODE64BIT "sgx_is_mode64bit"
+#define OE_CLAIM_SGX_HAS_PROVISION_KEY "sgx_has_provision_key"
+#define OE_CLAIM_SGX_HAS_EINITTOKEN_KEY "sgx_has_einittoken_key"
+#define OE_CLAIM_SGX_USES_KSS "sgx_uses_kss"
+#define OE_CLAIM_SGX_CONFIG_ID "sgx_config_id"
+#define OE_CLAIM_SGX_CONFIG_SVN "sgx_config_svn"
+#define OE_CLAIM_SGX_ISV_FAMILY_ID "sgx_isv_family_id"
+#define OE_CLAIM_SGX_CPU_SVN "sgx_cpu_svn"
+#define OE_SGX_REQUIRED_CLAIMS_COUNT 10
 
+/*
+ * Optional: SQX Quote data
+ */
+// SQX quote verification collaterals.
 #define OE_CLAIM_SGX_TCB_INFO "sgx_tcb_info"
 #define OE_CLAIM_SGX_TCB_ISSUER_CHAIN "sgx_tcb_issuer_chain"
 #define OE_CLAIM_SGX_PCK_CRL "sgx_pck_crl"
@@ -131,11 +151,68 @@ OE_EXTERNC_BEGIN
 #define OE_CLAIM_SGX_CRL_ISSUER_CHAIN "sgx_crl_issuer_chain"
 #define OE_CLAIM_SGX_QE_ID_INFO "sgx_qe_id_info"
 #define OE_CLAIM_SGX_QE_ID_ISSUER_CHAIN "sgx_qe_id_issuer_chain"
-#define OE_SGX_CLAIMS_COUNT 7
+#define OE_SGX_OPTIONAL_CLAIMS_SGX_COLLATERALS_COUNT 7
+// SGX PCESVN.
+#define OE_CLAIM_SGX_PCE_SVN "sgx_pce_svn"
+#define OE_SGX_OPTIONAL_CLAIMS_COUNT 8
 
 // Additional SGX specific claim: for the report data embedded in the SGX quote.
 
 #define OE_CLAIM_SGX_REPORT_DATA "sgx_report_data"
+
+/**
+ * TCB level status of SGX platform. This enumeration type defines return codes
+ * for SGX TCB status, which is the claim value for ::OE_CLAIM_TCB_STATUS.
+ */
+typedef enum _oe_sgx_tcb_status
+{
+    /**
+     * TCB level of SGX platform is up-to-date.
+     */
+    OE_SGX_TCB_STATUS_UP_TO_DATE = 0,
+
+    /**
+     * TCB level of SGX platform is outdated.
+     */
+    OE_SGX_TCB_STATUS_OUT_OF_DATE = 1,
+
+    /**
+     * TCB level of SGX platform is revoked. The platform is not trustworthy.
+     */
+    OE_SGX_TCB_STATUS_REVOKED = 2,
+
+    /**
+     * TCB level of the SGX platform is up-to-date but additional configuration
+     * of SGX platform may be needed.
+     */
+    OE_SGX_TCB_STATUS_CONFIGURATION_NEEDED = 3,
+
+    /**
+     * TCB level of SGX platform is outdated and additional configuration of SGX
+     * platform may be needed.
+     */
+    OE_SGX_TCB_STATUS_OUT_OF_DATE_CONFIGURATION_NEEDED = 4,
+
+    /**
+     * TCB level of the SGX platform is up-to-date but due to certain issues
+     * affecting the platform, additional Software Hardening in the attesting
+     * SGX enclaves may be needed.
+     */
+    OE_SGX_TCB_STATUS_SW_HARDENING_NEEDED = 5,
+
+    /**
+     * TCB level of the SGX platform is up-to-date but additional configuration
+     * for the platform and Software Hardening in the attesting SGX enclaves may
+     * be needed.
+     */
+    OE_SGX_TCB_STATUS_CONFIGURATION_AND_SW_HARDENING_NEEDED = 6,
+
+    /**
+     * TCB level is not valid.
+     */
+    OE_SGX_TCB_STATUS_INVALID = OE_ENUM_MAX,
+
+} oe_sgx_tcb_status_t;
 
 OE_EXTERNC_END
 

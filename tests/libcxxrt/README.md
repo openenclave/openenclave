@@ -78,8 +78,4 @@ project binary folder.
 2.4 Linux and Windows Logs will be compared to pass the test.
 
 Note that test_exception.cc requires std::uncaught_exceptions(), which requires
-cpp standard **stdc++17** (or above) with compiler version **GCC version 6 or
-Clang 3.8** (or above). But Open Enclave currently support only **GCC version
-5 with cpp standard stdc++14** (at the most). Hence, test_exception.cc is not
-currently supported in Open Enclave.
-
+cpp standard **stdc++17** (or above) with compiler version **Clang 3.8** (or above).

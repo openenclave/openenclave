@@ -145,6 +145,17 @@ int oe_nanosleep(struct oe_timespec* req, struct oe_timespec* rem)
     return ret;
 }
 
+int oe_clock_nanosleep(
+    int clockid,
+    int flag,
+    struct oe_timespec* req,
+    struct oe_timespec* rem)
+{
+    int ret = 0;
+    oe_syscall_clock_nanosleep_ocall(&ret, clockid, flag, req, rem);
+    return ret;
+}
+
 oe_pid_t oe_getpid(void)
 {
     oe_pid_t ret = 0;
@@ -540,6 +551,20 @@ int oe_truncate_d(uint64_t devid, const char* path, oe_off_t length)
 
         ret = dev->ops.fs.truncate(dev, path, length);
     }
+
+done:
+    return ret;
+}
+
+int oe_ftruncate(int fd, oe_off_t length)
+{
+    int ret = -1;
+    oe_fd_t* file;
+
+    if (!(file = oe_fdtable_get(fd, OE_FD_TYPE_FILE)))
+        OE_RAISE_ERRNO(oe_errno);
+
+    ret = file->ops.file.ftruncate(file, length);
 
 done:
     return ret;

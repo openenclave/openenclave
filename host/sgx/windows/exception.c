@@ -35,14 +35,15 @@ static LONG WINAPI _handle_simulation_mode_exception(
         if (enclave->simulate)
         {
             // Determine if the exception happened within the enclave.
-            uint64_t enclave_start = enclave->addr;
-            uint64_t enclave_end = enclave->addr + enclave->size;
+            uint64_t enclave_start = enclave->start_address;
+            uint64_t enclave_end = enclave->start_address + enclave->size;
             if (context->Rip >= enclave_start && context->Rip < enclave_end)
             {
                 // Check if the exception was due to an incorrect FS value.
                 sgx_tcs_t* sgx_tcs = (sgx_tcs_t*)binding->tcs;
                 uint64_t enclave_fsbase = enclave_start + sgx_tcs->fsbase;
-                if (context->SegFs != enclave_fsbase)
+                void* current_fsbase = oe_get_fs_register_base();
+                if ((uint64_t)current_fsbase != enclave_fsbase)
                 {
                     // Update the FS register and continue execution.
                     oe_set_fs_register_base((void*)enclave_fsbase);

@@ -2,9 +2,8 @@
 
 This document shows how to get the code coverage of OE.
 The code coverage analysis is based on [Gcov](https://gcc.gnu.org/onlinedocs/gcc/Gcov.html), a source-based coverage implementation provided by GNU GCC.
-Currently, both Clang and GCC supports Gcov.
 
-*Note*: The current implementation of OE only supports clang-7.
+*Note: While Gcov works with Clang and GCC, only Clang is currently supported for Linux builds*
 
 # Prerequisites
 

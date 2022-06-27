@@ -15,19 +15,24 @@ set(BUILD "${MY_COMPILER}:${BUILD_TYPE}")
 set(LIBC_TESTS
     3rdparty/musl/libc-test/src/functional/argv.c
     3rdparty/musl/libc-test/src/functional/basename.c
+    3rdparty/musl/libc-test/src/functional/clocale_mbfuncs.c
     3rdparty/musl/libc-test/src/functional/clock_gettime.c
     3rdparty/musl/libc-test/src/functional/dirname.c
     3rdparty/musl/libc-test/src/functional/env.c
     3rdparty/musl/libc-test/src/functional/fdopen.c
-    3rdparty/musl/libc-test/src/functional/fwscanf.c
     3rdparty/musl/libc-test/src/functional/fnmatch.c
+    3rdparty/musl/libc-test/src/functional/fwscanf.c
+    3rdparty/musl/libc-test/src/functional/iconv_open.c
     3rdparty/musl/libc-test/src/functional/inet_pton.c
+    3rdparty/musl/libc-test/src/functional/memstream.c
     3rdparty/musl/libc-test/src/functional/qsort.c
+    3rdparty/musl/libc-test/src/functional/random.c
+    3rdparty/musl/libc-test/src/functional/search_hsearch.c
     3rdparty/musl/libc-test/src/functional/search_insque.c
     3rdparty/musl/libc-test/src/functional/search_lsearch.c
     3rdparty/musl/libc-test/src/functional/search_tsearch.c
-    3rdparty/musl/libc-test/src/functional/socket.c
     3rdparty/musl/libc-test/src/functional/snprintf.c
+    3rdparty/musl/libc-test/src/functional/socket.c
     3rdparty/musl/libc-test/src/functional/sscanf.c
     3rdparty/musl/libc-test/src/functional/string.c
     3rdparty/musl/libc-test/src/functional/string_memcpy.c
@@ -42,6 +47,7 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/functional/strtof.c
     3rdparty/musl/libc-test/src/functional/strtol.c
     3rdparty/musl/libc-test/src/functional/strtold.c
+    3rdparty/musl/libc-test/src/functional/time.c
     3rdparty/musl/libc-test/src/functional/udiv.c
     3rdparty/musl/libc-test/src/functional/ungetc.c
     3rdparty/musl/libc-test/src/functional/wcsstr.c
@@ -110,6 +116,7 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/math/floorf.c
     3rdparty/musl/libc-test/src/math/floorl.c
     3rdparty/musl/libc-test/src/math/fma.c
+    3rdparty/musl/libc-test/src/math/fmaf.c
     3rdparty/musl/libc-test/src/math/fmaxl.c
     3rdparty/musl/libc-test/src/math/fminl.c
     3rdparty/musl/libc-test/src/math/fmod.c
@@ -132,11 +139,11 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/math/ldexpf.c
     3rdparty/musl/libc-test/src/math/ldexpl.c
     3rdparty/musl/libc-test/src/math/lgamma.c
-    3rdparty/musl/libc-test/src/math/lgamma_r.c
     3rdparty/musl/libc-test/src/math/lgammaf.c
     3rdparty/musl/libc-test/src/math/lgammaf_r.c
     3rdparty/musl/libc-test/src/math/lgammal.c
     3rdparty/musl/libc-test/src/math/lgammal_r.c
+    3rdparty/musl/libc-test/src/math/lgamma_r.c
     3rdparty/musl/libc-test/src/math/llrint.c
     3rdparty/musl/libc-test/src/math/llrintf.c
     3rdparty/musl/libc-test/src/math/llrintl.c
@@ -194,6 +201,9 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/math/scalbln.c
     3rdparty/musl/libc-test/src/math/scalblnf.c
     3rdparty/musl/libc-test/src/math/scalblnl.c
+    3rdparty/musl/libc-test/src/math/scalbn.c
+    3rdparty/musl/libc-test/src/math/scalbnf.c
+    3rdparty/musl/libc-test/src/math/scalbnl.c
     3rdparty/musl/libc-test/src/math/sin.c
     3rdparty/musl/libc-test/src/math/sincos.c
     3rdparty/musl/libc-test/src/math/sincosf.c
@@ -216,9 +226,15 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/math/trunc.c
     3rdparty/musl/libc-test/src/math/truncf.c
     3rdparty/musl/libc-test/src/math/truncl.c
+    3rdparty/musl/libc-test/src/musl/pleval.c
+    3rdparty/musl/libc-test/src/regression/fgets-eof.c
     3rdparty/musl/libc-test/src/regression/fpclassify-invalid-ld80.c
+    3rdparty/musl/libc-test/src/regression/iconv-roundtrips.c
+    3rdparty/musl/libc-test/src/regression/inet_ntop-v4mapped.c
+    3rdparty/musl/libc-test/src/regression/inet_pton-empty-last-field.c
     3rdparty/musl/libc-test/src/regression/iswspace-null.c
     3rdparty/musl/libc-test/src/regression/lrand48-signextend.c
+    3rdparty/musl/libc-test/src/regression/lseek-large.c
     3rdparty/musl/libc-test/src/regression/malloc-0.c
     3rdparty/musl/libc-test/src/regression/mbsrtowcs-overflow.c
     3rdparty/musl/libc-test/src/regression/memmem-oob.c
@@ -228,6 +244,7 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/regression/printf-1e9-oob.c
     3rdparty/musl/libc-test/src/regression/printf-fmt-g-zeros.c
     3rdparty/musl/libc-test/src/regression/printf-fmt-n.c
+    3rdparty/musl/libc-test/src/regression/putenv-doublefree.c
     3rdparty/musl/libc-test/src/regression/regex-backref-0.c
     3rdparty/musl/libc-test/src/regression/regex-bracket-icase.c
     3rdparty/musl/libc-test/src/regression/regexec-nosub.c
@@ -236,23 +253,10 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/regression/scanf-bytes-consumed.c
     3rdparty/musl/libc-test/src/regression/scanf-match-literal-eof.c
     3rdparty/musl/libc-test/src/regression/scanf-nullbyte-char.c
-    3rdparty/musl/libc-test/src/regression/wcsncpy-read-overflow.c
-    3rdparty/musl/libc-test/src/regression/wcsstr-false-negative.c
-    3rdparty/musl/libc-test/src/functional/clocale_mbfuncs.c
-    3rdparty/musl/libc-test/src/functional/iconv_open.c
-    3rdparty/musl/libc-test/src/functional/memstream.c
-    3rdparty/musl/libc-test/src/math/scalbn.c
-    3rdparty/musl/libc-test/src/math/scalbnf.c
-    3rdparty/musl/libc-test/src/math/scalbnl.c
-    3rdparty/musl/libc-test/src/musl/pleval.c
-    3rdparty/musl/libc-test/src/regression/fgets-eof.c
-    3rdparty/musl/libc-test/src/regression/iconv-roundtrips.c
-    3rdparty/musl/libc-test/src/regression/inet_ntop-v4mapped.c
-    3rdparty/musl/libc-test/src/regression/inet_pton-empty-last-field.c
-    3rdparty/musl/libc-test/src/regression/putenv-doublefree.c
+    3rdparty/musl/libc-test/src/regression/sscanf-eof.c
     3rdparty/musl/libc-test/src/regression/strverscmp.c
-    3rdparty/musl/libc-test/src/functional/random.c
-    3rdparty/musl/libc-test/src/functional/time.c)
+    3rdparty/musl/libc-test/src/regression/wcsncpy-read-overflow.c
+    3rdparty/musl/libc-test/src/regression/wcsstr-false-negative.c)
 
 # Exclude tests that fail on OP-TEE:
 if (NOT OE_TRUSTZONE)
@@ -312,13 +316,12 @@ if (FALSE)
     3rdparty/musl/libc-test/src/functional/pthread_mutex.c
     3rdparty/musl/libc-test/src/functional/pthread_robust.c
     3rdparty/musl/libc-test/src/functional/pthread_tsd.c
-    # sscanf_long Runs out of memory on Windows and Linux CI
-    3rdparty/musl/libc-test/src/functional/sscanf_long.c
-    3rdparty/musl/libc-test/src/functional/search_hsearch.c
     3rdparty/musl/libc-test/src/functional/sem_init.c
     3rdparty/musl/libc-test/src/functional/sem_open.c
     3rdparty/musl/libc-test/src/functional/setjmp.c
     3rdparty/musl/libc-test/src/functional/spawn.c # uses pipe
+    # sscanf_long Runs out of memory on Windows and Linux CI
+    3rdparty/musl/libc-test/src/functional/sscanf_long.c
     3rdparty/musl/libc-test/src/functional/stat.c
     3rdparty/musl/libc-test/src/functional/strftime.c
     3rdparty/musl/libc-test/src/functional/strptime.c
@@ -327,9 +330,16 @@ if (FALSE)
     3rdparty/musl/libc-test/src/functional/tls_init.c
     3rdparty/musl/libc-test/src/functional/tls_init_dlopen.c
     3rdparty/musl/libc-test/src/functional/tls_local_exec.c
+    3rdparty/musl/libc-test/src/functional/utime.c
     3rdparty/musl/libc-test/src/functional/vfork.c # uses fork, execv
+    3rdparty/musl/libc-test/src/math/fdim.c
+    3rdparty/musl/libc-test/src/math/fdimf.c
+    3rdparty/musl/libc-test/src/math/fdiml.c
     3rdparty/musl/libc-test/src/math/fmal.c
     3rdparty/musl/libc-test/src/math/jnf.c
+    3rdparty/musl/libc-test/src/math/log1p.c
+    3rdparty/musl/libc-test/src/math/log1pf.c
+    3rdparty/musl/libc-test/src/math/powf.c
     3rdparty/musl/libc-test/src/math/tgamma.c
     3rdparty/musl/libc-test/src/math/y0.c
     3rdparty/musl/libc-test/src/math/y0f.c

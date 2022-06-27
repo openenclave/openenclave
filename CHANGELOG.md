@@ -9,6 +9,241 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased][Unreleased_log]
 --------------
+### Added
+
+## Changed
+
+
+[v0.18.0][v0.18.0_log]
+--------------
+### Added
+- `oeapkman` is a Linux tool for installing and using Alpine Linux static libraries within enclaves.
+  - The command `oeapkman add package` can be used to install the specified package.
+    Typically `-static` and `-dev` (e.g.: sqlite-static, sqlite-dev) packages need to be installed.
+  - The command `oeapkman root` prints out the path to the Alpine Linux distribution maintained by `oeapkman`.
+    The root path is useful for providing paths to header files and static libraries to the compiler and linker respectively.
+  - The command `oeapkman exec` can be used to execute commands within the Alpine Linux environment.
+    For example, after executing `oeapkman add clang build-base cmake` to install development tools,
+	running `oeapkman exec clang -c file.c` would compile `file.c` in current folder using the clang compiler that
+	has been installed in the Alpine Linux environment. `oeapkman exec bash` would launch a bash shell in the current folder.
+  - The `--optee` prefix can be applied to the commands to target OP-TEE.
+    `oeapkman --optee add sqlite-static` installs aarch64 sqlite static library.
+	`oeapkman --optee exec gcc -c file.c` cross-compile `file.c` to target OP-TEE.
+  - See [samples/apkman](samples/apkman) for a complete example demonstrating use of the `sqlite` database library within enclaves.
+- Support for `compiler-rt`. `oelibc` includes LLVM's `compiler-rt-10.0.1`.
+- Update logging function setup API name for SGX Quote Provider plugin to `sgx_ql_set_logging_callback` and mark API name `sgx_ql_set_logging_function` as deprecated.
+- Add new policy type `OE_POLICY_ENDORSEMENTS_BASELINE` for `oe_verify_evidence` API to pass additional parameters to QVL for more advanced quote validation.
+- The CapturePFGPExceptions preference is now supported in SGX1 debug mode on Linux.
+  - When setting CapturePFGPExceptions=1, OE will simulate all the SIGSEGV as #PF by forwarding the host information (faulting address) to in-enclave exception handlers.
+  - Note that this feature is for debug only and there is no guarantee that the simulated behavior works the same as the hardware feature in SGX2.
+- Added the support of using vDSO interfaces for SGX enclaves on Linux to enable synchronous exception handling. The `oehost` library automatically opts into the vDSO interface when it is available (Linux kernel 5.11+).
+
+## Changed
+- Updated libcxx to version 10.0.1
+- Updated the mbedTLS from 2.16 LTS to 2.28 LTS
+- Updated the SymCrypt-OpenSSL to v1.1.0
+- Updated the support of the SymCrypt module to v101.3.0
+
+### Security
+- Updated openssl to version 1.1.1o. Please refer to [release notes](https://www.openssl.org/news/openssl-1.1.1-notes.html) to find CVEs addressed by this version.
+
+[v0.17.7][v0.17.7_log]
+-------------
+### Changed
+- Increased the value of maximum TCS from 32 to 1000, allowing SGX applications to create more threads.
+
+### Security
+- Updated openssl to version 1.1.1n. Please refer to [release notes](https://www.openssl.org/news/openssl-1.1.1-notes.html) to find CVEs addressed by this version.
+
+[v0.17.6][v0.17.6_log]
+--------------
+
+### Added
+- Added support FIPS-enabled OpenSSL based on [SymCrypt](https://github.com/Microsoft/SymCrypt).
+  - Add a new library `oesymcryptengine`, which is a customized build of [SymCrypt OpenSSL engine](https://github.com/Microsoft/SymCrypt-OpenSSL).
+  - To use FIPS-enabled OpenSSL with SymCrypt, users need to link their enclave against
+    both `oesymcryptengine` and `libsymcrypt.so` (part of [SymCrypt](https://github.com/Microsoft/SymCrypt) release packages) in addition to OpenSSL libraries, and include `entropy.edl` in the edl file. Note that `libsymcrypt.so` needs to be placed under the same directory with the enclave binary.
+  - See the [attested_tls sample](samples/attested_tls#build-and-run) for an example of building enclaves with FIPS-enabled OpenSSL based on SymCrypt (set `OE_CRYPTO_LIB` to `openssl_symcrypt_fips`).
+- Added support for POSIX mmap and munmap.
+- Enabled MUSL conf functions.
+- Added callback option to capture and modify enclave logs.
+
+### Security
+- Update mbedTLS to version 2.16.12. Refer to the [2.16.12](https://github.com/ARMmbed/mbedtls/releases/tag/v2.16.12) release notes for the set of issues addressed.
+- Note: 2.16 LTS is at End Of Life. mbedTLS libs included with the Open Enclave SDK will move to use the 2.28 LTS branch in the next release. 2.28.0 has certain breaking changes. To understand how these changes will impact your application, please refer to the release notes for [2.28.0](https://github.com/ARMmbed/mbedtls/releases/tag/v2.28.0).
+
+[v0.17.5][v0.17.5_log]
+--------------
+
+### Added 
+- Added MUSL time functions
+asctime, asctime_r, ctime, ctime_r, ftime, localtime, localtime_r, strptime, timespec_get, wcsftime.
+
+### Changed
+- Fixed bug with incorrect layout of thread-local sections (tbss and tdata). Previous releases of OE had a bug where these sections
+will be laid out incorrectly in some cases where the tbss section had a lower alignment value than tdata section.
+- OpenSSL is now built with threads support (with the dependency on the host). Note that the previous versions of OpenSSL are not suitable for multi-threaded applications.
+
+### Security
+- Updated openssl to version 1.1.1l. Please refer to release log to find list of CVEs addressed by this version.
+
+
+[v0.17.2][v0.17.2_log]
+--------------
+
+### Security
+- Updated openssl to version 1.1.1l. Please refer to release log to find list of CVEs addressed by this version.
+
+
+[v0.17.1][v0.17.1_log]
+--------------
+
+### Added
+- Enabled creation of enclaves with base address 0x0 in SGX on Linux.
+  - This feature requires PSW version 2.14.1 or above.
+  - In 0-base enclaves a page fault is thrown on NULL pointer dereference.
+  - This enables applications to adopt NullPointerException/ NullReferenceException in their program logic and/or use other application stacks that do (Example, .NET runtime).
+  - Developers can create an 0-base enclave by setting the oesign tool configuration option 'CreateZeroBaseEnclave' to 1 or by passing in argument CREATE_ZERO_BASE_ENCLAVE=1 in OE_SET_ENCLAVE_SGX2().
+  - If the 0-base enclave creation is chosen, enclave image start address should be provided by setting the oesign tool configuration option 'StartAddress' or pass in the argument ENCLAVE_START_ADDRESS in OE_SET_ENCLAVE_SGX2().
+
+### Security
+- Fix [CVE-2021-33767](https://github.com/openenclave/openenclave/security/advisories/GHSA-mj87-466f-jq42)
+
+[v0.17.0][v0.17.0_log]
+--------------
+
+### Added
+- Ubuntu 20.04 packages are included in this release.
+- OE SDK is now built using clang-10. It is required to upgrade the compiler to clang-10 if you are building the SDK from source.
+- Add the CapturePFGPExceptions preference for the SGX2 feature of capturing #PF and #GP exceptions inside an enclave.
+  - Developers can specify the CapturePFGPExceptions with a binary value in the enclave config file or set the value via the newly added OE_SET_ENCLAVE_SGX2 macro, which is used to set SGX2-specific properties.
+  - When setting CapturePFGPExceptions=1, the OE loader will enable the feature when running on an SGX2-capable CPU.
+  - Once enabled, the in-enclave exception handler can capture the #PF (with the OE_EXCEPTION_PAGE_FAULT code) and #GP (with the code OE_EXCEPTION_ACCESS_VIOLATION code) exceptions.
+  - More information about the exceptions can be found in the `faulting_address` and `error_code` members of the `oe_exception_record_t` structure passed into the handler.
+- Add the following attestation claims from oe_verify_evidence():
+  - OE_CLAIM_TCB_STATUS
+  - OE_CLAIM_TCB_DATE
+- Publish tool `oeutil`.
+  - The tool, currently under the tools directory, will [integrate multiple OE utilities](tools/oeutil/README.md) in the future.
+  - The tool integrated `oegenerate` in this release.
+- SGX enclaves created using OE SDK can now be debugged using `oelldb`.
+  `oelldb` is a python based extension for LLDB that supports debugging SGX enclaves. lldb-7 or above is required.
+- SGX Evidence verification stops checking SGX QEIdentity nextUpdate field.
+
+### Deprecated
+- The `Release` build type for building the Open Enclave SDK from source is deprecated. The recommendation is using `RelWithDebInfo` instead.
+
+[v0.16.1][v0.16.1_log]
+--------------
+### Added
+- Add the support for SGX quote verification collateral version 3 with the CRL in DER format by default. Refer to [Get Quote Verification Collateral](https://download.01.org/intel-sgx/sgx-dcap/1.10/linux/docs/Intel_SGX_ECDSA_QuoteLibReference_DCAP_API.pdf) section 3.3.1.5.
+
+[v0.16.0][v0.16.0_log]
+--------------
+### Added
+- Add the initial support of cryptographic module loading in SGX enclaves. Refer to the [design document](docs/DesignDocs/CryptoModuleLoadingSupport.md) for more detail.
+- Add the support of getrandom libc API and syscall in enclaves.
+- Add `libsgx-quote-ex`, `sgx-aesm-service` and several SGX AESM plugins to Ansible scripts so that users will be able to select in-process or out-of-process call path for quote generation. Refer to the [attestation sample](samples/attestation/README.md#determining-call-path-for-sgx-quote-generation) for more information.
+- Open Enclave SDK installation on Linux sets the environment variable "SGX_AESM_ADDR" to 1 to enable attestation quote generation to occur out of the application process.
+- Add the support of the OE_ENCLAVE_FLAG_DEBUG_AUTO flag to the oe_create_enclave API. When the flag is set and the OE_ENCLAVE_FLAG_DEBUG flag is cleared, the debug mode is automatically turned on/off based on the value of Debug specified in the enclave config file.
+- Publish test tool `oegenerate`.
+  - The tool, currently under the tools directory, was originally named oecert under the tests/tools directory.
+  - The tool can be used to generate certificates, reports, and evidence in various formats.
+  - The tool is for debugging purposes and is not suitable for production use.
+- Full support for SGX KSS (Key Separation and Sharing) including
+  - FamilyID and ExtendedProductionID in enclave configuration file. Refer to [Build and Sign an Enclave](docs/GettingStartedDocs/buildandsign.md) for more information.
+  - config_id and config_svn at enclave loading time. Refer to [Open Enclave Init-time Configuration Interface](docs/DesignDocs/InitTimeConfigurationInterface.md) for more information.
+
+### Changed
+- The OpenEnclave CMake configuration now explicitly sets CMAKE_SKIP_RPATH to TRUE. This change should not affect fully static-linked enclaves.
+- oe_verify_attestation_certificate_with_evidence() has been considered insufficient for security and deprecated, because it does not allow users to pass in optional endorsements and policies. Use the new, experimental oe_verify_attestation_certificate_with_evidence_v2() instead to generate a self-signed certificate for use in the TLS handshaking process.
+  - Refer to the [issue](https://github.com/openenclave/openenclave/issues/3820) and the [proposed attestation API requirements](docs/DesignDocs/AttestationApiRequirements.md) for more details.
+- In/out parameters in EDL now have the default count equals to one if the `count` attribute is not used.
+- Improved attestation evidence verification performance.
+- Open Enclave SDK will be built with clang-10 starting v0.17.0 release. We had originally planned to upgrade to clang-10 in the v0.16.0 release, but ran into some issues. We recommend that developers move to clang-10 starting v0.17.0 release.
+
+### Security
+- Update MUSL to version 1.2.2. Refer to MUSL release notes between version 1.1.22 to 1.2.2 for the set of issues addressed.
+
+[v0.15.0][v0.15.0_log]
+--------------
+### Added
+- Oeedger8r now supports the warning flag -W<option>. The available options include:
+  - -Wreturn-ptr: Check if an OCALL or ECALL returns a pointer.
+  - -Wptr-in-struct: Check if a user-defined struct includes a un-annotated pointer member.
+  - -Wforeign-type-ptr: Check if an OCALL or ECALL includes a parameter that is the pointer of a foreign type.
+  - -Wptr-in-function: Check if an OCALL or ECALL includes a un-annotated pointer argument.
+  - -Wall: Enable all the warning options.
+  - -Wno-<option>: Disable the corresponding warning.
+  - -Werror: Turn warnings into errors.
+  - -Werror=<option>: Turn the specified warning into an error.
+- oesign sign now allows option -o/--output-file, to specify location to write signature of enclave image.
+- Debugger Contract has been extended to support multiple modules.
+  - Refer to [design document](docs/DesignDocs/DebuggerSupportForMultiModuleEnclaves.md) for details.
+
+### Changed
+- oe_get_attestation_certificate_with_evidence() has been considered insufficient for security and deprecated, because it does not allow users to pass in a provided nonce or additional customized information. Use the new, experimental oe_get_attestation_certificate_with_evidence_v2() instead to generate a self-signed certificate for use in the TLS handshaking process.
+  - Refer to the [issue](https://github.com/openenclave/openenclave/issues/3820) and the [proposed attestation API requirements](docs/DesignDocs/AttestationApiRequirements.md#getevidence-call) for more details.
+- Debugger Contract
+  - `path` fields in `oe_debug_enclave_t` and `oe_debug_module_t` are now defined to be in
+    UTF-8 encoding. Previously the encoding was undefined. To ensure smooth transition, debuggers
+	are required to try out both UTF-8 as well as the previous encoding and pick the one that works.
+
+### Security
+- Update mbedTLS to version 2.16.10. Refer to the [2.16.10](https://github.com/ARMmbed/mbedtls/releases/tag/v2.16.10) and [2.16.9](https://github.com/ARMmbed/mbedtls/releases/tag/v2.16.9) release notes for the set of issues addressed.
+
+- OPENSSL is updated to version 1.1.1k.
+
+[v0.14.0][v0.14.0_log]
+--------------
+
+### Added
+- Add the deep-copy out parameter support as an experimental, SGX-only feature. To use the feature, pass `--experimental` when invoking oeedger8r. Refer to the [design document](docs/DesignDocs/DeepCopyOutParameters.md) for more detail.
+
+### Changed
+- OE SDK is now built using clang-8. It is required to upgrade the compile to clang-8 if you are building the SDK from source.
+
+### Deprecated
+- The support of building the SDK for Intel SGX with GCC from source is no longer supported. The recommended compiler is Clang.
+
+
+[v0.13.0][v0.13.0_log]
+--------------
+
+### Added
+- OpenSSL version 1.1.1 libraries are now available for an enclave to use. See the [attested_tls sample](samples/attested_tls#build-and-run) for an example of building enclaves with OpenSSL.
+- Enabled oe_verify_evidence() with a NULL format id to verify the legacy report generated by oe_get_report().
+- Added the following SGX attestation claims from oe_verify_evidence():
+     - OE_CLAIM_SGX_PF_GP_EXINFO_ENABLED
+     - OE_CLAIM_SGX_ISV_EXTENDED_PRODUCT_ID
+     - OE_CLAIM_SGX_IS_MODE64BIT
+     - OE_CLAIM_SGX_HAS_PROVISION_KEY
+     - OE_CLAIM_SGX_HAS_EINITTOKEN_KEY
+     - OE_CLAIM_SGX_USES_KSS
+     - OE_CLAIM_SGX_CONFIG_ID
+     - OE_CLAIM_SGX_CONFIG_SVN
+     - OE_CLAIM_SGX_ISV_FAMILY_ID
+- Added the following fields for SGX KSS (Key Separation and Sharing) support:
+     - FamilyID
+     - ExtendedProductID
+
+## Breaking Changes
+- liboecryptombed is now called liboecryptombedtls and will no longer be automatically included as a link dependency when linking liboeenclave in CMake.
+     - The `openenclave-config.cmake` and `openenclave-lvi-mitigation-config.cmake` will not specify the renamed liboecryptombedtls as a `PUBLIC` link requirement for liboeenclave.
+     - Enclave apps that are built with CMake and use the Open Enclave's CMake configurations must now explicitly include OE crypto wrapper library when linking `openenclave::oeenclave`.
+     - See the [CMakeLists.txt in the helloworld sample](samples/helloworld/enclave/CMakeLists.txt#L32) for an example. Here `OE_CRYPTO_LIB` is set to `mbedtls` in [parent CMakeList file](samples/helloworld/CMakeLists.txt#L22).
+     - Enclave apps that are built with Make and rely on Open Enclave's pkgconfig must now explicitly include OE crypto wrapper library in linker dependency flags.
+     - See the [Makefile in the helloworld sample](samples/helloworld/enclave/Makefile#L34) for an example. Here `OE_CRYPTO_LIB` is set to `mbedtls` in [parent MakeList file](samples/helloworld/Makefile#L9).
+
+### Changed
+- Syscalls are internally dispatched directly to their implementation functions instead of via a switch-case.
+  This allows the linker to eliminate unused syscalls, leading to slightly reduced TCB.
+  The command `objdump -t enclave-filename | grep oe_SYS_` can be used to figure out the list of syscalls invoked by
+  code within the enclave. While most syscall implementations make OCALLs, some may be implemented entirely within
+  the enclave or may be noops (e.g SYS_futex).
+- Changed the attestation evidence extension OIDs for certificates generated by the following APIs. Verifiers must call oe_verify_attestation_certificate APIs from v.0.11.0 or above.
+     - oe_generate_attestation_certificate(): "1.3.6.1.4.1.311.105.1"
+     - oe_get_attestation_certificate_with_evidnece(): "1.3.6.1.4.1.311.105.2"
 
 [v0.12.0][v0.12.0_log]
 --------------
@@ -520,7 +755,31 @@ as listed below.
 
 Initial private preview release, no longer supported.
 
-[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.12.0...HEAD
+[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.18.0...HEAD
+
+[v0.18.0_log]:https://github.com/openenclave/openenclave/compare/v0.17.7...v0.18.0
+	  
+[v0.17.7_log]:https://github.com/openenclave/openenclave/compare/v0.17.6...v0.17.7
+
+[v0.17.6_log]:https://github.com/openenclave/openenclave/compare/v0.17.5...v0.17.6
+
+[v0.17.5_log]:https://github.com/openenclave/openenclave/compare/v0.17.2...v0.17.5
+
+[v0.17.2_log]:https://github.com/openenclave/openenclave/compare/v0.17.1...v0.17.2
+
+[v0.17.1_log]:https://github.com/openenclave/openenclave/compare/v0.17.0...v0.17.1
+
+[v0.17.0_log]:https://github.com/openenclave/openenclave/compare/v0.16.1...v0.17.0
+
+[v0.16.1_log]:https://github.com/openenclave/openenclave/compare/v0.16.0...v0.16.1
+
+[v0.16.0_log]:https://github.com/openenclave/openenclave/compare/v0.15.0...v0.16.0
+
+[v0.15.0_log]:https://github.com/openenclave/openenclave/compare/v0.14.0...v0.15.0
+
+[v0.14.0_log]:https://github.com/openenclave/openenclave/compare/v0.13.0...v0.14.0
+
+[v0.13.0_log]:https://github.com/openenclave/openenclave/compare/v0.12.0...v0.13.0
 
 [v0.12.0_log]:https://github.com/openenclave/openenclave/compare/v0.11.0...v0.12.0
 

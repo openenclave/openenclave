@@ -7,7 +7,7 @@ Intel® X86-64bit architecture with SGX1 and Flexible Launch Control (FLC) suppo
 Note: To check if your system has support for SGX1 with FLC, please look [here](../SGXSupportLevel.md).
 
 A version of Windows OS with native support for SGX features:
-- For server: Windows Server 2016 or 2019
+- For server: Windows Server 2019
 - For client: Windows 10 64-bit version 1709 or newer
 - To check your Windows version, run `winver` from the command line
 
@@ -62,7 +62,7 @@ updating the PSW and DCAP software components:
 ./scripts/install-windows-prereqs.ps1 -LaunchConfiguration SGX1FLC-NoIntelDrivers
 ```
 
-To install the prerequisites along with the Azure DCAP Client, use the below
+To install the prerequisites along with the [Azure DCAP Client](https://github.com/microsoft/Azure-DCAP-Client), use the below
 command. The Azure DCAP Client is necessary to perform attestation on an Azure
 Confidential Computing VM. This command assumes that you would like the
 prerequisites to be installed to `C:/oe_prereqs`.
@@ -122,7 +122,7 @@ Similarly, to build release enclaves, specify the flag
 cd C:/Users/test/openenclave
 mkdir build/x64-Release
 cd build/x64-Release
-cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCMAKE_INSTALL_PREFIX=C:/openenclave ../..
+cmake -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCMAKE_INSTALL_PREFIX=C:/openenclave ../..
 ninja
 ```
 

@@ -51,6 +51,14 @@ struct _oe_callsite
     /* Pointer to the ocall context */
     oe_ocall_context_t* ocall_context;
 
+    /* Control register values to preserve for Windows/Linux ABIs */
+    uint32_t mxcsr;
+    uint16_t fcw;
+    uint16_t padding; // Padding value to maintain struct alignment
+
+    /* Preservation of flags */
+    uint64_t rflags;
+
     /* Pointer to next ECALL context */
     oe_callsite_t* next;
 };

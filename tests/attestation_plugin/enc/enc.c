@@ -47,12 +47,24 @@ void unregister_sgx()
     unregister_verifier();
 }
 
+void test_pck_crl_validation(
+    const uint8_t* evidence,
+    size_t evidence_size,
+    const uint8_t* endorsements,
+    size_t endorsements_size)
+{
+    /*
+     * Test that both hex encoded (sgx pccs v3) and RAW encode (sgx pccs v3.1)
+     * der pckcrl are processed by oe_validate_revocation_list().
+     */
+
+    printf("====== running test_pck_crl_validation \n");
+    validate_sgx_pck_crl(
+        evidence, evidence_size, endorsements, endorsements_size);
+}
+
 static void _test_sgx_remote()
 {
-#ifdef OE_USE_DEBUG_MALLOC
-    oe_use_debug_malloc = false;
-#endif
-
     printf("====== running _test_sgx_remote\n");
     uint8_t* evidence = NULL;
     size_t evidence_size = 0;
@@ -365,10 +377,6 @@ static void _test_sgx_remote()
         printf("====== note: _test_sgx_remote #4: EPID not supported\n");
 
     printf("====== done _test_sgx_remote\n");
-
-#ifdef OE_USE_DEBUG_MALLOC
-    oe_use_debug_malloc = true;
-#endif
 }
 
 static void _test_sgx_local()
@@ -454,7 +462,6 @@ static void _test_sgx_local()
 void test_sgx()
 {
     printf("====== running test_sgx\n");
-
     _test_sgx_remote();
     _test_sgx_local();
 }
@@ -463,6 +470,6 @@ OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
     true, /* Debug */
-    320,  /* NumHeapPages */
+    1024, /* NumHeapPages */
     128,  /* NumStackPages */
     1);   /* NumTCS */

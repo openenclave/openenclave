@@ -4,6 +4,7 @@
 #include <openenclave/attestation/sgx/evidence.h>
 #include <openenclave/host.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "attestation_u.h"
 
 // SGX Local Attestation UUID.
@@ -48,12 +49,9 @@ int attest_one_enclave_to_the_other(
 {
     oe_result_t result = OE_OK;
     int ret = 1;
-    uint8_t* pem_key = NULL;
-    size_t pem_key_size = 0;
-    uint8_t* evidence = NULL;
-    size_t evidence_size = 0;
-    uint8_t* format_settings = NULL;
-    size_t format_settings_size = 0;
+    format_settings_t format_settings = {0};
+    evidence_t evidence = {0};
+    pem_key_t pem_key = {0};
 
     printf(
         "\n\nHost: ********** Attest %s to %s **********\n\n",
@@ -62,11 +60,7 @@ int attest_one_enclave_to_the_other(
 
     printf("Host: Requesting %s format settings\n", verifier_enclave_name);
     result = get_enclave_format_settings(
-        verifier_enclave,
-        &ret,
-        format_id,
-        &format_settings,
-        &format_settings_size);
+        verifier_enclave, &ret, format_id, &format_settings);
     if ((result != OE_OK) || (ret != 0))
     {
         printf("Host: get_format_settings failed. %s\n", oe_result_str(result));
@@ -83,12 +77,9 @@ int attest_one_enclave_to_the_other(
         attester_enclave,
         &ret,
         format_id,
-        format_settings,
-        format_settings_size,
+        &format_settings,
         &pem_key,
-        &pem_key_size,
-        &evidence,
-        &evidence_size);
+        &evidence);
     if ((result != OE_OK) || (ret != 0))
     {
         printf(
@@ -98,19 +89,16 @@ int attest_one_enclave_to_the_other(
             ret = 1;
         goto exit;
     }
-    printf("Host: %s's  public key: \n%s\n", attester_enclave_name, pem_key);
+    printf(
+        "Host: %s's  public key: \n%s\n",
+        attester_enclave_name,
+        pem_key.buffer);
 
     printf(
         "Host: verify_evidence_and_set_public_key in %s\n",
         verifier_enclave_name);
     result = verify_evidence_and_set_public_key(
-        verifier_enclave,
-        &ret,
-        format_id,
-        pem_key,
-        pem_key_size,
-        evidence,
-        evidence_size);
+        verifier_enclave, &ret, format_id, &pem_key, &evidence);
     if ((result != OE_OK) || (ret != 0))
     {
         printf(
@@ -122,9 +110,9 @@ int attest_one_enclave_to_the_other(
     }
 
 exit:
-    free(pem_key);
-    free(evidence);
-    free(format_settings);
+    free(pem_key.buffer);
+    free(evidence.buffer);
+    free(format_settings.buffer);
     return ret;
 }
 
@@ -132,8 +120,7 @@ int main(int argc, const char* argv[])
 {
     oe_enclave_t* enclave_a = NULL;
     oe_enclave_t* enclave_b = NULL;
-    uint8_t* encrypted_message = NULL;
-    size_t encrypted_message_size = 0;
+    message_t encrypted_message = {0};
     oe_result_t result = OE_OK;
     int ret = 1;
     uint32_t flags = OE_ENCLAVE_FLAG_DEBUG;
@@ -175,6 +162,18 @@ int main(int argc, const char* argv[])
         goto exit;
     }
 
+#ifdef __linux__
+    // verify if SGX_AESM_ADDR is successfully set
+    if (getenv("SGX_AESM_ADDR"))
+    {
+        printf("Host: environment variable SGX_AESM_ADDR is set\n");
+    }
+    else
+    {
+        printf("Host: environment variable SGX_AESM_ADDR is not set\n");
+    }
+#endif
+
     // attest enclave A to enclave B
     ret = attest_one_enclave_to_the_other(
         format_id, "enclave_a", enclave_a, "enclave_b", enclave_b);
@@ -196,8 +195,7 @@ int main(int argc, const char* argv[])
     // With successfully attestation on each other, we are ready to exchange
     // data between enclaves, securely via asymmetric encryption
     printf("Host: Requesting encrypted message from 1st enclave\n");
-    result = generate_encrypted_message(
-        enclave_a, &ret, &encrypted_message, &encrypted_message_size);
+    result = generate_encrypted_message(enclave_a, &ret, &encrypted_message);
     if ((result != OE_OK) || (ret != 0))
     {
         printf(
@@ -209,8 +207,7 @@ int main(int argc, const char* argv[])
     }
 
     printf("Host: Sending the encrypted message to 2nd enclave\n");
-    result = process_encrypted_message(
-        enclave_b, &ret, encrypted_message, encrypted_message_size);
+    result = process_encrypted_message(enclave_b, &ret, &encrypted_message);
     if ((result != OE_OK) || (ret != 0))
     {
         printf(
@@ -227,12 +224,11 @@ int main(int argc, const char* argv[])
         "***\n\n");
 
     // Free host memory allocated by the first enclave
-    free(encrypted_message);
-    encrypted_message = NULL;
+    free(encrypted_message.data);
+    encrypted_message.data = NULL;
 
     printf("Host: Requesting encrypted message from 2nd enclave\n");
-    result = generate_encrypted_message(
-        enclave_b, &ret, &encrypted_message, &encrypted_message_size);
+    result = generate_encrypted_message(enclave_b, &ret, &encrypted_message);
     if ((result != OE_OK) || (ret != 0))
     {
         printf(
@@ -244,8 +240,7 @@ int main(int argc, const char* argv[])
     }
 
     printf("Sending encrypted message to 1st enclave=====\n");
-    result = process_encrypted_message(
-        enclave_a, &ret, encrypted_message, encrypted_message_size);
+    result = process_encrypted_message(enclave_a, &ret, &encrypted_message);
     if ((result != OE_OK) || (ret != 0))
     {
         printf(
@@ -260,7 +255,7 @@ int main(int argc, const char* argv[])
 
 exit:
     // Free host memory allocated by the enclave.
-    free(encrypted_message);
+    free(encrypted_message.data);
 
     printf("Host: Terminating enclaves\n");
     if (enclave_a)

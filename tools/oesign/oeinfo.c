@@ -27,8 +27,7 @@ oe_result_t oe_read_oeinfo_sgx(
     OE_CHECK(oe_load_enclave_image(path, &oeimage));
 
     /* Load the SGX enclave properties */
-    OE_CHECK(oe_sgx_load_enclave_properties(
-        &oeimage, OE_INFO_SECTION_NAME, properties));
+    OE_CHECK(oe_sgx_load_enclave_properties(&oeimage, properties));
 
     result = OE_OK;
 
@@ -53,6 +52,7 @@ static char* _make_signed_lib_name(const char* path)
 
 oe_result_t oe_write_oeinfo_sgx(
     const char* path,
+    const char* output_file,
     const oe_sgx_enclave_properties_t* properties)
 {
     oe_result_t result = OE_FAILURE;
@@ -67,14 +67,17 @@ oe_result_t oe_write_oeinfo_sgx(
 
     /* Write the .oeinfo section. */
     OE_CHECK_ERR(
-        oe_sgx_update_enclave_properties(
-            &oeimage, OE_INFO_SECTION_NAME, properties),
+        oe_sgx_update_enclave_properties(&oeimage, properties),
         "Cannot write section: %s",
         OE_INFO_SECTION_NAME);
 
     /* Write new signed executable */
     {
-        char* p = _make_signed_lib_name(path);
+        char* p;
+        if (output_file != NULL)
+            p = (char*)output_file;
+        else
+            p = _make_signed_lib_name(path);
 
         if (!p)
         {
@@ -104,7 +107,8 @@ oe_result_t oe_write_oeinfo_sgx(
 
         printf("Created %s\n", p);
 
-        free(p);
+        if (output_file == NULL)
+            free(p);
     }
 
     result = OE_OK;

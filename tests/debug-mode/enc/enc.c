@@ -3,9 +3,10 @@
 
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
+#include "../../../enclave/core/tracee.h"
 #include "debug_mode_t.h"
 
 int test(void)
 {
-    return 0;
+    return oe_is_enclave_debug_allowed();
 }

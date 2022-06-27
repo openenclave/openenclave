@@ -42,6 +42,8 @@ const char* OE_REQUIRED_CLAIMS[OE_REQUIRED_CLAIMS_COUNT] = {
     OE_CLAIM_FORMAT_UUID};
 
 const char* OE_OPTIONAL_CLAIMS[OE_OPTIONAL_CLAIMS_COUNT] = {
+    OE_CLAIM_TCB_STATUS,
+    OE_CLAIM_TCB_DATE,
     OE_CLAIM_VALIDITY_FROM,
     OE_CLAIM_VALIDITY_UNTIL};
 
@@ -270,7 +272,10 @@ static bool _check_claims(const oe_claim_t* claims, size_t claims_length)
         }
 
         if (!found)
+        {
+            OE_TRACE_ERROR("Missing required claim: %s", OE_REQUIRED_CLAIMS[i]);
             return false;
+        }
     }
     return true;
 }
@@ -287,75 +292,124 @@ oe_result_t oe_verify_evidence(
     size_t* claims_length)
 {
     oe_result_t result = OE_UNEXPECTED;
+    oe_result_t _verify_evidence_result = OE_UNEXPECTED;
     oe_plugin_list_node_t* plugin_node;
     oe_verifier_t* verifier;
     const uint8_t* plugin_evidence = NULL;
     size_t plugin_evidence_size = 0;
     const uint8_t* plugin_endorsements = NULL;
     size_t plugin_endorsements_size = 0;
+    uint8_t has_endorsements_baseline_policy = 0;
 
     if (!evidence_buffer || !evidence_buffer_size ||
         (!endorsements_buffer != !endorsements_buffer_size) ||
         (!claims != !claims_length))
         OE_RAISE(OE_INVALID_PARAMETER);
 
+    // Ensure only one endorsements baseline policy can be specified.
+    if (policies && policies_size > 0)
+    {
+        for (size_t i = 0; i < policies_size; ++i)
+        {
+            if (policies[i].type == OE_POLICY_ENDORSEMENTS_BASELINE)
+            {
+                if (has_endorsements_baseline_policy)
+                {
+                    OE_RAISE_MSG(
+                        OE_INVALID_PARAMETER,
+                        "multiple endorsements baseline policies specified.",
+                        NULL);
+                }
+
+                has_endorsements_baseline_policy = 1;
+            }
+        }
+    }
+
+    // fail the API call if both endorsements_buffer and
+    // endorsements_baseline_policy are specified.
+    if (endorsements_buffer && has_endorsements_baseline_policy)
+    {
+        OE_RAISE_MSG(
+            OE_INVALID_PARAMETER,
+            "endorsements buffer conflicts with endorsements baseline policy",
+            NULL);
+    }
+
     if (!format_id)
     {
-        oe_attestation_header_t* evidence =
-            (oe_attestation_header_t*)evidence_buffer;
+        // check whether evidence buffer structure is oe_report
+        oe_report_header_t* report = (oe_report_header_t*)evidence_buffer;
 
-        if (evidence_buffer_size < sizeof(oe_attestation_header_t) ||
-            evidence->version != OE_ATTESTATION_HEADER_VERSION)
-            OE_RAISE_MSG(
-                OE_INVALID_PARAMETER,
-                "Invalid attestation header version %d, expected %d",
-                evidence->version,
-                OE_ATTESTATION_HEADER_VERSION);
-
-        if (evidence_buffer_size !=
-            (evidence->data_size + sizeof(oe_attestation_header_t)))
-            OE_RAISE_MSG(
-                OE_INVALID_PARAMETER,
-                "Evidence size is invalid. "
-                "Header data size: %d bytes, evidence buffer size: %d",
-                evidence->data_size,
-                evidence_buffer_size);
-
-        if (endorsements_buffer)
+        if (evidence_buffer_size >= sizeof(oe_report_header_t) &&
+            report->version == OE_REPORT_HEADER_VERSION)
         {
-            oe_attestation_header_t* endorsements =
-                (oe_attestation_header_t*)endorsements_buffer;
+            format_id = &_uuid_legacy_report_remote;
+            plugin_evidence = evidence_buffer;
+            plugin_evidence_size = evidence_buffer_size;
+            plugin_endorsements = endorsements_buffer;
+            plugin_endorsements_size = endorsements_buffer_size;
+        }
+        else
+        {
+            oe_attestation_header_t* evidence =
+                (oe_attestation_header_t*)evidence_buffer;
 
-            if (endorsements_buffer_size < sizeof(oe_attestation_header_t) ||
-                endorsements->version != OE_ATTESTATION_HEADER_VERSION)
+            if (evidence_buffer_size < sizeof(oe_attestation_header_t) ||
+                evidence->version != OE_ATTESTATION_HEADER_VERSION)
                 OE_RAISE_MSG(
                     OE_INVALID_PARAMETER,
                     "Invalid attestation header version %d, expected %d",
-                    endorsements->version,
+                    evidence->version,
                     OE_ATTESTATION_HEADER_VERSION);
 
-            if (endorsements_buffer_size !=
-                (endorsements->data_size + sizeof(oe_attestation_header_t)))
+            if (evidence_buffer_size !=
+                (evidence->data_size + sizeof(oe_attestation_header_t)))
                 OE_RAISE_MSG(
                     OE_INVALID_PARAMETER,
-                    "Endorsements buffer size is invalid. "
-                    "Header data size: %d bytes, endorsements buffer size: %d",
-                    endorsements->data_size,
-                    endorsements_buffer_size);
+                    "Evidence size is invalid. "
+                    "Header data size: %d bytes, evidence buffer size: %d",
+                    evidence->data_size,
+                    evidence_buffer_size);
 
-            if (memcmp(
-                    &evidence->format_id,
-                    &endorsements->format_id,
-                    sizeof(evidence->format_id)) != 0)
-                OE_RAISE(OE_CONSTRAINT_FAILED);
+            if (endorsements_buffer)
+            {
+                oe_attestation_header_t* endorsements =
+                    (oe_attestation_header_t*)endorsements_buffer;
 
-            plugin_endorsements = endorsements->data;
-            plugin_endorsements_size = endorsements->data_size;
+                if (endorsements_buffer_size <
+                        sizeof(oe_attestation_header_t) ||
+                    endorsements->version != OE_ATTESTATION_HEADER_VERSION)
+                    OE_RAISE_MSG(
+                        OE_INVALID_PARAMETER,
+                        "Invalid attestation header version %d, expected %d",
+                        endorsements->version,
+                        OE_ATTESTATION_HEADER_VERSION);
+
+                if (endorsements_buffer_size !=
+                    (endorsements->data_size + sizeof(oe_attestation_header_t)))
+                    OE_RAISE_MSG(
+                        OE_INVALID_PARAMETER,
+                        "Endorsements buffer size is invalid. "
+                        "Header data size: %d bytes, endorsements buffer size: "
+                        "%d",
+                        endorsements->data_size,
+                        endorsements_buffer_size);
+
+                if (memcmp(
+                        &evidence->format_id,
+                        &endorsements->format_id,
+                        sizeof(evidence->format_id)) != 0)
+                    OE_RAISE(OE_CONSTRAINT_FAILED);
+
+                plugin_endorsements = endorsements->data;
+                plugin_endorsements_size = endorsements->data_size;
+            }
+
+            plugin_evidence = evidence->data;
+            plugin_evidence_size = evidence->data_size;
+            format_id = &evidence->format_id;
         }
-
-        plugin_evidence = evidence->data;
-        plugin_evidence_size = evidence->data_size;
-        format_id = &evidence->format_id;
     }
     else
     {
@@ -370,16 +424,18 @@ oe_result_t oe_verify_evidence(
         OE_RAISE(OE_NOT_FOUND);
 
     verifier = (oe_verifier_t*)plugin_node->plugin;
-    OE_CHECK(verifier->verify_evidence(
-        verifier,
-        plugin_evidence,
-        plugin_evidence_size,
-        plugin_endorsements,
-        plugin_endorsements_size,
-        policies,
-        policies_size,
-        claims,
-        claims_length));
+    OE_CHECK_NO_TCB_LEVEL(
+        _verify_evidence_result,
+        verifier->verify_evidence(
+            verifier,
+            plugin_evidence,
+            plugin_evidence_size,
+            plugin_endorsements,
+            plugin_endorsements_size,
+            policies,
+            policies_size,
+            claims,
+            claims_length));
 
     if (claims && claims_length && !_check_claims(*claims, *claims_length))
     {
@@ -389,143 +445,38 @@ oe_result_t oe_verify_evidence(
         OE_RAISE(OE_CONSTRAINT_FAILED);
     }
 
-    result = OE_OK;
+    result = _verify_evidence_result;
 
 done:
     return result;
 }
 
 oe_result_t oe_verify_attestation_certificate_with_evidence(
-    uint8_t* cert_in_der,
-    size_t cert_in_der_len,
+    uint8_t* certificate_in_der,
+    size_t certificate_in_der_size,
     oe_verify_claims_callback_t claim_verify_callback,
     void* arg)
 {
     oe_result_t result = OE_FAILURE;
-    oe_cert_t cert = {0};
-    uint8_t* report = NULL;
-    size_t report_size = 0;
-    oe_report_header_t* header = NULL;
-    uint8_t* pub_key_buff = NULL;
-    size_t pub_key_buff_size = KEY_BUFF_SIZE;
     oe_claim_t* claims = NULL;
     size_t claims_length = 0;
 
-    const char* oid_array[] = {
-        oid_oe_report, oid_new_oe_report, oid_oe_evidence, oid_new_oe_evidence};
-    size_t oid_array_index = 0;
-    size_t oid_array_count = OE_COUNTOF(oid_array);
+    result = oe_verify_attestation_certificate_with_evidence_v2(
+        certificate_in_der,
+        certificate_in_der_size,
+        NULL,
+        0,
+        NULL,
+        0,
+        &claims,
+        &claims_length);
 
-    pub_key_buff = (uint8_t*)oe_malloc(KEY_BUFF_SIZE);
-    if (!pub_key_buff)
-        OE_RAISE(OE_OUT_OF_MEMORY);
-
-    result = oe_cert_read_der(&cert, cert_in_der, cert_in_der_len);
-    OE_CHECK_MSG(result, "cert_in_der_len=%d", cert_in_der_len);
-
-    // validate the certificate signature
-    result = oe_cert_verify(&cert, NULL, NULL, 0);
-    OE_CHECK_MSG(
-        result,
-        "oe_cert_verify failed with error = %s\n",
-        oe_result_str(result));
-
-    //------------------------------------------------------------------------
-    // Validate the report's trustworthiness
-    // Verify the remote report to ensure its authenticity.
-    // set enclave to NULL because we are dealing only with remote report now
-    //------------------------------------------------------------------------
-
-    // determine the size of the extension
-    while (oid_array_index < oid_array_count)
-    {
-        if (oe_cert_find_extension(
-                &cert,
-                (const char*)oid_array[oid_array_index],
-                NULL,
-                &report_size) == OE_BUFFER_TOO_SMALL)
-        {
-            report = (uint8_t*)oe_malloc(report_size);
-            if (!report)
-                OE_RAISE(OE_OUT_OF_MEMORY);
-
-            OE_CHECK(oe_cert_find_extension(
-                &cert,
-                (const char*)oid_array[oid_array_index],
-                report,
-                &report_size));
-
-            break;
-        }
-
-        oid_array_index++;
-    }
-
-    // if there is no match
-    if (oid_array_index == oid_array_count)
+    if (result != OE_OK)
         OE_RAISE_MSG(
-            OE_FAILURE, "No expected certificate extension matched", NULL);
-
-    // find the extension
-    OE_TRACE_VERBOSE("extract_x509_report_extension() succeeded");
-
-    if (oid_array_index >= 2) // oid_oe_evidence or oid_new_oe_evidence
-    {
-        // find the report version
-        header = (oe_report_header_t*)report;
-        if (header->version != OE_ATTESTATION_HEADER_VERSION)
-            OE_RAISE_MSG(
-                OE_INVALID_PARAMETER,
-                "Invalid attestation header version %d, expected %d",
-                header->version,
-                OE_ATTESTATION_HEADER_VERSION);
-
-        result = oe_verify_evidence(
-            // The format ID parameter is NULL in this case, as the format ID is
-            // embedded in the attestation header, which is always included in
-            // an attestation certificate.
-            NULL,
-            report,
-            report_size,
-            NULL,
-            0,
-            NULL,
-            0,
-            &claims,
-            &claims_length);
-    }
-    else // oid_oe_report or oid_new_oe_report
-    {
-        result = oe_verify_evidence(
-            // The format ID is OE_FORMAT_UUID_LEGACY_REPORT_REMOTE for all OE
-            // reports for remote attestation.
-            &_uuid_legacy_report_remote,
-            report,
-            report_size,
-            NULL,
-            0,
-            NULL,
-            0,
-            &claims,
-            &claims_length);
-    }
-
-    OE_CHECK(result);
-    OE_TRACE_VERBOSE("quote validation succeeded");
-
-    // verify report data: hash(public key)
-    // extract public key from the cert
-    oe_memset_s(pub_key_buff, KEY_BUFF_SIZE, 0, KEY_BUFF_SIZE);
-    result =
-        oe_cert_write_public_key_pem(&cert, pub_key_buff, &pub_key_buff_size);
-    OE_CHECK(result);
-    OE_TRACE_VERBOSE(
-        "oe_cert_write_public_key_pem pub_key_buf_size=%d", pub_key_buff_size);
-
-    result = _verify_public_key_claim(
-        claims, claims_length, pub_key_buff, pub_key_buff_size);
-    OE_CHECK(result);
-    OE_TRACE_VERBOSE("user data: hash(public key) validation passed", NULL);
+            result,
+            "oe_verify_attestation_certificate_with_evidence() failed with "
+            "error = %s\n",
+            oe_result_str(result));
 
     //---------------------------------------
     // call client to further check claims
@@ -545,8 +496,143 @@ oe_result_t oe_verify_attestation_certificate_with_evidence(
     }
 
 done:
-    oe_free(pub_key_buff);
     oe_free_claims(claims, claims_length);
+    return result;
+}
+
+oe_result_t oe_verify_attestation_certificate_with_evidence_v2(
+    uint8_t* certificate_in_der,
+    size_t certificate_in_der_size,
+    uint8_t* endorsements_buffer,
+    size_t endorsements_buffer_size,
+    oe_policy_t* policies,
+    size_t policies_size,
+    oe_claim_t** claims,
+    size_t* claims_length)
+{
+    oe_result_t result = OE_FAILURE;
+    oe_cert_t cert = {0};
+    uint8_t* report = NULL;
+    size_t report_size = 0;
+    oe_attestation_header_t* header = NULL;
+    uint8_t* pub_key_buff = NULL;
+    size_t pub_key_buff_size = KEY_BUFF_SIZE;
+
+    const char* oid_array[] = {
+        oid_oe_report, oid_new_oe_report, oid_oe_evidence, oid_new_oe_evidence};
+    size_t oid_array_index = 0;
+    size_t oid_array_count = OE_COUNTOF(oid_array);
+
+    pub_key_buff = (uint8_t*)oe_malloc(KEY_BUFF_SIZE);
+    if (!pub_key_buff)
+        OE_RAISE(OE_OUT_OF_MEMORY);
+
+    result =
+        oe_cert_read_der(&cert, certificate_in_der, certificate_in_der_size);
+    OE_CHECK_MSG(result, "certificate_in_der_size=%d", certificate_in_der_size);
+
+    // validate the certificate signature
+    result = oe_cert_verify(&cert, NULL, NULL, 0);
+    OE_CHECK_MSG(
+        result,
+        "oe_cert_verify failed with error = %s\n",
+        oe_result_str(result));
+
+    //------------------------------------------------------------------------
+    // Validate the report's trustworthiness
+    // Verify the remote report to ensure its authenticity.
+    // set enclave to NULL because we are dealing only with remote report now
+    //------------------------------------------------------------------------
+
+    // determine the size of the extension
+    while (oid_array_index < oid_array_count)
+    {
+        oe_result_t find_result = oe_cert_find_extension(
+            &cert,
+            (const char*)oid_array[oid_array_index],
+            &report,
+            &report_size);
+
+        if (find_result == OE_NOT_FOUND)
+        {
+            oid_array_index++;
+            continue;
+        }
+
+        if (find_result == OE_OK)
+            break;
+
+        OE_RAISE_MSG(find_result, "oe_cert_find_extension failed", NULL);
+    }
+
+    // if there is no match
+    if (oid_array_index == oid_array_count)
+        OE_RAISE_MSG(
+            OE_FAILURE, "No expected certificate extension matched", NULL);
+
+    // find the extension
+    OE_TRACE_VERBOSE("extract_x509_report_extension() succeeded");
+
+    if (oid_array_index >= 2) // oid_oe_evidence or oid_new_oe_evidence
+    {
+        // find the report version
+        header = (oe_attestation_header_t*)report;
+        if (header->version != OE_ATTESTATION_HEADER_VERSION)
+            OE_RAISE_MSG(
+                OE_INVALID_PARAMETER,
+                "Invalid attestation header version %d, expected %d",
+                header->version,
+                OE_ATTESTATION_HEADER_VERSION);
+
+        result = oe_verify_evidence(
+            // The format ID parameter is NULL in this case, as the format ID is
+            // embedded in the attestation header, which is always included in
+            // an attestation certificate.
+            NULL,
+            report,
+            report_size,
+            endorsements_buffer,
+            endorsements_buffer_size,
+            policies,
+            policies_size,
+            claims,
+            claims_length);
+    }
+    else // oid_oe_report or oid_new_oe_report
+    {
+        result = oe_verify_evidence(
+            // The format ID is OE_FORMAT_UUID_LEGACY_REPORT_REMOTE for all OE
+            // reports for remote attestation.
+            &_uuid_legacy_report_remote,
+            report,
+            report_size,
+            endorsements_buffer,
+            endorsements_buffer_size,
+            policies,
+            policies_size,
+            claims,
+            claims_length);
+    }
+
+    OE_CHECK(result);
+    OE_TRACE_VERBOSE("quote validation succeeded");
+
+    // verify report data: hash(public key)
+    // extract public key from the cert
+    oe_memset_s(pub_key_buff, KEY_BUFF_SIZE, 0, KEY_BUFF_SIZE);
+    result =
+        oe_cert_write_public_key_pem(&cert, pub_key_buff, &pub_key_buff_size);
+    OE_CHECK(result);
+    OE_TRACE_VERBOSE(
+        "oe_cert_write_public_key_pem pub_key_buf_size=%d", pub_key_buff_size);
+
+    result = _verify_public_key_claim(
+        *claims, *claims_length, pub_key_buff, pub_key_buff_size);
+    OE_CHECK(result);
+    OE_TRACE_VERBOSE("user data: hash(public key) validation passed", NULL);
+
+done:
+    oe_free(pub_key_buff);
     oe_cert_free(&cert);
     oe_free(report);
     return result;

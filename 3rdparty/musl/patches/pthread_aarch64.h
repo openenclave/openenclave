@@ -4,11 +4,10 @@
 #ifndef _OE_MUSL_PATCHES_PTHREAD_H
 #define _OE_MUSL_PATCHES_PTHREAD_H
 
-struct __pthread* __pthread_self();
+struct __pthread* __get_tp();
 
 #define TLS_ABOVE_TP
 #define GAP_ABOVE_TP 16
-#define TP_ADJ(p) ((char*)(p) + sizeof(struct pthread))
 
 #define MC_PC pc
 

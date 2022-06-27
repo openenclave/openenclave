@@ -6,6 +6,7 @@
 #include <openenclave/internal/sgx/tests.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
+#include <string.h>
 
 #if defined(_WIN32)
 #include <ShlObj.h>
@@ -42,12 +43,17 @@ void host_verify(
 
 int main(int argc, const char* argv[])
 {
-    if (!oe_has_sgx_quote_provider())
+    if (!oe_sgx_has_quote_provider())
     {
         // this test should not run on any platforms where DCAP libraries are
         // not found.
         OE_TRACE_INFO("=== tests skipped when DCAP libraries are not found.\n");
         return SKIP_RETURN_CODE;
+    }
+    else
+    {
+        // set up mocks for tests
+        set_up_mocks_for_host();
     }
 
 #ifdef _WIN32
@@ -94,7 +100,7 @@ int main(int argc, const char* argv[])
 
     if (argc != 2)
     {
-        fprintf(stderr, "Usage: %s ENCLAVE\n", argv[0]);
+        fprintf(stderr, "Usage: %s ENCLAVE \n", argv[0]);
         exit(1);
     }
 
@@ -111,16 +117,24 @@ int main(int argc, const char* argv[])
         argv[1], OE_ENCLAVE_TYPE_AUTO, flags, NULL, 0, &enclave);
     OE_TEST(result == OE_OK);
 
-    run_runtime_test(enclave);
-    register_sgx(enclave);
-    test_sgx(enclave);
-    unregister_sgx(enclave);
-    OE_TEST(oe_terminate_enclave(enclave) == OE_OK);
+    /*
+     * To test sgx pccs lib v3.0 and v3.1, we read evidence and endorsements
+     * from file.
+     * This test can be removed when the testing pipelines are updated
+     * to use the latest sgx pccs lib.
+     */
+
+    OE_TEST_CODE(run_runtime_test(enclave), OE_OK);
+    OE_TEST_CODE(register_sgx(enclave), OE_OK);
+    OE_TEST_CODE(test_sgx(enclave), OE_OK);
+    OE_TEST_CODE(unregister_sgx(enclave), OE_OK);
+    OE_TEST_CODE(oe_terminate_enclave(enclave), OE_OK);
 
     // Run runtime test on the host.
     test_runtime();
 
     // Unregister verifier.
     unregister_verifier();
+
     return 0;
 }

@@ -33,17 +33,19 @@ if (LVI_MITIGATION MATCHES ControlFlow)
   apply_lvi_mitigation(enclave_custom)
 
   # Link against LVI-mitigated libraries.
-  target_link_libraries(enclave_default openenclave::oeenclave-lvi-cfg
-                        openenclave::oelibcxx-lvi-cfg)
+  target_link_libraries(
+    enclave_default openenclave::oeenclave-lvi-cfg
+    openenclave::oecrypto${OE_CRYPTO_LIB}-lvi-cfg openenclave::oelibcxx-lvi-cfg)
   target_link_libraries(
     enclave_custom openenclave::oeenclave-lvi-cfg
     # Specify pluggable allocator library
-    openenclave::oesnmalloc-lvi-cfg openenclave::oelibcxx-lvi-cfg)
+    openenclave::oecrypto${OE_CRYPTO_LIB}-lvi-cfg openenclave::oesnmalloc-lvi-cfg openenclave::oelibcxx-lvi-cfg)
 else ()
-  target_link_libraries(enclave_default openenclave::oeenclave
-                        openenclave::oelibcxx)
   target_link_libraries(
-    enclave_custom openenclave::oeenclave
+    enclave_default openenclave::oeenclave
+    openenclave::oecrypto${OE_CRYPTO_LIB} openenclave::oelibcxx)
+  target_link_libraries(
+    enclave_custom openenclave::oeenclave openenclave::oecrypto${OE_CRYPTO_LIB}
     # Specify pluggable allocator library
     openenclave::oesnmalloc openenclave::oelibcxx)
 endif ()

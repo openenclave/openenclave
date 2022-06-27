@@ -12,5 +12,6 @@ enclave {
 
     trusted {
         public bool is_test_signed();
+        public oe_result_t check_kss_extended_ids(oe_uuid_t* family_id, oe_uuid_t* extended_product_id);
     };
 };

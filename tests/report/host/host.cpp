@@ -55,7 +55,7 @@ extern int FileToBytes(const char* path, std::vector<uint8_t>* output);
 
 void generate_and_save_report(oe_enclave_t* enclave)
 {
-    if (!oe_has_sgx_quote_provider())
+    if (!oe_sgx_has_quote_provider())
         return;
 
     static uint8_t* report;
@@ -145,12 +145,6 @@ int main(int argc, const char* argv[])
 #endif
 
     const uint32_t flags = oe_get_create_flags();
-    if ((flags & OE_ENCLAVE_FLAG_SIMULATE) != 0)
-    {
-        printf("=== Skipped unsupported test in simulation mode "
-               "(report)\n");
-        return SKIP_RETURN_CODE;
-    }
 
     // Load and attest report without creating any enclaves.
     if (argc == 3 && strcmp(argv[2], "--attest-generated-report") == 0)
@@ -177,7 +171,16 @@ int main(int argc, const char* argv[])
      */
     g_enclave = enclave;
 
-    if (oe_has_sgx_quote_provider())
+    if (flags & OE_ENCLAVE_FLAG_SIMULATE)
+    {
+        uint8_t* report_buffer = nullptr;
+        size_t report_buffer_size = 0;
+        OE_TEST(
+            oe_get_report(
+                enclave, 0, nullptr, 0, &report_buffer, &report_buffer_size) ==
+            OE_UNSUPPORTED);
+    }
+    else if (oe_sgx_has_quote_provider())
     {
         static oe_uuid_t sgx_ecdsa_uuid = {OE_FORMAT_UUID_SGX_ECDSA};
 
@@ -325,15 +328,18 @@ int main(int argc, const char* argv[])
                 gmtime_r(&t, &tm);
 
                 // convert std::tm to oe_datetime_t
-                oe_datetime_t now = {(uint32_t)tm.tm_year + 1900,
-                                     (uint32_t)tm.tm_mon + 1,
-                                     (uint32_t)tm.tm_mday,
-                                     (uint32_t)tm.tm_hour,
-                                     (uint32_t)tm.tm_min,
-                                     (uint32_t)tm.tm_sec};
+                oe_datetime_t now = {
+                    (uint32_t)tm.tm_year + 1900,
+                    (uint32_t)tm.tm_mon + 1,
+                    (uint32_t)tm.tm_mday,
+                    (uint32_t)tm.tm_hour,
+                    (uint32_t)tm.tm_min,
+                    (uint32_t)tm.tm_sec};
                 test_minimum_issue_date(enclave, now);
             }
         }
+
+        generate_and_save_report(enclave);
     }
     else
     {
@@ -351,8 +357,6 @@ int main(int argc, const char* argv[])
 
     test_get_signer_id_from_public_key();
     OE_TEST(enclave_test_get_signer_id_from_public_key(enclave) == OE_OK);
-
-    generate_and_save_report(enclave);
 
     /* Terminate the enclave */
     if ((result = oe_terminate_enclave(enclave)) != OE_OK)

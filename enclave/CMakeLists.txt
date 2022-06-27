@@ -3,6 +3,7 @@
 
 add_subdirectory(core)
 add_subdirectory(crypto)
+add_subdirectory(sealing)
 
 if (OE_SGX)
   set(PLATFORM_SRC
@@ -60,7 +61,8 @@ enclave_enable_code_coverage(oeenclave)
 # functions implemented via EDL files.
 enclave_include_directories(oeenclave PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/core)
 
-enclave_link_libraries(oeenclave PUBLIC oecryptombed)
+enclave_link_libraries(oeenclave PUBLIC oelibc)
+
 if (OE_TRUSTZONE)
   enclave_link_libraries(oeenclave PUBLIC oelibutee)
 endif ()
@@ -78,4 +80,13 @@ install_enclaves(
 
 if (WITH_EEID)
   enclave_compile_definitions(oeenclave PRIVATE OE_WITH_EXPERIMENTAL_EEID)
+  # oeenclave currently does not link against the oecrypto* library by default.
+  # Consequently, it does not inherit the include paths of the crypto (e.g., mbedtls)
+  # headers, which are needed by eeid.c. Therefore, we add the paths here.
+  enclave_include_directories(
+    oeenclave PRIVATE
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include>
+    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/3rdparty/mbedtls>)
 endif ()
+
+enclave_enable_fuzzing(oeenclave)

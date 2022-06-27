@@ -13,7 +13,6 @@ Once a vulnerability related to the Open Enclave SDK is reported to MSRC, the re
 
 - Anand Krishnamoorthi ([@anakrish](https://github.com/anakrish))
 - Ming-Wei Shih ([@mingweishih](https://github.com/mingweishih))
-- Simon Leet ([@codemonkeyleet](https://github.com/codemonkeyleet))
 
 > - [ ] TODO: Formalize SIG-Security and its membership with the CGC.
 
@@ -38,17 +37,18 @@ If OE SDK needs to issue a Security Advisory to address the reported concern, on
 1. [Create](https://docs.github.com/en/github/managing-security-vulnerabilities/creating-a-security-advisory#creating-a-security-advisory)
    a new GitHub [Security Advisory (SA) for OE SDK](https://github.com/openenclave/openenclave/security/advisories).
    1. The description of the SA should accurately capture the nature, severity, and workarounds for the issue.
-      1. It does not need to capture the full technical details of the vulnerability or fix for brevity.
+      1. For brevity, the SA does not need to capture the full technical details of the vulnerability or fix.
 2. [Request a Common Vulnerability Enumeration (CVE)](https://docs.github.com/en/github/managing-security-vulnerabilities/publishing-a-security-advisory#requesting-a-cve-identification-number) through GitHub.
    1. This was previously done through MSRC as a CVE Numbering Authority (CNA), but OE has shifted to using GitHub as the CNA as a Linux Foundation project.
 3. [Assign the appropriate collaborators](https://docs.github.com/en/github/managing-security-vulnerabilities/adding-a-collaborator-to-a-security-advisory) to the SA, which includes:
    1. The assignee(s) responsible for fixing the issue.
    2. Any area owners or subject matter experts needed for review.
-   3. CI/CD coordinators for private testing and integration with the release. (e.g., [@brmclaren](https://github.com/brmclaren)).
+   3. CI/CD coordinators for private testing and integration with the release. (e.g., [@cyandevs](https://github.com/cyandevs)).
 4. [Create a temporary private fork](https://docs.github.com/en/github/managing-security-vulnerabilities/collaborating-in-a-temporary-private-fork-to-resolve-a-security-vulnerability#creating-a-temporary-private-fork)
    to implement the code changes as part of the SA.
    1. The assignee should follow the GitHub instructions and create an `advisory-fix` branch for their code changes.
       1. The code changes should include an update to [CHANGELOG.md](/CHANGELOG.md) under the `### Security` subheader describing the issue addressed.
+      2. The description should include a link to the GitHub SA, which includes a pointer to the CVE as well.
    2. Once the changes are ready for review, they should be submitted as a PR to the master branch of the temporary fork.
       1. GitHub does not currently appear to support requiring PR reviews to merge into the master branch of a temporary fork, so maintainers will need to enforce this process manually.
 5. Reach out to the CI/CD maintainers to establish a private CI/CD pipeline for testing code changes.
@@ -74,10 +74,16 @@ The Open Enclave SDK project currently relies on the principles for [Coordinated
 The CVD includes a couple of policies such as:
 
 - acknowledgment of vulnerability reports within 24 hours (via MSRC)
-- supporting public disclosure within 90 days as the baseline, and negotiating that with vulnerability reporters and necessary
+- supporting public disclosure within 90 days as the baseline and negotiating the date with vulnerability reporters and necessary parties, including the engineering teams and affected vendors.
+
+While the primary goal of CVD is to avoid disclosure before a fix is released, the OE SDK security reviewers will also work to
+accommodate the reporter's preferences on the timing for disclosing and fixing the vulnerability. For example, if a researcher
+believes that releasing the fix far ahead of their disclosure publication or presentation diminishes the impact of their work, the
+security reviewers will work with them to determine the best course of action, such as releasing the fix on the same day as their
+planned disclosure event.
 
 > - [ ] TODO: Establish a process and acceptance criteria for registering with OE SDK as a _Trusted Stakeholder_.
->   - A Trusted Stakeholder may not be a committer or maintainer of the SDK, but has a vested interest in the security of the OE SDK.
+>   - A Trusted Stakeholder need not be a committer or maintainer of the SDK but can be anyone with a vested interest in the security of the OE SDK.
 >     - For example, an enterprise with significant production deployments on OE SDK, a TEE-provider, or other software projects with critical integrations with OE SDK.
 >   - The goal is to enable OE SDK to disclose issues material to their interests privately and allow them to participate in testing and provide feedback.
 >   - We would need to figure out the legal concerns around GDPR and NDAs involved in maintaining such a list.

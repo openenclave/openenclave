@@ -12,4 +12,4 @@ clean:
 	$(MAKE) -C host clean
 
 run:
-	host/tls_client_host ./enc/tls_client_enclave.signed -server:localhost -port:12341
+	host/tls_client_host ./enc/tls_client.signed -server:localhost -port:12341

@@ -48,6 +48,6 @@ OE_AEP:
 //
 //==============================================================================
 .globl OE_AEP_ADDRESS
-.section .rodata
+.section .data.rel.local,"aw"
 .align 8
 OE_AEP_ADDRESS:	.quad .aep

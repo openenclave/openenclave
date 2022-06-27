@@ -7,7 +7,7 @@
 - Check if your system has support for SGX1 with or without FLC, please look [here](./SGXSupportLevel.md)
     - If your system does not support SGX1+FLC, simulation mode can be used.
 
-- Windows Server 2016 or 2019, or Windows 10 (1709 or newer)
+- Windows Server 2019 or Windows 10 (1709 or newer)
 
 ## Software Prerequisites
 
@@ -43,8 +43,8 @@ C:\Program Files\Git\mingw64\bin\openssl.exe
 
 ### Clang
 
-Download [Clang/LLVM for Windows 64-bit](http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe).
-Install Clang 7.0.1 and add the LLVM folder (typically C:\Program Files\LLVM\bin)
+Download [Clang/LLVM for Windows 64-bit](https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/LLVM-8.0.1-win64.exe).
+Install Clang 8.0.1 and add the LLVM folder (typically C:\Program Files\LLVM\bin)
 to PATH. Open Enclave SDK uses clang to build the enclave binaries.
 
 Open up a command prompt and ensure that clang is added to PATH.
@@ -56,6 +56,19 @@ C:\> where llvm-ar
 C:\Program Files\LLVM\bin\llvm-ar.exe
 C:\> where ld.lld
 C:\Program Files\LLVM\bin\ld.lld.exe
+```
+
+### OpenSSL
+
+Download and install the latest build of OpenSSL for Windows from one of the following [locations](https://wiki.openssl.org/index.php/Binaries) or build and install it from source.
+
+Alternatively, you can use the latest version of OpenSSL that the OpenEnclave CI team [publishes](https://oejenkins.blob.core.windows.net/oejenkins/openssl-1.1.1-latest.nupkg) which is distributed under the [dual OpenSSL and SSLeay license](https://www.openssl.org/source/license-openssl-ssleay.txt) without further legal obligations.
+
+After installing OpenSSL, add `openssl` to your `PATH`.
+
+```cmd
+C:\Users\test> where openssl
+C:\oe_prereqs\OpenSSL\x64\release\bin\openssl.exe
 ```
 
 ### Prerequisites based on the SGX support level of your system

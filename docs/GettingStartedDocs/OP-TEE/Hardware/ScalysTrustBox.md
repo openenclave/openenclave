@@ -45,8 +45,6 @@ environments!**
 - Wired network (Ethernet)
   - Optional
 
-**Note:** The procedure below has not been validated on Ubuntu 16.04 LTS.
-
 ### Required Packages
 
 The following command installs all the packages necessary on Ubuntu 18.04 LTS:

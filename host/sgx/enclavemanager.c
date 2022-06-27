@@ -201,7 +201,7 @@ cleanup:
     }
 
     if (!ret)
-        OE_TRACE_ERROR("tcs=0x%x\n", tcs);
+        OE_TRACE_ERROR("tcs=0x%lx\n", tcs);
 
     return ret;
 }

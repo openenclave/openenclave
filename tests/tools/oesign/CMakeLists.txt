@@ -2,11 +2,12 @@
 # Licensed under the MIT License.
 
 # oesign tests need to build a target enclave to sign
-if (BUILD_ENCLAVES AND (NOT COMPONENT MATCHES OEHOSTVERIFY))
+if (BUILD_ENCLAVES)
   add_subdirectory(test-enclave)
   add_subdirectory(test-digest)
   add_subdirectory(test-inputs)
   add_subdirectory(test-sign)
+  add_subdirectory(test-lib)
 
   if (NOT WIN32)
     # Windows version of oesign does not use openssl, therefore there is no openssl engine support and

@@ -64,7 +64,7 @@ void oe_sgx_load_quote_ex_library(oe_sgx_quote_ex_library_t* library)
             if (!library->sgx_select_att_key_id)
             {
                 OE_TRACE_ERROR(
-                    "sgxquoteexprovider: sgx_select_att_key_id not fuond\n");
+                    "sgxquoteexprovider: sgx_select_att_key_id not found\n");
                 OE_RAISE(OE_PLATFORM_ERROR);
             }
             library->sgx_init_quote_ex = (sgx_init_quote_ex_t)GetProcAddress(
@@ -72,7 +72,7 @@ void oe_sgx_load_quote_ex_library(oe_sgx_quote_ex_library_t* library)
             if (!library->sgx_init_quote_ex)
             {
                 OE_TRACE_ERROR(
-                    "sgxquoteexprovider: sgx_init_quote_ex not fuond\n");
+                    "sgxquoteexprovider: sgx_init_quote_ex not found\n");
                 OE_RAISE(OE_PLATFORM_ERROR);
             }
             library->sgx_get_quote_size_ex =
@@ -81,7 +81,7 @@ void oe_sgx_load_quote_ex_library(oe_sgx_quote_ex_library_t* library)
             if (!library->sgx_get_quote_size_ex)
             {
                 OE_TRACE_ERROR(
-                    "sgxquoteexprovider: sgx_get_quote_size_ex not fuond\n");
+                    "sgxquoteexprovider: sgx_get_quote_size_ex not found\n");
                 OE_RAISE(OE_PLATFORM_ERROR);
             }
             library->sgx_get_quote_ex = (sgx_get_quote_ex_t)GetProcAddress(
@@ -89,7 +89,7 @@ void oe_sgx_load_quote_ex_library(oe_sgx_quote_ex_library_t* library)
             if (!library->sgx_get_quote_ex)
             {
                 OE_TRACE_ERROR(
-                    "sgxquoteexprovider: sgx_get_quote_ex not fuond\n");
+                    "sgxquoteexprovider: sgx_get_quote_ex not found\n");
                 OE_RAISE(OE_PLATFORM_ERROR);
             }
             library->sgx_get_supported_att_key_id_num =
@@ -98,7 +98,7 @@ void oe_sgx_load_quote_ex_library(oe_sgx_quote_ex_library_t* library)
             if (!library->sgx_get_supported_att_key_id_num)
             {
                 OE_TRACE_ERROR("sgxquoteexprovider: "
-                               "sgx_get_supported_att_key_id_num not fuond\n");
+                               "sgx_get_supported_att_key_id_num not found\n");
                 OE_RAISE(OE_PLATFORM_ERROR);
             }
             library->sgx_get_supported_att_key_ids =
@@ -107,7 +107,7 @@ void oe_sgx_load_quote_ex_library(oe_sgx_quote_ex_library_t* library)
             if (!library->sgx_get_supported_att_key_ids)
             {
                 OE_TRACE_ERROR("sgxquoteexprovider: "
-                               "sgx_get_supported_att_key_ids not fuond\n");
+                               "sgx_get_supported_att_key_ids not found\n");
                 OE_RAISE(OE_PLATFORM_ERROR);
             }
 

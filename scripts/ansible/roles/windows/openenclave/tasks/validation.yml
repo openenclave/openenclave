@@ -3,33 +3,33 @@
 
 ---
 - name: Include vars
-  include_vars: "{{ ansible_os_family | lower }}.yml"
+  ansible.builtin.include_vars: "{{ ansible_os_family | lower }}.yml"
 
 - name: Check for existing required folders and files
-  win_stat:
+  ansible.windows.win_stat:
     path: "{{ item }}"
   with_items: "{{ validation_directories }}"
   register: directory
-  failed_when: directory.stat.isdir == False
+  failed_when: not directory.stat.isdir
 
 - name: Check for existing required executables and files
-  win_stat:
+  ansible.windows.win_stat:
     path: "{{ item }}"
   with_items: "{{ validation_binaries + validation_files }}"
   register: file
-  failed_when: file.stat.isreg == False
+  failed_when: not file.stat.isreg
 
 - name: CMake version check
-  win_command: vcvars64.bat x64 && cmake --version
+  ansible.windows.win_command: vcvars64.bat x64 && cmake --version
   register: cmake_check_version
   failed_when: cmake_check_version.stdout.find(cmake_target_version) == -1
 
 - name: Ninja version check
-  win_command: vcvars64.bat x64 && ninja --version
+  ansible.windows.win_command: vcvars64.bat x64 && ninja --version
   register: ninja_check_version
   failed_when: ninja_check_version.stdout.find(ninja_target_version) == -1
 
 - name: Clang version check
-  raw: "clang --version"
+  ansible.builtin.raw: "clang --version"
   register: clang_check_version
   failed_when: clang_check_version.stdout.find(clang_target_version) == -1

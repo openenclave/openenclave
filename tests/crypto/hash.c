@@ -12,22 +12,23 @@ OE_SHA256 ALPHABET_HASH = {{
     0xfc, 0x8d, 0x9e, 0xd8, 0x32, 0xf2, 0xda, 0xf1, 0x8b, 0x73,
 }};
 
-unsigned char ALPHABET_KEY[] = {0xe1,
-                                0x20,
-                                0xbb,
-                                0x2d,
-                                0x5f,
-                                0x9b,
-                                0x92,
-                                0xbc,
-                                0xa6,
-                                0xb4,
-                                0x0b,
-                                0xe3,
-                                0xeb,
-                                0x3a,
-                                0xb5,
-                                0xf8};
+unsigned char ALPHABET_KEY[] = {
+    0xe1,
+    0x20,
+    0xbb,
+    0x2d,
+    0x5f,
+    0x9b,
+    0x92,
+    0xbc,
+    0xa6,
+    0xb4,
+    0x0b,
+    0xe3,
+    0xeb,
+    0x3a,
+    0xb5,
+    0xf8};
 
 size_t ALPHABET_KEY_SIZE = sizeof(ALPHABET_KEY) / sizeof(ALPHABET_KEY[0]);
 

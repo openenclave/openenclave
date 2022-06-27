@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "tls_e2e_u.h"
 
 #include <condition_variable>
@@ -26,7 +27,11 @@
 #define SKIP_RETURN_CODE 2
 
 // A fatal error occured, eg the chain is too long or the vrfy callback failed
-#define FATAL_TLS_HANDSHAKE_ERROR -0x3000
+#ifdef OE_USE_OPENSSL
+#define FATAL_TLS_HANDSHAKE_ERROR -0x1 // for openssl server handshake error
+#else
+#define FATAL_TLS_HANDSHAKE_ERROR -0x3000 // for mbedtls handshake error
+#endif
 
 typedef struct _tls_thread_context_config
 {
@@ -347,7 +352,7 @@ done:
 
 int main(int argc, const char* argv[])
 {
-    if (!oe_has_sgx_quote_provider())
+    if (!oe_sgx_has_quote_provider())
     {
         // this test should not run on any platforms where DCAP libraries are
         // not found.

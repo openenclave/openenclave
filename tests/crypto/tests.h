@@ -6,6 +6,9 @@
 
 void TestASN1(void);
 void TestCRL(void);
+#if defined(OE_BUILD_ENCLAVE)
+void TestCert(void);
+#endif
 void TestEC(void);
 void TestKDF(void);
 void TestRandom(void);

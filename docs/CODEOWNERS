@@ -9,39 +9,40 @@
 # review when someone opens a pull request.
 * @openenclave/committers
 
-/3rdparty/ @mikbras @CodeMonkeyLeet
-/cmake/ @andschwa @BRMcLaren
-/common/ @CodeMonkeyLeet @gupta-ak @mikbras
-/docs/refman @andschwa @radhikaj
+/3rdparty/ @mikbras @anakrish @mingweishih
+/cmake/ @mingweishi @anakrish
+/common/ @anakrish @gupta-ak @mikbras
+/docs/refman @cyandevs @radhikaj @rs--
 /debugger/ @anakrish @jxyang
-/enclave/ @CodeMonkeyLeet @gupta-ak @mikbras
-/host/ @CodeMonkeyLeet @gupta-ak @mikbras
+/enclave/ @anakrish @gupta-ak @mikbras @mingweishih
+/host/ @anakrish @gupta-ak @mikbras @mingweishih
 # TODO: Break this folder out?
-/include/ @achamayou @dthaler @mikbras @CodeMonkeyLeet
-/libc/ @mikbras @CodeMonkeyLeet
-/scripts/ @achamayou @andschwa @johnkord
-/samples/ @andschwa @dthaler @soccerGB
-/syscall/ @mikbras @yakman2020
+/include/ @achamayou @dthaler @mikbras @anakrish
+/libc/ @mikbras @anakrish
+/scripts/ @achamayou @cyandevs @rs-- @mingweishih
+/samples/ @dthaler @yentsanglee @anakrish
+/syscall/ @mikbras @anakrish @mingweishih
 # TODO: Break this folder out?
-/tests/ @radhikaj
-/tools/ @anakrish @CodeMonkeyLeet
-/tools/oeedger8r/ @andschwa @anakrish @jxyang
-/pkgconfig/ @gupta-ak @mikbras
-/prereqs/ @johnkord @CodeMonkeyLeet
+/tests/ @anakrish @radhikaj
+/tools/ @anakrish @mingweishih
+/tools/oeedger8r/ @anakrish @mingweishih
+/pkgconfig/ @anakrish @mingweishih @gupta-ak @mikbras
+# Deprecated folder, should see no new merges
+/prereqs/ @radhikaj
 
 # Matches all folders with these names, not just in root.
 optee/ @Britel @dthaler @HernanGatta
-sgx/ @CodeMonkeyLeet @gupta-ak @mikbras
-linux/ @mikbras @yakman2020
-windows/ @CodeMonkeyLeet @yakman2020
-crypto/ @CodeMonkeyLeet @gupta-ak
+sgx/ @anakrish @mingweishih @gupta-ak @mikbras
+linux/ @mikbras @anakrish
+windows/ @anakrish @mingweishih
+crypto/ @mingweishih @gupta-ak
 
 # Match all CMake, anywhere.
-CMakeLists.txt @andschwa @BRMcLaren
-*.cmake @andschwa @BRMcLaren
+CMakeLists.txt @anakrish @mingweishih
+*.cmake @anakrish @mingweishih
 
 # Match all Markdown, anywhere.
-*.md @CodeMonkeyLeet @johnkord @andschwa @radhikaj
+*.md @radhikaj
 
 # Except design reviews, which should be everyone.
 /docs/DesignDocs/ @openenclave/committers

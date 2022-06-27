@@ -24,11 +24,12 @@ Please note that NUGET_PACKAGE_PATH in the above command points to the directory
 
 ## Create a redistributable SDK package
 
-To create a redistributable NuGet package use the following command from your build subfolder:
+To create a redistributable NuGet package use the following commands from your build subfolder:
 
 ```cmd
 cmake .. -G  Ninja -DNUGET_PACKAGE_PATH=C:\oe_prereqs -DCPACK_GENERATOR=NuGet
-ninja package
+ninja
+cpack -D CPACK_NUGET_COMPONENT_INSTALL=ON
 ```
 
 This will result in a NuGet package being created in the build folder.

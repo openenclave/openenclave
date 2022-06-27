@@ -4,6 +4,7 @@
 #ifndef _OE_COMMON_TCBINFO_H
 #define _OE_COMMON_TCBINFO_H
 
+#include <openenclave/attestation/sgx/evidence.h>
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
@@ -17,18 +18,14 @@ OE_EXTERNC_BEGIN
 
 /*! \struct oe_tcb_level_status_t
  */
-typedef union _oe_tcb_level_status {
+typedef union _oe_tcb_level_status
+{
     struct
     {
         uint32_t revoked : 1;              //! "Revoked"
         uint32_t outofdate : 1;            //! "OutOfDate"
         uint32_t configuration_needed : 1; //! "ConfigurationNeeded"
         uint32_t up_to_date : 1;           //! "UpToDate"
-        /*! "OutOfDateConfigurationNeeded"
-         *
-         * This tcb status indicates that the QE Identity Info is out of date
-         * and the TCB Info requires configuration "ConfigurationNeeded"
-         */
         uint32_t qe_identity_out_of_date : 1;
         uint32_t sw_hardening_needed : 1; //! "SWHardeningNeeded"
     } fields;
@@ -60,6 +57,8 @@ typedef struct _oe_tcb_info_tcb_level
     size_t advisory_ids_size;
 } oe_tcb_info_tcb_level_t;
 
+#define OE_SGX_FMSPC_SIZE 6
+
 /*! \struct oe_parsed_tcb_info_t
  *  \brief TCB info excluding the TCB levels field.
  */
@@ -68,7 +67,7 @@ typedef struct _oe_parsed_tcb_info
     uint32_t version;
     oe_datetime_t issue_date;
     oe_datetime_t next_update;
-    uint8_t fmspc[6];
+    uint8_t fmspc[OE_SGX_FMSPC_SIZE];
     uint8_t pceid[2];
     uint8_t signature[64];
 
@@ -85,6 +84,25 @@ typedef struct _oe_parsed_tcb_info
     size_t tcb_info_size;
 
 } oe_parsed_tcb_info_t;
+
+/*!
+ * Parse an oe_tcb_info_tcb_level_t struct to an oe_sgx_tcb_status_t type.
+ *
+ * @param[in] tcb_level_status The tcb_status to parse.
+ */
+oe_sgx_tcb_status_t oe_tcb_level_status_to_sgx_tcb_status(
+    oe_tcb_level_status_t tcb_level_status);
+
+/*!
+ * Retrieve a string description for an oe_sgx_tcb_status_t code.
+ *
+ * @param[in] sgx_tcb_status Retrieve string description for this SGX TCB status
+ * code.
+ *
+ * @returns Returns a pointer to a static string description.
+ *
+ */
+const char* oe_sgx_tcb_status_str(const oe_sgx_tcb_status_t sgx_tcb_status);
 
 /**
  * oe_parse_tcb_info_json parses the given tcb info json string

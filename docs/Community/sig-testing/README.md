@@ -28,8 +28,6 @@ SIG Approvers
 -------------
 
 * Anand Krishnamoorthi ([anakrish](https://github.com/anakrish))
-* Brett McLaren ([BRMcLaren](https://github.com/BRMcLaren))
-* John Kordich ([johnkord](https://github.com/johnkord))
 
 SIG Reviewers
 -------------

@@ -463,6 +463,8 @@ oe_result_t oe_verify_sgx_quote(
             oe_get_sgx_endorsements(
                 quote,
                 quote_size,
+                NULL,
+                0,
                 (uint8_t**)&local_endorsements,
                 &local_endorsements_size),
             "Failed to get SGX endorsements. %s",
@@ -482,7 +484,13 @@ oe_result_t oe_verify_sgx_quote(
 
     // Endorsements verification
     OE_CHECK(oe_verify_quote_with_sgx_endorsements(
-        quote, quote_size, &sgx_endorsements, input_validation_time));
+        quote,
+        quote_size,
+        &sgx_endorsements,
+        input_validation_time,
+        NULL,
+        NULL,
+        NULL));
 
     result = OE_OK;
 
@@ -497,9 +505,13 @@ oe_result_t oe_verify_quote_with_sgx_endorsements(
     const uint8_t* quote,
     size_t quote_size,
     const oe_sgx_endorsements_t* sgx_endorsements,
-    oe_datetime_t* input_validation_time)
+    oe_datetime_t* input_validation_time,
+    oe_tcb_info_tcb_level_t* platform_tcb_level,
+    oe_datetime_t* valid_from,
+    oe_datetime_t* valid_until)
 {
     oe_result_t result = OE_UNEXPECTED;
+    oe_result_t get_sgx_quote_validity_result = OE_UNEXPECTED;
     oe_datetime_t validity_from = {0};
     oe_datetime_t validity_until = {0};
     oe_datetime_t validation_time = {0};
@@ -606,11 +618,13 @@ oe_result_t oe_verify_quote_with_sgx_endorsements(
             NULL);
     }
 
-    OE_CHECK_MSG(
+    OE_CHECK_NO_TCB_LEVEL_MSG(
+        get_sgx_quote_validity_result,
         oe_get_sgx_quote_validity(
             quote,
             quote_size,
             sgx_endorsements,
+            platform_tcb_level,
             &validity_from,
             &validity_until),
         "Failed to validate quote. %s",
@@ -650,8 +664,12 @@ oe_result_t oe_verify_quote_with_sgx_endorsements(
             vtime,
             vuntil);
     }
-
-    result = OE_OK;
+    if (valid_from && valid_until)
+    {
+        *valid_from = validity_from;
+        *valid_until = validity_until;
+    }
+    result = get_sgx_quote_validity_result;
 
 done:
 
@@ -662,10 +680,12 @@ oe_result_t oe_get_sgx_quote_validity(
     const uint8_t* quote,
     const size_t quote_size,
     const oe_sgx_endorsements_t* sgx_endorsements,
+    oe_tcb_info_tcb_level_t* platform_tcb_level,
     oe_datetime_t* valid_from,
     oe_datetime_t* valid_until)
 {
     oe_result_t result = OE_UNEXPECTED;
+    oe_result_t validate_revocation_list_result = OE_UNEXPECTED;
 
     sgx_quote_t* sgx_quote = NULL;
     sgx_quote_auth_data_t* quote_auth_data = NULL;
@@ -747,8 +767,10 @@ oe_result_t oe_get_sgx_quote_validity(
     _update_validity(&latest_from, &earliest_until, &from, &until);
 
     // Fetch revocation info validity dates.
-    OE_CHECK_MSG(
-        oe_validate_revocation_list(&pck_cert, sgx_endorsements, &from, &until),
+    OE_CHECK_NO_TCB_LEVEL_MSG(
+        validate_revocation_list_result,
+        oe_validate_revocation_list(
+            &pck_cert, sgx_endorsements, platform_tcb_level, &from, &until),
 
         "Failed to validate revocation info. %s",
         oe_result_str(result));
@@ -774,7 +796,7 @@ oe_result_t oe_get_sgx_quote_validity(
     *valid_from = latest_from;
     *valid_until = earliest_until;
 
-    result = OE_OK;
+    result = validate_revocation_list_result;
 
 done:
     oe_cert_free(&pck_cert);

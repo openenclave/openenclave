@@ -393,23 +393,20 @@ done:
  */
 static oe_result_t _get_sgx_extension(
     oe_cert_t* cert,
-    uint8_t* data,
+    uint8_t** data,
     size_t* data_size)
 {
     oe_result_t result = OE_INVALID_SGX_CERTIFICATE_EXTENSIONS;
-    size_t size = *data_size;
-    OE_CHECK(oe_cert_find_extension(cert, SGX_EXTENSION_OID_STR, data, &size));
+    OE_CHECK(
+        oe_cert_find_extension(cert, SGX_EXTENSION_OID_STR, data, data_size));
 
     result = OE_OK;
 done:
-    *data_size = size;
     return result;
 }
 
-oe_result_t ParseSGXExtensions(
+oe_result_t oe_parse_sgx_extensions(
     oe_cert_t* cert,
-    uint8_t* buffer,
-    size_t* buffer_size,
     ParsedExtensionInfo* parsed_info)
 {
     oe_result_t result = OE_INVALID_SGX_CERTIFICATE_EXTENSIONS;
@@ -422,15 +419,16 @@ oe_result_t ParseSGXExtensions(
     uint8_t* config_itr = NULL;
     size_t config_length = 0;
     uint8_t* config_end = NULL;
+    uint8_t* extension_data = NULL;
+    size_t extension_size = 0;
 
-    if (cert == NULL || buffer == NULL || buffer_size == NULL ||
-        parsed_info == NULL)
+    if (cert == NULL || parsed_info == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    OE_CHECK(_get_sgx_extension(cert, buffer, buffer_size));
+    OE_CHECK(_get_sgx_extension(cert, &extension_data, &extension_size));
 
-    itr = buffer;
-    end = itr + *buffer_size;
+    itr = extension_data;
+    end = itr + extension_size;
     if (end <= itr)
         OE_RAISE(OE_INVALID_SGX_CERTIFICATE_EXTENSIONS);
 
@@ -560,5 +558,8 @@ oe_result_t ParseSGXExtensions(
 
     result = OE_OK;
 done:
+    oe_free(extension_data);
+    extension_data = NULL;
+
     return result;
 }

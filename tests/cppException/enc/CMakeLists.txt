@@ -23,6 +23,12 @@ add_enclave(
 
 enclave_compile_features(cppException_enc PRIVATE cxx_generalized_initializers)
 
+# Disable optimizations for cppException.cpp to avoid Clang speculative load hardening flag compiler bug
+# On windows cxx compiler used is always clang
+if (WIN32 OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
+  set_source_files_properties(cppException.cpp PROPERTIES COMPILE_FLAGS -O0)
+endif ()
+
 enclave_include_directories(
   cppException_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR})

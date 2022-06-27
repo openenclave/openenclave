@@ -83,12 +83,6 @@
  * Then the aligned size of the section is 12 bytes and the compiler
  * uses the offset %FS:-12 to access g instead of %FS:-10.
  *
- * Note: Both .tdata and .tbss sections can have different alignments.
- * In such cases, the larger of the alignments is used to align both the
- * sections. In x86-64, as observed by doing 'objdump -h' on an elf file, all
- * sections are aligned to a power of two. This implies that the alignment of
- * one section must be a multiple of the alignment of the other.
- *
  * Initializing variables with complex initializers:
  * Consider
  *       thread_local int x = random();
@@ -214,14 +208,6 @@ static uint8_t* _get_fs_from_td(oe_sgx_td_t* td)
     return fs;
 }
 
-/**
- * Return aligned size.
- */
-static uint64_t _get_aligned_size(uint64_t size, uint64_t align)
-{
-    return align ? oe_round_up_to_multiple(size, align) : size;
-}
-
 /*
  * Call oe_allocator_init with heap start and end addresses.
  */
@@ -240,6 +226,40 @@ static void _initialize_allocator(void)
 }
 
 /**
+ * According to ELF Handling For Thread-Local Storage
+ * (https://uclibc.org/docs/tls.pdf), page 15, the tls module offsets
+ * are computed according to the following formula (rewritten for C source):
+ *     tlsoffset(m) = round(tlssize(m), align(m))
+ *     tlsoffset(m+1) = round(tlsoffset(m) + tlssize(m+1), align(m+1))
+ * In page 6, round is defined as a function which returns its first argument
+ * rounded up to the next multiple of its second argument.
+ */
+
+static uint64_t _tlsoffset_m1(
+    uint64_t tlsoffset_m,
+    uint64_t size_m1,
+    uint64_t align_m1)
+{
+    if (size_m1)
+        return oe_round_up_to_multiple(tlsoffset_m + size_m1, align_m1);
+
+    // Current tls section is empty.
+    return tlsoffset_m;
+}
+
+/**
+ * Get starting offset of thread local section.
+ */
+uint64_t oe_sgx_get_thread_local_start_offset()
+{
+    uint64_t tbss_offset = _tlsoffset_m1(0, _tbss_size, _tbss_align);
+    uint64_t tdata_offset =
+        _tlsoffset_m1(tbss_offset, _tdata_size, _tdata_align);
+
+    return tdata_offset;
+}
+
+/**
  * Return pointer to start of tls data.
  *    tls-data-start = %FS - (aligned .tdata size + aligned .tbss size)
  */
@@ -250,43 +270,28 @@ static uint8_t* _get_thread_local_data_start(oe_sgx_td_t* td)
         return NULL;
 
     uint8_t* fs = _get_fs_from_td(td);
-    uint64_t alignment = 0;
 
     // Alignments must be non-zero.
     if (!_tdata_align || !_tbss_align)
         oe_abort();
 
-    // Choose the largest of the two alignments to align both the sections.
-    // Assert that one alignment is a multiple of the other.
-    if (_tdata_align >= _tbss_align)
-    {
-        alignment = _tdata_align;
-        if (alignment % _tbss_align)
-            oe_abort();
-    }
-    else
-    {
-        alignment = _tbss_align;
-        if (alignment % _tdata_align)
-            oe_abort();
-    }
+    return fs - oe_sgx_get_thread_local_start_offset();
+}
 
-    // Alignment must be a power of two.
-    if (alignment & (alignment - 1))
-        oe_abort();
-
-    // Align both the sections.
-    fs -= _get_aligned_size(_tbss_size, alignment);
-    fs -= _get_aligned_size(_tdata_size, alignment);
-
-    return fs;
+/**
+ * Return the start of the thread local section for current thread.
+ */
+uint64_t oe_get_thread_local_start()
+{
+    oe_sgx_td_t* td = oe_sgx_get_td();
+    return (uint64_t)_get_thread_local_data_start(td);
 }
 
 /**
  * Initialize the thread-local section for a given thread.
  * This must be called immediately after td itself is initialized.
  */
-oe_result_t oe_thread_local_init(oe_sgx_td_t* td)
+oe_result_t oe_sgx_thread_local_init(oe_sgx_td_t* td)
 {
     oe_result_t result = OE_FAILURE;
     uint8_t* tls_start = _get_thread_local_data_start(td);
@@ -308,7 +313,7 @@ oe_result_t oe_thread_local_init(oe_sgx_td_t* td)
         oe_memset_s(tls_start, tls_data_size, 0, tls_data_size);
 
         // Fetch the .tdata template.
-        void* tdata = (uint8_t*)__oe_get_enclave_base() + _tdata_rva;
+        void* tdata = (uint8_t*)__oe_get_enclave_start_address() + _tdata_rva;
 
         // Copy the template
         oe_memcpy_s(tls_start, _tdata_size, tdata, _tdata_size);
@@ -323,7 +328,8 @@ oe_result_t oe_thread_local_init(oe_sgx_td_t* td)
             const elf64_rela_t* relocs =
                 (const elf64_rela_t*)__oe_get_reloc_base();
             size_t nrelocs = __oe_get_reloc_size() / sizeof(elf64_rela_t);
-            const uint8_t* baseaddr = (const uint8_t*)__oe_get_enclave_base();
+            const uint8_t* start_address =
+                (const uint8_t*)__oe_get_enclave_start_address();
 
             for (size_t i = 0; i < nrelocs; i++)
             {
@@ -336,7 +342,7 @@ oe_result_t oe_thread_local_init(oe_sgx_td_t* td)
                 if (ELF64_R_TYPE(p->r_info) == R_X86_64_TPOFF64)
                 {
                     // Compute address of tpoff variable
-                    int64_t* tpoff = (int64_t*)(baseaddr + p->r_offset);
+                    int64_t* tpoff = (int64_t*)(start_address + p->r_offset);
 
                     // Set tpoff to the offset value relative to FS
                     *tpoff = (tls_start + p->r_addend - fs);
@@ -395,7 +401,7 @@ void __cxa_thread_atexit(void (*destructor)(void*), void* object)
  * Cleanup the thread-local section for a given thread.
  * This must be called *before* the td itself is cleaned up.
  */
-oe_result_t oe_thread_local_cleanup(oe_sgx_td_t* td)
+oe_result_t oe_sgx_thread_local_cleanup(oe_sgx_td_t* td)
 {
     /* Call tls atexit functions in reverse order*/
     if (td->tls_atexit_functions)
@@ -419,7 +425,11 @@ oe_result_t oe_thread_local_cleanup(oe_sgx_td_t* td)
     // (i.e., tls_start is NULL when tdata and tbss are zero).
     oe_allocator_thread_cleanup();
     if (tls_start)
-        oe_memset_s(tls_start, (uint64_t)(fs - tls_start), 0, 0);
+        oe_memset_s(
+            tls_start,
+            (uint64_t)(fs - tls_start),
+            0,
+            (uint64_t)(fs - tls_start));
 
     return OE_OK;
 }

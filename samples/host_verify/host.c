@@ -2,11 +2,16 @@
 // Licensed under the MIT License.
 
 #include <errno.h>
+
 #include <openenclave/attestation/sgx/evidence.h>
 #include <openenclave/attestation/verifier.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+#include <openenclave/attestation/sgx/eeid_verifier.h>
+#endif
 
 size_t get_filesize(FILE* fp)
 {
@@ -114,7 +119,6 @@ oe_result_t verify_report(
                 &endorsement_file_size);
         }
 
-        oe_verifier_initialize();
         result = oe_verify_evidence(
             &_uuid_legacy_report_remote,
             report_data,
@@ -146,7 +150,47 @@ oe_result_t verify_report(
     return result;
 }
 
-oe_result_t sgx_enclave_claims_verifier(
+oe_result_t verify_evidence(
+    const char* evidence_filename,
+    const char* endorsements_filename)
+{
+    oe_result_t result = OE_FAILURE;
+    uint8_t *evidence = NULL, *endorsements = NULL;
+    size_t evidence_size = 0, endorsements_size = 0;
+    static const oe_uuid_t _uuid_sgx_ecdsa = {OE_FORMAT_UUID_SGX_ECDSA};
+
+    if (read_binary_file(evidence_filename, &evidence, &evidence_size))
+    {
+        if (endorsements_filename &&
+            !read_binary_file(
+                endorsements_filename, &endorsements, &endorsements_size))
+            return OE_INVALID_PARAMETER;
+
+        const oe_policy_t* policies = NULL;
+        size_t policies_size = 0;
+        oe_claim_t* claims = NULL;
+        size_t claims_length = 0;
+
+        result = oe_verify_evidence(
+            &_uuid_sgx_ecdsa,
+            evidence,
+            evidence_size,
+            endorsements,
+            endorsements_size,
+            policies,
+            policies_size,
+            &claims,
+            &claims_length);
+
+        oe_free_claims(claims, claims_length);
+        free(evidence);
+        free(endorsements);
+    }
+
+    return result;
+}
+
+oe_result_t enclave_claims_verifier(
     oe_claim_t* claims,
     size_t claims_length,
     void* arg)
@@ -154,7 +198,7 @@ oe_result_t sgx_enclave_claims_verifier(
     oe_result_t result = OE_VERIFY_FAILED;
 
     (void)arg;
-    printf("sgx_enclave_claims_verifier is called with claims:\n");
+    printf("enclave_claims_verifier is called with claims:\n");
 
     for (size_t i = 0; i < claims_length; i++)
     {
@@ -197,18 +241,37 @@ oe_result_t verify_cert(const char* filename)
     oe_result_t result = OE_FAILURE;
     size_t cert_file_size = 0;
     uint8_t* cert_data = NULL;
+    uint8_t* endorsements_buffer = NULL;
+    size_t endorsements_buffer_size = 0;
+    oe_policy_t* policies = NULL;
+    size_t policies_size = 0;
+    oe_claim_t* claims = NULL;
+    size_t claims_length = 0;
 
     if (read_binary_file(filename, &cert_data, &cert_file_size))
     {
-        oe_verifier_initialize();
-        result = oe_verify_attestation_certificate_with_evidence(
-            cert_data, cert_file_size, sgx_enclave_claims_verifier, NULL);
+        result = oe_verify_attestation_certificate_with_evidence_v2(
+            cert_data,
+            cert_file_size,
+            endorsements_buffer,
+            endorsements_buffer_size,
+            policies,
+            policies_size,
+            &claims,
+            &claims_length);
+
+        if (result == OE_OK)
+        {
+            result = enclave_claims_verifier(claims, claims_length, NULL);
+        }
     }
 
     if (cert_data != NULL)
     {
         free(cert_data);
     }
+
+    oe_free_claims(claims, claims_length);
 
     return result;
 }
@@ -217,14 +280,17 @@ void print_syntax(const char* program_name)
 {
     fprintf(
         stdout,
-        "Usage:\n  %s -r <report_file> [-e <endorsement_file>]\n  %s -c "
-        "<certificate_file>\n",
+        "Usage:\n"
+        "  %s -r <report_file> [-e <endorsement_file>]\n"
+        "  %s -v <evidence_file> [-e <endorsement_file>]\n"
+        "  %s -c <certificate_file>\n",
+        program_name,
         program_name,
         program_name);
     fprintf(
         stdout,
-        "Verify the integrity of enclave remote report or attestation "
-        "certificate.\n");
+        "Verify the integrity of enclave remote report, enclave attestation "
+        "evidence in SGX_ECDSA format, or attestation certificate.\n");
     fprintf(
         stdout,
         "WARNING: %s does not have a stable CLI interface. Use with "
@@ -235,6 +301,7 @@ void print_syntax(const char* program_name)
 int main(int argc, const char* argv[])
 {
     const char* report_filename = NULL;
+    const char* evidence_filename = NULL;
     const char* endorsement_filename = NULL;
     const char* certificate_filename = NULL;
     oe_result_t result = OE_FAILURE;
@@ -259,6 +326,11 @@ int main(int argc, const char* argv[])
             if (argc > (n - 1))
                 report_filename = argv[++n];
         }
+        else if (memcmp(argv[n], "-v", 2) == 0)
+        {
+            if (argc > (n - 1))
+                evidence_filename = argv[++n];
+        }
         else if (memcmp(argv[n], "-e", 2) == 0)
         {
             if (argc > (n - 1))
@@ -276,13 +348,19 @@ int main(int argc, const char* argv[])
         }
     }
 
-    if (report_filename == NULL && certificate_filename == NULL)
+    if (report_filename == NULL && certificate_filename == NULL &&
+        evidence_filename == NULL)
     {
         print_syntax(argv[0]);
         return 1;
     }
     else
     {
+        oe_verifier_initialize();
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+        oe_sgx_eeid_verifier_initialize();
+#endif
+
         if (report_filename != NULL)
         {
             fprintf(stdout, "Verifying report %s...\n", report_filename);
@@ -290,6 +368,17 @@ int main(int argc, const char* argv[])
             fprintf(
                 stdout,
                 "Report verification %s (%u).\n\n",
+                (result == OE_OK) ? "succeeded" : "failed",
+                result);
+        }
+
+        if (evidence_filename != NULL)
+        {
+            fprintf(stdout, "Verifying evidence %s...\n", evidence_filename);
+            result = verify_evidence(evidence_filename, endorsement_filename);
+            fprintf(
+                stdout,
+                "Evidence verification %s (%u).\n\n",
                 (result == OE_OK) ? "succeeded" : "failed",
                 result);
         }
@@ -305,6 +394,11 @@ int main(int argc, const char* argv[])
                 (result == OE_OK) ? "succeeded" : "failed",
                 result);
         }
+
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+        oe_sgx_eeid_verifier_shutdown();
+#endif
+        oe_verifier_shutdown();
     }
 
     return 0;

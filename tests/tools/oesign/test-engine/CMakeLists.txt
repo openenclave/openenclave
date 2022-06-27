@@ -31,13 +31,13 @@ set(OESIGN_ENGINE_VALID_SHORT_ARGS
 add_test(
   NAME tests/oesign-engine-valid-short-args
   COMMAND
-    python sign-and-verify.py --host-path $<TARGET_FILE:oesign_test_host>
+    ${PYTHON} sign-and-verify.py --host-path $<TARGET_FILE:oesign_test_host>
     --enclave-path $<TARGET_FILE:oesign_test_enc> --oesign-path
     $<TARGET_FILE:oesign> --oesign-args ${OESIGN_ENGINE_VALID_SHORT_ARGS})
 
 set_tests_properties(
   tests/oesign-engine-valid-short-args
-  PROPERTIES PASS_REGULAR_EXPRESSION "PASS: Launch of signed enclave succeeded")
+  PROPERTIES PASS_REGULAR_EXPRESSION "PASS: Signed enclave test app succeeded")
 
 # Test oesign succeeds with valid long form of engine signing parameters
 set(OESIGN_ENGINE_VALID_LONG_ARGS
@@ -47,13 +47,13 @@ set(OESIGN_ENGINE_VALID_LONG_ARGS
 add_test(
   NAME tests/oesign-engine-valid-long-args
   COMMAND
-    python sign-and-verify.py --host-path $<TARGET_FILE:oesign_test_host>
+    ${PYTHON} sign-and-verify.py --host-path $<TARGET_FILE:oesign_test_host>
     --enclave-path $<TARGET_FILE:oesign_test_enc> --oesign-path
     $<TARGET_FILE:oesign> --oesign-args ${OESIGN_ENGINE_VALID_LONG_ARGS})
 
 set_tests_properties(
   tests/oesign-engine-valid-long-args
-  PROPERTIES PASS_REGULAR_EXPRESSION "PASS: Launch of signed enclave succeeded")
+  PROPERTIES PASS_REGULAR_EXPRESSION "PASS: Signed enclave test app succeeded")
 
 # Test invalid --load-path (-p) argument
 add_test(

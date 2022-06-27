@@ -28,6 +28,19 @@ static const uint8_t OE_DEBUG_PUBLIC_KEY[] = {
     0xce, 0x73, 0xe4, 0x33, 0x63, 0x83, 0x77, 0xf1, 0x79, 0xab, 0x44,
     0x56, 0xb2, 0xfe, 0x23, 0x71, 0x93, 0x19, 0x3a, 0x8d, 0xa};
 
+/** Struct to track EEID-relevant claims of the underlying base image. */
+typedef struct
+{
+    uint8_t* enclave_hash;
+    size_t enclave_hash_size;
+    uint8_t* signer_id;
+    size_t signer_id_size;
+    uint16_t product_id;
+    uint32_t security_version;
+    uint64_t attributes;
+    uint32_t id_version;
+} oe_eeid_relevant_base_claims_t;
+
 /**
  * Determine whether properties are those of a base image to be used with EEID
  *
@@ -50,7 +63,8 @@ int is_eeid_base_image(const oe_sgx_enclave_properties_t* properties);
  *
  * @param[in] buf_size The size of **buf**.
  *
- * @returns Returns OE_OK on success.
+ * @retval OE_OK The operation was successful.
+ * @retval other An appropriate error code.
  *
  */
 oe_result_t oe_serialize_eeid(
@@ -69,7 +83,8 @@ oe_result_t oe_serialize_eeid(
  *
  * @param[out] eeid The oe_eeid_t to deserialize to (must be non-NULL).
  *
- * @returns Returns OE_OK on success.
+ * @retval OE_OK The operation was successful.
+ * @retval other An appropriate error code.
  *
  */
 oe_result_t oe_deserialize_eeid(
@@ -97,7 +112,8 @@ typedef struct
  * @param[in] with_eeid_pages Flag indicating whether EEID pages should be
  * included (base image verification requires this to be disabled).
  *
- * @returns Returns OE_OK on success.
+ * @retval OE_OK The operation was successful.
+ * @retval other An appropriate error code.
  *
  */
 struct _OE_SHA256;
@@ -112,35 +128,19 @@ oe_result_t oe_remeasure_memory_pages(
  * This function verifies the consistency of enclave hashes of base and extended
  * images, as well as the base image signature.
  *
- * @param[in] reported_enclave_hash Enclave hash of the extended image (as
- * reported in the oe_report_t).
- *
- * @param[in] reported_enclave_signer Enclave signer of the extended image (as
- * reported in the oe_report_t).
- *
- * @param[in] reported_product_id Product ID of the extended image (as reported
- * in the oe_report_t).
- *
- * @param[in] reported_security_version Security version of the extended image
- * (as reported in the oe_report_t).
- *
- * @param[in] reported_attributes Attributes of the extended image (as reported
- * in the oe_report_t).
+ * @param[in] relevant_claims EEID-relevant base image claims.
  *
  * @param[in] eeid The oe_eeid_t holding all relevant information about the base
  * image.
  *
  * @param[out] base_enclave_hash The hash of the base image
  *
- * @returns Returns OE_OK on success.
+ * @retval OE_OK The operation was successful.
+ * @retval other An appropriate error code.
  *
  */
 oe_result_t verify_eeid(
-    const uint8_t* reported_enclave_hash,
-    const uint8_t* reported_enclave_signer,
-    uint16_t reported_product_id,
-    uint32_t reported_security_version,
-    uint64_t reported_attributes,
+    const oe_eeid_relevant_base_claims_t* relevant_claims,
     const uint8_t** base_enclave_hash,
     const oe_eeid_t* eeid);
 
@@ -151,7 +151,8 @@ oe_result_t verify_eeid(
  *
  * @param[out] eeid The oe_eeid_t
  *
- * @returns Returns OE_OK on success.
+ * @retval OE_OK The operation was successful.
+ * @retval other An appropriate error code.
  *
  */
 oe_result_t oe_create_eeid_sgx(size_t data_size, oe_eeid_t** eeid);
@@ -161,7 +162,7 @@ oe_result_t oe_create_eeid_sgx(size_t data_size, oe_eeid_t** eeid);
  *
  * @param[in] eeid The oe_eeid_t
  *
- * @returns Returns OE_OK on success.
+ * @returns the size (in bytes) of the given EEID structure.
  *
  */
 size_t oe_eeid_byte_size(const oe_eeid_t* eeid);
@@ -175,7 +176,8 @@ size_t oe_eeid_byte_size(const oe_eeid_t* eeid);
  *
  * @param[in] buffer_size Size of **buffer**.
  *
- * @returns Returns OE_OK on success.
+ * @retval OE_OK The operation was successful.
+ * @retval other An appropriate error code.
  *
  */
 oe_result_t oe_eeid_hton(
@@ -192,7 +194,8 @@ oe_result_t oe_eeid_hton(
  *
  * @param[in] eeid The oe_eeid_t to convert to.
  *
- * @returns Returns OE_OK on success.
+ * @retval OE_OK The operation was successful.
+ * @retval other An appropriate error code.
  *
  */
 oe_result_t oe_eeid_ntoh(
@@ -202,10 +205,9 @@ oe_result_t oe_eeid_ntoh(
 
 typedef struct
 {
-    size_t sgx_evidence_size;     /* Size of base-image evidence */
-    size_t sgx_endorsements_size; /* Size of base-image endorsements */
-    size_t eeid_size;             /* Size of EEID */
-    uint8_t data[];               /* Data (same order as the sizes) */
+    size_t base_evidence_size; /* Size of base-image evidence */
+    size_t eeid_size;          /* Size of EEID */
+    uint8_t data[];            /* Data (same order as the sizes) */
 } oe_eeid_evidence_t;
 
 /**
@@ -217,7 +219,8 @@ typedef struct
  *
  * @param[in] buffer_size Size of **buffer**.
  *
- * @returns Returns OE_OK on success.
+ * @retval OE_OK The operation was successful.
+ * @retval other An appropriate error code.
  *
  */
 oe_result_t oe_eeid_evidence_hton(
@@ -234,13 +237,50 @@ oe_result_t oe_eeid_evidence_hton(
  *
  * @param[in] evidence The oe_eeid_evidence_t to convert to.
  *
- * @returns Returns OE_OK on success.
+ * @retval OE_OK The operation was successful.
+ * @retval other An appropriate error code.
  *
  */
 oe_result_t oe_eeid_evidence_ntoh(
     const uint8_t* buffer,
     size_t buffer_size,
     oe_eeid_evidence_t* evidence);
+
+/**
+ * Convert an oe_eeid_endorsements_t into a buffer using network byte-order.
+ *
+ * @param[in] endorsements The oe_eeid_endorsements_t to convert.
+ *
+ * @param[in] buffer The buffer to write to.
+ *
+ * @param[in] buffer_size Size of **buffer**.
+ *
+ * @retval OE_OK The operation was successful.
+ * @retval other An appropriate error code.
+ *
+ */
+oe_result_t oe_eeid_endorsements_hton(
+    const oe_eeid_endorsements_t* endorsements,
+    uint8_t* buffer,
+    size_t buffer_size);
+
+/**
+ * Read an oe_eeid_endorsements_t from a buffer using host byte-order.
+ *
+ * @param[in] buffer The buffer to read from.
+ *
+ * @param[in] buffer_size Size of **buffer**.
+ *
+ * @param[in] endorsements The oe_eeid_endorsements_t to convert to.
+ *
+ * @retval OE_OK The operation was successful.
+ * @retval other An appropriate error code.
+ *
+ */
+oe_result_t oe_eeid_endorsements_ntoh(
+    const uint8_t* buffer,
+    size_t buffer_size,
+    oe_eeid_endorsements_t* endorsements);
 
 #endif /* OE_WITH_EXPERIMENTAL_EEID */
 

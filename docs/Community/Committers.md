@@ -19,33 +19,32 @@ therefore should usually be consulted for changes relating to that area.
 |-----------------------|---------------------|--------------------------------|
 | Amaury Chamayou       | achamayou           | Build, CCF Integration         |
 | Anand Krishnamoorthi  | anakrish            | Debugging, SGX, EDL, Dev Tools |
-| Andrew Schwartzmeyer  | andschwa            | EDL, CMake, Dev Tools, Website |
-| Brett McLaren         | BRMcLaren           | Build, CMake, CI               |
 | Brian Telfer          | Britel              | TrustZone, Attestation         |
-| Simon Leet            | CodeMonkeyLeet      | SGX, APIs                      |
+| Chris Yan             | cyandevs            | Build, CI, Scripts             |
 | Dave Thaler           | dthaler             | TrustZone, APIs, Dev Tools     |
-| Emil Alexandru Stoica | EmilAlexandruStoica | Build, CMake, CI, Ansible      |
 | Akash Gupta           | gupta-ak            | SGX, Attestation, APIs         |
 | Hernan Gatta          | HernanGatta         | TrustZone                      |
 | Sergio Wong           | jazzybluesea        | Attestation, SGX               |
-| Jiri Appl             | jiria               | Attestation, TrustZone         |
-| John Kordich          | johnkord            | Build, CI, Dev Tools, Release  |
-| Jordan Hand           | jhand2              | Windows, Build, SGX            |
 | Xuejun Yang           | jxyang              | SGX                            |
 | Mike Brasher          | mikbras             | SGX, APIs, EDL                 |
 | Ming-Wei Shih         | mingweishih         | SGX, Dev tools, EDL            |
-| Marius Oprin          | oprinmarius         | Build, CMake, CI, Ansible      |
 | Paul Allen            | paulcallen          | TrustZone                      |
 | Radhika Jandhyala     | radhikaj            | SGX, APIs, Website             |
+| Rob Sanchez           | rs--                | Build, CI, Scripts             |
+| Shanwei Cen           | shnwc               | Attestation, SGX               |
 | Shruti Ratnam         | shruti25ratnam      | Attestation                    |
 | Cheng-mean Liu        | soccerGB            | Attestation, SGX               |
-| Bruce Campbell        | yakman2020          | Windows, SGX                   |
+| Andy Chen             | anche-is-andy       | Attestation, SGX               |
 
 Current Expectations
 --------------------
 
 However, it is up to each committer to determine who should review which PR, and
 when to merge it. It is up to each committer to decide [when to accept a contribution](Governance.md#Accepting-Contributions).
+
+It is recommended that each committer take the Linux Foundation course
+[Inclusive Open Source Community Orientation](https://training.linuxfoundation.org/training/inclusive-open-source-community-orientation-lfc102/)
+and follow its principles to ensure that Open Enclave has an open and inclusive community.
 
 Current Challenges
 ------------------

@@ -17,6 +17,11 @@
 #include <openenclave/internal/thread.h>
 #include "asmdefs.h"
 #include "td.h"
+#include "tracee.h"
+
+void oe_abort_with_td(oe_sgx_td_t* td) OE_NO_RETURN;
+
+static oe_sgx_td_t* _td;
 
 /*
 **==============================================================================
@@ -31,14 +36,26 @@
 static void _check_memory_boundaries(void)
 {
     /* This is a tautology! */
-    if (!oe_is_within_enclave(__oe_get_enclave_base(), __oe_get_enclave_size()))
-        oe_abort();
+    if (!oe_is_within_enclave(
+            __oe_get_enclave_start_address(), __oe_get_enclave_size()))
+        oe_abort_with_td(_td);
 
     if (!oe_is_within_enclave(__oe_get_reloc_base(), __oe_get_reloc_size()))
-        oe_abort();
+        oe_abort_with_td(_td);
 
     if (!oe_is_within_enclave(__oe_get_heap_base(), __oe_get_heap_size()))
-        oe_abort();
+        oe_abort_with_td(_td);
+
+    if (__oe_get_enclave_create_zero_base_flag())
+    {
+        /*
+         * Make sure that the enclave image address and
+         * the configured start address are same.
+         */
+        if (__oe_get_configured_enclave_start_address() !=
+            (uint64_t)__oe_get_enclave_start_address())
+            oe_abort_with_td(_td);
+    }
 }
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
@@ -59,7 +76,7 @@ static oe_result_t _eeid_patch_memory()
 
     if (_is_eeid_base_image(&oe_enclave_properties_sgx))
     {
-        uint8_t* enclave_base = (uint8_t*)__oe_get_enclave_base();
+        uint8_t* enclave_base = (uint8_t*)__oe_get_enclave_start_address();
         uint8_t* heap_base = (uint8_t*)__oe_get_heap_base();
         const oe_eeid_marker_t* marker = (oe_eeid_marker_t*)heap_base;
         oe_eeid_t* eeid = (oe_eeid_t*)(enclave_base + marker->offset);
@@ -96,13 +113,13 @@ static void _initialize_enclave_image()
     /* Relocate symbols */
     if (!oe_apply_relocations())
     {
-        oe_abort();
+        oe_abort_with_td(_td);
     }
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
     if (_eeid_patch_memory() != OE_OK)
     {
-        oe_abort();
+        oe_abort_with_td(_td);
     }
 #endif
 
@@ -115,6 +132,9 @@ static oe_once_t _enclave_initialize_once;
 static void _initialize_enclave_imp(void)
 {
     _initialize_enclave_image();
+
+    if (oe_sgx_initialize_simulation_mode_cache(_td) != OE_OK)
+        oe_abort_with_td(_td);
 }
 
 /*
@@ -128,7 +148,10 @@ static void _initialize_enclave_imp(void)
 **
 **==============================================================================
 */
-void oe_initialize_enclave()
+void oe_initialize_enclave(oe_sgx_td_t* td)
 {
+    /* Initialize _td so that we can call oe_abort_with_td */
+    _td = td;
+
     oe_once(&_enclave_initialize_once, _initialize_enclave_imp);
 }

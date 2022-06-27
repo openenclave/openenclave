@@ -66,6 +66,30 @@ OE_EXTERNC_BEGIN
 
 #define OE_TEST_IGNORE(COND) OE_TEST_IF(COND, false)
 
+#define OE_EXPECT_IF(VALUE, EXPECTED, OE_TEST_ABORT)                 \
+    do                                                               \
+    {                                                                \
+        uint64_t value = (uint64_t)(VALUE);                          \
+        uint64_t expected = (uint64_t)(EXPECTED);                    \
+        if (value != expected)                                       \
+        {                                                            \
+            OE_PRINT(                                                \
+                STDERR,                                              \
+                "Test failed: %s(%u): %s expected: %lu, got: %lu\n", \
+                __FILE__,                                            \
+                __LINE__,                                            \
+                __FUNCTION__,                                        \
+                expected,                                            \
+                value);                                              \
+            if (OE_TEST_ABORT)                                       \
+                OE_ABORT();                                          \
+        }                                                            \
+    } while (0)
+
+#define OE_EXPECT(VALUE, EXPECTED) OE_EXPECT_IF(VALUE, EXPECTED, true)
+
+#define OE_EXPECT_IGNORE(VALUE, EXPECTED) OE_EXPECT_IF(VALUE, EXPECTED, false)
+
 /* Multi-threaded test cases may need a specific base allocation
  * when using allocators that make use of thread-local storage, such
  * as tcmalloc or snmalloc.

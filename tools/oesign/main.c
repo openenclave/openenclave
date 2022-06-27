@@ -22,6 +22,7 @@ int oesign(
     const char* conffile,
     const char* keyfile,
     const char* digest_signature,
+    const char* output_file,
     const char* x509,
     const char* engine_id,
     const char* engine_load_path,
@@ -60,6 +61,9 @@ static const char _usage_sign[] =
     "                           certificate used to sign the digest file.\n"
     "  -d, --digest-file        path to the signed digest file matching the\n"
     "                           enclave image and specified configuration.\n"
+    "  -o, --output-file        [optional] file name (with path) where the\n"
+    "                           signature of the enclave image will be\n"
+    "                           written.\n"
 #if HAS_ENGINE_SUPPORT
     "\n"
     "  OR\n"
@@ -73,22 +77,46 @@ static const char _usage_sign[] =
 #endif
     "\n"
     "Description:\n"
-    "  This option (1) injects runtime properties into an enclave image\n"
+    "  This command (1) injects runtime properties into an enclave image\n"
     "  and (2) digitally signs that image.\n"
     "\n"
     "  The properties are read from the CONFIG_FILE. They override any\n"
     "  properties that were already defined inside the enclave image\n"
-    "  through the use of the OE_SET_ENCLAVE_SGX macro. These properties\n"
-    "  include:\n"
+    "  through use of OE_SET_ENCLAVE_SGX or OE_SET_ENCLAVE_SGX2 macros.\n"
+    "  If a property is not explicitly set, the default values override\n"
+    "  the definitions set by SET_OE_ENCLAVE_SGX(2) macros.\n"
+    "  These properties include:\n"
     "\n"
-    "    Debug - whether enclave debug mode should be enabled (1) or not "
-    "(0)\n"
+    "    Debug - whether debug mode should be enabled (1) or not (0) in "
+    "enclave\n"
+    "    (default: 0)\n"
     "    ProductID - the product identified number\n"
     "    SecurityVersion - the security version number\n"
     "    NumHeapPages - the number of heap pages for this enclave\n"
     "    NumStackPages - the number of stack pages for this enclave\n"
     "    NumTCS - the number of thread control structures for this "
     "enclave\n"
+    "    ExtendedProductID - a 128-bit globally unique identifier for the\n"
+    "    enclave if the 16-bit ProductID proves too restrictive. Defaults to "
+    "zero \n"
+    "    value if property is not included in CONFIG_FILE. "
+    " (SGX2 feature)\n"
+    "    FamilyID - product family identity to group different enclaves\n"
+    "    under a common identity (SGX2 feature) Defaults to zero value if "
+    "property \n"
+    "    is not included in CONFIG_FILE.\n"
+    "    CapturePFGPExceptions - whether in-enclave exception handler should\n"
+    "    be enabled (1) or not (0) to capture #PF and #GP exceptions\n"
+    "    (SGX2 feature, default: 0)\n"
+    "    CreateZeroBaseEnclave - whether the enclave creation should be\n"
+    "    enabled (1) or not (0) with base address 0x0 (default: 0).\n"
+    "    StartAddress -  the enclave image address when "
+    "CreateZeroBaseEnclave=1.\n"
+    "    The value should be a power of two and greater than\n"
+    "    /proc/sys/vm/mmap_min_addr\n"
+    "\n"
+    "  NOTE: If neither ExtendedProductID nor FamilyID is set, Key Separation\n"
+    "  and Sharing (KSS) is disabled by default.\n"
     "\n"
     "  The configuration file contains simple NAME=VALUE entries. For "
     "example:\n"
@@ -285,6 +313,7 @@ int sign_parser(int argc, const char* argv[])
     const char* conffile = NULL;
     const char* keyfile = NULL;
     const char* digest_signature = NULL;
+    const char* output_file = NULL;
     const char* x509 = NULL;
     const char* engine_id = NULL;
     const char* engine_load_path = NULL;
@@ -296,6 +325,7 @@ int sign_parser(int argc, const char* argv[])
         {"config-file", required_argument, NULL, 'c'},
         {"key-file", required_argument, NULL, 'k'},
         {"digest-signature", required_argument, NULL, 'd'},
+        {"output-file", required_argument, NULL, 'o'},
         {"x509", required_argument, NULL, 'x'},
 #if HAS_ENGINE_SUPPORT
         {"engine", required_argument, NULL, 'n'},
@@ -304,7 +334,7 @@ int sign_parser(int argc, const char* argv[])
 #endif
         {NULL, 0, NULL, 0},
     };
-    const char short_options[] = "he:c:k:n:p:i:d:x:";
+    const char short_options[] = "he:c:k:n:p:i:d:o:x:";
 
     int c;
 
@@ -341,6 +371,9 @@ int sign_parser(int argc, const char* argv[])
                 break;
             case 'd':
                 digest_signature = optarg;
+                break;
+            case 'o':
+                output_file = optarg;
                 break;
             case 'x':
                 x509 = optarg;
@@ -429,6 +462,7 @@ int sign_parser(int argc, const char* argv[])
             conffile,
             keyfile,
             digest_signature,
+            output_file,
             x509,
             engine_id,
             engine_load_path,
@@ -544,6 +578,7 @@ int arg_handler(int argc, const char* argv[])
     return ret;
 }
 
+#if !defined(BUILD_LIBRARY)
 int main(int argc, const char* argv[])
 {
     oe_set_err_program_name(argv[0]);
@@ -558,3 +593,4 @@ int main(int argc, const char* argv[])
     ret = arg_handler(argc, argv);
     return ret;
 }
+#endif

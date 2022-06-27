@@ -6,6 +6,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/syscall/device.h>
+#include <openenclave/internal/syscall/sys/syscall.h>
 #include <openenclave/internal/syscall/unistd.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
@@ -95,6 +96,9 @@ static void test_create_file(FILE_SYSTEM& fs, const char* tmp_dir)
 
     mkpath(path, tmp_dir, "alphabet");
 
+    /* File does not exist. */
+    OE_TEST(fs.access(path, F_OK) == -1);
+
     /* Open the file for output. */
     {
         const int flags = OE_O_CREAT | OE_O_TRUNC | OE_O_WRONLY;
@@ -113,6 +117,9 @@ static void test_create_file(FILE_SYSTEM& fs, const char* tmp_dir)
 
     /* Close the file. */
     OE_TEST(fs.close(file) == 0);
+
+    /* File exists. */
+    OE_TEST(fs.access(path, F_OK) == 0);
 }
 
 template <class FILE_SYSTEM>
@@ -397,12 +404,33 @@ static void test_truncate_file(FILE_SYSTEM& fs, const char* tmp_dir)
 
     mkpath(path, tmp_dir, "alphabet");
 
-    /* Remove the file. */
+    /* Truncate the file. */
     OE_TEST(fs.truncate(path, 5) == 0);
 
     /* Stat the file. */
     OE_TEST(fs.stat(path, &buf) == 0);
     OE_TEST(buf.st_size == 5);
+}
+
+template <class FILE_SYSTEM>
+static void test_ftruncate_file(FILE_SYSTEM& fs, const char* tmp_dir)
+{
+    char path[OE_PAGE_SIZE];
+    typename FILE_SYSTEM::stat_type buf;
+
+    printf("--- %s()\n", __FUNCTION__);
+
+    mkpath(path, tmp_dir, "alphabet");
+
+    /* Truncate the file. */
+    const auto file = fs.open(path, O_WRONLY, 0);
+    OE_TEST(file);
+    OE_TEST(fs.ftruncate(file, 4) == 0);
+    OE_TEST(fs.close(file) == 0);
+
+    /* Stat the file. */
+    OE_TEST(fs.stat(path, &buf) == 0);
+    OE_TEST(buf.st_size == 4);
 }
 
 template <class FILE_SYSTEM>
@@ -420,6 +448,32 @@ static void test_unlink_file(FILE_SYSTEM& fs, const char* tmp_dir)
 
     /* Stat the file. */
     OE_TEST(fs.stat(path, &buf) != 0);
+}
+
+template <class FILE_SYSTEM>
+static void test_flock_file(FILE_SYSTEM& fs, const char* tmp_dir)
+{
+    char path[OE_PAGE_SIZE];
+
+    printf("--- %s()\n", __FUNCTION__);
+
+    mkpath(path, tmp_dir, "alphabet");
+
+    /* Lock the file. */
+    const auto file = fs.open(path, O_RDONLY, 0);
+    OE_TEST(file);
+    OE_TEST(fs.flock(file, LOCK_EX) == 0);
+
+    /* Try to lock the file using another handle. */
+    const auto file2 = fs.open(path, O_RDONLY, 0);
+    OE_TEST(file2);
+    OE_TEST(fs.flock(file2, LOCK_EX | LOCK_NB) == -1);
+    OE_TEST(errno == EWOULDBLOCK);
+
+    /* Closing should unlock the file. */
+    OE_TEST(fs.close(file) == 0);
+    OE_TEST(fs.flock(file2, LOCK_EX) == 0);
+    OE_TEST(fs.close(file2) == 0);
 }
 
 template <class FILE_SYSTEM>
@@ -444,6 +498,7 @@ void test_common(FILE_SYSTEM& fs, const char* tmp_dir)
     test_rename_file(fs, tmp_dir);
     test_readdir(fs, tmp_dir);
     test_truncate_file(fs, tmp_dir);
+    test_ftruncate_file(fs, tmp_dir);
     test_unlink_file(fs, tmp_dir);
     test_invalid_path(fs);
     cleanup(fs, tmp_dir);
@@ -456,6 +511,7 @@ void test_pio(FILE_SYSTEM& fs, const char* tmp_dir)
     test_create_file(fs, tmp_dir);
     test_pread_file(fs, tmp_dir);
     test_pwrite_file(fs, tmp_dir);
+    test_flock_file(fs, tmp_dir);
     cleanup(fs, tmp_dir);
 }
 
@@ -804,6 +860,13 @@ void test_fs(const char* src_dir, const char* tmp_dir)
     {
         char buf[OE_PATH_MAX];
         OE_TEST(oe_getcwd(buf, sizeof(buf)));
+        OE_TEST(strcmp(buf, "/") == 0);
+    }
+
+    /* Test SYS_getcwd */
+    {
+        char buf[OE_PATH_MAX];
+        OE_TEST(syscall(OE_SYS_getcwd, buf, sizeof(buf)) == 2);
         OE_TEST(strcmp(buf, "/") == 0);
     }
 

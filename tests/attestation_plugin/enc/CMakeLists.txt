@@ -12,13 +12,32 @@ add_custom_command(
 
 add_enclave(
   TARGET
-  plugin_enc
+  plugin_mbedtls_enc
   UUID
   0ed4cfa8-3d98-4ef6-a8e6-b3120517ccac
+  CRYPTO_LIB
+  mbedtls
   SOURCES
   enc.c
   ../plugin/tests.c
   ${CMAKE_CURRENT_BINARY_DIR}/plugin_t.c)
 
-enclave_include_directories(plugin_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-enclave_link_libraries(plugin_enc oeenclave oelibc)
+enclave_include_directories(plugin_mbedtls_enc PRIVATE
+                            ${CMAKE_CURRENT_BINARY_DIR})
+
+if (BUILD_OPENSSL)
+  add_enclave(
+    TARGET
+    plugin_openssl_enc
+    UUID
+    95e231ac-7c75-4ae4-9d37-8141aa2d1c62
+    CRYPTO_LIB
+    openssl
+    SOURCES
+    enc.c
+    ../plugin/tests.c
+    ${CMAKE_CURRENT_BINARY_DIR}/plugin_t.c)
+
+  enclave_include_directories(plugin_openssl_enc PRIVATE
+                              ${CMAKE_CURRENT_BINARY_DIR})
+endif ()

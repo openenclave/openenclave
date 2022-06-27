@@ -292,7 +292,8 @@ ExternalProject_Add(
   INSTALL_COMMAND "")
 
 add_dependencies(openssl_includes openssl_configure)
-add_dependencies(openssl_generated openssl_configure)
+add_dependencies(openssl_copied openssl_configure)
+add_dependencies(openssl_generated openssl_includes)
 add_dependencies(openssl_generated openssl_copied)
 
 # Add opensslcrypto (the libcrypto in openssl).
@@ -859,6 +860,12 @@ add_enclave_library(
   ${GENERATED_ASM_SRC}
   ${PATCHED_ASM_SRC})
 
+# Disable optimizations for cts128.c to avoid Clang speculative load hardening flag compiler bug
+# Always dose this on Windows as we cannot know the version of clang.
+if (WIN32 OR CMAKE_C_COMPILER_ID MATCHES Clang)
+  set_source_files_properties(openssl/crypto/modes/cts128.c
+                              PROPERTIES COMPILE_FLAGS -O0)
+endif ()
 # Add opensslssl (the libssl in openssl).
 # Including the same set of files for building libssl.a based on the OpenSSL Makefile.
 add_enclave_library(
@@ -911,13 +918,16 @@ add_enclave_library(
 
 enclave_include_directories(
   opensslcrypto PRIVATE $<BUILD_INTERFACE:${OPENSSL_BUILD_INCLUDES}>
-  $<BUILD_INTERFACE:${OPENSSL_DIR}> $<BUILD_INTERFACE:${OPENSSL_DIR}/include>
+  $<BUILD_INTERFACE:${OPENSSL_DIR}> $<BUILD_INTERFACE:${OPENSSL_DIR}/include>)
+
+# Only mark the directories that include headers to be published as PUBLIC.
+enclave_include_directories(
+  opensslcrypto PUBLIC $<BUILD_INTERFACE:${OE_INCDIR}/openenclave>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty>)
 
 enclave_include_directories(
   opensslssl PRIVATE $<BUILD_INTERFACE:${OPENSSL_BUILD_INCLUDES}>
-  $<BUILD_INTERFACE:${OPENSSL_DIR}> $<BUILD_INTERFACE:${OPENSSL_DIR}/include>
-  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty>)
+  $<BUILD_INTERFACE:${OPENSSL_DIR}> $<BUILD_INTERFACE:${OPENSSL_DIR}/include>)
 
 maybe_build_using_clangw(opensslcrypto)
 maybe_build_using_clangw(opensslssl)
@@ -974,7 +984,8 @@ list(
   openssl/crypto/ec/curve448/scalar.c)
 
 set_property(
-  SOURCE ${CURVE448_SRC} APPEND_STRING
+  SOURCE ${CURVE448_SRC}
+  APPEND_STRING
   PROPERTY
     COMPILE_FLAGS
     " -I${OPENSSL_DIR}/crypto/ec/curve448 -I${OPENSSL_DIR}/crypto/ec/curve448/arch_32"
@@ -990,13 +1001,17 @@ list(
   openssl/crypto/evp/e_camellia.c
   openssl/crypto/evp/e_sm4.c)
 
-set_property(SOURCE ${EVP_SRC} APPEND_STRING
-             PROPERTY COMPILE_FLAGS " -I${OPENSSL_DIR}/crypto/modes")
+set_property(
+  SOURCE ${EVP_SRC}
+  APPEND_STRING
+  PROPERTY COMPILE_FLAGS " -I${OPENSSL_DIR}/crypto/modes")
 
 list(APPEND RAND_SRC openssl/crypto/rand/drbg_ctr.c)
 
-set_property(SOURCE ${RAND_SRC} APPEND_STRING
-             PROPERTY COMPILE_FLAGS " -I${OPENSSL_DIR}/crypto/modes")
+set_property(
+  SOURCE ${RAND_SRC}
+  APPEND_STRING
+  PROPERTY COMPILE_FLAGS " -I${OPENSSL_DIR}/crypto/modes")
 
 # The following options cannot be specified as part of the OpenSSL
 # Configure script. Options that can be specified with the script

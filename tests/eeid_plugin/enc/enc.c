@@ -52,7 +52,7 @@ static void _test_and_unregister_verifier()
     OE_TEST_CODE(oe_sgx_eeid_verifier_shutdown(), OE_OK);
 }
 
-static void _test_evidence_success(const oe_uuid_t* format_id)
+static void _test_evidence_success()
 {
     printf("====== running _test_evidence_success\n");
 
@@ -64,7 +64,7 @@ static void _test_evidence_success(const oe_uuid_t* format_id)
     size_t claims_length = 0;
 
     oe_result_t r = oe_get_evidence(
-        format_id,
+        &_eeid_uuid,
         OE_EVIDENCE_FLAGS_EMBED_FORMAT_ID,
         claims,
         claims_length,
@@ -74,49 +74,48 @@ static void _test_evidence_success(const oe_uuid_t* format_id)
         &evidence_size,
         &endorsements,
         &endorsements_size);
-
-#ifndef _OE_ENCLAVE_H
-    OE_UNUSED(_check_claims);
-    OE_TEST_CODE(r, OE_UNSUPPORTED);
-#else
     OE_TEST_CODE(r, OE_OK);
 
     // Verify evidence without endorsements.
-    OE_TEST(
-        oe_verify_evidence(
-            NULL,
-            evidence,
-            evidence_size,
-            NULL,
-            0,
-            NULL,
-            0,
-            &claims,
-            &claims_length) == OE_OK);
+    r = oe_verify_evidence(
+        NULL,
+        evidence,
+        evidence_size,
+        NULL,
+        0,
+        NULL,
+        0,
+        &claims,
+        &claims_length);
+    OE_TEST_CODE(r, OE_OK);
 
     OE_TEST(oe_free_claims(claims, claims_length) == OE_OK);
+    claims = NULL;
+    claims_length = 0;
 
     // Verify with endorsements.
-    OE_TEST(
-        oe_verify_evidence(
-            NULL,
-            evidence,
-            evidence_size,
-            endorsements,
-            endorsements_size,
-            NULL,
-            0,
-            &claims,
-            &claims_length) == OE_OK);
-
-    OE_TEST(
-        host_ocall_verify(
-            evidence, evidence_size, endorsements, endorsements_size) == OE_OK);
+    r = oe_verify_evidence(
+        NULL,
+        evidence,
+        evidence_size,
+        endorsements,
+        endorsements_size,
+        NULL,
+        0,
+        &claims,
+        &claims_length);
+    OE_TEST_CODE(r, OE_OK);
 
     OE_TEST(oe_free_claims(claims, claims_length) == OE_OK);
+    claims = NULL;
+    claims_length = 0;
+
+    r = host_ocall_verify(
+        evidence, evidence_size, endorsements, endorsements_size);
+    OE_TEST_CODE(r, OE_OK);
+
     OE_TEST(oe_free_endorsements(endorsements) == OE_OK);
     OE_TEST(oe_free_evidence(evidence) == OE_OK);
-#endif
 }
 
 static void _test_get_evidence_fail()
@@ -227,7 +226,7 @@ void run_tests()
     _test_and_register_verifier();
 
     // Test get evidence + verify evidence with the proper claims.
-    _test_evidence_success(&_eeid_uuid);
+    _test_evidence_success();
 
     // Test failures.
     _test_get_evidence_fail();

@@ -1,0 +1,7 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+name: "CodeQL config"
+disable-default-queries: true
+queries:
+  - uses: "openenclave/openenclave-security/src/static/codeql/queries/cpp/suites/oe-codeql-security-queries.qls@main"

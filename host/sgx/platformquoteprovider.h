@@ -30,7 +30,15 @@ typedef enum _sgx_plat_error_t
 #define __sgx_ql_qve_collateral_t
 typedef struct _sgx_ql_qve_collateral_t
 {
-    uint32_t version; /// version = 1.  PCK Cert chain is in the Quote.
+    union
+    {
+        uint32_t version;
+        struct
+        {
+            uint16_t major_version;
+            uint16_t minor_version;
+        };
+    };
     char* pck_crl_issuer_chain;
     uint32_t pck_crl_issuer_chain_size;
     char* root_ca_crl; /// Root CA CRL
@@ -53,6 +61,15 @@ typedef sgx_plat_error_t (*sgx_get_quote_verification_collateral_t)(
     const uint16_t fmspc_size,
     const char* pck_ca,
     sgx_ql_qve_collateral_t** pp_qve_collateral);
+
+typedef sgx_plat_error_t (
+    *sgx_get_quote_verification_collateral_with_parameters_t)(
+    const uint8_t* fmspc,
+    const uint16_t fmspc_size,
+    const char* pck_ca,
+    const uint8_t* custom_parameters,
+    const uint16_t custom_parameters_length,
+    sgx_ql_qve_collateral_t** pp_quote_collateral);
 
 typedef void (*sgx_free_quote_verification_collateral_t)(
     sgx_ql_qve_collateral_t* p_qve_collateral);

@@ -8,7 +8,7 @@
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/defs.h>
 
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 #include <openenclave/bits/sgx/sgxtypes.h>
 #endif
 
@@ -24,6 +24,8 @@ typedef struct _oe_get_sgx_quote_verification_collateral_args
     oe_result_t result;                   /* out */
     uint8_t fmspc[6];                     /* in */
     uint8_t collateral_provider;          /* in */
+    uint8_t* baseline;                    /* in */
+    size_t baseline_size;                 /* in */
     uint8_t* tcb_info;                    /* out */
     size_t tcb_info_size;                 /* out */
     uint8_t* tcb_info_issuer_chain;       /* out */

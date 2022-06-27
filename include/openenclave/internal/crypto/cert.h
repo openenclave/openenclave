@@ -304,14 +304,12 @@ oe_result_t oe_cert_chain_get_leaf_cert(
  * @return OE_OK success.
  * @return OE_INVALID_PARAMETER a parameter is invalid.
  * @return OE_NOT_FOUND an extension with the given OID was not found.
- * @return OE_BUFFER_TOO_SMALL the data buffer is too small and the **size**
- *         parameter contains the required size.
  * @return OE_FAILURE general failure.
  */
 oe_result_t oe_cert_find_extension(
     const oe_cert_t* cert,
     const char* oid,
-    uint8_t* data,
+    uint8_t** data,
     size_t* size);
 
 /**

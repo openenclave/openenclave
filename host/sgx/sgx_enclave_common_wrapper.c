@@ -21,6 +21,17 @@ static void* (*_enclave_create)(
     size_t info_size,
     uint32_t* enclave_error);
 
+static void* (*_enclave_create_ex)(
+    void* base_address,
+    size_t virtual_size,
+    size_t initial_commit,
+    uint32_t type,
+    const void* info,
+    size_t info_size,
+    const uint32_t ex_features,
+    const void* ex_features_p[32],
+    uint32_t* enclave_error);
+
 static size_t (*_enclave_load_data)(
     void* target_address,
     size_t target_size,
@@ -113,6 +124,18 @@ static void _load_sgx_enclave_common_impl(void)
     if (_module)
     {
         OE_CHECK(_lookup_function("enclave_create", (void**)&_enclave_create));
+        /*
+         * NOTE: enclave_create_ex() is available only in newer PSW. We should
+         * not check for valid function pointer until all systems upgrade to
+         * PSW version 2.14.1 or higher.
+         * Hence, directly use LOOKUP_FUNCTION() and not _lookup_function().
+         */
+        _enclave_create_ex = LOOKUP_FUNCTION("enclave_create_ex");
+        if (!_enclave_create_ex)
+            OE_TRACE_INFO(
+                "enclave_create_ex not found in %s. "
+                "Need PSW version 2.14.1 or higher.\n",
+                LIBRARY_NAME);
         OE_CHECK(
             _lookup_function("enclave_load_data", (void**)&_enclave_load_data));
         OE_CHECK(_lookup_function(
@@ -127,18 +150,15 @@ static void _load_sgx_enclave_common_impl(void)
     }
     else
     {
-        OE_TRACE_ERROR("Failed to load %s\n", LIBRARY_NAME);
+        OE_TRACE_ERROR(
+            "Failed to load %s. Cannot create SGX enclaves. Try simulation "
+            "mode instead.\n",
+            LIBRARY_NAME);
         goto done;
     }
 
 done:
-    if (result != OE_OK)
-    {
-        // It is a catastrophic error if sgx_enclave_common library cannot be
-        // successfully loaded.
-        OE_TRACE_ERROR("Terminating host application.");
-        abort();
-    }
+    return;
 }
 
 static bool _load_sgx_enclave_common(void)
@@ -146,6 +166,11 @@ static bool _load_sgx_enclave_common(void)
     static oe_once_type _once;
     oe_once(&_once, _load_sgx_enclave_common_impl);
     return (_module != NULL);
+}
+
+oe_result_t oe_sgx_load_sgx_enclave_common(void)
+{
+    return _load_sgx_enclave_common() ? OE_OK : OE_FAILURE;
 }
 
 void* oe_sgx_enclave_create(
@@ -166,6 +191,51 @@ void* oe_sgx_enclave_create(
         info,
         info_size,
         enclave_error);
+}
+
+void* oe_sgx_enclave_create_ex(
+    void* base_address,
+    size_t virtual_size,
+    size_t initial_commit,
+    uint32_t type,
+    const void* info,
+    size_t info_size,
+    const uint32_t ex_features,
+    const void* ex_features_p[32],
+    uint32_t* enclave_error)
+{
+    _load_sgx_enclave_common();
+    if (ex_features)
+    {
+        /* Check for enclave_create_ex() in the current PSW installed. */
+        if (!_enclave_create_ex)
+        {
+            OE_TRACE_ERROR(
+                "enclave_create_ex() was not found in installed %s.",
+                LIBRARY_NAME);
+            return NULL;
+        }
+
+        return _enclave_create_ex(
+            base_address,
+            virtual_size,
+            initial_commit,
+            type,
+            info,
+            info_size,
+            ex_features,
+            ex_features_p,
+            enclave_error);
+    }
+    else
+        return _enclave_create(
+            base_address,
+            virtual_size,
+            initial_commit,
+            type,
+            info,
+            info_size,
+            enclave_error);
 }
 
 size_t oe_sgx_enclave_load_data(

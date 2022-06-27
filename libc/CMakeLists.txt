@@ -17,9 +17,6 @@ if (OE_SGX)
     ${MUSLSRC}/math/x86_64/log2l.s
     ${MUSLSRC}/math/x86_64/logl.s
     #${MUSLSRC}/math/x86_64/exp2l.s
-    ${MUSLSRC}/math/x86_64/sqrt.s
-    ${MUSLSRC}/math/x86_64/sqrtl.s
-    ${MUSLSRC}/math/x86_64/sqrtf.s
     ${MUSLSRC}/setjmp/x86_64/longjmp.s
     ${MUSLSRC}/setjmp/x86_64/setjmp.s
     ${MUSLSRC}/string/x86_64/memcpy.s
@@ -39,7 +36,7 @@ endif ()
 maybe_build_using_clangw(oelibasm)
 
 # CMake unconditionally adds `-DNDEBUG` etc. as flags even when
-# assembling, and clang-7 errors because we treat warnings as errors.
+# assembling, and clang errors because we treat warnings as errors.
 # So we move the assembly code into a fake library, turn off the
 # error, and then inject the objects into the actual library.
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR USE_CLANGW)
@@ -50,7 +47,14 @@ endif ()
 set(PLATFORM_SRC "")
 
 if (OE_SGX)
-  list(APPEND PLATFORM_SRC sgx/arc4random.c)
+  list(
+    APPEND
+    PLATFORM_SRC
+    sgx/arc4random.c
+    ${MUSLSRC}/math/x86_64/sqrt.c
+    ${MUSLSRC}/math/x86_64/sqrtl.c
+    ${MUSLSRC}/math/x86_64/sqrtf.c
+    sgx/init.c)
 else ()
   list(
     APPEND
@@ -61,7 +65,26 @@ else ()
     ${MUSLSRC}/string/memset.c
     optee/abort.c
     optee/arc4random.c
+    optee/init.c
     optee/trace.c)
+endif ()
+
+if (ENABLE_FUZZING)
+  list(
+    APPEND
+    PLATFORM_SRC
+    ${MUSLSRC}/stat/lstat.c
+    ${MUSLSRC}/passwd/getgr_a.c
+    ${MUSLSRC}/passwd/getgr_r.c
+    ${MUSLSRC}/passwd/getgrent_a.c
+    ${MUSLSRC}/passwd/getgrent.c
+    ${MUSLSRC}/passwd/getgrouplist.c
+    ${MUSLSRC}/passwd/getpw_a.c
+    ${MUSLSRC}/passwd/getpw_r.c
+    ${MUSLSRC}/passwd/getpwent_a.c
+    ${MUSLSRC}/passwd/getpwent.c
+    ${MUSLSRC}/passwd/nscd_query.c
+    ${MUSLSRC}/thread/pthread_cleanup_push.c)
 endif ()
 
 add_enclave_library(
@@ -79,8 +102,8 @@ add_enclave_library(
   kill.c
   libunwind_stubs.c
   link.c
-  locale.c
   malloc.c
+  mman.c
   pthread.c
   sched_yield.c
   sigaction.c
@@ -88,7 +111,6 @@ add_enclave_library(
   stdlib.c
   strerror.c
   syscalls.c
-  sysconf.c
   regcomp.c
   regexec.c
   tre-mem.c
@@ -103,13 +125,20 @@ add_enclave_library(
   ${MUSLSRC}/complex/cabs.c
   ${MUSLSRC}/complex/cabsf.c
   ${MUSLSRC}/complex/cabsl.c
+  ${MUSLSRC}/complex/cacos.c
   ${MUSLSRC}/complex/cacosf.c
+  ${MUSLSRC}/complex/cacosh.c
   ${MUSLSRC}/complex/cacoshf.c
+  ${MUSLSRC}/complex/cacoshl.c
+  ${MUSLSRC}/complex/cacosl.c
   ${MUSLSRC}/complex/carg.c
   ${MUSLSRC}/complex/cargf.c
   ${MUSLSRC}/complex/cargl.c
+  ${MUSLSRC}/complex/casin.c
   ${MUSLSRC}/complex/casinf.c
+  ${MUSLSRC}/complex/casinh.c
   ${MUSLSRC}/complex/casinhf.c
+  ${MUSLSRC}/complex/casinhl.c
   ${MUSLSRC}/complex/catan.c
   ${MUSLSRC}/complex/catanf.c
   ${MUSLSRC}/complex/catanh.c
@@ -136,6 +165,9 @@ add_enclave_library(
   ${MUSLSRC}/complex/conj.c
   ${MUSLSRC}/complex/conjf.c
   ${MUSLSRC}/complex/conjl.c
+  ${MUSLSRC}/complex/cpow.c
+  ${MUSLSRC}/complex/cpowf.c
+  ${MUSLSRC}/complex/cpowl.c
   ${MUSLSRC}/complex/cproj.c
   ${MUSLSRC}/complex/cprojf.c
   ${MUSLSRC}/complex/cprojl.c
@@ -148,13 +180,20 @@ add_enclave_library(
   ${MUSLSRC}/complex/csinhf.c
   ${MUSLSRC}/complex/csinhl.c
   ${MUSLSRC}/complex/csinl.c
+  ${MUSLSRC}/complex/csqrt.c
   ${MUSLSRC}/complex/csqrtf.c
+  ${MUSLSRC}/complex/csqrtl.c
   ${MUSLSRC}/complex/ctan.c
   ${MUSLSRC}/complex/ctanf.c
   ${MUSLSRC}/complex/ctanh.c
   ${MUSLSRC}/complex/ctanhf.c
   ${MUSLSRC}/complex/ctanhl.c
   ${MUSLSRC}/complex/ctanl.c
+  ${MUSLSRC}/conf/confstr.c
+  ${MUSLSRC}/conf/fpathconf.c
+  ${MUSLSRC}/conf/legacy.c
+  ${MUSLSRC}/conf/pathconf.c
+  ${MUSLSRC}/conf/sysconf.c
   ${MUSLSRC}/ctype/__ctype_b_loc.c
   ${MUSLSRC}/ctype/__ctype_get_mb_cur_max.c
   ${MUSLSRC}/ctype/__ctype_tolower_loc.c
@@ -225,22 +264,39 @@ add_enclave_library(
   ${MUSLSRC}/locale/c_locale.c
   ${MUSLSRC}/locale/dcngettext.c
   ${MUSLSRC}/locale/duplocale.c
+  ${MUSLSRC}/locale/freelocale.c
   ${MUSLSRC}/locale/iconv.c
   ${MUSLSRC}/locale/iconv_close.c
   ${MUSLSRC}/locale/langinfo.c
   ${MUSLSRC}/locale/__lctrans.c
+  ${MUSLSRC}/locale/localeconv.c
   ${MUSLSRC}/locale/locale_map.c
   ${MUSLSRC}/locale/__mo_lookup.c
+  ${MUSLSRC}/locale/newlocale.c
   ${MUSLSRC}/locale/pleval.c
+  ${MUSLSRC}/locale/setlocale.c
   ${MUSLSRC}/locale/strcoll.c
   ${MUSLSRC}/locale/strfmon.c
   ${MUSLSRC}/locale/strxfrm.c
   ${MUSLSRC}/locale/textdomain.c
+  ${MUSLSRC}/locale/uselocale.c
   ${MUSLSRC}/locale/wcscoll.c
   ${MUSLSRC}/locale/wcsxfrm.c
-  ${MUSLSRC}/linux/mount.c
   ${MUSLSRC}/linux/epoll.c
   ${MUSLSRC}/linux/flock.c
+  ${MUSLSRC}/linux/getrandom.c
+  ${MUSLSRC}/linux/mount.c
+  ${MUSLSRC}/linux/sysinfo.c
+  ${MUSLSRC}/math/__math_divzero.c
+  ${MUSLSRC}/math/__math_divzerof.c
+  ${MUSLSRC}/math/__math_invalid.c
+  ${MUSLSRC}/math/__math_invalidf.c
+  ${MUSLSRC}/math/__math_oflow.c
+  ${MUSLSRC}/math/__math_oflowf.c
+  ${MUSLSRC}/math/__math_uflow.c
+  ${MUSLSRC}/math/__math_uflowf.c
+  ${MUSLSRC}/math/__math_xflow.c
+  ${MUSLSRC}/math/__math_xflowf.c
   ${MUSLSRC}/math/acos.c
   ${MUSLSRC}/math/acosf.c
   ${MUSLSRC}/math/acosh.c
@@ -281,11 +337,13 @@ add_enclave_library(
   ${MUSLSRC}/math/erf.c
   ${MUSLSRC}/math/erff.c
   ${MUSLSRC}/math/erfl.c
+  ${MUSLSRC}/math/exp_data.c
   ${MUSLSRC}/math/exp10.c
   ${MUSLSRC}/math/exp10f.c
   ${MUSLSRC}/math/exp10l.c
   ${MUSLSRC}/math/exp2.c
   ${MUSLSRC}/math/exp2f.c
+  ${MUSLSRC}/math/exp2f_data.c
   ${MUSLSRC}/math/exp.c
   ${MUSLSRC}/math/expf.c
   ${MUSLSRC}/math/expl.c
@@ -357,13 +415,17 @@ add_enclave_library(
   ${MUSLSRC}/math/log1pf.c
   #${MUSLSRC}/math/log1pl.c
   ${MUSLSRC}/math/log2.c
+  ${MUSLSRC}/math/log2_data.c
   ${MUSLSRC}/math/log2f.c
+  ${MUSLSRC}/math/log2f_data.c
   #${MUSLSRC}/math/log2l.c
   ${MUSLSRC}/math/logb.c
   ${MUSLSRC}/math/logbf.c
   ${MUSLSRC}/math/logbl.c
   ${MUSLSRC}/math/log.c
+  ${MUSLSRC}/math/log_data.c
   ${MUSLSRC}/math/logf.c
+  ${MUSLSRC}/math/logf_data.c
   #${MUSLSRC}/math/logl.c
   ${MUSLSRC}/math/lrint.c
   ${MUSLSRC}/math/lrintf.c
@@ -388,7 +450,9 @@ add_enclave_library(
   ${MUSLSRC}/math/nexttowardl.c
   ${MUSLSRC}/math/__polevll.c
   ${MUSLSRC}/math/pow.c
+  ${MUSLSRC}/math/pow_data.c
   ${MUSLSRC}/math/powf.c
+  ${MUSLSRC}/math/powf_data.c
   ${MUSLSRC}/math/powl.c
   ${MUSLSRC}/math/remainder.c
   ${MUSLSRC}/math/remainderf.c
@@ -447,14 +511,26 @@ add_enclave_library(
   ${MUSLSRC}/math/trunc.c
   ${MUSLSRC}/math/truncf.c
   ${MUSLSRC}/math/truncl.c
+  ${MUSLSRC}/misc/a64l.c
   ${MUSLSRC}/misc/basename.c
   ${MUSLSRC}/misc/dirname.c
+  ${MUSLSRC}/misc/ffs.c
+  ${MUSLSRC}/misc/ffsl.c
+  ${MUSLSRC}/misc/ffsll.c
+  ${MUSLSRC}/misc/get_current_dir_name.c
+  ${MUSLSRC}/misc/getauxval.c
   ${MUSLSRC}/misc/getdomainname.c
+  ${MUSLSRC}/misc/gethostid.c
+  ${MUSLSRC}/misc/getopt.c
+  ${MUSLSRC}/misc/getopt_long.c
+  ${MUSLSRC}/misc/getrlimit.c
+  ${MUSLSRC}/misc/getsubopt.c
+  ${MUSLSRC}/misc/issetugid.c
   ${MUSLSRC}/misc/ioctl.c
+  ${MUSLSRC}/misc/mntent.c
   ${MUSLSRC}/misc/nftw.c
   ${MUSLSRC}/misc/uname.c
-  ${MUSLSRC}/mman/mmap.c
-  ${MUSLSRC}/mman/munmap.c
+  ${MUSLSRC}/misc/wordexp.c
   ${MUSLSRC}/multibyte/btowc.c
   ${MUSLSRC}/multibyte/c16rtomb.c
   ${MUSLSRC}/multibyte/c32rtomb.c
@@ -543,14 +619,18 @@ add_enclave_library(
   ${MUSLSRC}/search/lsearch.c
   ${MUSLSRC}/select/select.c
   ${MUSLSRC}/select/poll.c
-  ${MUSLSRC}/stat/mkdir.c
+  ${MUSLSRC}/search/hsearch.c
+  ${MUSLSRC}/search/insque.c
+  ${MUSLSRC}/search/lsearch.c
   ${MUSLSRC}/search/tdelete.c
+  ${MUSLSRC}/search/tdestroy.c
   ${MUSLSRC}/search/tfind.c
   ${MUSLSRC}/search/tsearch.c
   ${MUSLSRC}/search/twalk.c
   ${MUSLSRC}/stat/fstat.c
+  ${MUSLSRC}/stat/fstatat.c
+  ${MUSLSRC}/stat/mkdir.c
   ${MUSLSRC}/stat/stat.c
-  ${MUSLSRC}/stdio/asprintf.c
   ${MUSLSRC}/stdio/asprintf.c
   ${MUSLSRC}/stdio/clearerr.c
   ${MUSLSRC}/stdio/dprintf.c
@@ -632,7 +712,6 @@ add_enclave_library(
   ${MUSLSRC}/stdio/sscanf.c
   ${MUSLSRC}/stdio/stderr.c
   ${MUSLSRC}/stdio/stdin.c
-  ${MUSLSRC}/stdio/tmpfile.c
   ${MUSLSRC}/stdio/__stdio_close.c
   ${MUSLSRC}/stdio/__stdio_exit.c
   ${MUSLSRC}/stdio/__stdio_read.c
@@ -640,9 +719,10 @@ add_enclave_library(
   ${MUSLSRC}/stdio/__stdio_write.c
   ${MUSLSRC}/stdio/stdout.c
   ${MUSLSRC}/stdio/__stdout_write.c
-  ${MUSLSRC}/stdio/__string_read.c
   ${MUSLSRC}/stdio/swprintf.c
   ${MUSLSRC}/stdio/swscanf.c
+  ${MUSLSRC}/stdio/tempnam.c
+  ${MUSLSRC}/stdio/tmpfile.c
   ${MUSLSRC}/stdio/__toread.c
   ${MUSLSRC}/stdio/__towrite.c
   ${MUSLSRC}/stdio/__uflow.c
@@ -672,6 +752,9 @@ add_enclave_library(
   ${MUSLSRC}/stdlib/atoll.c
   ${MUSLSRC}/stdlib/bsearch.c
   ${MUSLSRC}/stdlib/div.c
+  ${MUSLSRC}/stdlib/ecvt.c
+  ${MUSLSRC}/stdlib/fcvt.c
+  ${MUSLSRC}/stdlib/gcvt.c
   ${MUSLSRC}/stdlib/imaxabs.c
   ${MUSLSRC}/stdlib/imaxdiv.c
   ${MUSLSRC}/stdlib/labs.c
@@ -686,6 +769,7 @@ add_enclave_library(
   ${MUSLSRC}/string/bcmp.c
   ${MUSLSRC}/string/bcopy.c
   ${MUSLSRC}/string/bzero.c
+  ${MUSLSRC}/string/explicit_bzero.c
   ${MUSLSRC}/string/index.c
   ${MUSLSRC}/string/memccpy.c
   ${MUSLSRC}/string/memchr.c
@@ -718,6 +802,7 @@ add_enclave_library(
   ${MUSLSRC}/string/strpbrk.c
   ${MUSLSRC}/string/strrchr.c
   ${MUSLSRC}/string/strsep.c
+  ${MUSLSRC}/string/strsignal.c
   ${MUSLSRC}/string/strspn.c
   ${MUSLSRC}/string/strstr.c
   ${MUSLSRC}/string/strtok.c
@@ -761,27 +846,39 @@ add_enclave_library(
   ${MUSLSRC}/temp/__randname.c
   ${MUSLSRC}/thread/__lock.c
   ${MUSLSRC}/thread/__wait.c
+  ${MUSLSRC}/time/asctime.c
+  ${MUSLSRC}/time/asctime_r.c
   ${MUSLSRC}/time/clock_gettime.c
+  ${MUSLSRC}/time/clock_nanosleep.c
+  ${MUSLSRC}/time/ctime.c
+  ${MUSLSRC}/time/ctime_r.c
   ${MUSLSRC}/time/difftime.c
+  ${MUSLSRC}/time/ftime.c
   ${MUSLSRC}/time/gettimeofday.c
   ${MUSLSRC}/time/gmtime.c
   ${MUSLSRC}/time/gmtime_r.c
+  ${MUSLSRC}/time/localtime_r.c
+  ${MUSLSRC}/time/localtime.c
   ${MUSLSRC}/time/__map_file.c
-  ${MUSLSRC}/time/__month_to_secs.c
   ${MUSLSRC}/time/mktime.c
+  ${MUSLSRC}/time/__month_to_secs.c
   ${MUSLSRC}/time/nanosleep.c
   ${MUSLSRC}/time/__secs_to_tm.c
   ${MUSLSRC}/time/strftime.c
-  ${MUSLSRC}/time/__tz.c
+  ${MUSLSRC}/time/strptime.c
   ${MUSLSRC}/time/time.c
   ${MUSLSRC}/time/timegm.c
+  ${MUSLSRC}/time/timespec_get.c
   ${MUSLSRC}/time/__tm_to_secs.c
+  ${MUSLSRC}/time/__tz.c
+  ${MUSLSRC}/time/wcsftime.c
   ${MUSLSRC}/time/__year_to_secs.c
   ${MUSLSRC}/unistd/access.c
   ${MUSLSRC}/unistd/chdir.c
   ${MUSLSRC}/unistd/close.c
   ${MUSLSRC}/unistd/fdatasync.c
   ${MUSLSRC}/unistd/fsync.c
+  ${MUSLSRC}/unistd/ftruncate.c
   ${MUSLSRC}/unistd/getgid.c
   ${MUSLSRC}/unistd/getegid.c
   ${MUSLSRC}/unistd/getuid.c
@@ -866,14 +963,28 @@ elseif (CMAKE_C_COMPILER_ID MATCHES Clang OR USE_CLANGW)
     -Wno-unneeded-internal-declaration)
 endif ()
 
-# Disable optimizations for twalk.c to avoid Clang 8 compiler bug, see #2556
+# Disable optimizations for twalk.c to avoid Clang speculative load hardening flag compiler bug, see #2556
 # Always dose this on Windows as we cannot know the version of clang.
-if (WIN32
-    OR (CMAKE_C_COMPILER_ID MATCHES Clang
-        AND CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL 8
-        AND CMAKE_C_COMPILER_VERSION VERSION_LESS 9.0))
+if (WIN32 OR CMAKE_C_COMPILER_ID MATCHES Clang)
   set_source_files_properties(${MUSLSRC}/search/twalk.c PROPERTIES COMPILE_FLAGS
                                                                    -O0)
+endif ()
+
+# Expose necessary symbols for the SymCrypt FIPS module
+if (OE_SGX)
+  list(
+    APPEND
+    DEFAULT_VISIBILITY
+    malloc.c # for posix_memalign and free
+    pthread.c # for pthread_mutex_*
+    ${MUSLSRC}/string/memcmp.c
+    ${MUSLSRC}/string/x86_64/memcpy.s
+    ${MUSLSRC}/string/x86_64/memmove.s
+    ${MUSLSRC}/string/x86_64/memset.s
+    ${MUSLSRC}/stdlib/qsort.c)
+
+  set_property(SOURCE ${DEFAULT_VISIBILITY} APPEND_STRING
+               PROPERTY COMPILE_FLAGS " -fvisibility=default")
 endif ()
 
 enclave_compile_definitions(oelibc PRIVATE _XOPEN_SOURCE=700)
@@ -897,6 +1008,7 @@ enclave_link_libraries(
   oesyscall
   oecore
   oelibc_includes
+  oecompiler-rt
   PRIVATE
   oelibasm)
 

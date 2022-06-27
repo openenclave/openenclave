@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../common/sgx/collateral.h"
+#include "openenclave/bits/result.h"
 #include "platform_t.h"
 
 /**
@@ -111,6 +112,109 @@ OE_WEAK_ALIAS(
     oe_get_quote_verification_collateral_ocall);
 
 /**
+ * Declare the prototype of the following function to avoid the
+ * missing-prototypes warning.
+ */
+oe_result_t _oe_get_quote_verification_collateral_with_baseline_ocall(
+    oe_result_t* _retval,
+    uint8_t fmspc[6],
+    uint8_t collateral_provider,
+    void* baseline,
+    size_t baseline_size,
+    void* tcb_info,
+    size_t tcb_info_size,
+    size_t* tcb_info_size_out,
+    void* tcb_info_issuer_chain,
+    size_t tcb_info_issuer_chain_size,
+    size_t* tcb_info_issuer_chain_size_out,
+    void* pck_crl,
+    size_t pck_crl_size,
+    size_t* pck_crl_size_out,
+    void* root_ca_crl,
+    size_t root_ca_crl_size,
+    size_t* root_ca_crl_size_out,
+    void* pck_crl_issuer_chain,
+    size_t pck_crl_issuer_chain_size,
+    size_t* pck_crl_issuer_chain_size_out,
+    void* qe_identity,
+    size_t qe_identity_size,
+    size_t* qe_identity_size_out,
+    void* qe_identity_issuer_chain,
+    size_t qe_identity_issuer_chain_size,
+    size_t* qe_identity_issuer_chain_size_out);
+
+/**
+ * Make the following OCALL weak to support the system EDL opt-in.
+ * When the user does not opt into (import) the EDL, the linker will pick
+ * the following default implementation. If the user opts into the EDL,
+ * the implementation (which is strong) in the oeedger8r-generated code will be
+ * used.
+ */
+oe_result_t _oe_get_quote_verification_collateral_with_baseline_ocall(
+    oe_result_t* _retval,
+    uint8_t fmspc[6],
+    uint8_t collateral_provider,
+    void* baseline,
+    size_t baseline_size,
+    void* tcb_info,
+    size_t tcb_info_size,
+    size_t* tcb_info_size_out,
+    void* tcb_info_issuer_chain,
+    size_t tcb_info_issuer_chain_size,
+    size_t* tcb_info_issuer_chain_size_out,
+    void* pck_crl,
+    size_t pck_crl_size,
+    size_t* pck_crl_size_out,
+    void* root_ca_crl,
+    size_t root_ca_crl_size,
+    size_t* root_ca_crl_size_out,
+    void* pck_crl_issuer_chain,
+    size_t pck_crl_issuer_chain_size,
+    size_t* pck_crl_issuer_chain_size_out,
+    void* qe_identity,
+    size_t qe_identity_size,
+    size_t* qe_identity_size_out,
+    void* qe_identity_issuer_chain,
+    size_t qe_identity_issuer_chain_size,
+    size_t* qe_identity_issuer_chain_size_out)
+{
+    OE_UNUSED(fmspc);
+    OE_UNUSED(collateral_provider);
+    OE_UNUSED(baseline);
+    OE_UNUSED(baseline_size);
+    OE_UNUSED(tcb_info);
+    OE_UNUSED(tcb_info_size);
+    OE_UNUSED(tcb_info_size_out);
+    OE_UNUSED(tcb_info_issuer_chain_size_out);
+    OE_UNUSED(tcb_info_issuer_chain);
+    OE_UNUSED(tcb_info_issuer_chain_size);
+    OE_UNUSED(tcb_info_issuer_chain_size_out);
+    OE_UNUSED(pck_crl);
+    OE_UNUSED(pck_crl_size);
+    OE_UNUSED(pck_crl_size_out);
+    OE_UNUSED(root_ca_crl);
+    OE_UNUSED(root_ca_crl_size);
+    OE_UNUSED(root_ca_crl_size_out);
+    OE_UNUSED(pck_crl_issuer_chain);
+    OE_UNUSED(pck_crl_issuer_chain_size);
+    OE_UNUSED(pck_crl_issuer_chain_size_out);
+    OE_UNUSED(qe_identity);
+    OE_UNUSED(qe_identity_size);
+    OE_UNUSED(qe_identity_size_out);
+    OE_UNUSED(qe_identity_issuer_chain);
+    OE_UNUSED(qe_identity_issuer_chain_size);
+    OE_UNUSED(qe_identity_issuer_chain_size_out);
+
+    if (_retval)
+        *_retval = OE_UNSUPPORTED;
+
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(
+    _oe_get_quote_verification_collateral_with_baseline_ocall,
+    oe_get_quote_verification_collateral_with_baseline_ocall);
+
+/**
  * Update these default size values as needed.
  * These represent the default buffer sizes that can store their
  * corresponding quote_verification_collateral_args completely.
@@ -161,6 +265,8 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
         0,
         {0},
         0,
+        NULL,
+        0,
         0,
         TCBINFO_DEFAULT_SIZE,
         0,
@@ -177,7 +283,7 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
         ALL_ISSUER_CHAIN_DEFAULT_SIZE,
         0};
 
-    uint32_t retval;
+    uint32_t retval = OE_OK;
 
     if (!args)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -186,16 +292,20 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
     memcpy(in.fmspc, args->fmspc, sizeof(in.fmspc));
     /* collateral_provider */
     in.collateral_provider = args->collateral_provider;
+    in.baseline = args->baseline;
+    in.baseline_size = args->baseline_size;
     oe_prealloc_quote_verification_collateral_args(&in, &default_arg_size);
 
     for (;;)
     {
         memcpy(&out, &in, sizeof(out));
 
-        OE_CHECK(oe_get_quote_verification_collateral_ocall(
+        OE_CHECK(oe_get_quote_verification_collateral_with_baseline_ocall(
             &retval,
             out.fmspc,
             out.collateral_provider,
+            out.baseline,
+            out.baseline_size,
             out.tcb_info,
             out.tcb_info_size,
             &out.tcb_info_size,
@@ -325,8 +435,9 @@ done:
     /* Free buffers. */
     if (result != OE_OK)
     {
+        // In case of failure, only need to free memories allocated for in as
+        // out is just another copy for in.
         oe_free_sgx_quote_verification_collateral_args(&in);
-        oe_free_sgx_quote_verification_collateral_args(&out);
     }
 
     return result;
@@ -462,12 +573,24 @@ void oe_free_sgx_quote_verification_collateral_args(
     if (args)
     {
         oe_free(args->tcb_info);
+        args->tcb_info = NULL;
+
         oe_free(args->tcb_info_issuer_chain);
+        args->tcb_info_issuer_chain = NULL;
+
         oe_free(args->pck_crl);
+        args->pck_crl = NULL;
+
         oe_free(args->root_ca_crl);
+        args->root_ca_crl = NULL;
+
         oe_free(args->pck_crl_issuer_chain);
+        args->pck_crl_issuer_chain = NULL;
+
         oe_free(args->qe_identity);
+        args->qe_identity = NULL;
+
         oe_free(args->qe_identity_issuer_chain);
-        oe_free(args->host_out_buffer);
+        args->qe_identity_issuer_chain = NULL;
     }
 }

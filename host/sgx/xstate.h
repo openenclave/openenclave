@@ -11,4 +11,6 @@
  */
 uint64_t oe_get_xfrm(void);
 
+extern bool oe_is_avx_enabled;
+
 #endif /* _OE_XSTATE_H */

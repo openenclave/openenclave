@@ -3,12 +3,17 @@
 
 # Check Clang version.
 if (CMAKE_C_COMPILER_ID MATCHES Clang)
-  if (CMAKE_C_COMPILER_VERSION VERSION_LESS 7 OR CMAKE_C_COMPILER_VERSION
-                                                 VERSION_GREATER 7.99)
-    message(WARNING "Open Enclave officially supports Clang 7 only, "
+  if (CMAKE_C_COMPILER_VERSION VERSION_LESS 10 OR CMAKE_C_COMPILER_VERSION
+                                                  VERSION_GREATER 10.99)
+    message(WARNING "Open Enclave officially supports Clang 10 only, "
                     "but your Clang version (${CMAKE_C_COMPILER_VERSION}) "
                     "is older or newer than that. Build problems may occur.")
   endif ()
+endif ()
+
+if (OE_SGX AND CMAKE_C_COMPILER_ID MATCHES GNU)
+  message(WARNING "The GCC support on x86 platforms has been deprecated. "
+                  "Build problems may occur. Consider using Clang instead.")
 endif ()
 
 if (NOT CMAKE_C_COMPILER_ID STREQUAL CMAKE_CXX_COMPILER_ID)
@@ -55,24 +60,28 @@ include(ccache)
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 
-# Apply Spectre mitigations if available.
+# Apply Spectre mitigation if available.
 set(SPECTRE_MITIGATION_FLAGS -mllvm -x86-speculative-load-hardening)
-check_c_compiler_flag("${SPECTRE_MITIGATION_FLAGS}"
-                      SPECTRE_MITIGATION_C_FLAGS_SUPPORTED)
-check_cxx_compiler_flag("${SPECTRE_MITIGATION_FLAGS}"
-                        SPECTRE_MITIGATION_CXX_FLAGS_SUPPORTED)
-if (SPECTRE_MITIGATION_C_FLAGS_SUPPORTED
-    AND SPECTRE_MITIGATION_CXX_FLAGS_SUPPORTED)
-  message(STATUS "Spectre 1 mitigations supported")
-  # We set this variable to indicate the flags are supported. It is
-  # empty otherwise.
-  set(OE_SPECTRE_MITIGATION_FLAGS ${SPECTRE_MITIGATION_FLAGS})
-  # TODO: We really should specify this only on the `oecore` target;
-  # however, the third-party mbed TLS build needs it set to, so we
-  # have to keep this here for now.
-  add_compile_options(${OE_SPECTRE_MITIGATION_FLAGS})
-else ()
-  message(WARNING "Spectre 1 mitigations NOT supported")
+if (UNIX)
+  check_c_compiler_flag("${SPECTRE_MITIGATION_FLAGS}"
+                        SPECTRE_MITIGATION_C_FLAGS_SUPPORTED)
+  check_cxx_compiler_flag("${SPECTRE_MITIGATION_FLAGS}"
+                          SPECTRE_MITIGATION_CXX_FLAGS_SUPPORTED)
+  if (SPECTRE_MITIGATION_C_FLAGS_SUPPORTED
+      AND SPECTRE_MITIGATION_CXX_FLAGS_SUPPORTED)
+    message(STATUS "Spectre 1 mitigation supported")
+    # We set this variable to indicate the flags are supported. It is
+    # empty otherwise.
+    set(OE_SPECTRE_MITIGATION_FLAGS ${SPECTRE_MITIGATION_FLAGS})
+    # TODO: We really should specify this only on the `oecore` target;
+    # however, the third-party Mbed TLS build needs it too, so we have
+    # to keep this here for now.
+    add_compile_options(${OE_SPECTRE_MITIGATION_FLAGS})
+  else ()
+    message(WARNING "Spectre 1 mitigation NOT supported.")
+  endif ()
+elseif (WIN32)
+  # Clang installed by OE is expected to have Spectre mitigation.
 endif ()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
@@ -113,7 +122,10 @@ elseif (MSVC)
   # so this behavior can be removed if/when cmake_minimum_required is raised to 3.15.
   # ======= Default compiler flags for cmake version 3.12 can be found here: =======
   # https://github.com/Kitware/CMake/blob/v3.12.0/Modules/Platform/Windows-MSVC.cmake
-  set(CMAKE_C_FLAGS "/DWIN32 /D_WINDOWS")
+  # With std:c11, the preprocessor in latest MSVC is more standards compliant and emits
+  # warnings in winbase.h. As recommended by the warning, /Wv:18 is added to suppress
+  # it.
+  set(CMAKE_C_FLAGS "/DWIN32 /D_WINDOWS /Wv:18")
   set(CMAKE_C_FLAGS_DEBUG "/MDd /Zi /Ob0 /Od /RTC1")
   set(CMAKE_C_FLAGS_RELEASE "/MD /O2 /Ob2 /DNDEBUG")
 

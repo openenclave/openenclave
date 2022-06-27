@@ -141,7 +141,7 @@ OE_INLINE uint64_t StrCode(const char* s, uint64_t n)
 #error "Unsupported platform"
 #endif
 
-#if __x86_64__ || _M_X64
+#if defined(__x86_64__) || defined(_M_X64)
 #define OE_CPU_RELAX() asm volatile("pause" ::: "memory")
 #elif __aarch64__ || _M_ARM64
 /**

@@ -2,7 +2,7 @@
 
 ## Platform requirements
 
-- Windows 10, Server 2016 or Server 2019
+- Windows 10 or Windows Server 2019
 
 ## Software Prerequisites
 
@@ -38,8 +38,8 @@ C:\Program Files\Git\mingw64\bin\openssl.exe
 
 ### Clang
 
-Download [Clang/LLVM for Windows 64-bit](http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe).
-Install Clang 7.0.1 and add the LLVM folder (typically C:\Program Files\LLVM\bin)
+Download [Clang/LLVM for Windows 64-bit](https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/LLVM-8.0.1-win64.exe)
+Install Clang 8.0.1 and add the LLVM folder (typically C:\Program Files\LLVM\bin)
 to PATH. Open Enclave Host-Verify SDK uses clang to build the enclave binaries.
 
 Open up a command prompt and ensure that clang is added to PATH.
@@ -55,18 +55,19 @@ C:\Program Files\LLVM\bin\ld.lld.exe
 
 ## Download and install the Azure DCAP NuGet Package
 
-Download the required Azure DCAP NuGet Package from [here](https://github.com/microsoft/Azure-DCAP-Client/releases/latest) and place it in a directory of your choice. Use the command below to install the NuGet package with the [NuGet Command-Line Interface (CLI) tool](https://dist.nuget.org/win-x86-commandline/latest/nuget.exe). In this example, we are placing the NuGet Package in `C:\azure_dcap_nuget` and installing it to `C:\azure_dcap`.
+Download the required Azure DCAP NuGet Package from [here](https://github.com/microsoft/Azure-DCAP-Client/releases/latest) and place it in a directory of your choice. Use the command below to expand the NuGet package with the [NuGet Command-Line Interface (CLI) tool](https://dist.nuget.org/win-x86-commandline/latest/nuget.exe). In this example, we are expanding the NuGet Package in `C:\azure_dcap_nuget` into the directory `C:\azure_dcap`.
 
 ```cmd
- nuget.exe install Microsoft.Azure.DCAP -Source C:\azure_dcap_nuget -OutputDirectory C:\azure_dcap -ExcludeVersion
+nuget.exe install Microsoft.Azure.DCAP -Source C:\azure_dcap_nuget -OutputDirectory C:\azure_dcap -ExcludeVersion
 ```
 
-Once installed, Azure DCAP binary is located in `C:\azure_dcap\Microsoft.Azure.DCAP\build\native`.
-Azure DCAP binary is needed to provide Azure DCAP verification service. Add the folder to PATH and open a command prompt and ensure that it's added to PATH.
+Once the nuget package is expanded, complete the installation by following the instructions in the file `C:\azure_dcap\Microsoft.Azure.DCAP\README.txt`.
+
+Verify successful installation of Azure DCAP by ensuring that the file `dcap_quotprov.dll` is on the PATH and located in the `C:\Windows\System32` directory.
 
 ```cmd
-c:\>where dcap_quoteprov.dll
-c:\azure_dcap\Microsoft.Azure.DCAP\build\native\dcap_quoteprov.dll
+C:\>where dcap_quoteprov.dll
+C:\Windows\System32\dcap_quoteprov.dll
 ```
 
 ## Download and install the Open Enclave Host-Verify SDK NuGet Package

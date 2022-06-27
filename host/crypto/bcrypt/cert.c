@@ -10,11 +10,11 @@
 #include <openenclave/internal/safemath.h>
 #include <openenclave/internal/utils.h>
 
-#include "../magic.h"
 #include "bcrypt.h"
 #include "crl.h"
 #include "ec.h"
 #include "key.h"
+#include "magic.h"
 #include "pem.h"
 #include "rsa.h"
 #include "util.h"
@@ -1264,11 +1264,13 @@ done:
 oe_result_t oe_cert_find_extension(
     const oe_cert_t* cert,
     const char* oid,
-    uint8_t* data,
+    uint8_t** data,
     size_t* data_size)
 {
     oe_result_t result = OE_UNEXPECTED;
     cert_t* impl = (cert_t*)cert;
+    size_t extension_size = 0;
+    uint8_t* extension_data = NULL;
 
     /* Reject invalid parameters */
     if (!_cert_is_valid(impl) || !oid || !data_size)
@@ -1283,32 +1285,27 @@ oe_result_t oe_cert_find_extension(
     if (!extension)
         OE_RAISE(OE_NOT_FOUND);
 
-    /* If the caller's buffer is too small, raise error */
-    if (extension->Value.cbData > *data_size)
-    {
-        *data_size = extension->Value.cbData;
+    extension_size = extension->Value.cbData;
+    extension_data = (uint8_t*)malloc(extension_size);
+    if (!extension_data)
+        OE_RAISE(OE_OUT_OF_MEMORY);
 
-        if (data)
-            OE_RAISE(OE_BUFFER_TOO_SMALL);
-        /* If data is null, this call is intented to get the correct
-         * data_size so no need to trace OE_BUFFER_TOO_SMALL */
-        else
-            OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
-    }
-
-    if (data)
-    {
-        OE_CHECK(oe_memcpy_s(
-            data,
-            *data_size,
-            extension->Value.pbData,
-            extension->Value.cbData));
-        *data_size = extension->Value.cbData;
-    }
+    OE_CHECK(oe_memcpy_s(
+        extension_data,
+        extension_size,
+        extension->Value.pbData,
+        extension->Value.cbData));
+    *data_size = extension_size;
+    *data = extension_data;
 
     result = OE_OK;
 
 done:
+    if (result != OE_OK)
+    {
+        free(extension_data);
+        extension_data = NULL;
+    }
     return result;
 }
 

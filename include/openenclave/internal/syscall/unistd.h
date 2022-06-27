@@ -52,6 +52,8 @@ int oe_truncate(const char* path, oe_off_t length);
 
 int oe_truncate_d(uint64_t devid, const char* path, oe_off_t length);
 
+int oe_ftruncate(int fd, oe_off_t length);
+
 #endif /* !defined(WIN32) */
 
 int oe_link(const char* oldpath, const char* newpath);
@@ -79,6 +81,11 @@ int oe_getdomainname(char* name, size_t len);
 unsigned int oe_sleep(unsigned int seconds);
 
 int oe_nanosleep(struct oe_timespec* req, struct oe_timespec* rem);
+int oe_clock_nanosleep(
+    oe_clockid_t clockid,
+    int flag,
+    struct oe_timespec* req,
+    struct oe_timespec* rem);
 
 int oe_flock(int fd, int operation);
 

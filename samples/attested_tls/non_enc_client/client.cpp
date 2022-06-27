@@ -258,7 +258,6 @@ int main(int argc, char** argv)
     SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv3);
     SSL_CTX_set_options(ctx, SSL_OP_NO_TLSv1);
     SSL_CTX_set_options(ctx, SSL_OP_NO_TLSv1_1);
-
     // specify the verify_callback for custom verification
     SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, &verify_callback);
 

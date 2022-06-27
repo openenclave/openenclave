@@ -5,7 +5,7 @@ mentioned below._
 
 To set up a Linux VM on your Windows machine, do the following:
 
-1. Download an ISO for Ubuntu [18.04](http://releases.ubuntu.com/18.04/) or [16.04](http://releases.ubuntu.com/16.04/).
+1. Download an ISO for Ubuntu [18.04](http://releases.ubuntu.com/18.04/) or [20.04](http://releases.ubuntu.com/20.04/).
    A "Server install image" is sufficient.
 1. Create a VM as follows.  Open "Hyper-V Manager", and do Action -> New -> Virtual Machine....
    - On the Specify Generation screen, choose Generation 2.

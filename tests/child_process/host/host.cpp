@@ -4,6 +4,8 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/error.h>
+#include <openenclave/internal/raise.h>
+#include <openenclave/internal/sgx/tests.h>
 #include <openenclave/internal/tests.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -17,6 +19,7 @@
 #define DESTROY_IN_CHILD_PROCESS 1
 #define CREATE_IN_CHILD_PROCESS 2
 #define CREATE_IN_CHILD_PROCESSES 3
+#define SKIP_RETURN_CODE 2
 
 bool multi_process_flag = true;
 
@@ -32,6 +35,11 @@ int main(int argc, const char* argv[])
     {
         fprintf(stderr, "Usage: %s ENCLAVE_PATH TEST_NUMBER\n", argv[0]);
         exit(1);
+    }
+    if (!oe_sgx_is_flc_supported())
+    {
+        OE_TRACE_INFO("=== tests skipped when FLC is not supported.\n");
+        return SKIP_RETURN_CODE;
     }
     oe_enclave_t* enclave = NULL;
     const uint32_t flags = oe_get_create_flags();

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/advanced/allocator.h>
+#include <openenclave/corelibc/errno.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/internal/fault.h>
 #include <openenclave/internal/globals.h>
@@ -24,6 +25,7 @@ void* oe_malloc(size_t size)
 
     if (!p && size)
     {
+        oe_errno = OE_ENOMEM;
         if (_failure_callback)
             _failure_callback(__FILE__, __LINE__, __FUNCTION__, size);
     }
@@ -42,6 +44,7 @@ void* oe_calloc(size_t nmemb, size_t size)
 
     if (!p && nmemb && size)
     {
+        oe_errno = OE_ENOMEM;
         if (_failure_callback)
             _failure_callback(__FILE__, __LINE__, __FUNCTION__, nmemb * size);
     }
@@ -55,6 +58,7 @@ void* oe_realloc(void* ptr, size_t size)
 
     if (!p && size)
     {
+        oe_errno = OE_ENOMEM;
         if (_failure_callback)
             _failure_callback(__FILE__, __LINE__, __FUNCTION__, size);
     }
@@ -66,17 +70,31 @@ void* oe_memalign(size_t alignment, size_t size)
 {
     void* ptr = NULL;
 
-    // The only difference between posix_memalign and the obsolete memalign is
-    // that posix_memalign requires alignment to be a multiple of sizeof(void*).
-    // Adjust the alignment if needed.
-    alignment = oe_round_up_to_multiple(alignment, sizeof(void*));
+    if (!oe_is_pow2(alignment))
+        oe_errno = OE_EINVAL;
+    else
+    {
+        if (alignment < sizeof(void*))
+            alignment = sizeof(void*);
+        int r = oe_posix_memalign(&ptr, alignment, size);
+        if (r)
+            oe_errno = r;
+    }
 
-    oe_posix_memalign(&ptr, alignment, size);
     return ptr;
 }
 
 int oe_posix_memalign(void** memptr, size_t alignment, size_t size)
 {
+    // Alignment must be a power of two
+    if (!oe_is_pow2(alignment))
+        return OE_EINVAL;
+
+    // Alignment must be a multiple of sizeof(void*).
+    // Since sizeof(void*) is a power of 2, we can just do the following check.
+    if (alignment < sizeof(void*))
+        return OE_EINVAL;
+
     int rc = oe_allocator_posix_memalign(memptr, alignment, size);
 
     if (rc != 0 && size)

@@ -4,6 +4,7 @@ Test for SYSCALL feature
 This directory contains tests for the Open Enclave SYSCALL feature, including:
 
 - dup - tests the dup() function.
+- getrandom - test for the getrandom SYSCALL.
 - fs - file system tests.
 - hostfs - host file system tests.
 - ids - tests the getuid(), getgid(), etc.

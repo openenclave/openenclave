@@ -17,6 +17,8 @@ static struct
         oe_debug_enclave_t* enclave,
         struct _sgx_tcs* tcs);
     oe_result_t (*pop_thread_binding)(void);
+    oe_result_t (*notify_module_loaded)(oe_debug_module_t* module);
+    oe_result_t (*notify_module_unloaded)(oe_debug_module_t* module);
 } _oedebugrt;
 
 static void get_debugrt_function(const char* name, FARPROC* out)
@@ -60,6 +62,12 @@ static void load_oedebugrt(void)
         get_debugrt_function(
             "oe_debug_pop_thread_binding",
             (FARPROC*)&_oedebugrt.pop_thread_binding);
+        get_debugrt_function(
+            "oe_debug_notify_module_loaded",
+            (FARPROC*)&_oedebugrt.notify_module_loaded);
+        get_debugrt_function(
+            "oe_debug_notify_module_unloaded",
+            (FARPROC*)&_oedebugrt.notify_module_unloaded);
 
         OE_TRACE_INFO(
             "oedebugrtbridge: Loaded oedebugrt.dll. Debugging is available.\n");
@@ -119,6 +127,22 @@ oe_result_t oe_debug_pop_thread_binding()
 {
     if (_oedebugrt.pop_thread_binding)
         return _oedebugrt.pop_thread_binding();
+
+    return OE_OK;
+}
+
+oe_result_t oe_debug_notify_module_loaded(oe_debug_module_t* module)
+{
+    if (_oedebugrt.notify_module_loaded)
+        return _oedebugrt.notify_module_loaded(module);
+
+    return OE_OK;
+}
+
+oe_result_t oe_debug_notify_module_unloaded(oe_debug_module_t* module)
+{
+    if (_oedebugrt.notify_module_unloaded)
+        return _oedebugrt.notify_module_unloaded(module);
 
     return OE_OK;
 }

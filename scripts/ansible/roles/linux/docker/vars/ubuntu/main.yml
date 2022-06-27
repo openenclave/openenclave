@@ -4,6 +4,8 @@
 ---
 docker_packages:
   - "docker-ce"
+  - "docker-ce-cli"
+  - "containerd.io"
 
 docker_target_version: "18.09"
 dockerd_target_version: "18.09"

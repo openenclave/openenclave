@@ -105,6 +105,21 @@ int enc_echo_regular(
     return 0;
 }
 
+static uint8_t buffer[1024 * 1024 * 10];
+void enc_test_large_switchless_ocall()
+{
+    // First make a smaller call.
+    OE_TEST(host_large_ocall_switchless(buffer, 1024) == OE_OK);
+
+    // Then make a call equal to default capacity.
+    OE_TEST(host_large_ocall_switchless(buffer, 1024 * 1024) == OE_OK);
+
+    // Then make a larger call.
+    OE_TEST(host_large_ocall_switchless(buffer, sizeof(buffer)) == OE_OK);
+
+    oe_host_printf("large_switchless_ocall passed.\n");
+}
+
 OE_SET_ENCLAVE_SGX(
     1,                             /* ProductID */
     1,                             /* SecurityVersion */

@@ -43,14 +43,8 @@ set(OE_LIBDIR
     CACHE INTERNAL "Library collector")
 
 # Make directories for build systems (NMake) that don't automatically make them.
-file(
-  MAKE_DIRECTORY
-  ${OE_BINDIR}
-  ${OE_DATADIR}
-  ${OE_DOCDIR}
-  ${OE_DOCDIR}
-  ${OE_INCDIR}
-  ${OE_LIBDIR})
+file(MAKE_DIRECTORY ${OE_BINDIR} ${OE_DATADIR} ${OE_DOCDIR} ${OE_INCDIR}
+     ${OE_LIBDIR})
 
 # Generate and install CMake export file for consumers using CMake
 include(CMakePackageConfigHelpers)
@@ -78,7 +72,14 @@ install(
   # Note that this is used in `openenclaverc` to set the path for
   # users of the SDK and so must remain consistent.
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
-  FILE openenclave-targets.cmake
+  FILE openenclave-targets.cmake)
+install(
+  EXPORT openenclave-hostverify-targets
+  NAMESPACE openenclave::
+  # Note that this is used in `openenclaverc` to set the path for
+  # users of the SDK and so must remain consistent.
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
+  FILE openenclave-hostverify-targets.cmake
   COMPONENT OEHOSTVERIFY)
 install(
   FILES ${PROJECT_SOURCE_DIR}/cmake/sdk_cmake_targets_readme.md

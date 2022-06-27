@@ -3,11 +3,15 @@
 
 ---
 - name: Include distribution vars
-  include_vars:
+  ansible.builtin.include_vars:
     file: "{{ ansible_distribution | lower }}/main.yml"
 
+- name: Gather package facts
+  ansible.builtin.package_facts:
+    manager: auto
+
 - name: Jenkins | Install Java JRE needed by Jenkins
-  package:
+  ansible.builtin.package:
     name: "{{ java_packages }}"
     state: latest
   retries: 10
@@ -16,39 +20,60 @@
   until: result is success
 
 - name: Jenkins | Create the Jenkins group
-  group:
+  ansible.builtin.group:
     name: jenkins
     state: present
 
 - name: Jenkins | Add the Jenkins user
-  user:
+  ansible.builtin.user:
     name: jenkins
     group: jenkins
     state: present
 
-- import_role:
+- name: Jenkins | Import Docker install tasks
+  ansible.builtin.import_role:
     name: linux/docker
     tasks_from: stable-install.yml
+  vars:
+    docker_ansible: True
 
-- name: Docker | Add the Jenkins system user to the Docker group
-  user:
+- name: Jenkins | Add the Jenkins system user to the Docker group
+  ansible.builtin.user:
     name: jenkins
     groups: docker
     append: yes
 
-- name: Jenkins | Pre-pull CI/CD Docker images
-  shell: |
-    set -o errexit
-    docker login {{ docker_registry }} -u {{ docker_user_name }} -p {{ docker_user_password }}
-    docker pull {{ docker_registry }}/oetools-full-16.04:{{ docker_tag }}
-    docker pull {{ docker_registry }}/oetools-full-18.04:{{ docker_tag }}
-    docker pull {{ docker_registry }}/oetools-minimal-18.04:{{ docker_tag }}
-    docker pull {{ docker_registry }}/oetools-deploy:{{ docker_tag }}
+- name: Jenkins | Determine if sgx_prv group exists
+  ansible.builtin.getent:
+    database: group
+    key: sgx_prv
+
+# This task may not be useful if the same user is removed during VM generalization and deprovisioning.
+- name: Jenkins | Add user to sgx_prv group
+  ansible.builtin.user:
+    name: "{{ jenkins_admin_name }}"
+    groups: sgx_prv
+    append: yes
+  when: "'sgx_prv' in ansible_facts.getent_group"
+
+- name: Jenkins | Docker Login
+  community.general.docker_login:
+    registry_url: "{{ docker_registry }}"
+    username: "{{ docker_user_name }}"
+    password: "{{ docker_user_password }}"
+    reauthorize: yes
+
+- name: Jenkins | Docker pull images
+  community.general.docker_image:
+    name: "{{ item }}"
+    source: pull
+  with_items:
+    - "{{ docker_registry }}/oetools-18.04:{{ docker_tag }}"
+    - "{{ docker_registry }}/oetools-20.04:{{ docker_tag }}"
   retries: 10
   delay: 10
-  register: result
-  until: result is success
-  when: (docker_registry is defined and
-         docker_user_name is defined and
-         docker_user_password is defined and
-         docker_tag is defined)
+
+- name: Jenkins | Docker Logout
+  community.general.docker_login:
+    registry_url: "{{ docker_registry }}"
+    state: absent

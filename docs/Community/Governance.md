@@ -67,7 +67,11 @@ Chair's responsibility to ensure there are sufficient Approvers and Reviewers to
 support the development velocity and SIG health, and ensure a succession plan is
 in place should the chair intend to step down. Each SIG is responsible for
 establishing its own governance process (defining the process for SIG Chair
-selection, for example).
+selection, for example). SIG Chairs have the authority to add reviewers and
+approvers for their SIG. The process is
+* The SIG Chair creates a PR to document the addition of a contributor to their SIG. 
+* After this is approved, the CGC adds the person as a contributor via repo permissions management.
+* Social convention enforces that people only approve PRs that are within the purview of the SIG.
 
 When a change affects code owned by multiple SIGs, it should be coordinated with
 the respective SIGs. If long-term collaboration is anticipated, cross-SIG

@@ -7,12 +7,17 @@
 #if defined(__linux__)
 #include <linux/futex.h>
 #include <stdlib.h>
+#include <sys/random.h>
 #include <sys/syscall.h>
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
 #elif defined(_WIN32)
+#define WIN32_NO_STATUS
 #include <Windows.h>
+#undef WIN32_NO_STATUS
+#include <bcrypt.h>
+#include <ntstatus.h>
 #endif
 
 #include <openenclave/host.h>
@@ -154,6 +159,61 @@ oe_result_t oe_get_quote_verification_collateral_ocall(
     size_t qe_identity_issuer_chain_size,
     size_t* qe_identity_issuer_chain_size_out)
 {
+    return oe_get_quote_verification_collateral_with_baseline_ocall(
+        fmspc,
+        collateral_provider,
+        NULL,
+        0,
+        tcb_info,
+        tcb_info_size,
+        tcb_info_size_out,
+        tcb_info_issuer_chain,
+        tcb_info_issuer_chain_size,
+        tcb_info_issuer_chain_size_out,
+        pck_crl,
+        pck_crl_size,
+        pck_crl_size_out,
+        root_ca_crl,
+        root_ca_crl_size,
+        root_ca_crl_size_out,
+        pck_crl_issuer_chain,
+        pck_crl_issuer_chain_size,
+        pck_crl_issuer_chain_size_out,
+        qe_identity,
+        qe_identity_size,
+        qe_identity_size_out,
+        qe_identity_issuer_chain,
+        qe_identity_issuer_chain_size,
+        qe_identity_issuer_chain_size_out);
+}
+
+oe_result_t oe_get_quote_verification_collateral_with_baseline_ocall(
+    uint8_t fmspc[6],
+    uint8_t collateral_provider,
+    void* baseline,
+    size_t baseline_size,
+    void* tcb_info,
+    size_t tcb_info_size,
+    size_t* tcb_info_size_out,
+    void* tcb_info_issuer_chain,
+    size_t tcb_info_issuer_chain_size,
+    size_t* tcb_info_issuer_chain_size_out,
+    void* pck_crl,
+    size_t pck_crl_size,
+    size_t* pck_crl_size_out,
+    void* root_ca_crl,
+    size_t root_ca_crl_size,
+    size_t* root_ca_crl_size_out,
+    void* pck_crl_issuer_chain,
+    size_t pck_crl_issuer_chain_size,
+    size_t* pck_crl_issuer_chain_size_out,
+    void* qe_identity,
+    size_t qe_identity_size,
+    size_t* qe_identity_size_out,
+    void* qe_identity_issuer_chain,
+    size_t qe_identity_issuer_chain_size,
+    size_t* qe_identity_issuer_chain_size_out)
+{
     oe_result_t result = OE_UNEXPECTED;
     oe_get_sgx_quote_verification_collateral_args_t args = {0};
     bool buffer_too_small = false;
@@ -168,6 +228,12 @@ oe_result_t oe_get_quote_verification_collateral_ocall(
 
     /* collateral_provider */
     args.collateral_provider = collateral_provider;
+
+    /* baseline */
+    args.baseline = baseline;
+
+    /* baseline_size */
+    args.baseline_size = baseline_size;
 
     /* Populate the output fields. */
     OE_CHECK(oe_get_sgx_quote_verification_collateral(&args));
@@ -264,20 +330,10 @@ oe_result_t oe_get_qetarget_info_ocall(
         format_id, opt_params, opt_params_size, target_info);
 }
 
-oe_result_t oe_get_supported_attester_format_ids_ocall(
-    void* format_ids,
-    size_t format_ids_size,
-    size_t* format_ids_size_out)
+oe_result_t oe_get_supported_attester_format_ids_ocall(format_ids_t* format_ids)
 {
-    oe_result_t result;
-
-    result =
-        sgx_get_supported_attester_format_ids(format_ids, &format_ids_size);
-
-    if (format_ids_size_out)
-        *format_ids_size_out = format_ids_size;
-
-    return result;
+    return sgx_get_supported_attester_format_ids(
+        &format_ids->data, &format_ids->size);
 }
 
 oe_result_t oe_verify_quote_ocall(
@@ -342,5 +398,30 @@ oe_result_t oe_verify_quote_ocall(
         p_qe_identity_issuer_chain,
         qe_identity_issuer_chain_size);
 
+    return result;
+}
+
+oe_result_t oe_sgx_get_additional_host_entropy_ocall(uint8_t* data, size_t size)
+{
+    oe_result_t result = OE_FAILURE;
+
+    if (!data || !size)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+#if defined(__linux__)
+    /* Fail on either the function returns error (-1) or the buffer is partially
+     * filled */
+    if (getrandom((void*)data, size, 0) < (ssize_t)size)
+        goto done;
+#elif defined(_WIN32)
+    if (BCryptGenRandom(
+            NULL, data, (ULONG)size, BCRYPT_USE_SYSTEM_PREFERRED_RNG) !=
+        STATUS_SUCCESS)
+        goto done;
+#endif
+
+    result = OE_OK;
+
+done:
     return result;
 }

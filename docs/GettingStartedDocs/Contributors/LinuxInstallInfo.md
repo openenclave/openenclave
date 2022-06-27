@@ -65,18 +65,6 @@ cmake -DCMAKE_INSTALL_PREFIX=/opt/openenclave ..
 cpack -G DEB
 ```
 
-## Create a redistributable RPM package
-
-To create a redistributable RPM package, use `cpack`. Specify
-the final installation prefix to cmake using the `CMAKE_INSTALL_PREFIX` variable
-as above. For example, to create a Debian package that will install the SDK to
-/opt/openenclave, run the following from your build subfolder:
-
-```bash
-cmake -DCMAKE_INSTALL_PREFIX=/opt/openenclave ..
-cpack -G PRM
-```
-
 ## Create the host-only report verification package
 
 The host-only report verification package allows non-enclave applications to

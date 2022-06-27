@@ -34,7 +34,7 @@ if (OE_SGX)
     OUTPUT platform_t.h platform_args.h
     DEPENDS ${SGX_EDL_FILE} edger8r
     COMMAND edger8r --header-only --search-path ${OE_INCLUDE_DIR} --trusted
-            ${SGX_EDL_FILE})
+            ${SGX_EDL_FILE} -DOE_SGX_ENTROPY)
 
   add_custom_target(platform_trusted_edl DEPENDS platform_t.h platform_args.h)
 endif ()
@@ -87,6 +87,7 @@ if (OE_SGX)
     sgx/thread.c
     sgx/threadlocal.c
     sgx/tracee.c
+    sgx/writebarrier.c
     sgx/xstate.c)
 
   # Functions in td_basic.c will change the status of td and may trigger
@@ -172,6 +173,7 @@ add_enclave_library(
   pthread.c
   random.c
   result.c
+  seal.c
   stdio.c
   strerror.c
   string.c
@@ -280,6 +282,20 @@ elseif (OE_TRUSTZONE)
   enclave_compile_options(oecore PUBLIC -fvisibility=hidden ${OE_TZ_TA_C_FLAGS})
 endif ()
 
+if (OE_SGX)
+  list(
+    APPEND
+    DEFAULT_VISIBILITY
+    __stack_chk_fail.c
+    ${MUSL_SRC_DIR}/sting/memcmp.c
+    ${MUSL_SRC_DIR}/string/x86_64/memcpy.s
+    ${MUSL_SRC_DIR}/string/x86_64/memmove.s
+    ${MUSL_SRC_DIR}/string/x86_64/memset.s)
+
+  set_property(SOURCE ${DEFAULT_VISIBILITY} APPEND_STRING
+               PROPERTY COMPILE_FLAGS " -fvisibility=default")
+endif ()
+
 enclave_compile_options(oecore INTERFACE $<$<COMPILE_LANGUAGE:CXX>:-nostdinc++>)
 
 enclave_enable_code_coverage(oecore)
@@ -365,3 +381,5 @@ install_enclaves(
   ARCHIVE
   DESTINATION
   ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+
+enclave_enable_fuzzing(oecore)

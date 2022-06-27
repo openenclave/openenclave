@@ -32,7 +32,8 @@ OE_STATIC_ASSERT(sizeof(sgx_att_key_id_ext_t) == sizeof(sgx_att_key_id_t));
 #define SGX_QL_ALG_EPID_UNLINKABLE SGX_QL_ALG_EPID
 #define SGX_QL_ALG_EPID_LINKABLE SGX_QL_ALG_RESERVED_1
 
-// Facilitate writing switch statement for quote3_error_t values
+// Facilitate writing switch statement for quote3_error_t and sgx_status_t
+// values
 #define CASE_ERROR_RETURN_ERROR_STRING(x) \
     case x:                               \
         return #x;
@@ -134,6 +135,192 @@ static quote3_error_t (*_sgx_qv_verify_quote)(
 
 static void* _ql_module;
 static void* _qvl_module;
+
+// This is a helper for getting human readable quote3_error_t codes.
+static const char* get_quote3_error_t_string(quote3_error_t error)
+{
+    switch (error)
+    {
+        // all possible quote3_error_t error codes
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_UNEXPECTED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_INVALID_PARAMETER);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_OUT_OF_MEMORY);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_ECDSA_ID_MISMATCH);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_PATHNAME_BUFFER_OVERFLOW_ERROR);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_FILE_ACCESS_ERROR);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_STORED_KEY);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_PUB_KEY_ID_MISMATCH);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_INVALID_PCE_SIG_SCHEME);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ATT_KEY_BLOB_ERROR);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_UNSUPPORTED_ATT_KEY_ID);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_UNSUPPORTED_LOADING_POLICY);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_INTERFACE_UNAVAILABLE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_PLATFORM_LIB_UNAVAILABLE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ATT_KEY_NOT_INITIALIZED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ATT_KEY_CERT_DATA_INVALID);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_NO_PLATFORM_CERT_DATA);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_OUT_OF_EPC);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_REPORT);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ENCLAVE_LOST);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_INVALID_REPORT);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ENCLAVE_LOAD_ERROR);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_UNABLE_TO_GENERATE_QE_REPORT);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_KEY_CERTIFCATION_ERROR);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_NETWORK_ERROR);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_MESSAGE_ERROR);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_NO_QUOTE_COLLATERAL_DATA);
+        CASE_ERROR_RETURN_ERROR_STRING(
+            SGX_QL_QUOTE_CERTIFICATION_DATA_UNSUPPORTED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_QUOTE_FORMAT_UNSUPPORTED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_UNABLE_TO_GENERATE_REPORT);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_QE_REPORT_INVALID_SIGNATURE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_QE_REPORT_UNSUPPORTED_FORMAT);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_PCK_CERT_UNSUPPORTED_FORMAT);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_PCK_CERT_CHAIN_ERROR);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_TCBINFO_UNSUPPORTED_FORMAT);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_TCBINFO_MISMATCH);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_QEIDENTITY_UNSUPPORTED_FORMAT);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_QEIDENTITY_MISMATCH);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_TCB_OUT_OF_DATE);
+        CASE_ERROR_RETURN_ERROR_STRING(
+            SGX_QL_TCB_OUT_OF_DATE_CONFIGURATION_NEEDED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_SGX_ENCLAVE_IDENTITY_OUT_OF_DATE);
+        CASE_ERROR_RETURN_ERROR_STRING(
+            SGX_QL_SGX_ENCLAVE_REPORT_ISVSVN_OUT_OF_DATE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_QE_IDENTITY_OUT_OF_DATE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_SGX_TCB_INFO_EXPIRED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_SGX_PCK_CERT_CHAIN_EXPIRED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_SGX_CRL_EXPIRED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_SGX_SIGNING_CERT_CHAIN_EXPIRED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_SGX_ENCLAVE_IDENTITY_EXPIRED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_PCK_REVOKED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_TCB_REVOKED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_TCB_CONFIGURATION_NEEDED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_UNABLE_TO_GET_COLLATERAL);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_INVALID_PRIVILEGE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_NO_QVE_IDENTITY_DATA);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_CRL_UNSUPPORTED_FORMAT);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_QEIDENTITY_CHAIN_ERROR);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_TCBINFO_CHAIN_ERROR);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_QVL_QVE_MISMATCH);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_TCB_SW_HARDENING_NEEDED);
+        CASE_ERROR_RETURN_ERROR_STRING(
+            SGX_QL_TCB_CONFIGURATION_AND_SW_HARDENING_NEEDED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_UNSUPPORTED_MODE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_NO_DEVICE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_SERVICE_UNAVAILABLE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_NETWORK_FAILURE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_SERVICE_TIMEOUT);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_BUSY);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_UNKNOWN_MESSAGE_RESPONSE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_PERSISTENT_STORAGE_ERROR);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_MESSAGE_PARSING_ERROR);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_PLATFORM_UNKNOWN);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_UNKNOWN_API_VERSION);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_CERTS_UNAVAILABLE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_QVEIDENTITY_MISMATCH);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_QVE_OUT_OF_DATE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_PSW_NOT_AVAILABLE);
+
+        // return the error number as is in the default case
+        default:
+        {
+            static char quote3_error_t_hex[16];
+            sprintf_s(
+                quote3_error_t_hex, sizeof(quote3_error_t_hex), "0x%x", error);
+            return quote3_error_t_hex;
+        }
+    }
+}
+
+// This is a helper for getting "human readable sgx status".
+static const char* get_sgx_status_t_string(sgx_status_t status)
+{
+    switch (status)
+    {
+        // all possible sgx_status_t error codes
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_UNEXPECTED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_INVALID_PARAMETER);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_OUT_OF_MEMORY);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_ENCLAVE_LOST);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_INVALID_STATE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_FEATURE_NOT_SUPPORTED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_PTHREAD_EXIT);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_INVALID_FUNCTION);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_OUT_OF_TCS);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_ENCLAVE_CRASHED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_ECALL_NOT_ALLOWED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_OCALL_NOT_ALLOWED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_STACK_OVERRUN);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_UNDEFINED_SYMBOL);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_INVALID_ENCLAVE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_INVALID_ENCLAVE_ID);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_INVALID_SIGNATURE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_NDEBUG_ENCLAVE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_OUT_OF_EPC);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_NO_DEVICE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_MEMORY_MAP_CONFLICT);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_INVALID_METADATA);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_DEVICE_BUSY);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_INVALID_VERSION);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_MODE_INCOMPATIBLE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_ENCLAVE_FILE_ACCESS);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_INVALID_MISC);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_INVALID_LAUNCH_TOKEN);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_MAC_MISMATCH);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_INVALID_ATTRIBUTE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_INVALID_CPUSVN);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_INVALID_ISVSVN);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_INVALID_KEYNAME);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_SERVICE_UNAVAILABLE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_SERVICE_TIMEOUT);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_AE_INVALID_EPIDBLOB);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_SERVICE_INVALID_PRIVILEGE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_EPID_MEMBER_REVOKED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_UPDATE_NEEDED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_NETWORK_FAILURE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_AE_SESSION_INVALID);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_BUSY);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_MC_NOT_FOUND);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_MC_NO_ACCESS_RIGHT);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_MC_USED_UP);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_MC_OVER_QUOTA);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_KDF_MISMATCH);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_UNRECOGNIZED_PLATFORM);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_UNSUPPORTED_CONFIG);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_NO_PRIVILEGE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_PCL_ENCRYPTED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_PCL_NOT_ENCRYPTED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_PCL_MAC_MISMATCH);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_PCL_SHA_MISMATCH);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_PCL_GUID_MISMATCH);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_FILE_BAD_STATUS);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_FILE_NO_KEY_ID);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_FILE_NAME_MISMATCH);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_FILE_NOT_SGX_FILE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_FILE_CANT_OPEN_RECOVERY_FILE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_FILE_CANT_WRITE_RECOVERY_FILE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_FILE_RECOVERY_NEEDED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_FILE_FLUSH_FAILED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_FILE_CLOSE_FAILED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_UNSUPPORTED_ATT_KEY_ID);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_ATT_KEY_CERTIFICATION_FAILURE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_ATT_KEY_UNINITIALIZED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_INVALID_ATT_KEY_CERT_DATA);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_ERROR_PLATFORM_CERT_UNAVAILABLE);
+        CASE_ERROR_RETURN_ERROR_STRING(
+            SGX_INTERNAL_ERROR_ENCLAVE_CREATE_INTERRUPTED);
+
+        // return the error number as is in the default case
+        default:
+        {
+            static char sgx_status_t_hex[16];
+            sprintf_s(
+                sgx_status_t_hex, sizeof(sgx_status_t_hex), "0x%x", status);
+            return sgx_status_t_hex;
+        }
+    }
+}
 
 static void _unload_sgx_dcap_ql(void)
 {
@@ -286,15 +473,18 @@ static void _load_quote_ex_library_once(void)
         sgx_status_t status = SGX_ERROR_UNEXPECTED;
         status =
             _quote_ex_library.sgx_get_supported_att_key_id_num(&att_key_id_num);
+
+        if (status == SGX_ERROR_SERVICE_UNAVAILABLE)
+            OE_RAISE_MSG(
+                OE_SERVICE_UNAVAILABLE, "SGX AESM service unavailable", NULL);
+
         if (status != SGX_SUCCESS || att_key_id_num == 0)
-        {
-            OE_TRACE_ERROR(
-                "_load_quote_ex_library_once() "
-                "sgx_get_supported_att_key_id_num() status=%d num=%d\n",
-                status,
+            OE_RAISE_MSG(
+                OE_SGX_QUOTE_LIBRARY_ERROR,
+                "SGX quote-ex failure: _load_quote_ex_library_once() "
+                "sgx_get_supported_att_key_id_num() status=%s num=%d\n",
+                get_sgx_status_t_string(status),
                 att_key_id_num);
-            OE_RAISE(OE_QUOTE_PROVIDER_CALL_ERROR);
-        }
 
         local_mapped = (bool*)oe_malloc(att_key_id_num * sizeof(bool));
         local_uuid = (oe_uuid_t*)oe_malloc(att_key_id_num * sizeof(oe_uuid_t));
@@ -306,12 +496,17 @@ static void _load_quote_ex_library_once(void)
 
         status = _quote_ex_library.sgx_get_supported_att_key_ids(
             local_key_id, att_key_id_num);
+
+        if (status == SGX_ERROR_SERVICE_UNAVAILABLE)
+            OE_RAISE_MSG(
+                OE_SERVICE_UNAVAILABLE, "SGX AESM service unavailable", NULL);
+
         if (status != SGX_SUCCESS)
             OE_RAISE_MSG(
-                OE_PLATFORM_ERROR,
-                "_load_quote_ex_library_once() "
-                "sgx_get_supported_att_key_ids() status=%d\n",
-                status);
+                OE_SGX_QUOTE_LIBRARY_ERROR,
+                "SGX quote-ex failure: _load_quote_ex_library_once() "
+                "sgx_get_supported_att_key_ids() status=%s\n",
+                get_sgx_status_t_string(status));
 
         for (uint32_t i = 0; i < att_key_id_num; i++)
         {
@@ -409,101 +604,6 @@ static bool _use_quote_ex_library(void)
         _quote_ex_library.load_result == OE_OK);
 }
 
-// This is a helper for getting "human error messages" - as mentioned in issue
-// 2945 - so that we do not have to return complex quote3_error_t codes in error
-// messages.
-static const char* get_quote3_error_t_string(quote3_error_t err)
-{
-    static char quote3_error_t_number[16];
-    sprintf_s(
-        quote3_error_t_number, sizeof(quote3_error_t_number), "0x%x", err);
-
-    switch (err)
-    {
-        // all possible quote3_error_t error codes
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_UNEXPECTED);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_INVALID_PARAMETER);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_OUT_OF_MEMORY);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_ECDSA_ID_MISMATCH);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_PATHNAME_BUFFER_OVERFLOW_ERROR);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_FILE_ACCESS_ERROR);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_STORED_KEY);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_PUB_KEY_ID_MISMATCH);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_INVALID_PCE_SIG_SCHEME);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ATT_KEY_BLOB_ERROR);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_UNSUPPORTED_ATT_KEY_ID);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_UNSUPPORTED_LOADING_POLICY);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_INTERFACE_UNAVAILABLE);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_PLATFORM_LIB_UNAVAILABLE);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ATT_KEY_NOT_INITIALIZED);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ATT_KEY_CERT_DATA_INVALID);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_NO_PLATFORM_CERT_DATA);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_OUT_OF_EPC);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_REPORT);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ENCLAVE_LOST);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_INVALID_REPORT);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ENCLAVE_LOAD_ERROR);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_UNABLE_TO_GENERATE_QE_REPORT);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_KEY_CERTIFCATION_ERROR);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_NETWORK_ERROR);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_MESSAGE_ERROR);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_NO_QUOTE_COLLATERAL_DATA);
-        CASE_ERROR_RETURN_ERROR_STRING(
-            SGX_QL_QUOTE_CERTIFICATION_DATA_UNSUPPORTED);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_QUOTE_FORMAT_UNSUPPORTED);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_UNABLE_TO_GENERATE_REPORT);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_QE_REPORT_INVALID_SIGNATURE);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_QE_REPORT_UNSUPPORTED_FORMAT);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_PCK_CERT_UNSUPPORTED_FORMAT);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_PCK_CERT_CHAIN_ERROR);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_TCBINFO_UNSUPPORTED_FORMAT);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_TCBINFO_MISMATCH);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_QEIDENTITY_UNSUPPORTED_FORMAT);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_QEIDENTITY_MISMATCH);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_TCB_OUT_OF_DATE);
-        CASE_ERROR_RETURN_ERROR_STRING(
-            SGX_QL_TCB_OUT_OF_DATE_CONFIGURATION_NEEDED);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_SGX_ENCLAVE_IDENTITY_OUT_OF_DATE);
-        CASE_ERROR_RETURN_ERROR_STRING(
-            SGX_QL_SGX_ENCLAVE_REPORT_ISVSVN_OUT_OF_DATE);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_QE_IDENTITY_OUT_OF_DATE);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_SGX_TCB_INFO_EXPIRED);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_SGX_PCK_CERT_CHAIN_EXPIRED);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_SGX_CRL_EXPIRED);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_SGX_SIGNING_CERT_CHAIN_EXPIRED);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_SGX_ENCLAVE_IDENTITY_EXPIRED);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_PCK_REVOKED);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_TCB_REVOKED);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_TCB_CONFIGURATION_NEEDED);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_UNABLE_TO_GET_COLLATERAL);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_INVALID_PRIVILEGE);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_NO_QVE_IDENTITY_DATA);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_CRL_UNSUPPORTED_FORMAT);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_QEIDENTITY_CHAIN_ERROR);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_TCBINFO_CHAIN_ERROR);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_QVL_QVE_MISMATCH);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_TCB_SW_HARDENING_NEEDED);
-        CASE_ERROR_RETURN_ERROR_STRING(
-            SGX_QL_TCB_CONFIGURATION_AND_SW_HARDENING_NEEDED);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_UNSUPPORTED_MODE);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_NO_DEVICE);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_SERVICE_UNAVAILABLE);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_NETWORK_FAILURE);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_SERVICE_TIMEOUT);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_BUSY);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_UNKNOWN_MESSAGE_RESPONSE);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_PERSISTENT_STORAGE_ERROR);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_MESSAGE_PARSING_ERROR);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_PLATFORM_UNKNOWN);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_QVEIDENTITY_MISMATCH);
-        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_QVE_OUT_OF_DATE);
-
-        // return the error number as is in the default case
-        default:
-            return quote3_error_t_number;
-    }
-}
-
 oe_result_t oe_sgx_qe_get_target_info(
     const oe_uuid_t* format_id,
     const void* opt_params,
@@ -511,7 +611,7 @@ oe_result_t oe_sgx_qe_get_target_info(
     uint8_t* target_info)
 {
     oe_result_t result = OE_UNEXPECTED;
-    quote3_error_t err = SGX_QL_ERROR_UNEXPECTED;
+    quote3_error_t error = SGX_QL_ERROR_UNEXPECTED;
 
     if (!format_id || !target_info)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -543,11 +643,15 @@ oe_result_t oe_sgx_qe_get_target_info(
             &local_size,
             NULL);
 
+        if (status == SGX_ERROR_SERVICE_UNAVAILABLE)
+            OE_RAISE_MSG(
+                OE_SERVICE_UNAVAILABLE, "SGX AESM service unavailable", NULL);
+
         if (status != SGX_SUCCESS)
             OE_RAISE_MSG(
-                OE_PLATFORM_ERROR,
-                "sgx_init_quote_ex(NULL) returned 0x%x\n",
-                status);
+                OE_SGX_QUOTE_LIBRARY_ERROR,
+                "SGX quote-ex failure: sgx_init_quote_ex(NULL) returned %s\n",
+                get_sgx_status_t_string(status));
 
         local_buffer = (uint8_t*)oe_malloc(local_size);
         if (!local_buffer)
@@ -560,19 +664,33 @@ oe_result_t oe_sgx_qe_get_target_info(
             local_buffer);
         oe_free(local_buffer);
 
+        if (status == SGX_ERROR_SERVICE_UNAVAILABLE)
+            OE_RAISE_MSG(
+                OE_SERVICE_UNAVAILABLE, "SGX AESM service unavailable", NULL);
+
         if (status != SGX_SUCCESS)
             OE_RAISE_MSG(
-                OE_PLATFORM_ERROR,
-                "sgx_init_quote_ex(local_buffer) returned 0x%x\n",
-                status);
+                OE_SGX_QUOTE_LIBRARY_ERROR,
+                "SGX quote-ex failure: sgx_init_quote_ex(local_buffer) "
+                "returned %s\n",
+                get_sgx_status_t_string(status));
 
         memcpy(target_info, &local_target_info, sizeof(sgx_target_info_t));
 
         result = OE_OK;
     }
+    // If DCAP in-process quoting is not requested, no need to load DCAP
+    else if (!_quote_ex_library.use_dcap_library_instead)
+    {
+        OE_RAISE_MSG(
+            _quote_ex_library.load_result,
+            "Failed to load SGX quote-ex library\n",
+            NULL);
+    }
     else
     {
         _load_sgx_dcap_ql();
+
         if (!_sgx_qe_get_target_info)
             OE_RAISE_MSG(
                 OE_QUOTE_LIBRARY_LOAD_ERROR,
@@ -580,12 +698,12 @@ oe_result_t oe_sgx_qe_get_target_info(
                 "library\n",
                 NULL);
 
-        err = _sgx_qe_get_target_info((sgx_target_info_t*)target_info);
-        if (err != SGX_QL_SUCCESS)
+        error = _sgx_qe_get_target_info((sgx_target_info_t*)target_info);
+        if (error != SGX_QL_SUCCESS)
             OE_RAISE_MSG(
                 OE_PLATFORM_ERROR,
                 "quote3_error_t=%s\n",
-                get_quote3_error_t_string(err));
+                get_quote3_error_t_string(error));
 
         result = OE_OK;
     }
@@ -602,7 +720,7 @@ oe_result_t oe_sgx_qe_get_quote_size(
 {
     oe_result_t result = OE_UNEXPECTED;
     uint32_t local_quote_size = (uint32_t)*quote_size;
-    quote3_error_t err = SGX_QL_ERROR_UNEXPECTED;
+    quote3_error_t error = SGX_QL_ERROR_UNEXPECTED;
 
     if (!format_id || !quote_size)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -628,16 +746,28 @@ oe_result_t oe_sgx_qe_get_quote_size(
         status = _quote_ex_library.sgx_get_quote_size_ex(
             (const sgx_att_key_id_t*)&updated_key_id, &local_quote_size);
 
+        if (status == SGX_ERROR_SERVICE_UNAVAILABLE)
+            OE_RAISE_MSG(
+                OE_SERVICE_UNAVAILABLE, "SGX AESM service unavailable", NULL);
+
         if (status != SGX_SUCCESS)
             OE_RAISE_MSG(
-                OE_PLATFORM_ERROR,
-                "sgx_get_quote_size_ex() returned 0x%x\n",
-                status);
+                OE_SGX_QUOTE_LIBRARY_ERROR,
+                "SGX quote-ex failure: sgx_get_quote_size_ex() returned %s\n",
+                get_sgx_status_t_string(status));
 
         OE_TRACE_INFO("local_quote_size = %lu\n", local_quote_size);
 
         *quote_size = local_quote_size;
         result = OE_OK;
+    }
+    // If DCAP in-process quoting is not requested, no need to load DCAP
+    else if (!_quote_ex_library.use_dcap_library_instead)
+    {
+        OE_RAISE_MSG(
+            _quote_ex_library.load_result,
+            "Failed to use SGX quote-ex library\n",
+            NULL);
     }
     else
     {
@@ -649,13 +779,13 @@ oe_result_t oe_sgx_qe_get_quote_size(
                 "Failed to access _sgx_qe_get_quote_size from quote library\n",
                 NULL);
 
-        err = _sgx_qe_get_quote_size(&local_quote_size);
+        error = _sgx_qe_get_quote_size(&local_quote_size);
 
-        if (err != SGX_QL_SUCCESS)
+        if (error != SGX_QL_SUCCESS)
             OE_RAISE_MSG(
                 OE_PLATFORM_ERROR,
                 "quote3_error_t=%s\n",
-                get_quote3_error_t_string(err));
+                get_quote3_error_t_string(error));
 
         *quote_size = local_quote_size;
         result = OE_OK;
@@ -674,7 +804,7 @@ oe_result_t oe_sgx_qe_get_quote(
 {
     oe_result_t result = OE_UNEXPECTED;
     uint32_t local_quote_size = (uint32_t)quote_size;
-    quote3_error_t err = SGX_QL_ERROR_UNEXPECTED;
+    quote3_error_t error = SGX_QL_ERROR_UNEXPECTED;
 
     if (!format_id || !report || !quote || !quote_size ||
         quote_size > OE_MAX_UINT32)
@@ -708,7 +838,7 @@ oe_result_t oe_sgx_qe_get_quote(
         }
         else // ECDSA
         {
-            // For EPID, no opt_params is taken.
+            // For ECDSA, opt_params_size should be zero.
             if (opt_params || opt_params_size)
                 OE_RAISE(OE_INVALID_PARAMETER);
         }
@@ -720,11 +850,15 @@ oe_result_t oe_sgx_qe_get_quote(
             quote,
             local_quote_size);
 
+        if (status == SGX_ERROR_SERVICE_UNAVAILABLE)
+            OE_RAISE_MSG(
+                OE_SERVICE_UNAVAILABLE, "SGX AESM service unavailable", NULL);
+
         if (status != SGX_SUCCESS)
             OE_RAISE_MSG(
-                OE_PLATFORM_ERROR,
-                "sgx_get_quote_ex() returned 0x%x\n",
-                status);
+                OE_SGX_QUOTE_LIBRARY_ERROR,
+                "SGX quote-ex failure: sgx_get_quote_ex() returned %s\n",
+                get_sgx_status_t_string(status));
 
         OE_TRACE_INFO(
             "quote_ex got quote for algorithm_id=%d\n",
@@ -732,8 +866,20 @@ oe_result_t oe_sgx_qe_get_quote(
 
         result = OE_OK;
     }
+    // If DCAP in-process quoting is not requested, no need to load DCAP
+    else if (!_quote_ex_library.use_dcap_library_instead)
+    {
+        OE_RAISE_MSG(
+            _quote_ex_library.load_result,
+            "Failed to use SGX quote-ex library\n",
+            NULL);
+    }
     else
     {
+        // Only ECDSA is supported, opt_params_size should be zero.
+        if (opt_params || opt_params_size)
+            OE_RAISE(OE_INVALID_PARAMETER);
+
         if (quote_size > OE_MAX_UINT32)
             OE_RAISE(OE_INVALID_PARAMETER);
 
@@ -741,13 +887,19 @@ oe_result_t oe_sgx_qe_get_quote(
 
         if (_load_sgx_dcap_ql())
         {
-            err = _sgx_qe_get_quote(
+            if (!_sgx_qe_get_quote)
+                OE_RAISE_MSG(
+                    OE_QUOTE_LIBRARY_LOAD_ERROR,
+                    "Failed to access _sgx_qe_get_quote from quote library\n",
+                    NULL);
+
+            error = _sgx_qe_get_quote(
                 (sgx_report_t*)report, local_quote_size, quote);
-            if (err != SGX_QL_SUCCESS)
+            if (error != SGX_QL_SUCCESS)
                 OE_RAISE_MSG(
                     OE_PLATFORM_ERROR,
                     "quote3_error_t=%s\n",
-                    get_quote3_error_t_string(err));
+                    get_quote3_error_t_string(error));
             OE_TRACE_INFO("quote_size=%d", local_quote_size);
 
             result = OE_OK;
@@ -761,31 +913,35 @@ done:
 }
 
 oe_result_t oe_sgx_get_supported_attester_format_ids(
-    void* format_ids,
+    void** format_ids_data,
     size_t* format_ids_size)
 {
     oe_result_t result = OE_UNEXPECTED;
+    void* data = NULL;
+    size_t size = 0;
 
-    if (!format_ids_size)
+    if (!format_ids_data || !format_ids_size)
         OE_RAISE(OE_INVALID_PARAMETER);
+
+    *format_ids_data = NULL;
+    *format_ids_size = 0;
 
     if (_use_quote_ex_library())
     {
         size_t count = _quote_ex_library.mapped_key_id_count;
         size_t index = 0;
 
-        if (count &&
-            (!format_ids || *format_ids_size < sizeof(oe_uuid_t) * count))
+        size = sizeof(oe_uuid_t) * count;
+        OE_TRACE_INFO("quote_ex got %lu format IDs\n", count);
+        if (!count)
         {
-            *format_ids_size = sizeof(oe_uuid_t) * count;
-
-            if (format_ids)
-                OE_RAISE(OE_BUFFER_TOO_SMALL);
-            /* If format_ids is null, this call is intented to get the correct
-             * format_ids_size so no need to trace OE_BUFFER_TOO_SMALL */
-            else
-                OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
+            result = OE_OK;
+            goto done;
         }
+
+        data = malloc(size);
+        if (!data)
+            OE_RAISE(OE_OUT_OF_MEMORY);
 
         for (size_t i = 0; i < _quote_ex_library.key_id_count; i++)
         {
@@ -794,37 +950,31 @@ oe_result_t oe_sgx_get_supported_attester_format_ids(
                 continue;
 
             memcpy(
-                ((uint8_t*)format_ids) + sizeof(oe_uuid_t) * index,
+                ((uint8_t*)data) + sizeof(oe_uuid_t) * index,
                 _quote_ex_library.uuid + i,
                 sizeof(oe_uuid_t));
             index++;
         }
-
-        *format_ids_size = sizeof(oe_uuid_t) * count;
-
-        OE_TRACE_INFO("quote_ex got %lu format IDs\n", count);
-
-        result = OE_OK;
     }
     else
     {
         // Case when DCAP is used
-        if (!format_ids && *format_ids_size == 0)
-        {
-            *format_ids_size = sizeof(oe_uuid_t);
-            return OE_BUFFER_TOO_SMALL;
-        }
-        else if (!format_ids || *format_ids_size < sizeof(oe_uuid_t))
-        {
-            *format_ids_size = sizeof(oe_uuid_t);
-            OE_RAISE(OE_BUFFER_TOO_SMALL);
-        }
-        memcpy(format_ids, &_ecdsa_p256_uuid, sizeof(oe_uuid_t));
+        size = sizeof(oe_uuid_t);
+        data = malloc(size);
+        if (!data)
+            OE_RAISE(OE_OUT_OF_MEMORY);
+
+        memcpy(data, &_ecdsa_p256_uuid, sizeof(oe_uuid_t));
         *format_ids_size = sizeof(oe_uuid_t);
 
         OE_TRACE_INFO("DCAP only supports ECDSA_P256\n");
-        result = OE_OK;
     }
+
+    *format_ids_data = data;
+    *format_ids_size = size;
+
+    result = OE_OK;
+
 done:
     return result;
 }
@@ -836,7 +986,7 @@ oe_result_t oe_sgx_get_supplemental_data_size(
     uint32_t* supplemental_data_size)
 {
     oe_result_t result = OE_UNEXPECTED;
-    quote3_error_t err = SGX_QL_ERROR_UNEXPECTED;
+    quote3_error_t error = SGX_QL_ERROR_UNEXPECTED;
     uint32_t local_data_size = 0;
 
     // Add format_id for forward compatibility
@@ -849,12 +999,12 @@ oe_result_t oe_sgx_get_supplemental_data_size(
 
     if (TRY_TO_USE_SGX_DCAP_QVL() && _load_sgx_dcap_qvl())
     {
-        err = _sgx_qv_get_quote_supplemental_data_size(&local_data_size);
-        if (err != SGX_QL_SUCCESS)
+        error = _sgx_qv_get_quote_supplemental_data_size(&local_data_size);
+        if (error != SGX_QL_SUCCESS)
             OE_RAISE_MSG(
                 OE_PLATFORM_ERROR,
                 "Get SGX QVL/QvE supplemental data size quote3_error_t=0x%x\n",
-                err);
+                error);
 
         *supplemental_data_size = local_data_size;
         result = OE_OK;
@@ -867,9 +1017,9 @@ done:
     return result;
 }
 
-static oe_result_t sgx_qvl_error_to_oe(quote3_error_t err)
+static oe_result_t sgx_qvl_error_to_oe(quote3_error_t error)
 {
-    switch (err)
+    switch (error)
     {
         case SGX_QL_SUCCESS:
         case SGX_QL_TCB_SW_HARDENING_NEEDED:
@@ -948,7 +1098,7 @@ oe_result_t oe_sgx_verify_quote(
     uint32_t qe_identity_issuer_chain_size)
 {
     oe_result_t result = OE_UNEXPECTED;
-    quote3_error_t err = SGX_QL_ERROR_UNEXPECTED;
+    quote3_error_t error = SGX_QL_ERROR_UNEXPECTED;
 
     // Add format_id for forward compatibility
     // Only support ECDSA-p256 now
@@ -1018,7 +1168,7 @@ oe_result_t oe_sgx_verify_quote(
                           "verification\n");
         }
 
-        err = _sgx_qv_verify_quote(
+        error = _sgx_qv_verify_quote(
             p_quote,
             (uint32_t)quote_size,
             p_sgx_endorsements,
@@ -1035,7 +1185,7 @@ oe_result_t oe_sgx_verify_quote(
         // status
         // - UpToDate
         // - SW Hardening needed
-        result = sgx_qvl_error_to_oe(err);
+        result = sgx_qvl_error_to_oe(error);
 
         if (result != OE_OK)
         {
@@ -1043,7 +1193,7 @@ oe_result_t oe_sgx_verify_quote(
                 OE_PLATFORM_ERROR,
                 "SGX ECDSA QVL-based quote verificaton error "
                 "quote3_error_t=0x%x\n",
-                err);
+                error);
         }
 
         OE_TRACE_INFO("verfication status=%d", *p_quote_verification_result);

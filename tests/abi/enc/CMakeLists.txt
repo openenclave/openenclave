@@ -15,10 +15,10 @@ add_enclave(
   abi_enc
   UUID
   7B7FB79E-2B73-46C5-8C30-3A71C014BD85
+  CXX
   SOURCES
   enc.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/abi_t.c)
 
 enclave_include_directories(abi_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
                             ${CMAKE_CURRENT_SOURCE_DIR})
-enclave_link_libraries(abi_enc oelibc)

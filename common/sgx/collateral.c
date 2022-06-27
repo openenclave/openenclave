@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "collateral.h"
+#include <ctype.h>
 #include <openenclave/bits/attestation.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/crypto/cert.h>
@@ -20,7 +21,6 @@
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include "../common.h"
-#include "tcbinfo.h"
 
 // Defaults to Intel SGX 1.8 Release Date.
 oe_datetime_t _sgx_minimim_crl_tcb_issue_date = {2017, 3, 17};
@@ -48,15 +48,15 @@ done:
 // which is 16 bytes long
 static oe_result_t _get_crl_ca_type(
     uint8_t* platform_instance_id,
-    oe_get_sgx_quote_verification_collateral_args_t* args)
+    uint8_t* collateral_provider)
 {
     uint8_t null_platform_id[16] = {0};
     if (memcmp(
             platform_instance_id, null_platform_id, sizeof(null_platform_id)) ==
         0)
-        args->collateral_provider = CRL_CA_PROCESSOR;
+        *collateral_provider = CRL_CA_PROCESSOR;
     else
-        args->collateral_provider = CRL_CA_PLATFORM;
+        *collateral_provider = CRL_CA_PLATFORM;
     return OE_OK;
 }
 
@@ -92,7 +92,7 @@ static oe_result_t _get_crl_validity(
         {
             OE_CHECK_MSG(
                 oe_crl_get_update_dates(
-                    &crls[0], &crl_this_update_date, &crl_next_update_date),
+                    &crls[i], &crl_this_update_date, &crl_next_update_date),
                 "Failed to get CRL update dates. %s",
                 oe_result_str(result));
 
@@ -157,43 +157,6 @@ done:
     return result;
 }
 
-/**
- * Parse sgx extensions from given cert.
- */
-static oe_result_t _parse_sgx_extensions(
-    oe_cert_t* leaf_cert,
-    ParsedExtensionInfo* parsed_extension_info)
-{
-    oe_result_t result = OE_FAILURE;
-
-    // The size of buffer required to parse extensions is not known beforehand.
-    size_t buffer_size = 1024;
-    uint8_t* buffer = NULL;
-
-    buffer = (uint8_t*)oe_malloc(buffer_size);
-    if (buffer == NULL)
-        OE_RAISE(OE_OUT_OF_MEMORY);
-
-    // Try parsing the extensions.
-    result = ParseSGXExtensions(
-        leaf_cert, buffer, &buffer_size, parsed_extension_info);
-
-    if (result == OE_BUFFER_TOO_SMALL)
-    {
-        // Allocate larger buffer. extensions_buffer_size contains required size
-        // of buffer.
-        oe_free(buffer);
-        buffer = (uint8_t*)oe_malloc(buffer_size);
-
-        result = ParseSGXExtensions(
-            leaf_cert, buffer, &buffer_size, parsed_extension_info);
-    }
-
-done:
-    oe_free(buffer);
-    return result;
-}
-
 typedef struct _url
 {
     char str[256];
@@ -213,7 +176,7 @@ oe_result_t oe_get_sgx_quote_verification_collateral_from_certs(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // Gather fmspc.
-    OE_CHECK(_parse_sgx_extensions(leaf_cert, &parsed_extension_info));
+    OE_CHECK(oe_parse_sgx_extensions(leaf_cert, &parsed_extension_info));
     OE_CHECK(oe_memcpy_s(
         args->fmspc,
         sizeof(args->fmspc),
@@ -221,8 +184,9 @@ oe_result_t oe_get_sgx_quote_verification_collateral_from_certs(
         sizeof(parsed_extension_info.fmspc)));
 
     // Use platform instance id to determine the collateral provider (PCK CA)
-    OE_CHECK(
-        _get_crl_ca_type(parsed_extension_info.opt_platform_instance_id, args));
+    OE_CHECK(_get_crl_ca_type(
+        parsed_extension_info.opt_platform_instance_id,
+        &args->collateral_provider));
     OE_CHECK(oe_get_sgx_quote_verification_collateral(args));
 
     result = OE_OK;
@@ -231,20 +195,63 @@ done:
     return result;
 }
 
+static unsigned char _hex_digit_to_num(char c)
+{
+    if (isdigit(c))
+        return (unsigned char)(c - '0');
+
+    if (c >= 'A' && c <= 'F')
+        return (unsigned char)(10 + (c - 'A'));
+
+    return (unsigned char)(10 + (c - 'a'));
+}
+
+static oe_result_t _hex_to_raw(
+    const char* hex_string,
+    size_t hex_string_size,
+    uint8_t* raw_buffer,
+    size_t raw_buffer_size)
+{
+    if (raw_buffer_size < hex_string_size / 2 + (hex_string_size % 2))
+    {
+        return OE_BUFFER_TOO_SMALL;
+    }
+
+    unsigned char v;
+
+    for (size_t i = 0; i < hex_string_size - 1; i += 2)
+    {
+        v = (unsigned char)(_hex_digit_to_num(hex_string[i]) << 4) |
+            _hex_digit_to_num(hex_string[i + 1]);
+        raw_buffer[i / 2] = v;
+    }
+
+    // handle odd hex string size
+    if (hex_string_size % 2)
+    {
+        v = (unsigned char)_hex_digit_to_num(hex_string[hex_string_size - 1]);
+        raw_buffer[hex_string_size / 2 + 1] = v;
+    }
+
+    return OE_OK;
+}
+
 oe_result_t oe_validate_revocation_list(
     oe_cert_t* pck_cert,
     const oe_sgx_endorsements_t* sgx_endorsements,
+    oe_tcb_info_tcb_level_t* platform_tcb_level,
     oe_datetime_t* validity_from,
     oe_datetime_t* validity_until)
 {
     oe_result_t result = OE_UNEXPECTED;
+    oe_result_t parse_tcb_info_json_result = OE_UNEXPECTED;
 
     ParsedExtensionInfo parsed_extension_info = {{0}};
+    oe_tcb_info_tcb_level_t local_platform_tcb_level = {{0}};
     oe_cert_chain_t tcb_issuer_chain = {0};
     oe_cert_chain_t crl_issuer_chain = {0};
     oe_cert_t tcb_cert = {0};
     oe_parsed_tcb_info_t parsed_tcb_info = {0};
-    oe_tcb_info_tcb_level_t platform_tcb_level = {{0}};
 
     uint32_t version = 0;
     oe_crl_t crls[2] = {{{0}}};
@@ -253,6 +260,9 @@ oe_result_t oe_validate_revocation_list(
     oe_datetime_t until = {0};
     oe_datetime_t latest_from = {0};
     oe_datetime_t earliest_until = {0};
+    uint8_t* der_data = NULL;
+    size_t der_data_size = 0;
+    bool ishex = true;
 
     if (pck_cert == NULL || sgx_endorsements == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -272,7 +282,7 @@ oe_result_t oe_validate_revocation_list(
     OE_STATIC_ASSERT(OE_COUNTOF(crl_ptrs) >= OE_SGX_ENDORSEMENTS_CRL_COUNT);
 
     OE_CHECK_MSG(
-        _parse_sgx_extensions(pck_cert, &parsed_extension_info),
+        oe_parse_sgx_extensions(pck_cert, &parsed_extension_info),
         "Failed to parse SGX extensions from leaf cert. %s",
         oe_result_str(result));
 
@@ -325,16 +335,56 @@ oe_result_t oe_validate_revocation_list(
                 "Failed to read CRL. %s",
                 oe_result_str(result));
         }
-        // Otherwise, CRL should have v3 structure which is Der encoded
+        /*
+         * Otherwise, CRL should have v3 (hex encoded DER)
+         * or v3.1 (raw DER) structure.
+         */
         else
         {
+            der_data = sgx_endorsements->items[i].data;
+            der_data_size = sgx_endorsements->items[i].size;
+            if (der_data_size == 0 || der_data == NULL)
+                OE_RAISE(OE_INVALID_PARAMETER);
+
+            // Check if the CRL is composed of only hex digits
+            for (size_t l = 0; l < der_data_size; l++)
+            {
+                const uint8_t c = sgx_endorsements->items[i].data[l];
+                if (!isxdigit(c))
+                {
+                    ishex = false;
+                    break;
+                }
+            }
+
+            // If CRL is a hex string, convert hex to der
+            if (ishex)
+            {
+                der_data_size = (der_data_size / 2) + (der_data_size % 2);
+                der_data = oe_malloc(der_data_size);
+                if (!der_data)
+                    OE_RAISE(OE_OUT_OF_MEMORY);
+                OE_CHECK_MSG(
+                    _hex_to_raw(
+                        (const char*)sgx_endorsements->items[i].data,
+                        sgx_endorsements->items[i].size,
+                        der_data,
+                        der_data_size),
+                    "Failed to convert to DER. %s",
+                    oe_result_str(result));
+            }
+
+            // If CRL buffer has null terminator, need to remove it before
+            // sending the DER data to crypto API for reading.
+            if (der_data[der_data_size - 1] == 0)
+                der_data_size -= 1;
+
             OE_CHECK_MSG(
-                oe_crl_read_der(
-                    &crls[j],
-                    sgx_endorsements->items[i].data,
-                    sgx_endorsements->items[i].size),
+                oe_crl_read_der(&crls[j], der_data, der_data_size),
                 "Failed to read CRL. %s",
                 oe_result_str(result));
+            if (ishex)
+                oe_free(der_data);
         }
     }
 
@@ -359,22 +409,26 @@ oe_result_t oe_validate_revocation_list(
         "Failed to verify leaf certificate. %s",
         oe_result_str(result));
 
-    for (uint32_t i = 0; i < OE_COUNTOF(platform_tcb_level.sgx_tcb_comp_svn);
+    for (uint32_t i = 0;
+         i < OE_COUNTOF(local_platform_tcb_level.sgx_tcb_comp_svn);
          ++i)
     {
-        platform_tcb_level.sgx_tcb_comp_svn[i] =
+        local_platform_tcb_level.sgx_tcb_comp_svn[i] =
             parsed_extension_info.comp_svn[i];
     }
-    platform_tcb_level.pce_svn = parsed_extension_info.pce_svn;
-    platform_tcb_level.status.AsUINT32 = OE_TCB_LEVEL_STATUS_UNKNOWN;
+    local_platform_tcb_level.pce_svn = parsed_extension_info.pce_svn;
+    local_platform_tcb_level.status.AsUINT32 = OE_TCB_LEVEL_STATUS_UNKNOWN;
 
-    OE_CHECK_MSG(
+    // An invalid TCB level will not terminate OE attestation verification.
+    // The invalid TCB status will be returned to user as a claim.
+    OE_CHECK_NO_TCB_LEVEL_MSG(
+        parse_tcb_info_json_result,
         oe_parse_tcb_info_json(
             sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_TCB_INFO].data,
             sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_TCB_INFO].size,
-            &platform_tcb_level,
+            &local_platform_tcb_level,
             &parsed_tcb_info),
-        "Failed to parse TCB info or Platform TCB is not up-to-date. %s",
+        "Failed to parse TCB info. %s",
         oe_result_str(result));
 
     if (memcmp(
@@ -467,7 +521,12 @@ oe_result_t oe_validate_revocation_list(
 
     *validity_from = latest_from;
     *validity_until = earliest_until;
-    result = OE_OK;
+
+    if (platform_tcb_level)
+    {
+        *platform_tcb_level = local_platform_tcb_level;
+    }
+    result = parse_tcb_info_json_result;
 
 done:
     for (int32_t i = (int32_t)OE_SGX_ENDORSEMENTS_CRL_COUNT - 1; i >= 0; --i)

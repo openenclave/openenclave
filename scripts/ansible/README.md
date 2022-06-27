@@ -57,7 +57,6 @@ ansible-playbook jenkins-setup.yml
 
 # Supported platforms by the Ansible playbooks
 
-* Ubuntu 16.04
 * Ubuntu 18.04
-* Red Hat Enterprise Linux 8
-* Windows Server 2016 (ACC VM)
+* Ubuntu 20.04
+* Windows Server 2019 (ACC VM)

@@ -23,8 +23,11 @@ OE_EXTERNC_BEGIN
  * @param attributes[in] ATTRIBUTES flag values for the SGX sigstruct
  * @param product_id[in] ISVPRODID value for the SGX sigstruct
  * @param security_version[in] ISVSVN value for the SGX sigstruct
+ * @param flags[in] flags for OE-specific features opt-in/out
  * @param pem_data[in] PEM buffer containing the signing key
  * @param pem_size[in] size of the PEM buffer
+ * @param family_id[in] ISVFAMILYID value for the SGX sigstruct
+ * @param extended_product_id[in] ISVEXTPRODID value for the SGX sigstruct
  * @param sigstruct[out] the SGX signature
  *
  * @return OE_OK success
@@ -34,8 +37,11 @@ oe_result_t oe_sgx_sign_enclave(
     uint64_t attributes,
     uint16_t product_id,
     uint16_t security_version,
+    const oe_sgx_enclave_flags_t* flags,
     const uint8_t* pem_data,
     size_t pem_size,
+    const uint8_t* family_id,
+    const uint8_t* extended_product_id,
     sgx_sigstruct_t* sigstruct);
 
 /**
@@ -50,9 +56,12 @@ oe_result_t oe_sgx_sign_enclave(
  * @param attributes[in] ATTRIBUTES flag values for the SGX sigstruct
  * @param product_id[in] ISVPRODID value for the SGX sigstruct
  * @param security_version[in] ISVSVN value for the SGX sigstruct
+ * @param flags[in] flags for OE-specific features opt-in/out
  * @param engine_id[in] text name of the engine to use
  * @param engine_load_path[in] file path to the openssl engine to use
  * @param key_id[in] integer handle for the key to use
+ * @param family_id[in] ISVFAMILYID value for the SGX sigstruct
+ * @param extended_product_id[in] ISVEXTPRODID value for the SGX sigstruct
  * @param sigstruct[out] the SGX signature
  *
  * @return OE_OK success
@@ -62,9 +71,12 @@ oe_result_t oe_sgx_sign_enclave_from_engine(
     uint64_t attributes,
     uint16_t product_id,
     uint16_t security_version,
+    const oe_sgx_enclave_flags_t* flags,
     const char* engine_id,
     const char* engine_load_path,
     const char* key_id,
+    const uint8_t* family_id,
+    const uint8_t* extended_product_id,
     sgx_sigstruct_t* sigstruct);
 
 /**
@@ -75,6 +87,9 @@ oe_result_t oe_sgx_sign_enclave_from_engine(
  * @param attributes[in] ATTRIBUTES flag values for the SGX sigstruct
  * @param product_id[in] ISVPRODID value for the SGX sigstruct
  * @param security_version[in] ISVSVN value for the SGX sigstruct
+ * @param flags[in] flags for OE-specific features opt-in/out
+ * @param family_id[in] ISVFAMILYID value for the SGX sigstruct
+ * @param extended_product_id[in] ISVEXTPRODID value for the SGX sigstruct
  * @param digest[out] the digest of the sigstruct to be signed
  *
  * @return OE_OK success
@@ -84,6 +99,9 @@ oe_result_t oe_sgx_get_sigstruct_digest(
     uint64_t attributes,
     uint16_t product_id,
     uint16_t security_version,
+    const oe_sgx_enclave_flags_t* flags,
+    const uint8_t* family_id,
+    const uint8_t* extended_product_id,
     OE_SHA256* digest);
 
 /**
@@ -101,10 +119,13 @@ oe_result_t oe_sgx_get_sigstruct_digest(
  * @param attributes[in] ATTRIBUTES flag values for the SGX sigstruct
  * @param product_id[in] ISVPRODID value for the SGX sigstruct
  * @param security_version[in] ISVSVN value for the SGX sigstruct
+ * @param flags[in] flags for OE-specific features opt-in/out
  * @param cert_pem_data[in] PEM buffer containing the public signing cert
  * @param cert_pem_size[in] size of the PEM buffer
  * @param digest_signature[in] binary data of the sigstruct digest signature
  * @param digest_signature_size[in] size of the sigstruct digest signature
+ * @param family_id[in] ISVFAMILYID value for the SGX sigstruct
+ * @param extended_product_id[in] ISVEXTPRODID value for the SGX sigstruct
  * @param sigstruct[out] the SGX signature
  *
  * @return OE_OK success
@@ -114,10 +135,13 @@ oe_result_t oe_sgx_digest_sign_enclave(
     uint64_t attributes,
     uint16_t product_id,
     uint16_t security_version,
+    const oe_sgx_enclave_flags_t* flags,
     const uint8_t* cert_pem_data,
     size_t cert_pem_size,
     const uint8_t* digest_signature,
     size_t digest_signature_size,
+    const uint8_t* family_id,
+    const uint8_t* extended_product_id,
     sgx_sigstruct_t* sigstruct);
 
 OE_EXTERNC_END

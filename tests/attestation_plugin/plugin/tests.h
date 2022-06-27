@@ -31,4 +31,14 @@ void verify_sgx_evidence(
     const uint8_t* custom_claims_buffer,
     size_t custom_claims_buffer_size);
 
+void validate_sgx_pck_crl(
+    const uint8_t* evidence,
+    size_t evidence_size,
+    const uint8_t* endorsements,
+    size_t endorsements_size);
+
+#ifndef OE_BUILD_ENCLAVE
+void set_up_mocks_for_host();
+#endif
+
 #endif // _OE_ATTESTATION_PLUGIN_TESTS

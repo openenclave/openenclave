@@ -16,7 +16,6 @@
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include <time.h>
-#include "../crypto/rsa.h"
 #include "enclave.h"
 
 /* Use mbedtls/openssl for bignum math on Windows/Linux respectively. */
@@ -572,6 +571,9 @@ static oe_result_t _init_sigstruct(
     uint64_t attributes,
     uint16_t product_id,
     uint16_t security_version,
+    const oe_sgx_enclave_flags_t* flags,
+    const uint8_t* family_id,
+    const uint8_t* extended_product_id,
     sgx_sigstruct_t* sigstruct)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -619,7 +621,10 @@ static oe_result_t _init_sigstruct(
     sigstruct->miscselect = SGX_SIGSTRUCT_MISCSELECT;
 
     /* sgx_sigstruct_t.miscmask */
-    sigstruct->miscmask = SGX_SIGSTRUCT_MISCMASK;
+    if (flags && flags->capture_pf_gp_exceptions)
+        sigstruct->miscmask = SGX_SIGSTRUCT_MISCMASK_EXINFO;
+    else
+        sigstruct->miscmask = SGX_SIGSTRUCT_MISCMASK;
 
     /* sgx_sigstruct_t.attributes */
     sigstruct->attributes.flags = attributes;
@@ -639,6 +644,23 @@ static oe_result_t _init_sigstruct(
         sizeof(sigstruct->enclavehash),
         mrenclave,
         sizeof(*mrenclave)));
+
+    if (attributes & SGX_FLAGS_KSS)
+    {
+        if (family_id)
+            OE_CHECK(oe_memcpy_s(
+                sigstruct->isvfamilyid,
+                sizeof(sigstruct->isvfamilyid),
+                family_id,
+                sizeof(sigstruct->isvfamilyid)));
+        if (extended_product_id)
+            OE_CHECK(oe_memcpy_s(
+                sigstruct->isvextprodid,
+                sizeof(sigstruct->isvextprodid),
+                extended_product_id,
+                sizeof(sigstruct->isvextprodid)));
+        sigstruct->attributemask.flags |= SGX_FLAGS_KSS;
+    }
 
     /* sgx_sigstruct_t.isvprodid */
     sigstruct->isvprodid = product_id;
@@ -663,9 +685,12 @@ oe_result_t oe_sgx_sign_enclave_from_engine(
     uint64_t attributes,
     uint16_t product_id,
     uint16_t security_version,
+    const oe_sgx_enclave_flags_t* flags,
     const char* engine_id,
     const char* engine_load_path,
     const char* key_id,
+    const uint8_t* family_id,
+    const uint8_t* extended_product_id,
     sgx_sigstruct_t* sigstruct)
 {
     oe_rsa_private_key_t rsa;
@@ -685,7 +710,14 @@ oe_result_t oe_sgx_sign_enclave_from_engine(
 
     /* Initialize & sign the sigstruct */
     OE_CHECK(_init_sigstruct(
-        mrenclave, attributes, product_id, security_version, sigstruct));
+        mrenclave,
+        attributes,
+        product_id,
+        security_version,
+        flags,
+        family_id,
+        extended_product_id,
+        sigstruct));
     OE_CHECK(_sign_sigstruct(&rsa, sigstruct));
 
     result = OE_OK;
@@ -702,8 +734,11 @@ oe_result_t oe_sgx_sign_enclave(
     uint64_t attributes,
     uint16_t product_id,
     uint16_t security_version,
+    const oe_sgx_enclave_flags_t* flags,
     const uint8_t* pem_data,
     size_t pem_size,
+    const uint8_t* family_id,
+    const uint8_t* extended_product_id,
     sgx_sigstruct_t* sigstruct)
 {
     oe_rsa_private_key_t rsa;
@@ -723,7 +758,14 @@ oe_result_t oe_sgx_sign_enclave(
 
     /* Initialize & sign the sigstruct */
     OE_CHECK(_init_sigstruct(
-        mrenclave, attributes, product_id, security_version, sigstruct));
+        mrenclave,
+        attributes,
+        product_id,
+        security_version,
+        flags,
+        family_id,
+        extended_product_id,
+        sigstruct));
     OE_CHECK(_sign_sigstruct(&rsa, sigstruct));
 
     result = OE_OK;
@@ -740,6 +782,9 @@ oe_result_t oe_sgx_get_sigstruct_digest(
     uint64_t attributes,
     uint16_t product_id,
     uint16_t security_version,
+    const oe_sgx_enclave_flags_t* flags,
+    const uint8_t* family_id,
+    const uint8_t* extended_product_id,
     OE_SHA256* digest)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -754,7 +799,14 @@ oe_result_t oe_sgx_get_sigstruct_digest(
 
     /* Initialize & sign the sigstruct */
     OE_CHECK(_init_sigstruct(
-        mrenclave, attributes, product_id, security_version, &sigstruct));
+        mrenclave,
+        attributes,
+        product_id,
+        security_version,
+        flags,
+        family_id,
+        extended_product_id,
+        &sigstruct));
     OE_CHECK(_hash_sigstruct(&sigstruct, digest));
 
     result = OE_OK;
@@ -768,10 +820,13 @@ oe_result_t oe_sgx_digest_sign_enclave(
     uint64_t attributes,
     uint16_t product_id,
     uint16_t security_version,
+    const oe_sgx_enclave_flags_t* flags,
     const uint8_t* cert_pem_data,
     size_t cert_pem_size,
     const uint8_t* digest_signature,
     size_t digest_signature_size,
+    const uint8_t* family_id,
+    const uint8_t* extended_product_id,
     sgx_sigstruct_t* sigstruct)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -797,7 +852,14 @@ oe_result_t oe_sgx_digest_sign_enclave(
 
     /* Initialize the sigstruct with the provided parameters */
     OE_CHECK(_init_sigstruct(
-        mrenclave, attributes, product_id, security_version, sigstruct));
+        mrenclave,
+        attributes,
+        product_id,
+        security_version,
+        flags,
+        family_id,
+        extended_product_id,
+        sigstruct));
 
     /* Verify that the digest of the resulting sigstruct still
      * matches the expected signature */

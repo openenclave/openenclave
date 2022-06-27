@@ -4,6 +4,7 @@
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openssl/engine.h>
+#include <string.h>
 #include <sys/mount.h>
 #include "openssl_t.h"
 #include "tu_local.h" /* Header from openssl/test/testutil */
@@ -12,11 +13,15 @@ extern char** __environ;
 
 extern int main(int argc, char* argv[]);
 
+void register_pthread_hooks(void);
+
 int enc_test(int argc, char** argv, char** env)
 {
     int ret = 1;
-    ENGINE* eng = NULL;
     const BIO_METHOD* tap = NULL;
+
+    /* Register pthread hooks. Used only by threadstest */
+    register_pthread_hooks();
 
     /* Directly use environ from host. */
     __environ = env;
@@ -36,30 +41,26 @@ int enc_test(int argc, char** argv, char** env)
      */
     if (oe_load_module_host_file_system() != OE_OK)
         goto done;
-
     if (mount("/", "/", OE_HOST_FILE_SYSTEM, 0, NULL))
         goto done;
 #endif
 
     /*
-     * Initialize and opt-in the rdrand engine. This is necessary to use opensl
-     * RNG functionality inside the enclave.
+     * In test 'ec_internal_test', a file is created locally without
+     * providing an absolute path to fopen() systemcall. This causes
+     * the test to fail in linux. Mounting the current binary directory
+     * to root enables the filepath to be recognized by the OE's fopen()
+     * call.
+     *
+     * NOTE: OE in Windows works fine without the need for absolute path
+     * in fopen(). Mounting the current binary directory causes
+     * oe_resolve_mount() to fail.
      */
-    ENGINE_load_rdrand();
-    eng = ENGINE_by_id("rdrand");
-    if (eng == NULL)
+    if (argc == 2 && strstr(argv[0], "ec_internal_test"))
     {
-        goto done;
-    }
-
-    if (ENGINE_init(eng) == 0)
-    {
-        goto done;
-    }
-
-    if (ENGINE_set_default(eng, ENGINE_METHOD_RAND) == 0)
-    {
-        goto done;
+        umount("/");
+        if (mount(argv[argc - 1], "/", OE_HOST_FILE_SYSTEM, 0, NULL))
+            goto done;
     }
 
     /*
@@ -78,12 +79,7 @@ done:
 #endif
     if (__environ)
         __environ = NULL;
-    if (eng)
-    {
-        ENGINE_finish(eng);
-        ENGINE_free(eng);
-        ENGINE_cleanup();
-    }
+
     if (tap)
         BIO_meth_free((BIO_METHOD*)tap);
 
@@ -94,6 +90,6 @@ OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
     true, /* AllowDebug */
-    6144, /* HeapPageCount */
+    7200, /* HeapPageCount */
     128,  /* StackPageCount */
-    1);   /* TCSCount */
+    8);   /* TCSCount */

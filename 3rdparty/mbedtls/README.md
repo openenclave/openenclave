@@ -5,8 +5,8 @@ This directory contains the **mbedTLS** crypto library for enclaves.
 
 The `./mbedtls` subdirectory points at the git submodule inclusion of
 https://github.com/openenclave/openenclave-mbedtls at the head of the
-openenclave-mbedtls-2.16 branch. This branch is identical to the mbedTLS
-2.16 LTS branch, with additional patches in the process of being upstreamed.
+openenclave-mbedtls-2.28 branch. This branch is identical to the mbedTLS
+2.28 LTS branch, with additional patches in the process of being upstreamed.
 
 The enclave version of mbedTLS builds the cloned sources with the following
 changes:

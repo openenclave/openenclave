@@ -29,5 +29,11 @@ enclave
             [out, size=symbols_buffer_size] void* symbols_buffer,
             size_t symbols_buffer_size,
             [out] size_t* symbols_buffer_size_out);
+
+	// Log the given backtrace.
+	oe_result_t oe_sgx_log_backtrace_ocall(
+            [user_check] oe_enclave_t* oe_enclave,
+            [in, count=size] const uint64_t* buffer,
+            size_t size);
     };
 };

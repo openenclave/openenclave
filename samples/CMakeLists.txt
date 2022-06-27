@@ -33,6 +33,11 @@ if (BUILD_ENCLAVES)
                     log_callback switchless
           DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
 
+  if (UNIX)
+    install(DIRECTORY apkman
+            DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
+  endif ()
+
   if (COMPILER_SUPPORTS_SNMALLOC)
     install(DIRECTORY pluggable_allocator
             DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)

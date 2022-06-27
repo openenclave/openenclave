@@ -82,3 +82,5 @@ install_enclaves(
   ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
 
 add_subdirectory(devices)
+
+enclave_enable_fuzzing(oesyscall)

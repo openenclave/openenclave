@@ -24,11 +24,48 @@ if (LVI_MITIGATION MATCHES ControlFlow AND LVI_MITIGATION_SKIP_TESTS)
   message("LVI_MITIGATION_SKIP_TESTS set - skip all tests with LVI mitigation")
 endif ()
 
+if (OE_SGX AND UNIX)
+  option(ENABLE_ZERO_BASE_TESTS
+         "Build 0-base enclave tests and include in test list" ON)
+  if (ENABLE_ZERO_BASE_TESTS)
+    message("ENABLE_ZERO_BASE_TESTS set - building all 0-base enclave tests")
+  else ()
+    message(
+      "ENABLE_ZERO_BASE_TESTS not set - not building 0-base enclave tests")
+  endif ()
+endif ()
+
+option(ENABLE_SYMCRYPT_OPENSSL_TESTS "Test OpenSSL with SymCrypt engine" ON)
+if (ENABLE_SYMCRYPT_OPENSSL_TESTS)
+  message(
+    "ENABLE_SYMCRYPT_OPENSSL_TESTS set - test OpenSSL with both default settings and SymCrypt engine"
+  )
+else ()
+  message(
+    "ENABLE_SYMCRYPT_OPENSSL_TESTS not set - test OpenSSL with only default settings"
+  )
+endif ()
+
 # Define the `OE_SGX` macro used by the oeedger8r on the SGX build.
 if (OE_SGX)
   set(DEFINE_OE_SGX "-DOE_SGX")
 endif ()
 
+if (CODE_COVERAGE)
+  set(DEFINE_OE_CODE_COVERAGE "-DOE_CODE_COVERAGE")
+else ()
+  set(DEFINE_OE_CODE_COVERAGE "")
+endif ()
+
+if (UNIX)
+  # On Linux prefer python3 since python may not be available.
+  find_program(PYTHON NAMES python3 python)
+else ()
+  # On Windows and other systems, use the available python executable.
+  set(PYTHON "python")
+endif ()
+
+add_subdirectory(log)
 add_subdirectory(mem)
 add_subdirectory(safecrt)
 add_subdirectory(safemath)
@@ -41,17 +78,29 @@ if (WIN32)
 endif ()
 
 if (OE_SGX)
+  # Include newly added SGX-specific tests
+  # The task to restructure existing tests is tracked
+  # in https://github.com/openenclave/openenclave/issues/4281
+  add_subdirectory(sgx)
+endif ()
+
+if (OE_SGX)
   add_subdirectory(debugger)
   add_subdirectory(host_verify)
+  add_subdirectory(invalid_image)
+  add_subdirectory(config_id)
   add_subdirectory(switchless)
+  add_subdirectory(switchless_atexit_calls)
   add_subdirectory(switchless_threads)
   add_subdirectory(switchless_nestedcalls)
   add_subdirectory(switchless_worksleep)
   add_subdirectory(switchless_one_tcs)
 
-  if (COMPILER_SUPPORTS_SNMALLOC AND NOT USE_SNMALLOC)
-    # Do not build that test if we are already using snmalloc for all other tests
-    add_subdirectory(snmalloc)
+  if (COMPILER_SUPPORTS_SNMALLOC)
+    if (NOT USE_SNMALLOC)
+      # Do not build that test if we are already using snmalloc for all other tests
+      add_subdirectory(snmalloc)
+    endif ()
   else ()
     message("The C++ compiler cannot compile snmalloc. Skipping snmalloc test.")
   endif ()
@@ -106,8 +155,11 @@ if (UNIX
     add_subdirectory(libcxxrt)
     add_subdirectory(libunwind)
     add_subdirectory(mbed)
+    add_subdirectory(mman)
+    add_subdirectory(module_loading)
     add_subdirectory(ocall-create)
     add_subdirectory(oeedger8r)
+    add_subdirectory(pf_gp_exceptions)
     add_subdirectory(print)
     add_subdirectory(props)
     add_subdirectory(qeidentity)
@@ -122,9 +174,11 @@ if (UNIX
     add_subdirectory(thread)
     add_subdirectory(threadcxx)
     add_subdirectory(thread_local)
+    add_subdirectory(thread_local_alignment)
     add_subdirectory(thread_local_large)
     add_subdirectory(thread_local_no_tdata)
     add_subdirectory(VectorException)
+    add_subdirectory(stack_overflow_exception)
     add_subdirectory(stack_smashing_protector)
     add_subdirectory(stress)
 
@@ -141,14 +195,17 @@ if (UNIX
     endif ()
 
     if (BUILD_OPENSSL)
+      add_subdirectory(symcrypt_engine)
       add_subdirectory(openssl)
       add_subdirectory(openssl_unsupported)
     endif ()
   endif ()
 
   add_subdirectory(c99_compliant)
+  add_subdirectory(compiler_rt)
   add_subdirectory(create-errors)
   add_subdirectory(crypto)
+  add_subdirectory(data_types)
   add_subdirectory(edl_opt_out)
   add_subdirectory(hexdump)
   add_subdirectory(hostcalls)
@@ -167,6 +224,11 @@ if (UNIX)
     # longer be used.
     if (NOT CODE_COVERAGE)
       add_subdirectory(child_process)
+    endif ()
+    if (ENABLE_ZERO_BASE_TESTS)
+      # 0-base enclave creation is currently available only in SGX and UNIX
+      # platforms.
+      add_subdirectory(sgx_zerobase) # Disabled until PSW update
     endif ()
   endif ()
   add_subdirectory(libc)

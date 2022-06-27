@@ -20,9 +20,8 @@ enclave
     {
         void* call_arg;
         oe_enclave_t* enc;
-        bool is_stopping;
-
-        int32_t event;
+        int64_t is_stopping;
+        int64_t event;
 
         // Number of times the worker spun without seeing a message.
         uint64_t spin_count;
@@ -35,9 +34,8 @@ enclave
     {
         void* call_arg;
         oe_enclave_t* enc;
-        bool is_stopping;
-
-        int32_t event;
+        int64_t is_stopping;
+        int64_t event;
 
         // Number of times the worker spun without seeing a message.
         uint64_t spin_count;

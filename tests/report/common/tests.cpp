@@ -104,6 +104,8 @@ oe_result_t oe_get_collaterals(
         oe_get_sgx_endorsements(
             header->report,
             header->report_size,
+            NULL,
+            0,
             collaterals_buffer,
             collaterals_buffer_size),
         "Failed to get collaterals. %s",
@@ -298,6 +300,7 @@ static oe_result_t oe_get_quote_validity_with_collaterals(
             header->report,
             header->report_size,
             &sgx_endorsements,
+            nullptr,
             valid_from,
             valid_until));
     }
@@ -1358,12 +1361,13 @@ void test_verify_report_with_collaterals()
         gmtime_r(&t, &timeinfo);
 
         // convert tm to oe_datetime_t
-        oe_datetime_t past = {(uint32_t)timeinfo.tm_year + 1890,
-                              (uint32_t)timeinfo.tm_mon + 1,
-                              (uint32_t)timeinfo.tm_mday,
-                              (uint32_t)timeinfo.tm_hour,
-                              (uint32_t)timeinfo.tm_min,
-                              (uint32_t)timeinfo.tm_sec};
+        oe_datetime_t past = {
+            (uint32_t)timeinfo.tm_year + 1890,
+            (uint32_t)timeinfo.tm_mon + 1,
+            (uint32_t)timeinfo.tm_mday,
+            (uint32_t)timeinfo.tm_hour,
+            (uint32_t)timeinfo.tm_min,
+            (uint32_t)timeinfo.tm_sec};
         OE_TEST(
             VerifyReportWithCollaterals(
                 report_buffer_ptr,
@@ -1374,12 +1378,13 @@ void test_verify_report_with_collaterals()
                 NULL) == OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD);
 
         /* Test with time in the future */
-        oe_datetime_t future = {(uint32_t)timeinfo.tm_year + 1910,
-                                (uint32_t)timeinfo.tm_mon + 1,
-                                (uint32_t)timeinfo.tm_mday,
-                                (uint32_t)timeinfo.tm_hour,
-                                (uint32_t)timeinfo.tm_min,
-                                (uint32_t)timeinfo.tm_sec};
+        oe_datetime_t future = {
+            (uint32_t)timeinfo.tm_year + 1910,
+            (uint32_t)timeinfo.tm_mon + 1,
+            (uint32_t)timeinfo.tm_mday,
+            (uint32_t)timeinfo.tm_hour,
+            (uint32_t)timeinfo.tm_min,
+            (uint32_t)timeinfo.tm_sec};
         OE_TEST(
             VerifyReportWithCollaterals(
                 report_buffer_ptr,
