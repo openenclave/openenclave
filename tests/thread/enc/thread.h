@@ -19,11 +19,22 @@ static __inline pthread_mutex_t __mutex_initializer_default()
     return m;
 }
 
+static __inline pthread_mutex_t __mutex_initializer_recursive()
+{
+    pthread_mutex_t m;
+    pthread_mutexattr_t attr;
+    pthread_mutexattr_init(&attr);
+    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutex_init(&m, &attr);
+    return m;
+}
+
 typedef pthread_t oe_thread_t;
 #define oe_thread_self pthread_self
 
 typedef pthread_mutex_t oe_mutex_t;
-#define OE_MUTEX_INITIALIZER __mutex_initializer_default()
+#define OE_MUTEX_INITIALIZER __mutex_initializer_recursive()
+#define OE_MUTEX_INITIALIZER_NORMAL __mutex_initializer_default()
 #define oe_mutex_init pthread_mutex_init
 #define oe_mutex_lock pthread_mutex_lock
 #define oe_mutex_trylock pthread_mutex_trylock

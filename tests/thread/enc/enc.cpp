@@ -15,22 +15,10 @@
 #include <atomic>
 #include "thread_t.h"
 
-static inline oe_mutex_t _mutex_initializer_recursive()
-{
-    oe_mutex_t m;
-    oe_mutexattr_t attr;
-    oe_mutexattr_init(&attr);
-    oe_mutexattr_settype(&attr, OE_MUTEX_RECURSIVE);
-    oe_mutex_init(&m, &attr);
-    return m;
-}
-
-#define OE_MUTEX_INITIALIZER_RECURSIVE _mutex_initializer_recursive()
-
-static oe_mutex_t mutex1 = OE_MUTEX_INITIALIZER;
-static oe_mutex_t mutex2 = OE_MUTEX_INITIALIZER;
-static oe_mutex_t recursive_mutex1 = OE_MUTEX_INITIALIZER_RECURSIVE;
-static oe_mutex_t recursive_mutex2 = OE_MUTEX_INITIALIZER_RECURSIVE;
+static oe_mutex_t mutex1 = OE_MUTEX_INITIALIZER_NORMAL;
+static oe_mutex_t mutex2 = OE_MUTEX_INITIALIZER_NORMAL;
+static oe_mutex_t recursive_mutex1 = OE_MUTEX_INITIALIZER;
+static oe_mutex_t recursive_mutex2 = OE_MUTEX_INITIALIZER;
 static size_t test_mutex_count1 = 0;
 static size_t test_mutex_count2 = 0;
 
@@ -211,9 +199,9 @@ void enc_relinquish_exclusive_access()
     oe_mutex_unlock(&ex_mutex);
 }
 
-static oe_mutex_t mutex_a = OE_MUTEX_INITIALIZER_RECURSIVE;
-static oe_mutex_t mutex_b = OE_MUTEX_INITIALIZER_RECURSIVE;
-static oe_mutex_t mutex_c = OE_MUTEX_INITIALIZER_RECURSIVE;
+static oe_mutex_t mutex_a = OE_MUTEX_INITIALIZER;
+static oe_mutex_t mutex_b = OE_MUTEX_INITIALIZER;
+static oe_mutex_t mutex_c = OE_MUTEX_INITIALIZER;
 
 static oe_thread_t a_owner = 0;
 static oe_thread_t b_owner = 0;

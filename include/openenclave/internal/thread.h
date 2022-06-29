@@ -54,17 +54,35 @@ bool oe_thread_equal(oe_thread_t thread1, oe_thread_t thread2);
 
 typedef uint32_t oe_once_t;
 
+/* Match musl's definitions */
+#define OE_MUTEX_NORMAL 0
+#define OE_MUTEX_RECURSIVE 1
+#define OE_MUTEX_ERRORCHECK 2
+/* Make OE's default as recursive */
+#define OE_MUTEX_DEFAULT OE_MUTEX_RECURSIVE
+
 /**
  * @cond DEV
  */
 #define OE_ONCE_INIT 0
 #define OE_ONCE_INITIALIZER 0
 #define OE_SPINLOCK_INITIALIZER 0
-#define OE_MUTEX_INITIALIZER \
-    {                        \
-        {                    \
-            0                \
-        }                    \
+
+/* Default to initialize the mutex as recursive
+ * (the fields are specific for the oe_mutex_impl_t in
+ * enclave/core/sgx/thread.c) */
+#define OE_MUTEX_INITIALIZER             \
+    {                                    \
+        {                                \
+            0, 0, OE_MUTEX_DEFAULT, 0, 0 \
+        }                                \
+    }
+
+#define OE_MUTEX_INITIALIZER_NORMAL \
+    {                               \
+        {                           \
+            0                       \
+        }                           \
     }
 
 #define OE_COND_INITIALIZER \
@@ -210,12 +228,6 @@ typedef struct _oe_mutexattr
 {
     uint32_t _impl;
 } oe_mutexattr_t;
-
-/* Match the definitions of corelibc/pthread.h */
-#define OE_MUTEX_NORMAL 0
-#define OE_MUTEX_DEFAULT 0
-#define OE_MUTEX_RECURSIVE 1
-#define OE_MUTEX_ERRORCHECK 2
 
 /**
  * Initialize a mutex attribute.

@@ -143,7 +143,17 @@ int oe_pthread_spin_destroy(oe_pthread_spinlock_t* spinlock)
 
 int oe_pthread_mutexattr_init(oe_pthread_mutexattr_t* attr)
 {
-    return _to_errno(oe_mutexattr_init((oe_mutexattr_t*)attr));
+    oe_result_t result = OE_FAILURE;
+
+    result = oe_mutexattr_init((oe_mutexattr_t*)attr);
+    if (result != OE_OK)
+        return _to_errno(result);
+
+    /* Set the type to NORMAL to match the pthread behavior as the
+     * OE's default is RECURSIVE */
+    result = oe_mutexattr_settype((oe_mutexattr_t*)attr, OE_MUTEX_NORMAL);
+
+    return _to_errno(result);
 }
 
 int oe_pthread_mutexattr_settype(oe_pthread_mutexattr_t* attr, int type)
@@ -161,6 +171,15 @@ int oe_pthread_mutex_init(
     oe_pthread_mutex_t* m,
     const oe_pthread_mutexattr_t* attr)
 {
+    if (!attr)
+    {
+        oe_mutexattr_t attr_normal = {0};
+
+        /* If attr is NULL, set the default type to NORMAL (0) to match the
+         * pthread behavior as the OE's default is RECURSIVE (1) */
+        return _to_errno(oe_mutex_init((oe_mutex_t*)m, &attr_normal));
+    }
+
     return _to_errno(oe_mutex_init((oe_mutex_t*)m, (oe_mutexattr_t*)attr));
 }
 
