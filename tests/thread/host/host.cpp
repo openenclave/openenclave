@@ -20,7 +20,7 @@ const size_t NUM_THREADS = 8;
 
 void* test_mutex_thread(oe_enclave_t* enclave)
 {
-    oe_result_t result = enc_test_mutex(enclave);
+    oe_result_t result = enc_test_recursive_mutex(enclave);
     OE_TEST(result == OE_OK);
 
     return NULL;

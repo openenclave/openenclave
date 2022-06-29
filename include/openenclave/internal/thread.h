@@ -203,23 +203,62 @@ oe_result_t oe_spin_destroy(oe_spinlock_t* spinlock);
  */
 typedef struct _oe_mutex
 {
-    uint64_t __impl[4]; /**< Internal private implementation */
+    uint64_t __impl[5]; /**< Internal private implementation */
 } oe_mutex_t;
 
+typedef struct _oe_mutexattr
+{
+    uint32_t _impl;
+} oe_mutexattr_t;
+
+/* Match the definitions of corelibc/pthread.h */
+#define OE_MUTEX_NORMAL 0
+#define OE_MUTEX_DEFAULT 0
+#define OE_MUTEX_RECURSIVE 1
+#define OE_MUTEX_ERRORCHECK 2
+
 /**
- * Initialize a mutex.
+ * Initialize a mutex attribute.
  *
- * This function initializes a mutex. All mutexes are recursive. Once
- * initialized, multiple threads can use this mutex to synchronize access
- * to data. See oe_mutex_lock() and oe_mutex_unlock().
+ * This function initializes a mutex attribute, which can be by oe_mutex_init().
  *
- * @param mutex Initialize this mutex.
+ * @param attr The mutex attribute.
+ *
+ * @return OE_OK the operation was successful
+ * @return OE_INVALID_PARAMETER the parameter is invalid
+ *
+ */
+oe_result_t oe_mutexattr_init(oe_mutexattr_t* attr);
+
+/**
+ * Set the mutex attribute.
+ *
+ * This function sets the mutex attribute with the given type.
+ *
+ * @param attr The mutex attribute.
+ * @param type The type to be set.
  *
  * @return OE_OK the operation was successful
  * @return OE_INVALID_PARAMETER one or more parameters is invalid
  *
  */
-oe_result_t oe_mutex_init(oe_mutex_t* mutex);
+oe_result_t oe_mutexattr_settype(oe_mutexattr_t* attr, int type);
+
+/**
+ * Initialize a mutex.
+ *
+ * This function initializes a mutex. Once initialized, multiple threads can use
+ * this mutex to synchronize access to data. See oe_mutex_lock() and
+ * oe_mutex_unlock().
+ *
+ * @param mutex Initialize this mutex.
+ * @param attr The mutex attribute.
+ *
+ * @return OE_OK the operation was successful
+ * @return OE_INVALID_PARAMETER one or more parameters is invalid
+ *
+ */
+oe_result_t oe_mutex_init(oe_mutex_t* mutex, oe_mutexattr_t* attr);
 
 /**
  * Acquire a lock on a mutex.

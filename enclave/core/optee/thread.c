@@ -72,10 +72,25 @@ typedef struct _oe_mutex_impl
 
 OE_STATIC_ASSERT(sizeof(oe_mutex_impl_t) <= sizeof(oe_mutex_t));
 
-oe_result_t oe_mutex_init(oe_mutex_t* mutex)
+oe_result_t oe_mutexattr_init(oe_mutexattr_t* attr)
+{
+    OE_UNUSED(attr);
+    return OE_OK;
+}
+
+oe_result_t oe_mutexattr_settype(oe_mutexattr_t* attr, int type)
+{
+    OE_UNUSED(attr);
+    OE_UNUSED(type);
+    return OE_OK;
+}
+
+oe_result_t oe_mutex_init(oe_mutex_t* mutex, oe_mutexattr_t* attr)
 {
     oe_mutex_impl_t* m = (oe_mutex_impl_t*)mutex;
     oe_result_t result = OE_UNEXPECTED;
+
+    OE_UNUSED(attr);
 
     if (!m)
         return OE_INVALID_PARAMETER;

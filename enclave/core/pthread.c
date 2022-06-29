@@ -5,11 +5,13 @@
 #include <openenclave/corelibc/pthread.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/defs.h>
+#include <openenclave/internal/raise.h>
 #include <openenclave/internal/thread.h>
 
 OE_STATIC_ASSERT(sizeof(oe_pthread_once_t) == sizeof(oe_once_t));
 OE_STATIC_ASSERT(sizeof(oe_pthread_spinlock_t) == sizeof(oe_spinlock_t));
 OE_STATIC_ASSERT(sizeof(oe_pthread_mutex_t) >= sizeof(oe_mutex_t));
+OE_STATIC_ASSERT(sizeof(oe_pthread_mutexattr_t) >= sizeof(oe_mutexattr_t));
 OE_STATIC_ASSERT(sizeof(oe_pthread_cond_t) >= sizeof(oe_cond_t));
 OE_STATIC_ASSERT(sizeof(oe_pthread_rwlock_t) >= sizeof(oe_rwlock_t));
 
@@ -141,15 +143,12 @@ int oe_pthread_spin_destroy(oe_pthread_spinlock_t* spinlock)
 
 int oe_pthread_mutexattr_init(oe_pthread_mutexattr_t* attr)
 {
-    OE_UNUSED(attr);
-    return 0;
+    return _to_errno(oe_mutexattr_init((oe_mutexattr_t*)attr));
 }
 
 int oe_pthread_mutexattr_settype(oe_pthread_mutexattr_t* attr, int type)
 {
-    OE_UNUSED(attr);
-    OE_UNUSED(type);
-    return 0;
+    return _to_errno(oe_mutexattr_settype((oe_mutexattr_t*)attr, type));
 }
 
 int oe_pthread_mutexattr_destroy(oe_pthread_mutexattr_t* attr)
@@ -162,8 +161,7 @@ int oe_pthread_mutex_init(
     oe_pthread_mutex_t* m,
     const oe_pthread_mutexattr_t* attr)
 {
-    OE_UNUSED(attr);
-    return _to_errno(oe_mutex_init((oe_mutex_t*)m));
+    return _to_errno(oe_mutex_init((oe_mutex_t*)m, (oe_mutexattr_t*)attr));
 }
 
 int oe_pthread_mutex_lock(oe_pthread_mutex_t* m)

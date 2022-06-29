@@ -15,7 +15,7 @@ enclave {
 
         public void cb_test_signal_thread_impl();
 
-        public void enc_test_mutex();
+        public void enc_test_recursive_mutex();
 
         public void enc_test_mutex_counts(
             [out] size_t* count1,
