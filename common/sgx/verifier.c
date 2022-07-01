@@ -775,7 +775,7 @@ oe_result_t oe_sgx_verify_evidence(
         // to verify it being an SGX report.
 
         if (evidence_buffer_size < sizeof(sgx_report_t))
-            OE_RAISE(OE_INVALID_PARAMETER);
+            OE_RAISE(OE_INCORRECT_REPORT_SIZE);
 
         format_type = SGX_FORMAT_TYPE_LOCAL;
     }
@@ -785,8 +785,10 @@ oe_result_t oe_sgx_verify_evidence(
         // followed by an optional custom claims buffer.
         sgx_quote_t* quote = (sgx_quote_t*)evidence_buffer;
 
-        if (evidence_buffer_size < sizeof(*quote) + quote->signature_len ||
-            quote->version != SGX_QE3_QUOTE_VERSION ||
+        if (evidence_buffer_size < sizeof(*quote) + quote->signature_len)
+            OE_RAISE(OE_INCORRECT_REPORT_SIZE);
+
+        if (quote->version != SGX_QE3_QUOTE_VERSION ||
             quote->sign_type != SGX_QL_ALG_ECDSA_P256)
             OE_RAISE(OE_INVALID_PARAMETER);
 
@@ -798,8 +800,10 @@ oe_result_t oe_sgx_verify_evidence(
         // followed by an SGX report or ECDSA-p256 quote.
         oe_report_header_t* report = (oe_report_header_t*)evidence_buffer;
 
-        if (evidence_buffer_size < sizeof(*report) ||
-            report->version != OE_REPORT_HEADER_VERSION ||
+        if (evidence_buffer_size < sizeof(*report))
+            OE_RAISE(OE_INCORRECT_REPORT_SIZE);
+
+        if (report->version != OE_REPORT_HEADER_VERSION ||
             report->report_type != OE_REPORT_TYPE_SGX_REMOTE)
             OE_RAISE(OE_INVALID_PARAMETER);
 

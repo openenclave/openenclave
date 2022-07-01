@@ -85,7 +85,7 @@ static oe_result_t verify_sgx_report_user_data(
                 report_data[i],
                 sha256.buf[i]);
         OE_RAISE_MSG(
-            OE_VERIFY_FAILED,
+            OE_QUOTE_HASH_MISMATCH,
             "hash of peer certificate's public key does not match report data",
             NULL);
     }
@@ -316,7 +316,7 @@ oe_result_t oe_verify_evidence(
                 if (has_endorsements_baseline_policy)
                 {
                     OE_RAISE_MSG(
-                        OE_INVALID_PARAMETER,
+                        OE_VERIFY_BASELINE_INVALID,
                         "multiple endorsements baseline policies specified.",
                         NULL);
                 }
@@ -331,7 +331,7 @@ oe_result_t oe_verify_evidence(
     if (endorsements_buffer && has_endorsements_baseline_policy)
     {
         OE_RAISE_MSG(
-            OE_INVALID_PARAMETER,
+            OE_VERIFY_BASELINE_INVALID,
             "endorsements buffer conflicts with endorsements baseline policy",
             NULL);
     }
