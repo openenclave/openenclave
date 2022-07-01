@@ -284,6 +284,17 @@ class EnclaveCreationBreakpoint(gdb.Breakpoint):
         enable_oeenclave_debug(enclave_addr)
         return False
 
+class NonDebugEnclaveBreakpoint(gdb.Breakpoint):
+    def __init__(self):
+        gdb.Breakpoint.__init__ (self, spec="_debug_non_debug_enclave_created_hook", internal=1)
+
+    def stop(self):
+        print ("oegdb: The enclave is not debuggable." +
+               " Debugging non-debug enclaves using oegdb is unreliable and unstable." +
+               " To make the enclave debuggable, set Debug=1 in the enclave's configuration and" +
+               " add OE_ENCLAVE_FLAG_DEBUG to enclave creation flags.")
+        return True
+
 class EnclaveTerminationBreakpoint(gdb.Breakpoint):
     def __init__(self):
         gdb.Breakpoint.__init__ (self, spec="oe_debug_enclave_terminated_hook", internal=1)
@@ -380,6 +391,7 @@ def oe_debugger_init():
     EnclaveTerminationBreakpoint()
     ModuleLoadedBreakpoint()
     ModuleUnloadedBreakpoint()
+    NonDebugEnclaveBreakpoint()
     return
 
 def oe_debugger_cleanup():
