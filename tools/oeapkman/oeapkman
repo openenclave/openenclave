@@ -245,6 +245,12 @@ alpine_exec()
     fi
 }
 
+# oeapkman root should not produce any output other than the root path.
+# Delay setting up the root-fs until the next call.
+if [ "$1" = "root" ]; then
+    echo "$ROOTFS_PATH"
+    exit 0
+fi
 
 # Setup alpine file system.
 mkdir -p "${OEAPKMAN_DIR}" || exit 1
@@ -276,10 +282,6 @@ case "$1" in
 
     "help")
         print_usage
-        ;;
-
-    "root")
-        echo "$ROOTFS_PATH"
         ;;
 
     "search")
