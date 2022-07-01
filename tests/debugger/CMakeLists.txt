@@ -5,6 +5,7 @@ if (NOT UNIX OR BUILD_TYPE_UPPER STREQUAL "RELEASE")
   return()
 endif ()
 
+add_subdirectory(non_debug)
 add_subdirectory(host)
 add_subdirectory(enc)
 
