@@ -1227,6 +1227,21 @@ done:
 }
 
 #if !defined(OEHOSTMR)
+
+#if __unix__
+
+OE_NO_OPTIMIZE_BEGIN
+
+OE_NEVER_INLINE static void _debug_non_debug_enclave_created_hook(
+    const oe_debug_enclave_t* enclave)
+{
+    OE_UNUSED(enclave);
+}
+
+OE_NO_OPTIMIZE_END
+
+#endif
+
 /*
 ** This method encapsulates all steps of the enclave creation process:
 **     - Loads an enclave image file
@@ -1346,6 +1361,23 @@ oe_result_t oe_create_enclave(
             oe_debug_notify_module_loaded(debug_module);
             debug_module = next;
         }
+    }
+    else
+    {
+#if __unix__
+        // Call hook function so that debugger (if any) can emit a warning
+        // message.
+        oe_debug_enclave_t debug_enclave = {0};
+
+        debug_enclave.magic = OE_DEBUG_ENCLAVE_MAGIC;
+        debug_enclave.version = OE_DEBUG_ENCLAVE_VERSION;
+        debug_enclave.next = NULL;
+
+        debug_enclave.path = enclave->path;
+        debug_enclave.path_length = strlen(enclave->path);
+
+        _debug_non_debug_enclave_created_hook(&debug_enclave);
+#endif
     }
 
     /* Enclave initialization invokes global constructors which could make

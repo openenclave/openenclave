@@ -296,6 +296,19 @@ class EnclaveCreationBreakpoint:
             g_enclave = enclave_addr
         return False
 
+class NonDebugEnclaveBreakpoint:
+    def __init__(self, target):
+        breakpoint  = target.BreakpointCreateByName("_debug_non_debug_enclave_created_hook")
+        breakpoint.SetScriptCallbackFunction('lldb_sgx_plugin.NonDebugEnclaveBreakpoint.onHit')
+
+    @staticmethod
+    def onHit(frame, bp_loc, dict):
+        print ("oelldb: The enclave is not debuggable." +
+               " Debugging non-debug enclaves using oelldb is unreliable and unstable." +
+               " To make the enclave debuggable, set Debug=1 in the enclave's configuration and" +
+               " add OE_ENCLAVE_FLAG_DEBUG to enclave creation flags.")
+        return True
+
 class EnclaveTerminationBreakpoint:
     def __init__(self, target):
         breakpoint  = target.BreakpointCreateByName("oe_debug_enclave_terminated_hook")
@@ -359,6 +372,7 @@ def oe_debugger_init(debugger):
     EnclaveTerminationBreakpoint(debugger.GetSelectedTarget())
     ModuleLoadedBreakpoint(debugger.GetSelectedTarget())
     ModuleUnloadedBreakpoint(debugger.GetSelectedTarget())
+    NonDebugEnclaveBreakpoint(debugger.GetSelectedTarget())
 
 # Invoked when `command script import lldb_sgx_plugin' is called.
 def __lldb_init_module(debugger, dict):
