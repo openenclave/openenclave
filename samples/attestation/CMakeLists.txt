@@ -30,6 +30,11 @@ add_subdirectory(enclave_a)
 add_subdirectory(enclave_b)
 add_subdirectory(host)
 
+# Remove previously built CMakeFiles directory, if any. This avoids build
+# failures due to stale object files in CMakeFiles/. 
+file(REMOVE_RECURSE ${CMAKE_CURRENT_BINARY_DIR}/enclave_a/CMakeFiles)
+file(REMOVE_RECURSE ${CMAKE_CURRENT_BINARY_DIR}/enclave_b/CMakeFiles)
+
 add_custom_target(sign ALL DEPENDS enclave_a_signed enclave_b_signed)
 
 if ((NOT DEFINED ENV{OE_SIMULATION}) OR (NOT $ENV{OE_SIMULATION}))
