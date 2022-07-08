@@ -147,6 +147,7 @@ static oe_fd_t* _epoll_create1(oe_device_t* device_, int32_t flags)
     epoll_t* epoll = NULL;
     device_t* device = _cast_device(device_);
     oe_host_fd_t retval;
+    oe_mutexattr_t attr;
 
     oe_errno = 0;
 
@@ -166,6 +167,15 @@ static oe_fd_t* _epoll_create1(oe_device_t* device_, int32_t flags)
     epoll->base.ops.epoll = _get_epoll_ops();
     epoll->magic = EPOLL_MAGIC;
     epoll->host_fd = retval;
+
+    if (oe_mutexattr_init(&attr) != OE_OK)
+        OE_RAISE_ERRNO(OE_EFAULT);
+
+    if (oe_mutexattr_settype(&attr, OE_MUTEX_RECURSIVE) != OE_OK)
+        OE_RAISE_ERRNO(OE_EFAULT);
+
+    if (oe_mutex_init(&epoll->lock, &attr) != OE_OK)
+        OE_RAISE_ERRNO(OE_EFAULT);
 
     ret = &epoll->base;
     epoll = NULL;

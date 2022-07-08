@@ -168,7 +168,7 @@ typedef struct _oe_mutex_impl
     oe_sgx_td_t* owner;
 
     /* The type of mutex (supported types: normal and recursive) */
-    uint32_t type;
+    uint64_t type;
 
     /* Queue of waiting threads (front holds the mutex) */
     Queue queue;
@@ -181,6 +181,11 @@ typedef struct _oe_mutexattr_impl
 
 OE_STATIC_ASSERT(sizeof(oe_mutex_impl_t) <= sizeof(oe_mutex_t));
 OE_STATIC_ASSERT(sizeof(oe_mutexattr_impl_t) <= sizeof(oe_mutexattr_t));
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_mutex_impl_t, lock) == 0);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_mutex_impl_t, refs) == 4);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_mutex_impl_t, owner) == 8);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_mutex_impl_t, type) == 16);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_mutex_impl_t, queue) == 24);
 
 static oe_result_t _validate_mutexattr_type(uint32_t type)
 {
