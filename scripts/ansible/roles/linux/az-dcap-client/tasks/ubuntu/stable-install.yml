@@ -2,6 +2,10 @@
 # Licensed under the MIT License.
 
 ---
+- name: Include distribution vars
+  ansible.builtin.include_vars:
+    file: "{{ ansible_distribution | lower }}/main.yml"
+
 - name: Add Microsoft Repository
   ansible.builtin.include_role:
     name: linux/common
@@ -12,6 +16,6 @@
 
 - name: Install the official Azure-DCAP-Client APT package
   ansible.builtin.apt:
-    name: az-dcap-client
-    state: latest
+    name: "az-dcap-client={{ az_dcap_client_version }}"
+    state: present
     update_cache: yes
