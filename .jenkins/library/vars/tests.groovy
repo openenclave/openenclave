@@ -51,13 +51,17 @@ def ACCTest(String label, String compiler, String build_type, List extra_cmake_a
                 if (fresh_install) {
                     sh  """
                         sudo bash scripts/ansible/install-ansible.sh
-                        # Run ACC Playbook
-                        for i in 1 2 3 4 5
-                        do
-                            sudo \$(which ansible-playbook) scripts/ansible/oe-contributors-acc-setup.yml && break
-                            sleep 60
-                        done
                         """
+                    retry(5) {
+                        ret = sh(
+                            script: 'sudo ansible-playbook scripts/ansible/oe-contributors-acc-setup.yml',
+                            returnStatus: true
+                        )
+                        if (ret != 0) {
+                            sleep time: 60, unit: 'SECONDS'
+                            error "Failed OE Ansible setup. Retrying..."
+                        }
+                    }
                 }
                 sh """
                     sudo apt list --installed | grep sgx
