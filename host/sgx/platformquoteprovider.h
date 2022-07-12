@@ -81,7 +81,9 @@ typedef void (*sgx_free_quote_verification_collateral_t)(
 typedef enum _sgx_ql_log_level_t
 {
     SGX_QL_LOG_ERROR,
-    SGX_QL_LOG_INFO
+    SGX_QL_LOG_WARNING,
+    SGX_QL_LOG_INFO,
+    SGX_QL_LOG_NONE
 } sgx_ql_log_level_t;
 
 /// Function signature used for logging from within the library
