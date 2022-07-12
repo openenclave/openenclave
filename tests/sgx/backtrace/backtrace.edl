@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 enclave {
-    from "openenclave/edl/logging.edl" import oe_write_ocall;
+    from "openenclave/edl/logging.edl" import *;
     from "openenclave/edl/fcntl.edl" import *;
     from "openenclave/edl/sgx/attestation.edl" import *;
     from "openenclave/edl/sgx/cpu.edl" import *;
@@ -11,5 +11,7 @@ enclave {
 
     trusted {
         public void enc_test();
+        public void enc_test_segfault();
+        public void enc_test_abort_after_segfault();
     };
 };

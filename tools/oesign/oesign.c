@@ -569,7 +569,8 @@ void _merge_config_file_options(
 
     /* If the CapturePFGPExceptions option is present */
     if (options->capture_pf_gp_exceptions.has_value)
-        properties->config.flags.capture_pf_gp_exceptions = 1;
+        properties->config.flags.capture_pf_gp_exceptions =
+            options->capture_pf_gp_exceptions.value;
     else
         properties->config.flags.capture_pf_gp_exceptions = 0;
 

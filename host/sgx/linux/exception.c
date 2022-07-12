@@ -94,6 +94,11 @@ static void _host_signal_handler(
                 return;
         }
 
+        OE_TRACE_ERROR("Unhandled in-enclave exception. To get more "
+                       "information, configure the enclave with "
+                       "CapturePFGPExceptions=1 and enable the in-enclave "
+                       "logging.");
+
         // If not an enclave exception, and no valid previous signal handler is
         // set, raise it again, and let the default signal handler handle it.
         signal(sig_num, g_previous_sigaction[sig_num].sa_handler);

@@ -10,11 +10,16 @@ add_custom_command(
     edger8r --trusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
     ${DEFINE_OE_SGX} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_enclave(TARGET sgx_backtrace_enc SOURCES enc.c
+add_enclave(TARGET sgx_backtrace_enc SOURCES enc.c config_pfgp.c
             ${CMAKE_CURRENT_BINARY_DIR}/backtrace_t.c)
-
-enclave_link_libraries(sgx_backtrace_enc oelibc)
 
 enclave_include_directories(
   sgx_backtrace_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_enclave(TARGET sgx_backtrace_no_pfgp_enc SOURCES enc.c config_no_pfgp.c
+            ${CMAKE_CURRENT_BINARY_DIR}/backtrace_t.c)
+
+enclave_include_directories(
+  sgx_backtrace_no_pfgp_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR})
