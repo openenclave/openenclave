@@ -5,6 +5,7 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/registers.h>
+#include <openenclave/internal/trace.h>
 #include <stdio.h>
 #include <windows.h>
 #include "../enclave.h"
@@ -78,6 +79,11 @@ _host_exception_handler(struct _EXCEPTION_POINTERS* exception_pointers)
     }
     else
     {
+        OE_TRACE_ERROR("Unhandled in-enclave exception. To get more "
+                       "information, configure the enclave with "
+                       "CapturePFGPExceptions=1 and enable the in-enclave "
+                       "logging.");
+
         // Exception has not been handled.
         return EXCEPTION_CONTINUE_SEARCH;
     }

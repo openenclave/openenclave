@@ -6,10 +6,12 @@
 #include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/sgx/td.h>
 #include <openenclave/internal/thread.h>
+#include <openenclave/internal/trace.h>
 #include "../tracee.h"
 #include "context.h"
 #include "cpuid.h"
 #include "init.h"
+#include "platform_t.h"
 #include "td.h"
 
 #define MAX_EXCEPTION_HANDLER_COUNT 64
@@ -313,6 +315,8 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
      * to restore the FS before an exception (if the application has
      * modified the FS) */
     oe_sgx_td_t* td = oe_sgx_get_td_no_fs_check();
+    bool is_segfault = (td->exception_code == OE_EXCEPTION_ACCESS_VIOLATION) ||
+                       (td->exception_code == OE_EXCEPTION_PAGE_FAULT);
 
     /* Validate the td state, which ensures the function
      * is only invoked after oe_virtual_exception_dispatcher */
@@ -404,7 +408,8 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
     for (uint32_t i = 0; i < g_current_exception_handler_count; i++)
     {
         handler_ret = g_exception_handler_arr[i](&oe_exception_record);
-        if (handler_ret == OE_EXCEPTION_CONTINUE_EXECUTION)
+        if (handler_ret == OE_EXCEPTION_CONTINUE_EXECUTION ||
+            handler_ret == OE_EXCEPTION_ABORT_EXECUTION)
         {
             break;
         }
@@ -456,29 +461,39 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
         oe_abort();
         return;
     }
-    else if (handler_ret == OE_EXCEPTION_ABORT_EXECUTION)
+
+    if (is_segfault)
+        OE_TRACE_ERROR("Segmentation fault");
+    else
+        OE_TRACE_ERROR("Unhandled exception");
+
+    void* buffer[OE_BACKTRACE_MAX];
+    oe_result_t r = OE_UNEXPECTED;
+    uint64_t current_frame[2];
+    int size;
+
+    /* Construct the frame based on the rbp and rip on oe_execution_record
+     * such that we can get the correct backtrace information from the
+     * stack frame where the exception occurred even if the stack is not
+     * stitched in non-debug mode */
+    current_frame[0] = oe_exception_record.context->rbp;
+    current_frame[1] = oe_exception_record.context->rip;
+
+    if ((size = oe_backtrace_impl(
+             (void**)current_frame, buffer, OE_BACKTRACE_MAX)) > 0)
     {
-        oe_abort();
-        return;
+        oe_sgx_log_backtrace_ocall(
+            &r,
+            oe_get_enclave(),
+            OE_LOG_LEVEL_ERROR,
+            (uint64_t*)buffer,
+            (size_t)size);
     }
 
     // Exception can't be handled by trusted handlers, abort the enclave.
-    // Let the oe_abort to run on the stack where the exception happens.
-    // oe_continue_execution uses a retq instruction to jump to the target
-    // address. Since no return address is being pushed to the stack, this
-    // can break x64 ABI compatibility which requires that RSP ought to
-    // be a multiple of 8 upon entry to the function. To ensure compatibility,
-    // first align the RSP to 16 bytes and the push the current rsp to fake
-    // a call.
-    oe_exception_record.context->rsp =
-        (oe_exception_record.context->rsp & (uint64_t)-16) - 8;
-    uint64_t current_rip = 0;
-    asm volatile("lea (%%rip), %0" : "=r"(current_rip));
-    *(uint64_t*)oe_exception_record.context->rsp = current_rip;
-    oe_exception_record.context->rip = (uint64_t)oe_abort;
-    oe_continue_execution(oe_exception_record.context);
+    oe_abort();
 
-    return;
+    // Code should never run to here.
 }
 
 /*
