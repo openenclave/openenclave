@@ -344,10 +344,16 @@ int setup_tls_server(struct tls_control_args* config, char* server_port)
     return 0;
 }
 
-OE_SET_ENCLAVE_SGX(
-    1,    /* ProductID */
-    1,    /* SecurityVersion */
-    true, /* Debug */
-    1024, /* NumHeapPages */
-    512,  /* NumStackPages */
-    1);   /* NumTCS */
+OE_SET_ENCLAVE_SGX2(
+    1,     /* ProductID */
+    1,     /* SecurityVersion */
+    ({0}), /* ExtendedProductID */
+    ({0}), /* FamilyID */
+    true,  /* Debug */
+    true,  /* CapturePFGPExceptions */
+    false, /* RequireKSS */
+    false, /* CreateZeroBaseEnclave */
+    0,     /* StartAddress */
+    1024,  /* NumHeapPages */
+    512,   /* NumStackPages */
+    1);    /* NumTCS */

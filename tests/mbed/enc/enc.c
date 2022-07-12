@@ -270,10 +270,16 @@ void oe_handle_verify_report(uint64_t arg_in, uint64_t* arg_out)
     abort();
 }
 
-OE_SET_ENCLAVE_SGX(
-    1,    /* ProductID */
-    1,    /* SecurityVersion */
-    true, /* Debug */
-    576,  /* NumHeapPages */
-    512,  /* NumStackPages */
-    2);   /* NumTCS */
+OE_SET_ENCLAVE_SGX2(
+    1,     /* ProductID */
+    1,     /* SecurityVersion */
+    ({0}), /* ExtendedProductID */
+    ({0}), /* FamilyID */
+    true,  /* Debug */
+    true,  /* CapturePFGPExceptions */
+    false, /* RequireKSS */
+    false, /* CreateZeroBaseEnclave */
+    0,     /* StartAddress */
+    576,   /* NumHeapPages */
+    512,   /* NumStackPages */
+    2);    /* NumTCS */

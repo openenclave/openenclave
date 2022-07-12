@@ -154,9 +154,19 @@ static int oe_vdso_user_handler(
 
             OE_TRACE_INFO("vDSO: exception occurred");
 
-            oe_host_handle_exception(&host_context);
+            if (oe_host_handle_exception(&host_context) ==
+                OE_EXCEPTION_CONTINUE_EXECUTION)
+                result = ENCLU_ERESUME;
+            else
+            {
+                OE_TRACE_ERROR(
+                    "Unhanded in-enclave exception. To get more "
+                    "information, configure the enclave with "
+                    "CapturePFGPExceptions=1 and enable the in-enclave "
+                    "logging.");
+                result = -1;
+            }
 
-            result = ENCLU_ERESUME;
             break;
         }
     }

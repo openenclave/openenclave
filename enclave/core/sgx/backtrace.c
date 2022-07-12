@@ -65,10 +65,12 @@ OE_WEAK_ALIAS(_oe_sgx_backtrace_symbols_ocall, oe_sgx_backtrace_symbols_ocall);
 oe_result_t _oe_sgx_log_backtrace_ocall(
     oe_result_t* _retval,
     oe_enclave_t* oe_enclave,
+    oe_log_level_t level,
     const uint64_t* buffer,
     size_t size)
 {
     OE_UNUSED(oe_enclave);
+    OE_UNUSED(level);
     OE_UNUSED(buffer);
     OE_UNUSED(size);
 
