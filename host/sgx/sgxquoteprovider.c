@@ -27,14 +27,23 @@ extern oe_sgx_quote_provider_t provider;
 
 void oe_quote_provider_log(sgx_ql_log_level_t level, const char* message)
 {
-    const char* level_string = level == 0 ? "ERROR" : "INFO";
-    char formatted[1024];
+    char formatted[OE_LOG_MESSAGE_LEN_MAX] = {0};
+    oe_log_level_t oe_log_level[] = {
+        OE_LOG_LEVEL_ERROR,
+        OE_LOG_LEVEL_WARNING,
+        OE_LOG_LEVEL_INFO,
+        OE_LOG_LEVEL_NONE};
+    const char* dcap_level_strings[] = {"ERROR", "WARN", "INFO", "NONE"};
 
-    snprintf(formatted, sizeof(formatted), "[%s]: %s\n", level_string, message);
+    snprintf(
+        formatted,
+        sizeof(formatted),
+        "dcap_quoteprov: [%s]: %s\n",
+        dcap_level_strings[level],
+        message);
+    formatted[OE_LOG_MESSAGE_LEN_MAX - 1] = 0;
 
-    formatted[sizeof(formatted) - 1] = 0;
-
-    OE_TRACE_INFO("dcap_quoteprov: %s", formatted);
+    OE_TRACE(oe_log_level[level], "%s", formatted);
 }
 
 oe_result_t oe_initialize_quote_provider()
