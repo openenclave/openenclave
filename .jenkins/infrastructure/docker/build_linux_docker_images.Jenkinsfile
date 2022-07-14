@@ -24,13 +24,10 @@ pipeline {
         string(name: "OECI_LIB_VERSION", defaultValue: 'master', description: 'Version of OE Libraries to use')
         string(name: "DEVKITS_URI", defaultValue: 'https://oejenkins.blob.core.windows.net/oejenkins/OE-CI-devkits-d1634ce8.tar.gz', description: "Uri for downloading the OECI Devkit")
         string(name: "AGENTS_LABEL", defaultValue: 'acc-ubuntu-18.04', description: "Label of the agent to use to run this job")
-        booleanParam(name: "PUBLISH_DOCKER_HUB", defaultValue: false, description: "Publish container to OECITeam Docker Hub?")
         booleanParam(name: "TAG_LATEST", defaultValue: false, description: "Update the latest tag to the currently built DOCKER_TAG")
-        booleanParam(name: "PUBLISH_VERSION_FILE", defaultValue: false, description: "Publish versioning information?")
     }
     environment {
         // Docker plugin cannot seem to use credentials from Azure Key Vault
-        DOCKERHUB_REPO_CREDS = 'oeciteamdockerhub'
         BASE_DOCKERFILE_DIR = ".jenkins/infrastructure/docker/dockerfiles/linux/base/"
         LINUX_DOCKERFILE = ".jenkins/infrastructure/docker/dockerfiles/linux/Dockerfile"
     }
@@ -68,7 +65,7 @@ pipeline {
                                     base_1804_image.inside("--user root:root --cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
                                         sh """
                                             apt update
-                                            apt install -y build-essential open-enclave libssl-dev
+                                            apt install -y build-essential open-enclave libssl-dev curl
                                         """
                                         helpers.TestSamplesCommand(false, "open-enclave")
                                     }
@@ -82,7 +79,7 @@ pipeline {
                                     base_2004_image.inside("--user root:root --cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
                                         sh """
                                             apt update
-                                            apt install -y build-essential open-enclave libssl-dev
+                                            apt install -y build-essential open-enclave libssl-dev curl
                                         """
                                         helpers.TestSamplesCommand(false, "open-enclave")
                                     }
@@ -103,30 +100,6 @@ pipeline {
                                 }
                             }
                             sh "docker logout ${params.INTERNAL_REPO}"
-                        }
-                    }
-                }
-                stage("Push to Docker Hub") {
-                    when {
-                        expression {
-                            return params.PUBLISH_DOCKER_HUB
-                        }
-                    }
-                    steps {
-                        script {
-                            sh("docker tag openenclave-base-ubuntu-20.04:${TAG_BASE_IMAGE} oeciteam/openenclave-base-ubuntu-20.04:${TAG_BASE_IMAGE}")
-                            sh("docker tag openenclave-base-ubuntu-18.04:${TAG_BASE_IMAGE} oeciteam/openenclave-base-ubuntu-18.04:${TAG_BASE_IMAGE}")
-                            dockerhub_base_2004_image = docker.image("oeciteam/openenclave-base-ubuntu-20.04:${TAG_BASE_IMAGE}")
-                            dockerhub_base_1804_image = docker.image("oeciteam/openenclave-base-ubuntu-18.04:${TAG_BASE_IMAGE}")
-                            docker.withRegistry('', DOCKERHUB_REPO_CREDS) {
-                                dockerhub_base_2004_image.push()
-                                dockerhub_base_1804_image.push()
-                                if ( params.TAG_LATEST ) {
-                                    dockerhub_base_2004_image.push('latest')
-                                    dockerhub_base_1804_image.push('latest')
-                                }
-                            }
-                            sh "docker logout"
                         }
                     }
                 }
@@ -192,74 +165,6 @@ pipeline {
                             }
                         }
                     }
-                }
-                stage('Publish oetools') {
-                    when {
-                        expression {
-                            return params.PUBLISH_DOCKER_HUB
-                        }
-                    }
-                    steps {
-                        script {
-                            sh("docker tag oetools-20.04:${TAG_BASE_IMAGE} oeciteam/oetools-20.04:${TAG_BASE_IMAGE}")
-                            sh("docker tag oetools-18.04:${TAG_BASE_IMAGE} oeciteam/oetools-18.04:${TAG_BASE_IMAGE}")
-                            dockerhub_full_2004_image = docker.image("oeciteam/oetools-20.04:${TAG_BASE_IMAGE}")
-                            dockerhub_full_1804_image = docker.image("oeciteam/oetools-18.04:${TAG_BASE_IMAGE}")
-                            docker.withRegistry('', DOCKERHUB_REPO_CREDS) {
-                                dockerhub_full_2004_image.push()
-                                dockerhub_full_1804_image.push()
-                                if ( params.TAG_LATEST ) {
-                                    dockerhub_full_2004_image.push('latest')
-                                    dockerhub_full_1804_image.push('latest')
-                                }
-                            }
-                            sh "docker logout"
-                        }
-                    }
-                }
-            }
-        }
-        stage('Publish info') {
-            when {
-                expression {
-                    return params.PUBLISH_VERSION_FILE
-                }
-            }
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'github-oeciteam-user-pat',
-                                 usernameVariable: 'GIT_USERNAME',
-                                 passwordVariable: 'GIT_PASSWORD')]) {
-                    script {
-                        sh '''
-                            git config --global user.email "${GIT_USERNAME}@microsoft.com"
-                            git config --global user.name ${GIT_USERNAME}
-                            git checkout --force "oeciteam/publish-docker"
-                            git pull
-                        '''
-                        BASE_2004_PSW  = helpers.dockerGetAptPackageVersion("openenclave-base-ubuntu-20.04:${TAG_BASE_IMAGE}", "libsgx-enclave-common")
-                        BASE_2004_DCAP = helpers.dockerGetAptPackageVersion("openenclave-base-ubuntu-20.04:${TAG_BASE_IMAGE}", "libsgx-ae-id-enclave")
-                        BASE_1804_PSW  = helpers.dockerGetAptPackageVersion("openenclave-base-ubuntu-18.04:${TAG_BASE_IMAGE}", "libsgx-enclave-common")
-                        BASE_1804_DCAP = helpers.dockerGetAptPackageVersion("openenclave-base-ubuntu-18.04:${TAG_BASE_IMAGE}", "libsgx-ae-id-enclave")
-                        FULL_2004_PSW  = helpers.dockerGetAptPackageVersion("oetools-20.04:${TAG_FULL_IMAGE}", "libsgx-enclave-common")
-                        FULL_2004_DCAP = helpers.dockerGetAptPackageVersion("oetools-20.04:${TAG_FULL_IMAGE}", "libsgx-ae-id-enclave")
-                        FULL_1804_PSW  = helpers.dockerGetAptPackageVersion("oetools-18.04:${TAG_FULL_IMAGE}", "libsgx-enclave-common")
-                        FULL_1804_DCAP = helpers.dockerGetAptPackageVersion("oetools-18.04:${TAG_FULL_IMAGE}", "libsgx-ae-id-enclave")
-                        REPOSITORY = params.INTERNAL_REPO - ~"^https://"
-                        sh """#!/bin/bash
-                            OE_VERSION=\$(grep --max-count=1 --only-matching --perl-regexp 'v\\d+\\.\\d+\\.\\d+(?=_log)' CHANGELOG.md)
-                            cat <<EOF >>DOCKER_IMAGES.md
-| Base Ubuntu 20.04 | ${REPOSITORY}/openenclave-base-ubuntu-20.04:${TAG_BASE_IMAGE} | \${OE_VERSION} | ${BASE_2004_PSW} | ${BASE_2004_DCAP} |
-| Base Ubuntu 18.04 | ${REPOSITORY}/openenclave-base-ubuntu-18.04:${TAG_BASE_IMAGE} | \${OE_VERSION} | ${BASE_1804_PSW} | ${BASE_1804_DCAP} |
-| Full Ubuntu 20.04 | ${REPOSITORY}/oetools-20.04:${TAG_FULL_IMAGE} | \${OE_VERSION} | ${FULL_2004_PSW} | ${FULL_2004_DCAP} |
-| Full Ubuntu 18.04 | ${REPOSITORY}/oetools-18.04:${TAG_FULL_IMAGE} | \${OE_VERSION} | ${FULL_1804_PSW} | ${FULL_1804_DCAP} |
-EOF
-                        """
-                    }
-                    sh '''
-                        git add DOCKER_IMAGES.md
-                        git commit -sm "Publish Docker Images"
-                        git push --force https://${GIT_PASSWORD}@github.com/openenclave/openenclave.git HEAD:oeciteam/publish-docker
-                    '''
                 }
             }
         }

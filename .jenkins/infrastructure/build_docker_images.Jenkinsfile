@@ -19,9 +19,10 @@ pipeline {
         string(name: "INTERNAL_REPO_CRED_ID", defaultValue: "oejenkinscidockerregistry", description: "Credential ID for internal Docker repository")
         string(name: "IMAGES_BUILD_LABEL", defaultValue: "acc-ubuntu-18.04", description: "Label of the agent to use to run Linux container builds")
         string(name: "WINDOWS_AGENTS_LABEL", defaultValue: "windows-nonsgx", description: "Label of the agent to use to run Windows container builds")
-        booleanParam(name: "PUBLISH_DOCKER_HUB", defaultValue: false, description: "Publish container to OECITeam Docker Hub?")
-        booleanParam(name: "TAG_LATEST", defaultValue: false, description: "Update the latest tag to the currently built DOCKER_TAG")
-        booleanParam(name: "PUBLISH_VERSION_FILE", defaultValue: false, description: "Publish versioning information?")
+        booleanParam(name: "TAG_LATEST", defaultValue: true, description: "Update the latest tag to the currently built DOCKER_TAG")
+        booleanParam(name: "BUILD_WINDOWS", defaultValue: true, description: "Publish Windows Docker images?")
+        booleanParam(name: "BUILD_LINUX", defaultValue: true, description: "Publish Linux Docker images?")
+        booleanParam(name: "PUBLISH", defaultValue: false, description: "Publish Docker images?")
     }
     stages {
         stage('Set dynamic default parameters') {
@@ -38,9 +39,12 @@ pipeline {
                 println("BASE_DOCKER_TAG = " + BASE_DOCKER_TAG)
             }
         }
-        stage('Parallel') {
+        stage('Build') {
             parallel {
                 stage("Build Windows Docker Containers") {
+                    when {
+                        expression { return params.BUILD_WINDOWS }
+                    }
                     steps {
                         build job: '/Private/Infrastructure/Windows-Docker-Container-Build',
                             parameters: [
@@ -51,13 +55,14 @@ pipeline {
                                 string(name: 'DOCKER_TAG', value: DOCKER_TAG),
                                 string(name: 'OECI_LIB_VERSION', value: params.OECI_LIB_VERSION),
                                 string(name: 'AGENTS_LABEL', value: params.WINDOWS_AGENTS_LABEL),
-                                booleanParam(name: 'PUBLISH_DOCKER_HUB', value: params.PUBLISH_DOCKER_HUB),
                                 booleanParam(name: 'TAG_LATEST', value: params.TAG_LATEST),
-                                booleanParam(name: 'PUBLISH_VERSION_FILE', value: params.PUBLISH_VERSION_FILE)
                             ]
                     }
                 }
                 stage("Build Linux Docker Containers") {
+                    when {
+                        expression { return params.BUILD_LINUX }
+                    }
                     steps {
                         build job: '/Private/Infrastructure/Linux-Docker-Container-Build',
                             parameters: [
@@ -70,12 +75,33 @@ pipeline {
                                 string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
                                 string(name: 'SGX_VERSION', value: params.SGX_VERSION),
                                 string(name: 'BASE_DOCKER_TAG', value: BASE_DOCKER_TAG),
-                                booleanParam(name: 'PUBLISH_DOCKER_HUB', value: params.PUBLISH_DOCKER_HUB),
                                 booleanParam(name: 'TAG_LATEST', value: params.TAG_LATEST),
-                                booleanParam(name: 'PUBLISH_VERSION_FILE', value: params.PUBLISH_VERSION_FILE)
                             ]
                     }
                 }
+            }
+        }
+        stage('Publish') {
+            when {
+                expression { return params.PUBLISH }
+            }
+            steps {
+                build job: '/Private/Infrastructure/Publish-Docker-Images',
+                    parameters: [
+                        string(name: 'REPOSITORY_NAME', value: params.REPOSITORY_NAME),
+                        string(name: 'BRANCH_NAME', value: params.BRANCH_NAME),
+                        string(name: 'INTERNAL_REPO', value: params.INTERNAL_REPO),
+                        string(name: 'INTERNAL_REPO_CRED_ID', value: params.INTERNAL_REPO_CRED_ID),
+                        string(name: 'INTERNAL_LINUX_TAG', value: DOCKER_TAG),
+                        string(name: 'PUBLIC_LINUX_TAG', value: DOCKER_TAG),
+                        string(name: 'INTERNAL_WINDOWS_TAG', value: DOCKER_TAG),
+                        string(name: 'PUBLIC_WINDOWS_TAG', value: DOCKER_TAG),
+                        string(name: 'OECI_LIB_VERSION', value: params.OECI_LIB_VERSION),
+                        booleanParam(name: 'PUBLISH_LINUX', value: params.BUILD_LINUX),
+                        booleanParam(name: 'PUBLISH_WINDOWS', value: params.BUILD_WINDOWS),
+                        booleanParam(name: 'TAG_LATEST', value: params.TAG_LATEST),
+                        booleanParam(name: 'PUBLISH_VERSION_FILE', value: true)
+                    ]
             }
         }
     }
