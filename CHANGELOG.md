@@ -10,9 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Unreleased][Unreleased_log]
 --------------
 ### Added
+- Now the backtrace information will be logged for SGX enclaves when an exeception is unhandled (e.g., segfault) by trusted exception handlers.
+  - Require configuring the enclave with CapturePFGPExceptions=1 and Debug=1 on Linux (both SGX1 and SGX2 hardware) and Windows (only SGX2 hardware).
 
-## Changed
+### Changed
 - Fix the incorrect behavior of pthread_mutex_init() and std::mutex such that they no longer create a recursive lock by default.
+- Fix the bug in oesign that sets CapturePFGPExceptions to 1 even if the it is set to 0 in the config file.
+- Fix the behavior of hanging when vDSO is used and the segfault occurs inside the enclave. Now the application will terminate and return OE_FAILURE.
 
 [v0.18.0][v0.18.0_log]
 --------------
