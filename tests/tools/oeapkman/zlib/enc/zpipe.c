@@ -185,6 +185,52 @@ void zerr(int ret)
 /* compress or decompress from stdin to stdout */
 int main(int argc, char** argv)
 {
+    if (argc == 3 || (argc == 4 && strcmp(argv[3], "-d") == 0))
+    {
+        FILE* in = NULL;
+        FILE* out = NULL;
+        int ret = -1;
+
+        in = fopen(argv[1], "rb");
+        if (in == NULL)
+        {
+            fprintf(stderr, "zpipe: could not open %s", argv[1]);
+            goto done;
+        }
+
+        out = fopen(argv[2], "wb");
+        if (in == NULL)
+        {
+            fprintf(stderr, "zpipe: could not open %s", argv[2]);
+            goto done;
+        }
+
+        /* do compression if no arguments */
+        if (argc == 3)
+        {
+            ret = def(in, out, Z_DEFAULT_COMPRESSION);
+            if (ret != Z_OK)
+                zerr(ret);
+            goto done;
+        }
+
+        /* do decompression if -d specified */
+        else if (argc == 4 && strcmp(argv[3], "-d") == 0)
+        {
+            ret = inf(in, out);
+            if (ret != Z_OK)
+                zerr(ret);
+            goto done;
+        }
+    done:
+        if (in)
+            fclose(in);
+        if (out)
+            fclose(out);
+
+        return ret;
+    }
+
     int ret;
 
     /* avoid end-of-line conversions */
