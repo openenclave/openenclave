@@ -14,8 +14,6 @@ Param(
     [string]$VSBuildToolsHash = '',
     [string]$ClangURL = 'https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/LLVM-10.0.0-win64.exe',
     [string]$ClangHash = '893f8a12506f8ad29ca464d868fb432fdadd782786a10655b86575fc7fc1a562',
-    [string]$IntelPSWURL = 'https://registrationcenter-download.intel.com/akdlm/irc_nas/18782/Intel%20SGX%20PSW%20for%20Windows%20v2.16.100.3.exe',
-    [string]$IntelPSWHash = 'FA2F9AEE05DD744D513F7326359170457C0537F48315D18021CBCEC2C769643A',
     [string]$ShellCheckURL = 'https://oejenkins.blob.core.windows.net/oejenkins/shellcheck-v0.7.0.zip',
     [string]$ShellCheckHash = '02CFA14220C8154BB7C97909E80E74D3A7FE2CBB7D80AC32ADCAC7988A95E387',
     [string]$NugetURL = 'https://www.nuget.org/api/v2/package/NuGet.exe/3.4.3',
@@ -67,11 +65,6 @@ $PACKAGES = @{
         "url" = $ClangURL
         "hash" = $ClangHash
         "local_file" = Join-Path $PACKAGES_DIRECTORY "LLVM-win64.exe"
-    }
-    "psw" = @{
-        "url" = $IntelPSWURL
-        "hash" = $IntelPSWHash
-        "local_file" = Join-Path $PACKAGES_DIRECTORY "Intel_SGX_PSW_for_Windows.exe"
     }
     "shellcheck" = @{
         "url" = $ShellCheckURL
@@ -381,27 +374,6 @@ function Install-7Zip {
                  -EnvironmentPath @($installDir)
 }
 
-function Install-PSW {
-
-    $tempInstallDir = "$PACKAGES_DIRECTORY\Intel_SGX_PSW"
-    if(Test-Path $tempInstallDir) {
-        Remove-Item -Recurse -Force $tempInstallDir
-    }
-    Install-ZipTool -ZipPath $PACKAGES["psw"]["local_file"] `
-                    -InstallDirectory $tempInstallDir
-    
-    # For Windows Server 2019 and Windows 10, Intel SGX PSW package 2.12+ will install both PSW and DCAP
-    $psw_dir = Get-Item "$tempInstallDir\Intel*SGX*\PSW_INF*\"
-    Start-ExecuteWithRetry -RetryInterval 5 -ScriptBlock {
-        pnputil /add-driver $psw_dir\sgx_psw.inf /install
-        Get-Service "AESMService"
-    }
-
-    Start-ExecuteWithRetry -ScriptBlock {
-        Start-Service -Name "AESMService" -ErrorAction Stop
-    } -RetryMessage "Failed to start AESMService. Retrying"
-}
-
 function Install-VisualStudio {
     $installerArguments = @(
         "-q", "--wait", "--norestart",
@@ -492,44 +464,39 @@ function Remove-DCAPDriver {
     return 0
 }
 
-
+# Starting from Intel SGX 2.11.101, the Intel SGX DCAP package contains both DCAP and PSW for Windows Server 2019 and Windows 10.
 function Install-DCAP-Dependencies {
-    Install-Tool -InstallerPath $PACKAGES["psw"]["local_file"] `
-                 -ArgumentList @('/auto', "$PACKAGES_DIRECTORY\Intel_SGX_PSW")
     Install-Tool -InstallerPath $PACKAGES["dcap"]["local_file"] `
                  -ArgumentList @('/auto', "$PACKAGES_DIRECTORY\Intel_SGX_DCAP")
 
-    if (($LaunchConfiguration -eq "SGX1FLC") -or ($DCAPClientType -eq "Azure"))
-    {
-        $drivers = @{
-            'sgx_base' = @{
-                'path'        = "$PACKAGES_DIRECTORY\Intel_SGX_PSW\Intel*SGX*PSW*\base\WindowsServer2019_Windows10"
-                'location'    = 'root\SgxLCDevice'
-                'description' = 'Intel(R) Software Guard Extensions Launch Configuration Service'
-            }
+    $drivers = @{
+        'sgx_base' = @{
+            'path'        = "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel*SGX*DCAP*\base\WindowsServer2019_Windows10"
+            'location'    = 'root\SgxLCDevice'
+            'description' = 'Intel(R) Software Guard Extensions Launch Configuration Service'
         }
-        $devConBinaryPath = Get-DevconBinary
-        foreach($driver in $drivers.Keys) {
-            $path = $drivers[$driver]['path']
-            $inf = Get-Item "$path\$driver.inf"
-            if(!$inf) {
-                Throw "Cannot find $driver.inf file"
-            }
-            if($inf.Count -gt 1) {
-                $inf
-                Throw "Multiple $driver.inf files found"
-            }
-            if($LaunchConfiguration -eq "SGX1FLC")
-            {
-                $install = & pnputil /add-driver "$($inf.FullName)" /install
-                Write-Output $install
-            }
+        'sgx_psw' = @{
+            'path'        = "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel*SGX*DCAP*\psw\WindowsServer2019_Windows10"
         }
     }
-
-    # Starting from Intel SGX 2.12, the Intel SGX PSW package contains DCAP and PSW for Windows Server 2019 and Windows 10.
-    if (($LaunchConfiguration -ne "SGX1FLC-NoIntelDrivers") -and ($LaunchConfiguration -ne "SGX1-NoIntelDrivers")) {
-        Install-PSW
+    foreach($driver in $drivers.Keys) {
+        $path = $drivers[$driver]['path']
+        $inf = Get-Item "$path\$driver.inf"
+        if(!$inf) {
+            Throw "Cannot find $driver.inf file"
+        }
+        if($inf.Count -gt 1) {
+            $inf
+            Throw "Multiple $driver.inf files found"
+        }
+        $install = & pnputil /add-driver "$($inf.FullName)" /install
+        Write-Output $install
+    }
+    Start-ExecuteWithRetry -RetryInterval 5 -ScriptBlock {
+        Get-Service "AESMService"
+    }
+    Start-ExecuteWithRetry -ScriptBlock {
+        Start-Service -Name "AESMService" -ErrorAction Stop
     }
 
     $TEMP_NUGET_DIR = "$PACKAGES_DIRECTORY\Azure_DCAP_Client_nupkg"

@@ -8,8 +8,6 @@
   tasks:
     - name: OE setup | Set installer URLs from the OE storage account
       set_fact:
-        intel_psw_url:       "https://registrationcenter-download.intel.com/akdlm/irc_nas/18782/Intel%20SGX%20PSW%20for%20Windows%20v2.16.100.3.exe"
-        intel_psw_hash:      "FA2F9AEE05DD744D513F7326359170457C0537F48315D18021CBCEC2C769643A"
         intel_dcap_url:      "https://registrationcenter-download.intel.com/akdlm/irc_nas/18784/Intel%20SGX%20DCAP%20for%20Windows%20v1.14.100.3.exe"
         intel_dcap_hash:     "0C91FF2661CC2B3B4440A05FABF78132C3E95781A40EEAB3C9D7A9955CC5B7DC"
         git_url:             "https://oejenkins.blob.core.windows.net/oejenkins/Git-2.31.1-64-bit.exe"
@@ -36,8 +34,6 @@
         -InstallPath         "C:\oe_prereqs"
         -LaunchConfiguration "{{ launch_configuration }}"
         -DCAPClientType      "Azure"
-        -IntelPSWURL         "{{ intel_psw_url }}"
-        -IntelPSWHash        "{{ intel_psw_hash }}"
         -IntelDCAPURL        "{{ intel_dcap_url }}"
         -IntelDCAPHash       "{{ intel_dcap_hash }}"
         -GitURL              "{{ git_url }}"
@@ -60,7 +56,27 @@
         -NSISHash            "{{ nsis_hash }}"
         -InstallDocker
 
-     # One way to ensure the system is reliable just after a reboot, is to set WinRM to a delayed startup
+    - name: Check installed Intel PSW version
+      ansible.windows.win_powershell:
+        script: |
+          (Get-WmiObject Win32_PnPSignedDriver | select DeviceName, DriverVersion, Manufacturer | where {$_.DeviceName -like "*Guard Extensions Platform*"}).DriverVersion
+      register: intel_psw_version
+
+    - name: Print Intel PSW version
+      debug:
+        var: intel_psw_version.output
+    
+    - name: Check installed Intel DCAP version
+      ansible.windows.win_powershell:
+        script: |
+          (Get-Item C:\\Windows\\System32\\sgx_dcap_ql.dll).VersionInfo.ProductVersion
+      register: intel_dcap_version
+
+    - name: Print Intel DCAP version
+      debug:
+        var: intel_dcap_version.output
+
+    # One way to ensure the system is reliable just after a reboot, is to set WinRM to a delayed startup
     - name: Ensure WinRM starts when the system has settled and is ready to work reliably
       win_service:
         name: WinRM

@@ -107,6 +107,7 @@ def testSamplesLinux(boolean lvi_mitigation, String oe_package) {
         lvi_args += "-DLVI_MITIGATION=ControlFlow -DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/lvi_mitigation_bin .."
     }
     sh """#!/bin/bash
+        set -e
         echo "Running Test Samples Command"
         cp -r /opt/openenclave/share/openenclave/samples ~/
         cd ~/samples
@@ -147,6 +148,40 @@ def testSamplesLinux(boolean lvi_mitigation, String oe_package) {
         cd ~
         rm -rf ~/samples
     """   
+}
+
+/** Returns current Windows Intel SGX PSW version */
+def getPSWversion() {
+    return powershell(
+        label: "Intel SGX PSW version",
+        script: "(Get-Item C:\\Windows\\System32\\sgx_urts.dll).VersionInfo.ProductVersion",
+        returnStdout: true
+    ).trim()
+}
+
+/** Returns current Windows Intel SGX DCAP version */
+def getDCAPversion() {
+    return powershell(
+        label: "Intel SGX DCAP version",
+        script: "(Get-Item C:\\Windows\\System32\\sgx_dcap_ql.dll).VersionInfo.ProductVersion",
+        returnStdout: true
+    ).trim()
+}
+
+/** Checks to see if Windows Intel SGX PSW is installed correctly */
+def verifyPSWinstall() {
+    def installedVer = powershell(
+        label: "Verify Intel SGX PSW installation",
+        script: """
+            (Get-WmiObject Win32_PnPSignedDriver| select DeviceName, DriverVersion, Manufacturer | where {\$_.DeviceName -like "*Guard Extensions Platform*"}).DriverVersion
+        """,
+        returnStdout: true
+    ).trim()
+    def dllVer = getPSWversion()
+    if(installedVer != dllVer) {
+        print("[Error] Installed PSW version ${installedVer} does not match dll version ${dllVer}")
+    }
+    assert installedVer == dllVer
 }
 
 /**
@@ -259,26 +294,29 @@ def dependenciesInstall(String dcap_url = "", String psw_url = "", String instal
     if(isUnix()) {
         sh """
             sudo bash ${build_dir}/scripts/ansible/install-ansible.sh
+            cp ${WORKSPACE}/scripts/ansible/ansible.cfg ${WORKSPACE}/ansible.cfg
             ansible-playbook ${build_dir}/scripts/ansible/oe-contributors-acc-setup.yml --extra-vars "intel_sgx_w_flc_driver_url=${dcap_url} intel_sgx1_driver_url=${psw_url} ${install_flags}"
-
+            apt list --installed | grep libsgx
             ${WaitForAptLock()}
             sudo apt install -y dkms
         """
     } else {
         if (dcap_url == "" || psw_url == "") {
-            powershell """
+            powershell """#Requires -RunAsAdministrator
                 ${build_dir}\\scripts\\install-windows-prereqs.ps1 -InstallPath C:\\oe_prereqs -LaunchConfiguration SGX1FLC -DCAPClientType None ${install_flags}
             """
         } else {
-            powershell """
-                ${build_dir}\\scripts\\install-windows-prereqs.ps1 -IntelPSWURL ${psw_url} -IntelPSWHash "" -IntelDCAPURL ${dcap_url} -IntelDCAPHash "" -InstallPath C:\\oe_prereqs -LaunchConfiguration SGX1FLC -DCAPClientType None ${install_flags}
+            powershell """#Requires -RunAsAdministrator
+                ${build_dir}\\scripts\\install-windows-prereqs.ps1 -IntelDCAPURL "${dcap_url}" -IntelDCAPHash "" -InstallPath C:\\oe_prereqs -LaunchConfiguration SGX1FLC -DCAPClientType None ${install_flags}
             """
         }
+        verifyPSWinstall()
+        print("PSW version: ${getPSWversion()} \nDCAP version: ${getDCAPversion()}")
     }
 }
 
 /**
- * Downloads an Ubuntu Open Enclave release version from GitHub
+ * Downloads an Ubuntu Open Enclave release version from GitHub and returns a list of downloaded files
  *
  * @param release_version  The version of the Open Enclave release to install
  * @param oe_package       Open Enclave package to install
@@ -288,35 +326,39 @@ def dependenciesInstall(String dcap_url = "", String psw_url = "", String instal
  * @param os_release       The distribution version without "." (e.g. 1804)
  */
 def releaseDownloadLinuxGitHub(String release_version, String oe_package, String os_id, String os_release) {
-    sh """#!/bin/bash -x
-        CHANGED=0
-        valid_url_regex='^https?://[-A-Za-z0-9\\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\\+&@#/%=~_|]\$'
-        ${WaitForAptLock()}
-        sudo apt-get install -y jq
-        urls=\$(curl -sS https://api.github.com/repos/openenclave/openenclave/releases/tags/v${release_version} | jq --raw-output --compact-output '.assets | map(.browser_download_url) | .[]')
-        for url in \${urls}; do
-            # Check if url is valid
-            if echo "\${url}" | grep -E '^https?://[-A-Za-z0-9\\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\\+&@#/%=~_|]\$'; then
-                # Filter packages specific to current distribution and version
-                if echo "\${url}" | grep "${os_id}_${os_release}_${oe_package}"; then
-                    wget --no-verbose --directory-prefix="${release_version}/${os_id}_${os_release}" \${url}
-                    if [[ -f "${release_version}/${os_id}_${os_release}/\$(basename \${url})" ]]; then
-                        CHANGED=1
-                    else
-                        echo "[Error] Failed to download from \${url}"
-                        exit 1
+    sh(
+        label: "Install pre-requisites",
+        script: """
+            ${WaitForAptLock()}
+            sudo apt-get install -y jq
+        """
+    )
+    def downloadedFiles = sh(
+        label: "Download files from GitHub using regex ${os_id}(_|-)${os_release}(_|-)${oe_package}(_|-)${release_version}",
+        script: """#!/bin/bash
+            valid_url_regex='^https?://[-A-Za-z0-9\\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\\+&@#/%=~_|]\$'
+            urls=\$(curl -sS https://api.github.com/repos/openenclave/openenclave/releases/tags/v${release_version} | jq --raw-output --compact-output '.assets | map(.browser_download_url) | .[]')
+            for url in \${urls}; do
+                # Check if url is valid
+                if echo "\${url}" | grep -qE '^https?://[-A-Za-z0-9\\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\\+&@#/%=~_|]\$'; then
+                    # Filter packages specific to current distribution and version
+                    if echo "\${url}" | grep -qiE '${os_id}(_|-)${os_release}(_|-)${oe_package}(_|-)${release_version}'; then
+                        wget --no-verbose --directory-prefix="${release_version}/${os_id}_${os_release}" \${url}
+                        if [[ -f "${release_version}/${os_id}_${os_release}/\$(basename \${url})" ]]; then
+                            echo "${release_version}/${os_id}_${os_release}/\$(basename \${url})"
+                        fi
                     fi
                 fi
-            else
-                echo "[Error] Encountered invalid URL: \${url}"
-                exit 1
-            fi
-        done
-        if [[ \${CHANGED} -eq 0 ]]; then
-            echo "[Error] No files were downloaded!"
-            exit 1
-        fi
-    """
+            done
+        """,
+        returnStdout: true
+    ).trim().tokenize('\n')
+    if(!downloadedFiles) {
+        print("No files were downloaded!")
+        return null
+    } else {
+        return downloadedFiles
+    }
 }
 
 /**
@@ -338,11 +380,21 @@ def releaseDownloadLinux(String release_version, String oe_package, String sourc
     if(source == "Azure") {
         // Download from Open Enclave storage container
         azureContainerDownload('releasecandidates', "${release_version}/${os_id}_${os_release}/*", 'openenclavereleaseblobcontainer')
+        sh """
+            find ${release_version}/${os_id}_${os_release} -name "*"
+        """
+        return sh(
+            script: """
+                find ${release_version}/${os_id}_${os_release} -name "*${oe_package}?${release_version}*"
+            """,
+            returnStdout: true
+        ).trim().tokenize('\n')
     } else if(source == "GitHub") {
         // Download packages from Open Enclave GitHub repository releaases
-        releaseDownloadLinuxGitHub(release_version, oe_package, os_id, os_release)
+        return releaseDownloadLinuxGitHub(release_version, oe_package, os_id, os_release)
     } else {
         error("[Error] Invalid Open Enclave source defined!")
+
     }
 }
 
@@ -442,12 +494,19 @@ def releaseInstall(String release_version = null, String oe_package = "open-encl
                 returnStdout: true
             ).trim()
         // Download Open Enclave package
-        releaseDownloadLinux(release_version, oe_package, source, os_id, os_release)
+        def downloadedFiles = releaseDownloadLinux(release_version, oe_package, source, os_id, os_release)
+        if(!downloadedFiles) {
+            error("[Error] No files were downloaded!")
+        } else {
+            print(downloadedFiles)
+        }
         // Install Open Enclave package
-        sh """
-            ${WaitForAptLock()}
-            sudo dpkg -i "${release_version}/${os_id}_${os_release}/${os_id}_${os_release}_${oe_package}_${release_version}_amd64.deb"
-        """
+        for(file in downloadedFiles) {
+            sh """
+                ${WaitForAptLock()}
+                sudo dpkg -i "${file}"
+            """
+        }
     // For Windows
     } else {
         // Determine Windows installation type

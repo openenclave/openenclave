@@ -4,7 +4,12 @@
 ---
 - name: Gather Ansible facts
   ansible.builtin.gather_facts:
+  become: false
 
+- name: Include distribution release specific vars
+  ansible.builtin.include_vars:
+    file: "{{ ansible_distribution | lower }}/{{ ansible_distribution_release | lower }}.yml"
+    
 - name: Populate service facts
   ansible.builtin.service_facts:
 
@@ -29,10 +34,6 @@
 
 - name: install driver
   block:
-
-  - name: Include distribution release specific vars
-    ansible.builtin.include_vars:
-      file: "{{ ansible_distribution | lower }}/{{ ansible_distribution_release | lower }}.yml"
 
   - name: Install the SGX driver requirements
     ansible.builtin.include_tasks: "{{ ansible_distribution | lower }}/sgx-driver-requirements.yml"
@@ -69,14 +70,6 @@
       path: /tmp/sgx_linux_x64_driver.bin
       state: absent
 
-  - name: Add user to sgx_prv group
-    ansible.builtin.user:
-      name: "{{ lookup('env', 'USER') }}"
-      group: sgx_prv
-    when:
-     - intel_sgx_prv_permissions is defined
-     - intel_sgx_prv_permissions | bool
-
   - name: Set out-of-proc attestation by default
     ansible.builtin.lineinfile:
       path: /etc/environment
@@ -85,6 +78,21 @@
 
   when: intel_sgx_driver_exists is undefined or
         not intel_sgx_driver_exists
+
+- name: Add user to sgx_prv group
+  ansible.builtin.user:
+    name: "{{ ansible_user_id }}"
+    group: sgx_prv
+  when:
+    - intel_sgx_prv_permissions is defined
+    - intel_sgx_prv_permissions | bool
+    
+- name: Print sgx_prv user
+  ansible.builtin.debug:
+    msg: "Added {{ ansible_user_id }} to sgx_prv group"
+  when:
+    - intel_sgx_prv_permissions is defined
+    - intel_sgx_prv_permissions | bool
 
 - name: Ensure aesmd service running
   ansible.builtin.service:
