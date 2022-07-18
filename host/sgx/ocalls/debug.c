@@ -138,13 +138,14 @@ done:
 
 oe_result_t oe_sgx_log_backtrace_ocall(
     oe_enclave_t* oe_enclave,
+    oe_log_level_t level,
     const uint64_t* buffer,
     size_t size)
 {
     oe_result_t result = OE_UNEXPECTED;
     char** strings = NULL;
 
-    oe_log(OE_LOG_LEVEL_INFO, "Backtrace:\n");
+    oe_log(level, "Backtrace:\n");
 
     /* Reject invalid parameters. */
     if (!oe_enclave || !buffer || size > OE_INT_MAX)
@@ -159,7 +160,7 @@ oe_result_t oe_sgx_log_backtrace_ocall(
 
     for (size_t i = 0; i < size; ++i)
     {
-        oe_log(OE_LOG_LEVEL_INFO, "%s(): %p\n", strings[i], buffer[i]);
+        oe_log(level, "%s(): %p\n", strings[i], buffer[i]);
     }
 
     result = OE_OK;

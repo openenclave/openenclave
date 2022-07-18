@@ -17,6 +17,7 @@ enclave
     // Needed for oe_enclave_t. Foreign struct is ok since this is
     // intentionally kept in host memory.
     include "openenclave/bits/types.h"
+    include "openenclave/log.h" // oe_log_level_t
 
     untrusted
     {
@@ -33,6 +34,7 @@ enclave
 	// Log the given backtrace.
 	oe_result_t oe_sgx_log_backtrace_ocall(
             [user_check] oe_enclave_t* oe_enclave,
+            oe_log_level_t level,
             [in, count=size] const uint64_t* buffer,
             size_t size);
     };

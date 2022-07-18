@@ -1393,7 +1393,11 @@ void oe_abort_with_td(oe_sgx_td_t* td)
                 if ((size = oe_backtrace(buffer, OE_BACKTRACE_MAX)) > 0)
                 {
                     oe_sgx_log_backtrace_ocall(
-                        &r, oe_get_enclave(), (uint64_t*)buffer, (size_t)size);
+                        &r,
+                        oe_get_enclave(),
+                        OE_LOG_LEVEL_INFO,
+                        (uint64_t*)buffer,
+                        (size_t)size);
                 }
                 else
                 {
