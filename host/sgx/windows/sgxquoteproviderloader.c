@@ -61,7 +61,7 @@ void oe_load_quote_provider()
                 "provider.free_sgx_quote_verification_collateral = 0x%lx\n",
                 (uint64_t)provider.free_sgx_quote_verification_collateral);
             OE_TRACE_INFO(
-                "sgxquoteprovider: ",
+                "sgxquoteprovider: "
                 "provider.get_sgx_quote_verification_collateral_with_params = "
                 "0x%lx\n",
                 (uint64_t)provider
