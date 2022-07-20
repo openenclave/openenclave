@@ -1,0 +1,28 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave {
+    from "openenclave/edl/logging.edl" import *;
+    from "openenclave/edl/fcntl.edl" import *;
+    from "openenclave/edl/sgx/platform.edl" import *;
+
+    struct output_t
+    {
+        [size=size] uint8_t* data;
+        size_t size;
+    };
+
+    trusted {
+        public oe_result_t enc_seal(
+            [in, size=size] uint8_t* data,
+            size_t size,
+            [out] output_t* output,
+            bool verbose);
+
+        public oe_result_t enc_unseal(
+            [in, size=size] uint8_t* data,
+            size_t size,
+            [out] output_t* output,
+            bool verbose);
+    };
+};
