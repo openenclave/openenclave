@@ -1,7 +1,7 @@
 SGX Enclave Memory Manager
 =================================
 
-## Motivation ##
+## Introduction ##
 
 An enclave's memory is backed by a special reserved region in RAM, called
 Enclave Page Cache (EPC). Enclave memory management tasks include
@@ -16,26 +16,41 @@ address ranges, and modify attributes of the reserved/committed pages.
 
 For details of specific memory management related flows, please refer to
 [the SGX EDMM driver API spec](SGX_EDMM_driver_interface.md).
-The public EMM APIs defined here are most likely invoked by some intermediate
-runtime level components for specific usages, such as dynamic heap/stack, mmap,
-mprotect, higher level language JIT compiler, etc.
+
+As shown in the figure below,  the EMM provides a set of public APIs to be invoked
+by upper layer components for specific usages, such as dynamic heap/stack, mmap,
+mprotect, higher level language JIT compiler, etc. Another goal of this design is
+to make the EMM implementation portable across different runtimes such as
+Intel SGX SDK and OpenEnclave. To achieve that, it requires the runtimes to implement
+a runtime abstraction layer with APIs defined in this document. The main purpose of
+the abstraction layer is to provide an OCall bridge to the enclave common loader outside
+the enclave, which interacts with the OS to support the EDMM flows.
+
+![SGX2 EMM architecture](images/SGX2_emm_arch.svg)
+
 
 **Note:**  As the EMM is a component inside enclave, it should not have direct OS dependencies.
-However, the design proposed in this document only considers call flows and semantics for Linux. 
+However, the design proposed in this document only considers call flows and semantics for Linux.
+And the OCall implementation in enclave common loader is currently specified for Linux only though
+similar implementation is possible on other OSes. 
 
-## User Experience ##
 
-**Runtime Abstraction**
+## User Experience
 
-To make the EMM implementation portable across different SGX enclave runtimes, e.g., the Open Enclave and Intel SGX SDKs,
-this document also proposes a set of abstraction layer APIs for the runtimes to implement. The runtime abstraction
-layer APIs encapsulate runtime specific support such as making OCalls, registering callbacks on page faults, on which
-the EMM implementation relies to collaborate with the OS.
+### Porting EMM to Different Runtimes
 
-The EMM source code will be hosted and maintained in the [Intel SGX PSW and SDK repository](https://github.com/intel/linux-sgx).
-The EMM can be built as a separate library then linked into any runtime that implements the abstraction layer APIs.
+To port EMM implementation portable across different SGX enclave runtimes, e.g., the Open Enclave and Intel SGX SDKs,
+the runtimes needs to implement the runtime abstraction layer APIs. These APIs  encapsulate runtime specific support
+such as making OCalls, registering callbacks on page faults, on which the EMM implementation relies to collaborate with the OS.
 
-**Allocate, Deallocate Enclave Memory**
+Additionally, the runtime needs to properly initialize the EMM and reserve its own regions using the private APIs
+as described in the section on [Support for EMM Initialization](#support-for-emm-initialization).  
+
+The EMM source code is hosted and maintained in the [Intel(R) SGX Enclave Memory Manager repository](https://github.com/intel/sgx-emm).
+Other SGX runtime projects can pull into their specific build environment, then build and link the EMM objects into as part of runtime
+libraries, provided that the runtime provides the abstraction layer implementation and proper initialization.
+
+### Allocate, Deallocate Enclave Memory
 
 The EMM provides an API, sgx_mm_alloc, for its clients to request enclave memory
 allocations. An enclave memory allocation represents both a reserved virtual
@@ -56,7 +71,7 @@ An allocation, once created, will own its address range until the deallocation
 API, sgx_mm_dealloc, is called upon. No two active allocations can have
 overlapping address ranges.
 
-**Commit, Uncommit Enclave Memory**
+### Commit, Uncommit Enclave Memory
 
 When a page in COMMIT_ON_DEMAND allocations is accessed, a page fault occurs if
 the page was not yet committed.  The EMM will perform EACCEPT to commit the EPC
@@ -81,7 +96,7 @@ they belong to is deallocated by sgx_mm_dealloc.
 The EMM clients may call sgx_mm_modify_permissions/sgx_mm_modify_type to request permissions
 or page type changes for pages in existing allocations.
 
-## Notes on Internal Design ##
+## Notes on Internal Design
 
 The enclave memory manager keeps track of memory allocation and layout info inside
 enclave address range (ELRANGE) using an internal structure called the Enclave Memory
@@ -351,7 +366,7 @@ int sgx_mm_modify_permissions(void *addr, size_t length, int prot);
  * @retval EACCES Original page type can not be changed to target type.
  * @retval EINVAL The memory region was not allocated or outside enclave
  *                or other invalid parameters that are not supported.
- * @retval EPERM  Target page type is no allowed by this API, e.g., PT_TRIM,
+ * @retval EPERM  Target page type is not allowed by this API, e.g., PT_TRIM,
  *               PT_SS_FIRST, PT_SS_REST.
  */
 int sgx_mm_modify_type(void *addr, size_t length, int type);
@@ -454,16 +469,20 @@ bool sgx_mm_unregister_pfhandler(sgx_mm_pfhandler_t pfhandler);
 ### OCalls
 
 ```
+
 /*
  * Call OS to reserve region for EAUG, immediately or on-demand.
  *
- * @param[in] addr Desired page aligned start address, NULL if no desired address.
+ * @param[in] addr Desired page aligned start address.
  * @param[in] length Size of the region in bytes of multiples of page size.
- * @param[in] flags A bitwise OR of flags describing committing mode, committing
+ * @param[in] page_type One of following page types:
+ *             - SGX_EMA_PAGE_TYPE_REG: regular page type. This is the default if not specified.
+ *             - SGX_EMA_PAGE_TYPE_SS_FIRST: the first page in shadow stack.
+ *             - SGX_EMA_PAGE_TYPE_SS_REST: the rest page in shadow stack.
+ * @param[in] alloc_flags A bitwise OR of flags describing committing mode, committing
  *                     order, address preference, page type. The untrusted side.
- *    implementation should always invoke mmap syscall with MAP_SHARED|MAP_FIXED, and
- *    translate following additional bits to proper parameters invoking mmap or other SGX specific
- *    syscall(s) provided by the kernel.
+ *    implementation should translate following additional bits to proper
+ *    parameters invoking syscall(mmap on Linux) provided by the kernel.
  *        The flags param of this interface should include exactly one of following for committing mode:
  *            - SGX_EMA_COMMIT_NOW: reserves memory range with SGX_EMA_PROT_READ|SGX_EMA_PROT_WRITE, if supported,
  *                   kernel is given a hint to EAUG EPC pages for the area as soon as possible.
@@ -473,15 +492,11 @@ bool sgx_mm_unregister_pfhandler(sgx_mm_pfhandler_t pfhandler);
  *                              to lower addresses, no gaps in addresses above the last committed.
  *            - SGX_EMA_GROWSUP: if supported, a hint given for the kernel to EAUG pages from lower
  *                              to higher addresses, no gaps in addresses below the last committed.
- *        Optionally ORed with one of following page types:
- *             - SGX_EMA_PAGE_TYPE_REG: regular page type. This is the default if not specified.
- *             - SGX_EMA_PAGE_TYPE_SS_FIRST: the first page in shadow stack.
- *             - SGX_EMA_PAGE_TYPE_SS_REST: the rest page in shadow stack.
  * @retval 0 The operation was successful.
- * @retval EINVAL Any parameter passed in is not valid.
- * @retval errno Error as reported by dependent syscalls, e.g., mmap().
+ * @retval EFAULT for all failures.
  */
-int sgx_mm_alloc_ocall(uint64_t addr, size_t length, int flags);
+
+int sgx_mm_alloc_ocall(uint64_t addr, size_t length, int page_type, int alloc_flags);
 
 /*
  * Call OS to change permissions, type, or notify EACCEPT done after TRIM.
@@ -504,8 +519,7 @@ int sgx_mm_alloc_ocall(uint64_t addr, size_t length, int flags);
  *                      proper permissions.
  *            SGX_EMA_PAGE_TYPE_TCS: change the page type to PT_TCS
  * @retval 0 The operation was successful.
- * @retval EINVAL A parameter passed in is not valid.
- * @retval errno Error as reported by dependent syscalls, e.g., mprotect().
+ * @retval EFAULT for all failures.
  */
 
 int sgx_mm_modify_ocall(uint64_t addr, size_t length, int flags_from, int flags_to);
@@ -516,7 +530,7 @@ int sgx_mm_modify_ocall(uint64_t addr, size_t length, int flags_from, int flags_
 
 ```
 /*
- * Define a mutex and create/lock/unlock/destroy functions.
+ * Define a recursive mutex and create/lock/unlock/destroy functions.
  */
 typedef struct _sgx_mm_mutex sgx_mm_mutex;
 sgx_mm_mutex *sgx_mm_mutex_create(void);
