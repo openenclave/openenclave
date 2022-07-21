@@ -56,7 +56,7 @@ We will now walk through the process of creating a C/C++ application that uses a
    For example, update the main.cpp file to look like this, where the extern C declaration is needed
    because ConsoleApplication1.cpp is a C++ file whereas the _YourEnclaveProjectName_\_host.c file is a C file:
 ```C
-#include <iosteam>
+#include <iostream>
 
 extern "C" {
     void sample_enclave_call(void);
