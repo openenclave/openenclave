@@ -35,6 +35,14 @@ void oe_quote_provider_log(sgx_ql_log_level_t level, const char* message)
         OE_LOG_LEVEL_NONE};
     const char* dcap_level_strings[] = {"ERROR", "WARN", "INFO", "NONE"};
 
+    if (level >= SGX_QL_LOG_NONE || level < SGX_QL_LOG_ERROR)
+    {
+        OE_TRACE_WARNING("dcap_quoteprov log message's level is not within "
+                         "the expected range of values. Setting log level to "
+                         "SGX_QL_LOG_INFO.");
+        level = SGX_QL_LOG_INFO;
+    }
+
     snprintf(
         formatted,
         sizeof(formatted),
