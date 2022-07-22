@@ -7,6 +7,12 @@
 #include <openenclave/bits/exception.h>
 #include <openenclave/internal/calls.h>
 
+/* Compatiblie with OE_EXCEPTION_CONTINUE_EXECUTION */
+#define OE_SGX_EXCEPTION_ENCLAVE_HANDLED 0xFFFFFFFF
+/* Compatible with OE_EXCEPTION_CONTINUE_SEARCH */
+#define OE_SGX_EXCEPTION_ENCLAVE_NOT_HANDLED 0x0
+#define OE_SGX_EXCEPTION_HOST 0x1
+
 typedef struct _host_exception_context
 {
     uint64_t rax;

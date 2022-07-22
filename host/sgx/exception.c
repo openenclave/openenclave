@@ -50,7 +50,7 @@ uint64_t oe_host_handle_exception(oe_host_exception_context_t* context)
         // OE_AEP_ADDRESS. Otherwise, skip the check given that
         // the AEP is set by the kernel.
         if (!oe_sgx_is_vdso_enabled && exit_address != OE_AEP_ADDRESS)
-            return OE_EXCEPTION_CONTINUE_SEARCH;
+            return OE_SGX_EXCEPTION_HOST; /* Not an in-enclave exception */
 
         // Check if the enclave exception happens inside the first pass
         // exception handler.
@@ -58,7 +58,7 @@ uint64_t oe_host_handle_exception(oe_host_exception_context_t* context)
         if (thread_data->flags & _OE_THREAD_HANDLING_EXCEPTION)
         {
             // Return directly.
-            return OE_EXCEPTION_CONTINUE_EXECUTION;
+            return OE_SGX_EXCEPTION_ENCLAVE_NOT_HANDLED;
         }
 
         // Call-in enclave to handle the exception.
@@ -97,7 +97,7 @@ uint64_t oe_host_handle_exception(oe_host_exception_context_t* context)
         if (result == OE_OK && arg_out == OE_EXCEPTION_CONTINUE_EXECUTION)
         {
             // This exception has been handled by the enclave. Let's resume.
-            return OE_EXCEPTION_CONTINUE_EXECUTION;
+            return OE_SGX_EXCEPTION_ENCLAVE_HANDLED;
         }
         else
         {
@@ -109,13 +109,12 @@ uint64_t oe_host_handle_exception(oe_host_exception_context_t* context)
 
             // We continue the exception handler search as if it were a
             // non-enclave exception.
-            return OE_EXCEPTION_CONTINUE_SEARCH;
+            return OE_SGX_EXCEPTION_ENCLAVE_NOT_HANDLED;
         }
     }
     else
     {
         // Not an exclave exception.
-        // Continue searching for other handlers.
-        return OE_EXCEPTION_CONTINUE_SEARCH;
+        return OE_SGX_EXCEPTION_HOST;
     }
 }
