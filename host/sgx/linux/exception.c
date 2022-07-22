@@ -74,7 +74,7 @@ static void _host_signal_handler(
     // Call platform neutral handler.
     uint64_t action = oe_host_handle_exception(&host_context);
 
-    if (action == OE_EXCEPTION_CONTINUE_EXECUTION)
+    if (action == OE_SGX_EXCEPTION_ENCLAVE_HANDLED)
     {
         // Exception has been handled.
         return;
@@ -94,10 +94,11 @@ static void _host_signal_handler(
                 return;
         }
 
-        OE_TRACE_ERROR("Unhandled in-enclave exception. To get more "
-                       "information, configure the enclave with "
-                       "CapturePFGPExceptions=1 and enable the in-enclave "
-                       "logging.");
+        if (action == OE_SGX_EXCEPTION_ENCLAVE_NOT_HANDLED)
+            OE_TRACE_ERROR("Unhandled in-enclave exception. To get more "
+                           "information, configure the enclave with "
+                           "CapturePFGPExceptions=1 and enable the in-enclave "
+                           "logging.");
 
         // If not an enclave exception, and no valid previous signal handler is
         // set, raise it again, and let the default signal handler handle it.

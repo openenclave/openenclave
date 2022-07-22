@@ -132,6 +132,7 @@ static int oe_vdso_user_handler(
             /* Hardware exceptions occur */
 
             oe_host_exception_context_t host_context = {0};
+            uint64_t action = 0;
 
             host_context.rax = ENCLU_ERESUME;
             host_context.rbx = run->tcs;
@@ -154,16 +155,18 @@ static int oe_vdso_user_handler(
 
             OE_TRACE_INFO("vDSO: exception occurred");
 
-            if (oe_host_handle_exception(&host_context) ==
-                OE_EXCEPTION_CONTINUE_EXECUTION)
+            action = oe_host_handle_exception(&host_context);
+            if (action == OE_SGX_EXCEPTION_ENCLAVE_HANDLED)
                 result = ENCLU_ERESUME;
             else
             {
-                OE_TRACE_ERROR(
-                    "Unhanded in-enclave exception. To get more "
-                    "information, configure the enclave with "
-                    "CapturePFGPExceptions=1 and enable the in-enclave "
-                    "logging.");
+                /* Should always be this case */
+                if (action == OE_SGX_EXCEPTION_ENCLAVE_NOT_HANDLED)
+                    OE_TRACE_ERROR(
+                        "Unhanded in-enclave exception. To get more "
+                        "information, configure the enclave with "
+                        "CapturePFGPExceptions=1 and enable the in-enclave "
+                        "logging.");
                 result = -1;
             }
 

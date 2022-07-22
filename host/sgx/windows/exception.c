@@ -72,17 +72,18 @@ _host_exception_handler(struct _EXCEPTION_POINTERS* exception_pointers)
     // Call platform neutral handler.
     uint64_t action = oe_host_handle_exception(&host_context);
 
-    if (action == OE_EXCEPTION_CONTINUE_EXECUTION)
+    if (action == OE_SGX_EXCEPTION_ENCLAVE_HANDLED)
     {
         // Exception has been handled.
         return EXCEPTION_CONTINUE_EXECUTION;
     }
     else
     {
-        OE_TRACE_ERROR("Unhandled in-enclave exception. To get more "
-                       "information, configure the enclave with "
-                       "CapturePFGPExceptions=1 and enable the in-enclave "
-                       "logging.");
+        if (action == OE_SGX_EXCEPTION_ENCLAVE_NOT_HANDLED)
+            OE_TRACE_ERROR("Unhandled in-enclave exception. To get more "
+                           "information, configure the enclave with "
+                           "CapturePFGPExceptions=1 and enable the in-enclave "
+                           "logging.");
 
         // Exception has not been handled.
         return EXCEPTION_CONTINUE_SEARCH;
