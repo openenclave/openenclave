@@ -14,6 +14,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Changed
 - Fix the incorrect behavior of pthread_mutex_init() and std::mutex such that they no longer create a recursive lock by default.
 
+[v0.18.1][v0.18.1_log]
+--------------
+### Changed
+- Calling oe_log from an enclave resulted in partial log output. #4547 fixed this.
+- Fixed #4540. The fix **does not** introduce functional changes, but updates `memcpy_with_barrier` such that the source address will be always aligned when the function does 2- or 4-byte memory write.
+- Fixed #4542. The issue affects only those applications that ignore `SIGHUP`, `SIGALRM`, `SIGPIPE`, `SIGPOLL`, `SIGUSR1`, or`SIGUSR2` using `signal(signum, SIG_IGN)` on Linux. The issue has **no impact** on the enclave runtime.
+
+
 [v0.18.0][v0.18.0_log]
 --------------
 ### Added
@@ -755,10 +763,12 @@ as listed below.
 
 Initial private preview release, no longer supported.
 
-[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.18.0...HEAD
+[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.18.1...HEAD
+
+[v0.18.1_log]:https://github.com/openenclave/openenclave/compare/v0.18.0...v0.18.1
 
 [v0.18.0_log]:https://github.com/openenclave/openenclave/compare/v0.17.7...v0.18.0
-	  
+
 [v0.17.7_log]:https://github.com/openenclave/openenclave/compare/v0.17.6...v0.17.7
 
 [v0.17.6_log]:https://github.com/openenclave/openenclave/compare/v0.17.5...v0.17.6
