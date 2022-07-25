@@ -679,6 +679,12 @@ foreach (testcase ${openssltests})
   endif ()
 
   if ("${name}" STREQUAL ec_internal_test)
+    # Disable for code coverage
+    # As this test would write code coverage data to incorrect directory
+    if (CODE_COVERAGE)
+      continue()
+    endif ()
+
     if (WIN32)
       add_openssl_test("${name}" "${name}" ${TEST_DATA_DIR} ${WIN32})
     else ()

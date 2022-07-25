@@ -54,6 +54,10 @@ enclave_include_directories(
 
 maybe_build_using_clangw(openssl-common)
 
+if (CODE_COVERAGE)
+  enclave_compile_definitions(openssl-common PRIVATE CODE_COVERAGE)
+endif ()
+
 # Add the dependency to the opensslconf.h.
 add_enclave_dependencies(openssl-support openssl_generated)
 
@@ -149,10 +153,6 @@ function (add_openssl_test_enc NAME BUILDTEST CRYPTO_LIB)
 
   enclave_compile_definitions(openssl-${TEST_NAME}_enc PRIVATE
                               OPENSSL_NO_AFALGENG __STDC_NO_ATOMICS__)
-
-  if (CODE_COVERAGE)
-    enclave_compile_definitions(openssl-${TEST_NAME}_enc PRIVATE CODE_COVERAGE)
-  endif ()
 
   list(APPEND INCLUDE_PATHS ${CMAKE_CURRENT_BINARY_DIR}
        ${OPENSSL_DIR}/test/testutil)

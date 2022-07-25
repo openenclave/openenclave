@@ -11,11 +11,11 @@ Install the packages that are necessary for the offline analysis.
 
 ## Dependent APT packages
 
-`sudo apt install lcov python python-pip llvm-7`
+`sudo apt install lcov python python-pip llvm-10`
 
 ## Dependent PyPI package
 
-`sudo pip install lcov_cobertura`
+`sudo pip install lcov-cobertura`
 
 # CMake Configuration
 
