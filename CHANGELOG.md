@@ -765,7 +765,7 @@ Initial private preview release, no longer supported.
 
 [Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.18.1...HEAD
 
-[v0.18.0_log]:https://github.com/openenclave/openenclave/compare/v0.18.0...v0.18.1
+[v0.18.1_log]:https://github.com/openenclave/openenclave/compare/v0.18.0...v0.18.1
 
 [v0.18.0_log]:https://github.com/openenclave/openenclave/compare/v0.17.7...v0.18.0
 
