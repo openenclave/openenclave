@@ -62,26 +62,31 @@ include(CheckCXXCompilerFlag)
 
 # Apply Spectre mitigation if available.
 set(SPECTRE_MITIGATION_FLAGS -mllvm -x86-speculative-load-hardening)
-if (UNIX)
-  check_c_compiler_flag("${SPECTRE_MITIGATION_FLAGS}"
-                        SPECTRE_MITIGATION_C_FLAGS_SUPPORTED)
-  check_cxx_compiler_flag("${SPECTRE_MITIGATION_FLAGS}"
-                          SPECTRE_MITIGATION_CXX_FLAGS_SUPPORTED)
-  if (SPECTRE_MITIGATION_C_FLAGS_SUPPORTED
-      AND SPECTRE_MITIGATION_CXX_FLAGS_SUPPORTED)
-    message(STATUS "Spectre 1 mitigation supported")
-    # We set this variable to indicate the flags are supported. It is
-    # empty otherwise.
-    set(OE_SPECTRE_MITIGATION_FLAGS ${SPECTRE_MITIGATION_FLAGS})
-    # TODO: We really should specify this only on the `oecore` target;
-    # however, the third-party Mbed TLS build needs it too, so we have
-    # to keep this here for now.
-    add_compile_options(${OE_SPECTRE_MITIGATION_FLAGS})
-  else ()
-    message(WARNING "Spectre 1 mitigation NOT supported.")
+# Do not apply Spectre mitigation when generating code coverage because of a compiler bug.
+# More specifically, the speculative-load-hardening instrumentation
+# conflicts with gcov ones, casuing segfaults in some tests.
+if (NOT CODE_COVERAGE)
+  if (UNIX)
+    check_c_compiler_flag("${SPECTRE_MITIGATION_FLAGS}"
+                          SPECTRE_MITIGATION_C_FLAGS_SUPPORTED)
+    check_cxx_compiler_flag("${SPECTRE_MITIGATION_FLAGS}"
+                            SPECTRE_MITIGATION_CXX_FLAGS_SUPPORTED)
+    if (SPECTRE_MITIGATION_C_FLAGS_SUPPORTED
+        AND SPECTRE_MITIGATION_CXX_FLAGS_SUPPORTED)
+      message(STATUS "Spectre 1 mitigation supported")
+      # We set this variable to indicate the flags are supported. It is
+      # empty otherwise.
+      set(OE_SPECTRE_MITIGATION_FLAGS ${SPECTRE_MITIGATION_FLAGS})
+      # TODO: We really should specify this only on the `oecore` target;
+      # however, the third-party Mbed TLS build needs it too, so we have
+      # to keep this here for now.
+      add_compile_options(${OE_SPECTRE_MITIGATION_FLAGS})
+    else ()
+      message(WARNING "Spectre 1 mitigation NOT supported.")
+    endif ()
+  elseif (WIN32)
+    # Clang installed by OE is expected to have Spectre mitigation.
   endif ()
-elseif (WIN32)
-  # Clang installed by OE is expected to have Spectre mitigation.
 endif ()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)

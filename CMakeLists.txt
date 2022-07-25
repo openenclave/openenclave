@@ -79,8 +79,8 @@ if (IS_DIRECTORY "${PROJECT_SOURCE_DIR}/.git")
   execute_process(
     COMMAND git symbolic-ref HEAD
     OUTPUT_VARIABLE GIT_BRANCH
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} ERROR_QUIET
-                      OUTPUT_STRIP_TRAILING_WHITESPACE)
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
 
   # Install Git pre-commit hook
   file(COPY scripts/pre-commit scripts/commit-msg
@@ -203,8 +203,9 @@ if (WIN32)
   find_program(GIT git)
   get_filename_component(GIT_DIR ${GIT} DIRECTORY)
   find_program(
-    OE_BASH bash PATHS "C:/Program Files/Git/bin" "${GIT_DIR}/../bin"
-                       NO_DEFAULT_PATH) # Do not find WSL bash.
+    OE_BASH bash
+    PATHS "C:/Program Files/Git/bin" "${GIT_DIR}/../bin"
+    NO_DEFAULT_PATH) # Do not find WSL bash.
 
   if (NOT OE_BASH)
     message(FATAL_ERROR "Git Bash not found!")
@@ -213,8 +214,10 @@ if (WIN32)
   # Looking for Perl and Dos2unix if BUILD_OPENSSL is ON.
   if (BUILD_OPENSSL)
     # OpenSSL relies on Perl to generate files (e.g., headers, assembly files, and test cases).
-    find_program(OE_PERL perl PATHS "C:/Program Files/Git/bin"
-                                    "${GIT_DIR}/../usr/bin" NO_DEFAULT_PATH)
+    find_program(
+      OE_PERL perl
+      PATHS "C:/Program Files/Git/bin" "${GIT_DIR}/../usr/bin"
+      NO_DEFAULT_PATH)
     if (NOT OE_PERL)
       message(FATAL_ERROR "Perl not found!")
     endif ()
@@ -222,8 +225,9 @@ if (WIN32)
     # Dos2unix utility is used to convert CRLF to LF, which is required by some
     # OpenSSL tests.
     find_program(
-      OE_DOS2UNIX dos2unix PATHS "C:/Program Files/Git/bin"
-                                 "${GIT_DIR}/../usr/bin" NO_DEFAULT_PATH)
+      OE_DOS2UNIX dos2unix
+      PATHS "C:/Program Files/Git/bin" "${GIT_DIR}/../usr/bin"
+      NO_DEFAULT_PATH)
     if (NOT OE_DOS2UNIX)
       message(FATAL_ERROR "Dos2unix not found!")
     endif ()
@@ -338,10 +342,10 @@ if (CODE_COVERAGE)
   if (CMAKE_C_COMPILER_ID MATCHES GNU)
     message(FATAL_ERROR "Code coverage is currently only supported by clang.")
   else ()
-    if (CMAKE_C_COMPILER_VERSION VERSION_LESS 7 OR CMAKE_C_COMPILER_VERSION
-                                                   VERSION_GREATER 7.99)
+    if (CMAKE_C_COMPILER_VERSION VERSION_LESS 10 OR CMAKE_C_COMPILER_VERSION
+                                                    VERSION_GREATER 10.99)
       message(
-        WARNING "Code coverage may not work with clang versions other than 7.")
+        WARNING "Code coverage may not work with clang versions other than 10.")
     endif ()
   endif ()
 

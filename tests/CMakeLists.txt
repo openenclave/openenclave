@@ -65,7 +65,11 @@ else ()
   set(PYTHON "python")
 endif ()
 
-add_subdirectory(log)
+# Disable because this test would fail with code coverage
+if (NOT CODE_COVERAGE)
+  add_subdirectory(log)
+endif ()
+
 add_subdirectory(mem)
 add_subdirectory(safecrt)
 add_subdirectory(safemath)

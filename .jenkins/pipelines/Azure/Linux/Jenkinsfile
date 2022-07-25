@@ -78,7 +78,7 @@ try{
 
                 "ACC1804 clang-10 Debug":                          { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-10', 'Debug',          ['-DLVI_MITIGATION=None',        '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
 
-                //"ACC1804 Code Coverage Test" :                     { ACCCodeCoverageTest(globalvars.AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-10', 'Debug') },
+                "ACC1804 Code Coverage Test" :                     { tests.ACCCodeCoverageTest(globalvars.AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-10', 'Debug') },
 
                 "ACC2004 clang-10 RelWithDebInfo LVI snmalloc":            { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04"], 'clang-10', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON',  '-DUSE_SNMALLOC=ON']) },
                 "ACC1804 clang-10 RelWithDebInfo LVI FULL Tests snmalloc": { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-10', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) },
