@@ -18,22 +18,28 @@ int main(int argc, const char** argv);
 
 int enc_test(bool decompress, const char* in_file, const char* out_file)
 {
-    const char* argv[2] = {
-        "zpipe",
-        decompress ? "-d" : NULL,
-    };
+    bool use_freopen = false;
+    int ret = 0;
 
-    if (in_file && out_file)
+    OE_TEST(oe_load_module_host_file_system() == OE_OK);
+    OE_TEST(oe_mount("/", "/", OE_DEVICE_NAME_HOST_FILE_SYSTEM, 0, NULL) == 0);
+
+    if (!use_freopen)
     {
-        OE_TEST(oe_load_module_host_file_system() == OE_OK);
-        OE_TEST(
-            oe_mount("/", "/", OE_DEVICE_NAME_HOST_FILE_SYSTEM, 0, NULL) == 0);
+        const char* argv[5] = {
+            "zpipe", in_file, out_file, decompress ? "-d" : NULL, NULL};
 
+        ret = main(decompress ? 4 : 3, argv);
+    }
+    else
+    {
         OE_TEST(freopen(in_file, "rb", stdin) != NULL);
         OE_TEST(freopen(out_file, "wb", stdout) != NULL);
-    }
 
-    int ret = main(decompress ? 2 : 1, argv);
+        const char* argv[3] = {"zpipe", decompress ? "-d" : NULL, NULL};
+
+        ret = main(decompress ? 2 : 1, argv);
+    }
 
     oe_umount("/");
     return ret;
