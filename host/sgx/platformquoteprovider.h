@@ -8,20 +8,6 @@
 #include <stdint.h>
 
 /*****************************************************************************
- * Data types and interfaces for getting platform revocation info. This
- * includes fetching CRLs as well as the Intel-defined TCB info.
- ****************************************************************************/
-typedef enum _sgx_plat_error_t
-{
-    SGX_PLAT_ERROR_OK,
-    SGX_PLAT_ERROR_OUT_OF_MEMORY,
-    SGX_PLAT_ERROR_INVALID_PARAMETER,
-    SGX_PLAT_ERROR_UNEXPECTED_SERVER_RESPONSE,
-    SGX_PLAT_NO_DATA_FOUND,
-    SGX_PLAT_ERROR_OVERFLOW
-} sgx_plat_error_t;
-
-/*****************************************************************************
  * Data types and interfaces for getting all quote verification collateral.
  ****************************************************************************/
 
@@ -56,13 +42,13 @@ typedef struct _sgx_ql_qve_collateral_t
 } sgx_ql_qve_collateral_t;
 #endif //__sgx_ql_qve_collateral_t
 
-typedef sgx_plat_error_t (*sgx_get_quote_verification_collateral_t)(
+typedef quote3_error_t (*sgx_get_quote_verification_collateral_t)(
     const uint8_t* fmspc,
     const uint16_t fmspc_size,
     const char* pck_ca,
     sgx_ql_qve_collateral_t** pp_qve_collateral);
 
-typedef sgx_plat_error_t (
+typedef quote3_error_t (
     *sgx_get_quote_verification_collateral_with_parameters_t)(
     const uint8_t* fmspc,
     const uint16_t fmspc_size,
@@ -91,11 +77,11 @@ typedef void (
     *sgx_ql_logging_function_t)(sgx_ql_log_level_t level, const char* message);
 
 /// Set the callback used for recording log information.
-typedef sgx_plat_error_t (*sgx_ql_set_logging_function_t)(
+typedef quote3_error_t (*sgx_ql_set_logging_function_t)(
     sgx_ql_logging_function_t logger);
 
 /// Set the base URL for the certificate host service. This is typically done
 /// for testing.
-typedef sgx_plat_error_t (*sgx_ql_set_base_url_t)(const char* url);
+typedef quote3_error_t (*sgx_ql_set_base_url_t)(const char* url);
 
 #endif // #ifndef PLATFORM_QUOTE_PROVIDER_H

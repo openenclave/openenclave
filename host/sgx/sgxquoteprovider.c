@@ -5,6 +5,7 @@
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/trace.h>
+#include <sgx_ql_lib_common.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -73,7 +74,7 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
     oe_get_sgx_quote_verification_collateral_args_t* args)
 {
     oe_result_t result = OE_FAILURE;
-    sgx_plat_error_t r = SGX_PLAT_ERROR_OUT_OF_MEMORY;
+    quote3_error_t r = SGX_QL_ERROR_OUT_OF_MEMORY;
     sgx_ql_qve_collateral_t* collateral = NULL;
     char* ca_type = NULL;
     uint32_t host_buffer_size = 0;
