@@ -68,6 +68,7 @@ endif ()
 # Disable because this test would fail with code coverage
 if (NOT CODE_COVERAGE)
   add_subdirectory(log)
+  add_subdirectory(set_log_level)
 endif ()
 
 add_subdirectory(mem)

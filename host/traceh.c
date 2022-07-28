@@ -44,7 +44,7 @@ static const size_t MAX_ESCAPED_MSG_MULTIPLIER =
     7; // MAX_ESCAPED_CHAR_LEN + sizeof("\\\\")
 static bool _log_creation_failed_before = false;
 oe_log_level_t _log_level = OE_LOG_LEVEL_ERROR;
-static bool _initialized = false;
+static bool _initialized_log_config = false;
 
 static oe_log_level_t _env2log_level(void)
 {
@@ -86,6 +86,29 @@ done:
     return level;
 }
 
+/**
+ * This API enables applications to dynamically modify logging level of
+ * host. This does not propagate the logging level change to enclave.
+ */
+oe_result_t oe_set_host_log_level(oe_log_level_t log_level)
+{
+    if (log_level < OE_LOG_LEVEL_NONE || log_level >= OE_LOG_LEVEL_MAX)
+    {
+        return OE_INVALID_PARAMETER;
+    }
+
+    if (oe_mutex_lock(&_log_lock) == OE_OK)
+    {
+        if (!_initialized_log_config)
+            initialize_log_config();
+
+        _log_level = log_level;
+        oe_mutex_unlock(&_log_lock);
+    }
+
+    return OE_OK;
+}
+
 void initialize_log_config()
 {
     oe_result_t ret;
@@ -94,9 +117,8 @@ void initialize_log_config()
     char* env_log_all_streams = NULL;
     char* env_log_escape = NULL;
 
-    if (!_initialized)
+    if (!_initialized_log_config)
     {
-        // inititalize if not already
         _log_level = _env2log_level();
         env_log_file = oe_dupenv("OE_LOG_DEVICE");
         env_log_format = oe_dupenv("OE_LOG_FORMAT");
@@ -116,7 +138,7 @@ void initialize_log_config()
                 goto done;
             }
         }
-        _initialized = true;
+        _initialized_log_config = true;
     }
 
 done:
@@ -154,7 +176,7 @@ done:
         free(env_log_escape);
     }
 
-    if (!_initialized || ret != OE_OK)
+    if (!_initialized_log_config || ret != OE_OK)
     {
         fprintf(stderr, "%s\n", "[ERROR] Could not initialize logging.");
         exit(1);
@@ -297,7 +319,10 @@ oe_result_t oe_log(oe_log_level_t level, const char* fmt, ...)
         goto done;
     }
 
-    if (_initialized)
+    /* If _log_level is already set, filter out log messages
+     * here.
+     */
+    if (_initialized_log_config)
     {
         if (level > _log_level)
         {
@@ -334,7 +359,6 @@ oe_result_t oe_log_set_callback(void* context, oe_log_callback_t callback)
         oe_log_context = context;
         oe_log_callback = callback;
         oe_mutex_unlock(&_log_lock);
-
         return OE_OK;
     }
 
@@ -357,14 +381,14 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
     strftime(time, sizeof(time), "%Y-%m-%dT%H:%M:%S%z", &t);
     long int usecs = tv.tv_usec;
 
-    if (!_initialized)
-    {
-        initialize_log_config();
-    }
-
     // Take the log file lock.
     if (oe_mutex_lock(&_log_lock) == OE_OK)
     {
+        if (!_initialized_log_config)
+        {
+            initialize_log_config();
+        }
+
         if (oe_log_callback)
         {
             (oe_log_callback)(
@@ -378,12 +402,9 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
             goto done;
         }
 
-        if (_initialized)
+        if (level > _log_level)
         {
-            if (level > _log_level)
-            {
-                goto done;
-            }
+            goto done;
         }
 
         if (_log_all_streams || !_use_log_file)
