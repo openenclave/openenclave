@@ -86,20 +86,6 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
         def jenkins_subnet_name = params.JENKINS_SUBNET_NAME
         def azure_image_id = AZURE_IMAGES_MAP[os_series]["image"]
 
-        stage("Azure CLI Login") {
-            withCredentials([
-                    usernamePassword(credentialsId: SERVICE_PRINCIPAL_CREDENTIALS_ID,
-                                        passwordVariable: 'SERVICE_PRINCIPAL_PASSWORD',
-                                        usernameVariable: 'SERVICE_PRINCIPAL_ID'),
-                    string(credentialsId: 'openenclaveci-subscription-id', variable: 'SUBSCRIPTION_ID'),
-                    string(credentialsId: 'TenantID', variable: 'TENANT_ID')]) {
-                sh '''#!/bin/bash
-                    az login --service-principal -u ${SERVICE_PRINCIPAL_ID} -p ${SERVICE_PRINCIPAL_PASSWORD} --tenant ${TENANT_ID}
-                    az account set -s ${SUBSCRIPTION_ID}
-                '''
-            }
-        }
-
         try {
 
             stage("Create Resource Group") {
@@ -111,8 +97,8 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
             stage("Provision VM") {
                 withCredentials([
                         usernamePassword(credentialsId: JENKINS_USER_CREDS_ID,
-                                            usernameVariable: "SSH_USERNAME",
-                                            passwordVariable: "SSH_PASSWORD")]) {
+                                         usernameVariable: "SSH_USERNAME",
+                                         passwordVariable: "SSH_PASSWORD")]) {
                     withEnv([
                             "JENKINS_RG_NAME=${jenkins_rg_name}",
                             "JENKINS_SUBNET_NAME=${jenkins_subnet_name}",
@@ -138,16 +124,22 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                                 --image ${AZURE_IMAGE_ID} \
                                 --public-ip-address \"\" \
                                 --nsg-rule NONE
-                        '''
+                            '''
+                        sh """
+                            az vm run-command invoke \
+                                --resource-group ${VM_RG_NAME} \
+                                --name ${VM_NAME} \
+                                --command-id EnableRemotePS
+                        """
                     }
                 }
             }
-
-            stage("Deploy VM") {
+            
+            stage("Setup remote access") {
                 withCredentials([
-                        usernamePassword(credentialsId: JENKINS_USER_CREDS_ID,
-                                            usernameVariable: "SSH_USERNAME",
-                                            passwordVariable: "SSH_PASSWORD")]) {
+                    usernamePassword(credentialsId: JENKINS_USER_CREDS_ID,
+                                     usernameVariable: "SSH_USERNAME",
+                                     passwordVariable: "SSH_PASSWORD")]) {
                     withEnv([
                             "JENKINS_RG_NAME=${jenkins_rg_name}",
                             "JENKINS_SUBNET_NAME=${jenkins_subnet_name}",
@@ -159,13 +151,8 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                             "LAUNCH_CONFIGURATION=${launch_configuration}"]) {
                         sh '''
                             VM_DETAILS=\$(az vm show --resource-group ${VM_RG_NAME} \
-                                                    --name ${VM_NAME} \
-                                                    --show-details)
-
-                            az vm run-command invoke \
-                                --resource-group ${VM_RG_NAME} \
-                                --name ${VM_NAME} \
-                                --command-id EnableRemotePS
+                                                     --name ${VM_NAME} \
+                                                     --show-details)
 
                             PRIVATE_IP=\$(echo \$VM_DETAILS | jq -r '.privateIps')
 
@@ -173,7 +160,7 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
 
                             echo "[windows-agents]" >> ${WORKSPACE}/scripts/ansible/inventory/hosts-${LAUNCH_CONFIGURATION}
                             echo "\$PRIVATE_IP" >> ${WORKSPACE}/scripts/ansible/inventory/hosts-${LAUNCH_CONFIGURATION}
-
+                            echo "ansible_connection: winrm" >> ${WORKSPACE}/scripts/ansible/inventory/host_vars/\$PRIVATE_IP
                             echo "ansible_winrm_transport: ntlm" >> ${WORKSPACE}/scripts/ansible/inventory/host_vars/\$PRIVATE_IP
                             echo "launch_configuration: ${LAUNCH_CONFIGURATION}" >> ${WORKSPACE}/scripts/ansible/inventory/host_vars/\$PRIVATE_IP
                             echo "ansible_user: ${SSH_USERNAME}" >> ${WORKSPACE}/scripts/ansible/inventory/host_vars/\$PRIVATE_IP
@@ -181,7 +168,17 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                         '''
                     }
                 }
-                common.exec_with_retry(5, 120) {
+                sh """
+                    cd ${WORKSPACE}/scripts/ansible
+                    ansible windows-agents \
+                        -i ${WORKSPACE}/scripts/ansible/inventory/hosts-${launch_configuration} \
+                        -m ansible.builtin.wait_for_connection \
+                        -a "sleep=10 timeout=600"
+                """
+            }
+
+            stage("Deploy VM") {
+                common.exec_with_retry(5, 60) {
                     sh """
                         cd ${WORKSPACE}/scripts/ansible
                         ansible-playbook -i ${WORKSPACE}/scripts/ansible/inventory/hosts-${launch_configuration} oe-windows-acc-setup.yml jenkins-packer.yml
@@ -313,6 +310,21 @@ node(params.AGENTS_LABEL) {
                 """
             }
         }
+        stage("Azure CLI Login") {
+            withCredentials([
+                    usernamePassword(credentialsId: SERVICE_PRINCIPAL_CREDENTIALS_ID,
+                                     passwordVariable: 'SERVICE_PRINCIPAL_PASSWORD',
+                                     usernameVariable: 'SERVICE_PRINCIPAL_ID'),
+                    string(credentialsId: 'openenclaveci-subscription-id', variable: 'SUBSCRIPTION_ID'),
+                    string(credentialsId: 'TenantID', variable: 'TENANT_ID')]) {
+                retry(5) {
+                    sh '''#!/bin/bash
+                        az login --service-principal -u ${SERVICE_PRINCIPAL_ID} -p ${SERVICE_PRINCIPAL_PASSWORD} --tenant ${TENANT_ID}
+                        az account set -s ${SUBSCRIPTION_ID}
+                    '''
+                }
+            }
+        }
         stage("Install Ansible") {
             retry(10) {
                 sh """#!/bin/bash
@@ -321,12 +333,24 @@ node(params.AGENTS_LABEL) {
                 """
             }
         }
-        stage("Build Agents") {
-            parallel "Build Windows Server 2019 - nonSGX"      : { buildWindowsManagedImage("win2019", "ws2019-nonSGX", "SGX1FLC-NoIntelDrivers", image_id, image_version) },
-                    "Build Windows Server 2019 - SGX1"         : { buildWindowsManagedImage("win2019", "ws2019-SGX", "SGX1", image_id, image_version) },
-                    "Build Windows Server 2019 - SGX1FLC DCAP" : { buildWindowsManagedImage("win2019", "ws2019-SGX-DCAP", "SGX1FLC", image_id, image_version) },
-                    "Build Ubuntu 18.04"                       : { buildLinuxManagedImage("ubuntu", "18.04", image_id, image_version) },
-                    "Build Ubuntu 20.04"                       : { buildLinuxManagedImage("ubuntu", "20.04", image_id, image_version) }
+        stage("Build images") {
+            def windows_images = [
+                "Build Windows Server 2019 - nonSGX"       : { buildWindowsManagedImage("win2019", "ws2019-nonSGX", "SGX1FLC-NoIntelDrivers", image_id, image_version) },
+                "Build Windows Server 2019 - SGX1"         : { buildWindowsManagedImage("win2019", "ws2019-SGX", "SGX1", image_id, image_version) },
+                "Build Windows Server 2019 - SGX1FLC DCAP" : { buildWindowsManagedImage("win2019", "ws2019-SGX-DCAP", "SGX1FLC", image_id, image_version) }
+            ]
+            def linux_images = [
+                "Build Ubuntu 18.04" : { buildLinuxManagedImage("ubuntu", "18.04", image_id, image_version) },
+                "Build Ubuntu 20.04" : { buildLinuxManagedImage("ubuntu", "20.04", image_id, image_version) }
+            ]
+            def images = [:]
+            if (params.BUILD_WINDOWS_IMAGES) {
+                images += windows_images
+            }
+            if (params.BUILD_LINUX_IMAGES) {
+                images += linux_images
+            }
+            parallel images
         }
     } finally {
         stage("Clean up") {
