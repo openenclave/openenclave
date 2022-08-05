@@ -14,29 +14,31 @@ def ACCCodeCoverageTest(String label, String compiler, String build_type) {
                 cleanWs()
                 checkout scm
                 def cmakeArgs = helpers.CmakeArgs(build_type)
+                // Removed command "ninja code_coverage" from task for now
+                // Should re-enable it later
                 def task = """
                            ${helpers.ninjaBuildCommand(cmakeArgs)}
                            ${helpers.TestCommand()}
-                           ninja code_coverage
                            """
                 common.Run(compiler, task)
 
-                // Publish the report via Cobertura Plugin.
-                cobertura coberturaReportFile: 'build/coverage/coverage.xml'
+                // Should re-enable following section later
+                // // Publish the report via Cobertura Plugin.
+                // cobertura coberturaReportFile: 'build/coverage/coverage.xml'
 
-                // Publish the result to the PR(s) via GitHub Coverage reporter Plugin.
-                // Workaround to obtain the PR id(s) as Bors does not us to grab them reliably.
-                def log = sh (script: "git log -1 | grep -Po '(Try #\\K|Merge #\\K)[^:]*'", returnStdout: true).trim()
-                def id_list = log.split(' #')
-                id_list.each {
-                    echo "PR ID: ${it}, REPOSITORY_NAME: ${REPOSITORY_NAME}"
-                    withEnv(["CHANGE_URL=https://github.com/${REPOSITORY_NAME}/pull/${it}"]) {
-                        publishCoverageGithub(filepath:'build/coverage/coverage.xml',
-                                              coverageXmlType: 'cobertura',
-                                              comparisonOption: [ value: 'optionFixedCoverage', fixedCoverage: '0.60' ],
-                                              coverageRateType: 'Line')
-                    }
-                }
+                // // Publish the result to the PR(s) via GitHub Coverage reporter Plugin.
+                // // Workaround to obtain the PR id(s) as Bors does not us to grab them reliably.
+                // def log = sh (script: "git log -1 | grep -Po '(Try #\\K|Merge #\\K)[^:]*'", returnStdout: true).trim()
+                // def id_list = log.split(' #')
+                // id_list.each {
+                //     echo "PR ID: ${it}, REPOSITORY_NAME: ${REPOSITORY_NAME}"
+                //     withEnv(["CHANGE_URL=https://github.com/${REPOSITORY_NAME}/pull/${it}"]) {
+                //         publishCoverageGithub(filepath:'build/coverage/coverage.xml',
+                //                               coverageXmlType: 'cobertura',
+                //                               comparisonOption: [ value: 'optionFixedCoverage', fixedCoverage: '0.60' ],
+                //                               coverageRateType: 'Line')
+                //     }
+                // }
             }
         }
     }

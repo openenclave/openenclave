@@ -4,8 +4,7 @@
 include(FetchContent)
 FetchContent_Declare(
   compiler-rt-sources
-  SOURCE_DIR
-  ${CMAKE_CURRENT_SOURCE_DIR}/compiler-rt
+  SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/compiler-rt
   URL https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.1/compiler-rt-10.0.1.src.tar.xz
   URL_HASH
     SHA256=d90dc8e121ca0271f0fd3d639d135bfaa4b6ed41e67bd6eb77808f72629658fa)
@@ -252,3 +251,35 @@ install_enclaves(
   ARCHIVE
   DESTINATION
   ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+
+# Build gcov for code coverage
+if (CODE_COVERAGE OR BUILD_LIBGCOV)
+  apply_patches(patches compiler-rt)
+
+  add_enclave_library(
+    gcov
+    STATIC
+    # Only the following three files are required to support GCOV-based code coverage analysis.
+    compiler-rt/lib/profile/GCDAProfiling.c
+    compiler-rt/lib/profile/InstrProfiling.c
+    compiler-rt/lib/profile/InstrProfilingUtil.c)
+
+  maybe_build_using_clangw(gcov)
+
+  enclave_compile_options(gcov PRIVATE -Wno-error)
+
+  enclave_link_libraries(gcov PRIVATE oelibc oehostfs)
+
+  enclave_include_directories(gcov PRIVATE src
+                              ${CMAKE_CURRENT_SOURCE_DIR}/compiler-rt/include)
+
+  install_enclaves(
+    TARGETS
+    gcov
+    EXPORT
+    openenclave-targets
+    ARCHIVE
+    DESTINATION
+    ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+
+endif ()

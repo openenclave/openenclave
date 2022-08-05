@@ -6,7 +6,12 @@ if (BUILD_ENCLAVES)
 endif ()
 
 add_subdirectory(host)
-add_enclave_test(tests/crypto/enclave_mbedtls cryptohost crypto_mbedtls_enc)
+
+# Disable because this test would fail with code coverage
+# Output: ***Exception: SegFault
+if (NOT CODE_COVERAGE)
+  add_enclave_test(tests/crypto/enclave_mbedtls cryptohost crypto_mbedtls_enc)
+endif ()
 
 if (BUILD_OPENSSL)
   add_enclave_test(tests/crypto/enclave_openssl cryptohost crypto_openssl_enc)

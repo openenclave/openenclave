@@ -1,19 +1,19 @@
-diff --git a/3rdparty/libgcov/compiler-rt/lib/profile/GCDAProfiling.c b/3rdparty/libgcov/compiler-rt/lib/profile/GCDAProfiling.c
-index cbca36551..3c42b1008 100644
---- a/3rdparty/libgcov/compiler-rt/lib/profile/GCDAProfiling.c
-+++ b/3rdparty/libgcov/compiler-rt/lib/profile/GCDAProfiling.c
-@@ -33,6 +33,7 @@
+diff --git a/3rdparty/compiler-rt/compiler-rt/lib/profile/GCDAProfiling.c b/3rdparty/compiler-rt/compiler-rt/lib/profile/GCDAProfiling.c
+index 124be3c13..ecca1b16e 100644
+--- a/3rdparty/compiler-rt/compiler-rt/lib/profile/GCDAProfiling.c
++++ b/3rdparty/compiler-rt/compiler-rt/lib/profile/GCDAProfiling.c
+@@ -34,6 +34,7 @@
  #else
- #include <sys/mman.h>
  #include <sys/file.h>
+ #include <sys/mman.h>
 +#include <sys/mount.h>
+ #include <sys/types.h>
+ #include <unistd.h>
  #endif
- 
- #if defined(__FreeBSD__) && defined(__i386__)
-@@ -58,6 +59,11 @@ typedef unsigned int uint32_t;
+@@ -61,6 +62,11 @@ typedef unsigned int uint32_t;
  typedef unsigned long long uint64_t;
  #endif
- 
+
 +/* Beginning of the OE modfication */
 +#include "openenclave/bits/module.h"
 +#include "openenclave/bits/fs.h"
@@ -21,16 +21,15 @@ index cbca36551..3c42b1008 100644
 +
  #include "InstrProfiling.h"
  #include "InstrProfilingUtil.h"
- 
-@@ -255,28 +261,42 @@ static int map_file() {
-   if (file_size == 0)
+
+@@ -288,14 +294,19 @@ static int map_file() {
      return -1;
- 
+   }
+ #else
 +#if defined(COMPILER_RT_HAS_MMAP)
    write_buffer = mmap(0, file_size, PROT_READ | PROT_WRITE,
                        MAP_FILE | MAP_SHARED, fd, 0);
 +#endif
-+
 +  write_buffer = malloc(file_size);
    if (write_buffer == (void *)-1) {
      int errnum = errno;
@@ -40,10 +39,13 @@ index cbca36551..3c42b1008 100644
    }
 +  fseek(output_file, 0L, SEEK_SET);
 +  fread(write_buffer, file_size, 1, output_file);
+ #endif
+
    return 0;
- }
- 
- static void unmap_file() {
+@@ -320,18 +331,25 @@ static void unmap_file() {
+
+   mmap_handle = NULL;
+ #else
 +#if defined(COMPILER_RT_HAS_MSYNC)
    if (msync(write_buffer, file_size, MS_SYNC) == -1) {
      int errnum = errno;
@@ -51,24 +53,26 @@ index cbca36551..3c42b1008 100644
              strerror(errnum));
    }
 +#endif
-+
+
 +  fseek(output_file, 0L, SEEK_SET);
 +  fwrite(write_buffer, file_size, 1, output_file);
- 
++
++#if defined(COMPILER_RT_HAS_MUNMAP)
    /* We explicitly ignore errors from unmapping because at this point the data
     * is written and we don't care.
     */
-+#if defined(COMPILER_RT_HAS_MUNMAP)
    (void)munmap(write_buffer, file_size);
+ #endif
+-
 +#endif
 +  free(write_buffer);
    write_buffer = NULL;
    file_size = 0;
  }
-@@ -598,6 +618,23 @@ void llvm_gcov_init(fn_ptr wfn, fn_ptr ffn) {
+@@ -695,6 +713,23 @@ void llvm_gcov_init(fn_ptr wfn, fn_ptr ffn, fn_ptr rfn) {
    if (atexit_ran == 0) {
      atexit_ran = 1;
- 
+
 +    /* Beginning of the OE modfication */
 +    if (oe_load_module_host_file_system() != OE_OK) {
 +      fprintf(stderr, "oe_load_module_host_file_system() failed\n");
@@ -87,5 +91,5 @@ index cbca36551..3c42b1008 100644
 +    /* End of the OE modification */
 +
      /* Make sure we write out the data and delete the data structures. */
+     atexit(llvm_delete_reset_function_list);
      atexit(llvm_delete_flush_function_list);
-     atexit(llvm_delete_writeout_function_list);

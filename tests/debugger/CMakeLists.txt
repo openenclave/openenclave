@@ -25,22 +25,23 @@ add_test(
     --return-child-result # This fails the test in case of any error.
     -arg host/db_test_host enc/db_test_enc --simulation-mode)
 
-add_test(
-  NAME oelldb-test
-  COMMAND
-    ${OE_BINDIR}/oelldb -o
-    "command script import ${CMAKE_CURRENT_SOURCE_DIR}/commands.py" -o "quit"
-    -- host/db_test_host enc/db_test_enc)
+if (CODE_COVERAGE)
+  add_test(
+    NAME oelldb-test
+    COMMAND
+      ${OE_BINDIR}/oelldb -o
+      "command script import ${CMAKE_CURRENT_SOURCE_DIR}/commands.py" -o "quit"
+      -- host/db_test_host enc/db_test_enc)
 
-set_tests_properties(oelldb-test PROPERTIES PASS_REGULAR_EXPRESSION
-                                            "oelldb test passed")
+  set_tests_properties(oelldb-test PROPERTIES PASS_REGULAR_EXPRESSION
+                                              "oelldb test passed")
+  add_test(
+    NAME oelldb-test-simulation-mode
+    COMMAND
+      ${OE_BINDIR}/oelldb -o
+      "command script import ${CMAKE_CURRENT_SOURCE_DIR}/commands.py" -o "quit"
+      -- host/db_test_host enc/db_test_enc --simulation-mode)
 
-add_test(
-  NAME oelldb-test-simulation-mode
-  COMMAND
-    ${OE_BINDIR}/oelldb -o
-    "command script import ${CMAKE_CURRENT_SOURCE_DIR}/commands.py" -o "quit"
-    -- host/db_test_host enc/db_test_enc --simulation-mode)
-
-set_tests_properties(oelldb-test-simulation-mode
-                     PROPERTIES PASS_REGULAR_EXPRESSION "oelldb test passed")
+  set_tests_properties(oelldb-test-simulation-mode
+                       PROPERTIES PASS_REGULAR_EXPRESSION "oelldb test passed")
+endif ()
