@@ -12,6 +12,7 @@ winbuild/
 
 3rdparty/compiler-rt/compiler-rt
 3rdparty/libcxx/libcxx
+3rdparty/openssl/openssl
 
 devex/cross-nuget/linux/build
 devex/cross-nuget/linux/pack

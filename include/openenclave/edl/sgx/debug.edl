@@ -33,6 +33,7 @@ enclave
 	// Log the given backtrace.
 	oe_result_t oe_sgx_log_backtrace_ocall(
             [user_check] oe_enclave_t* oe_enclave,
+	    uint32_t log_level,
             [in, count=size] const uint64_t* buffer,
             size_t size);
     };
