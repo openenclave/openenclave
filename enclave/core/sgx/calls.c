@@ -1451,7 +1451,7 @@ void oe_abort_with_td(oe_sgx_td_t* td)
                     oe_sgx_log_backtrace_ocall(
                         &r,
                         oe_get_enclave(),
-                        OE_LOG_LEVEL_INFO,
+                        OE_LOG_LEVEL_ERROR,
                         (uint64_t*)buffer,
                         (size_t)size);
                 }
