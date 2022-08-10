@@ -217,6 +217,10 @@ Then check the status of your service.
 ```bash
 pm2 status
 ```
+If pm2 is not avaialble by default use:
+```
+npm install -g pm2
+```
 You should be able to see the service is running.
 ![nodejs](/docs/GettingStartedDocs/images/nodejs.png)
 
