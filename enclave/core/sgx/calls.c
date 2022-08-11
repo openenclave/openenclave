@@ -229,14 +229,19 @@ oe_result_t oe_handle_call_enclave_function(uint64_t arg_in)
     size_t output_bytes_written = 0;
     ecall_table_t ecall_table;
 
-    // Ensure that args lies outside the enclave.
+    // Ensure that args lies outside the enclave and is 8-byte aligned
+    // (against the xAPIC vulnerability).
+    // The size of oe_call_enclave_function_args_t is guaranteed to be
+    // 8-byte aligned via compile-time checks.
     if (!oe_is_outside_enclave(
-            (void*)arg_in, sizeof(oe_call_enclave_function_args_t)))
+            (void*)arg_in, sizeof(oe_call_enclave_function_args_t)) ||
+        (arg_in % 8) != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // Copy args to enclave memory to avoid TOCTOU issues.
     args_host_ptr = (oe_call_enclave_function_args_t*)arg_in;
-    args = *args_host_ptr;
+    oe_memcpy_aligned(
+        &args, args_host_ptr, sizeof(oe_call_enclave_function_args_t));
 
     // Ensure that input buffer is valid (oe_is_outside_enclave ensures
     // the buffer is not NULL).
@@ -252,12 +257,14 @@ oe_result_t oe_handle_call_enclave_function(uint64_t arg_in)
         args.output_buffer_size < sizeof(oe_call_function_return_args_t))
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    // Validate output and input buffer sizes.
-    // Buffer sizes must be correctly aligned.
-    if ((args.input_buffer_size % OE_EDGER8R_BUFFER_ALIGNMENT) != 0)
+    // Validate output and input buffer addresses and sizes.
+    // Both of them must be correctly aligned (against the xAPIC vulnerability).
+    if ((args.input_buffer_size % OE_EDGER8R_BUFFER_ALIGNMENT) != 0 ||
+        ((uint64_t)args.input_buffer % 8) != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if ((args.output_buffer_size % OE_EDGER8R_BUFFER_ALIGNMENT) != 0)
+    if ((args.output_buffer_size % OE_EDGER8R_BUFFER_ALIGNMENT) != 0 ||
+        ((uint64_t)args.output_buffer % 8) != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     OE_CHECK(oe_safe_add_u64(
@@ -282,8 +289,8 @@ oe_result_t oe_handle_call_enclave_function(uint64_t arg_in)
     if (buffer == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
-    // Copy input buffer to enclave buffer.
-    memcpy(input_buffer, args.input_buffer, args.input_buffer_size);
+    // Copy input buffer from the host to enclave buffer.
+    oe_memcpy_aligned(input_buffer, args.input_buffer, args.input_buffer_size);
 
     // Clear out output buffer.
     // This ensures reproducible behavior if say the function is reading from
@@ -864,6 +871,7 @@ oe_result_t oe_call_host_function_internal(
     oe_result_t result = OE_UNEXPECTED;
     oe_call_host_function_args_t args, *args_host_ptr = NULL;
     oe_call_function_return_args_t return_args, *return_args_host_ptr = NULL;
+    uint64_t host_result = 0;
 
     /* Ensure input buffer is outside the enclave memory and its size is valid
      */
@@ -872,9 +880,11 @@ oe_result_t oe_call_host_function_internal(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Ensure output buffer is outside the enclave memory and its size is
-     * valid */
+     * valid. Also, check its address is 8-byte aligned (against the xAPIC
+     * vulnerability) */
     if (!oe_is_outside_enclave(output_buffer, output_buffer_size) ||
-        output_buffer_size < sizeof(oe_call_function_return_args_t))
+        output_buffer_size < sizeof(oe_call_function_return_args_t) ||
+        ((uint64_t)output_buffer % 8) != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /*
@@ -886,8 +896,11 @@ oe_result_t oe_call_host_function_internal(
     args_host_ptr =
         (oe_call_host_function_args_t*)(switchless ? oe_arena_malloc(sizeof(*args_host_ptr)) : oe_ecall_context_get_ocall_args());
 
+    /* Ensure the args_host_ptr is valid and 8-byte aligned (for xAPIC
+     * vulnerability mitigation) */
     if (!oe_is_outside_enclave(
-            (const void*)args_host_ptr, sizeof(oe_call_host_function_args_t)))
+            (const void*)args_host_ptr, sizeof(oe_call_host_function_args_t)) ||
+        ((uint64_t)args_host_ptr % 8) != 0)
     {
         /* Fail if the enclave is crashing. */
         OE_CHECK(__oe_enclave_status);
@@ -923,8 +936,11 @@ oe_result_t oe_call_host_function_internal(
             {
                 OE_ATOMIC_MEMORY_BARRIER_ACQUIRE();
 
+                /* The member result is alignend given that args_host_ptr is
+                 * aligned and its size is 8-byte (for xAPIC vulnerability
+                 * mitigation). */
                 if (__atomic_load_n(&args_host_ptr->result, __ATOMIC_SEQ_CST) !=
-                    __OE_RESULT_MAX)
+                    OE_UINT64_MAX)
                     break;
 
                 /* Yield to CPU */
@@ -938,13 +954,24 @@ oe_result_t oe_call_host_function_internal(
             OE_OCALL_CALL_HOST_FUNCTION, (uint64_t)args_host_ptr, NULL));
     }
 
+    /* Copy the result from the host memory
+     * The member result is aligned given that args_host_ptr is aligned
+     * and its size is 8 byte (for xAPIC vulnerability mitigation). */
+    host_result = args_host_ptr->result;
+
     /* Check the result */
-    OE_CHECK(args_host_ptr->result);
+    OE_CHECK((oe_result_t)host_result);
 
     return_args_host_ptr = (oe_call_function_return_args_t*)output_buffer;
+
     /* Copy the marshaling struct from the host memory to avoid TOCTOU issues.
-     */
-    return_args = *return_args_host_ptr;
+     * To mitigate the xAPIC vulnerability, the output_buffer and the size of
+     * oe_call_function_return_args_t must be aligned at this point via runtime
+     * and compile-time checks, repsectively. */
+    oe_memcpy_aligned(
+        &return_args,
+        return_args_host_ptr,
+        sizeof(oe_call_function_return_args_t));
 
     if (return_args.result == OE_OK)
     {
@@ -970,6 +997,14 @@ oe_result_t oe_call_host_function_internal(
             return_args.deepcopy_out_buffer_size)
         {
             /*
+             * Ensure that the deepcopy_out_buffer and deepcopy_out_buffer_size
+             * are both 8-byte aligned against the xAPIC vulnerability.
+             */
+            if ((((uint64_t)return_args.deepcopy_out_buffer % 8) != 0) ||
+                (return_args.deepcopy_out_buffer_size % 8) != 0)
+                OE_RAISE(OE_UNEXPECTED);
+
+            /*
              * Ensure that the content lies in host memory.
              * Note that this should only fail if oeedger8r was not used or if
              * the oeedger8r-generated routine is modified.
@@ -986,7 +1021,7 @@ oe_result_t oe_call_host_function_internal(
                 OE_RAISE(OE_OUT_OF_MEMORY);
 
             /* Copy the deep-copied content to enclave memory. */
-            memcpy(
+            oe_memcpy_aligned(
                 enclave_buffer,
                 return_args.deepcopy_out_buffer,
                 return_args.deepcopy_out_buffer_size);
@@ -1005,6 +1040,8 @@ oe_result_t oe_call_host_function_internal(
         }
     }
 
+    /* The member output_bytes_written is aligned given that args_host_ptr is
+     * aligned (for xAPIC vulnerability mitigation) */
     *output_bytes_written = args_host_ptr->output_bytes_written;
     result = OE_OK;
 
@@ -1232,6 +1269,17 @@ void __oe_handle_main(
      * this function DOES NOT call global constructors. Global construction
      * is performed while handling OE_ECALL_INIT_ENCLAVE. */
     oe_initialize_enclave(td);
+
+    /* td's host_ecall_context is set in enter.S and this is the first chance we
+       get to validate it. */
+    oe_ecall_context_t* ecall_context = td->host_ecall_context;
+    if (!oe_is_outside_enclave(ecall_context, sizeof(*ecall_context)))
+        td->host_ecall_context = NULL;
+
+    /* Ensure that ecall_context is 8-byte aligned against the xAPIC
+     * vunlerability */
+    if (((uint64_t)ecall_context % 8) != 0)
+        td->host_ecall_context = NULL;
 
     /* Stitch the stack. Pass the caller's frame for fix up.
      * Note that before stitching, the caller's frame points

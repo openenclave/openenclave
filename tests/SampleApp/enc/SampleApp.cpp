@@ -32,7 +32,7 @@ int secure_str_patching(const char* src, char* dst, size_t dst_length)
     }
     *dst = '\0';
     int rval = -1;
-    OE_TEST(unsecure_str_patching(&rval, src, dst, dst_length) == OE_OK);
+    OE_TEST(unsecure_str_patching(&rval, src, dst, running_length) == OE_OK);
     return rval;
 }
 

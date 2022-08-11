@@ -17,6 +17,7 @@
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/types.h>
 #include <openenclave/internal/utils.h>
+#include "core_t.h" /* for oe_edger8r_secure_unserialize */
 
 /* Flags to control runtime behavior. */
 bool oe_use_debug_malloc = true;
@@ -283,10 +284,20 @@ done:
 
 static void _dump(bool need_lock)
 {
+    bool secure_unserialize_enabled = false;
     list_t* list = &_list;
 
     if (need_lock)
         oe_spin_lock(&_spin);
+
+    /* Temporarily disable the oe_edger8r_secure_unserialize (if set)
+     * to avoid using malloc in the OCALL marshalling code
+     * that cause deadlock on _spin when debug malloc is enabled. */
+    if (oe_edger8r_secure_unserialize)
+    {
+        secure_unserialize_enabled = true;
+        oe_edger8r_secure_unserialize = false;
+    }
 
     {
         size_t blocks = 0;
@@ -307,6 +318,10 @@ static void _dump(bool need_lock)
 
         oe_host_printf("\n");
     }
+
+    /* Re-enable oe_edger8r_secure_unserialize if needed */
+    if (secure_unserialize_enabled)
+        oe_edger8r_secure_unserialize = true;
 
     if (need_lock)
         oe_spin_unlock(&_spin);
@@ -708,6 +723,7 @@ oe_result_t oe_debug_malloc_tracking_report(
     uint64_t* out_object_count,
     char** report)
 {
+    bool secure_unserialize_enabled = false;
     oe_result_t result = OE_OK;
     uint64_t count = 0;
 
@@ -723,6 +739,16 @@ oe_result_t oe_debug_malloc_tracking_report(
 
     list_t* list = &_list;
     oe_spin_lock(&_spin);
+
+    /* Temporarily disable the oe_edger8r_secure_unserialize (if set)
+     * to avoid using malloc in the OCALL marshalling code
+     * that cause deadlock on _spin when debug malloc is enabled. */
+    if (oe_edger8r_secure_unserialize)
+    {
+        secure_unserialize_enabled = true;
+        oe_edger8r_secure_unserialize = false;
+    }
+
     {
         for (header_t* p = list->head; p; p = p->next)
         {
@@ -737,6 +763,11 @@ oe_result_t oe_debug_malloc_tracking_report(
             }
         }
     }
+
+    /* Re-enable the oe_edger8r_secure_unserialize if needed */
+    if (secure_unserialize_enabled)
+        oe_edger8r_secure_unserialize = true;
+
     oe_spin_unlock(&_spin);
 
     length = index + 1;

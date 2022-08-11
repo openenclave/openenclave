@@ -17,6 +17,8 @@
 static size_t _host_worker_count = 0;
 
 // The array of host worker contexts. Initialized by host through ECALL
+// Use volatile to ensure that the compiler uses 8-byte reads for 8-byte
+// variables.
 static volatile oe_host_worker_context_t* _host_worker_contexts = NULL;
 
 // Flag to denote if switchless calls have already been initialized.
@@ -118,9 +120,10 @@ oe_result_t oe_sgx_init_context_switchless_ecall(
     OE_CHECK(oe_safe_mul_u64(
         sizeof(oe_host_worker_context_t), num_host_workers, &contexts_size));
 
-    // Ensure the contexts are outside of enclave
+    /* Ensure the contexts are outside of enclave and its 8-byte aligned against
+     * the xAPIC vulnerability */
     if (!oe_is_outside_enclave(host_worker_contexts, contexts_size) ||
-        num_host_workers == 0)
+        num_host_workers == 0 || ((uint64_t)host_worker_contexts % 8) != 0)
     {
         OE_RAISE(OE_INVALID_PARAMETER);
     }
@@ -173,7 +176,7 @@ oe_result_t oe_post_switchless_ocall(oe_call_host_function_args_t* args)
     OE_ATOMIC_MEMORY_BARRIER_RELEASE();
 
     // Set the result to indicate that the call hasn't been processed
-    OE_WRITE_VALUE_WITH_BARRIER(&args->result, __OE_RESULT_MAX);
+    OE_WRITE_VALUE_WITH_BARRIER(&args->result, OE_UINT64_MAX);
 
     // Cycle through the worker contexts until we find a free worker.
     size_t tries = _host_worker_count;

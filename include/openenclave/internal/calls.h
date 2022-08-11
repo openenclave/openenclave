@@ -191,6 +191,8 @@ typedef struct _oe_call_enclave_function_args
     oe_result_t result;
 } oe_call_enclave_function_args_t;
 
+OE_STATIC_ASSERT((sizeof(oe_call_enclave_function_args_t) % 8) == 0);
+
 /*
 **==============================================================================
 **
@@ -207,8 +209,13 @@ typedef struct _oe_call_host_function_args
     void* output_buffer;
     size_t output_buffer_size;
     size_t output_bytes_written;
-    oe_result_t result;
+    volatile uint64_t result; /* 8 byte for oe_result_t */
 } oe_call_host_function_args_t;
+
+OE_STATIC_ASSERT((sizeof(oe_call_host_function_args_t) % 8) == 0);
+OE_STATIC_ASSERT(
+    (OE_OFFSETOF(oe_call_host_function_args_t, output_bytes_written) % 8) == 0);
+OE_STATIC_ASSERT((OE_OFFSETOF(oe_call_host_function_args_t, result) % 8) == 0);
 
 /*
 **==============================================================================
@@ -224,6 +231,8 @@ typedef struct _oe_call_function_return_args
     void* deepcopy_out_buffer;
     size_t deepcopy_out_buffer_size;
 } oe_call_function_return_args_t;
+
+OE_STATIC_ASSERT(sizeof(oe_call_function_return_args_t) % 8 == 0);
 
 /*
 **==============================================================================

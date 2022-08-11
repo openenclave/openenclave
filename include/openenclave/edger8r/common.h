@@ -35,7 +35,7 @@ OE_EXTERNC_BEGIN
 #define OE_EDGER8R_BUFFER_ALIGNMENT (2 * sizeof(void*))
 
 /**
- * Add a size value, rounding to sizeof(void*).
+ * Add a size value, rounding to OE_EDGER8R_BUFFER_ALIGNMENT
  */
 OE_INLINE oe_result_t oe_add_size(size_t* total, size_t size)
 {
@@ -43,7 +43,7 @@ OE_INLINE oe_result_t oe_add_size(size_t* total, size_t size)
     size_t align = OE_EDGER8R_BUFFER_ALIGNMENT;
     size_t sum = 0;
 
-    // Round size to multiple of sizeof(void*)
+    // Round size to multiple of OE_EDGER8R_BUFFER_ALIGNMENT
     size_t rsize = ((size + align - 1) / align) * align;
     if (rsize < size)
     {

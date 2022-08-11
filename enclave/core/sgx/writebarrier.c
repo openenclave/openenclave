@@ -11,18 +11,6 @@
 #define MEMSET_PATTERN_U16 0x0101
 
 OE_ALWAYS_INLINE
-static void _memcpy_aligned(void* dest, const void* src, size_t count)
-{
-    uint64_t rdi, rsi, rcx;
-    asm volatile(
-        "shr $3, %2\n\t"
-        "rep movsq\n\t"
-        : "=D"(rdi), "=S"(rsi), "=c"(rcx) /* rdi, rsi, and rcx are clobbered */
-        : "D"(dest), "S"(src), "c"(count)
-        : "memory");
-}
-
-OE_ALWAYS_INLINE
 static void _memset_aligned(void* dest, int character, size_t count)
 {
     uint64_t pattern = MEMSET_PATTERN_U64 * (uint8_t)character;
@@ -148,7 +136,7 @@ static void* _memcpy_unaligned_with_barrier(
             /* for 8-byte-aligned memory, use regular memcpy with the size being
              * the multiples of 8 */
             size_t count_aligned = count - count % 8;
-            _memcpy_aligned(
+            oe_memcpy_aligned(
                 (void*)dest_addr, (const void*)src_addr, count_aligned);
             src_addr += count_aligned;
             dest_addr += count_aligned;
@@ -229,7 +217,7 @@ void* oe_memcpy_with_barrier(void* dest, const void* src, size_t count)
      * Note that the hardened memcpy should not be inline, otherwise the
      * fence instructions in branches will slowdown the fallback path. */
     if (((uint64_t)dest % 8 == 0) && (count % 8 == 0))
-        _memcpy_aligned(dest, src, count);
+        oe_memcpy_aligned(dest, src, count);
     else
         _memcpy_unaligned_with_barrier(dest, src, count);
 
