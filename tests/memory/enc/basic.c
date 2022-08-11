@@ -167,6 +167,7 @@ void test_memalign(void)
     errno = 0;
     OE_TEST((ptr = memalign(16, 63)) != NULL);
     OE_TEST(errno == 0);
+    free(ptr);
 }
 
 void test_posix_memalign(void)

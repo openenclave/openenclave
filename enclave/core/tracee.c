@@ -28,6 +28,8 @@ const char* const oe_log_level_strings[OE_LOG_LEVEL_MAX] =
 
 static oe_mutex_t _log_lock = OE_MUTEX_INITIALIZER;
 
+static oe_once_t _log_edger8r_once;
+
 const char* get_filename_from_path(const char* path)
 {
     if (path)
@@ -43,6 +45,23 @@ const char* get_filename_from_path(const char* path)
         }
     }
     return path;
+}
+
+static void _log_edger8r_secure_unserialize(void)
+{
+    if (oe_edger8r_secure_unserialize)
+        OE_TRACE_INFO(
+            "The OCALL marshalling code will unserialize the non-deepycopy, "
+            "out parameters within the enclave memory. "
+            "To disable the feature, declare a STRONG "
+            "oe_edger8r_secure_unserialize and set it to false");
+    else
+        OE_TRACE_INFO(
+            "The OCALL marshalling code will unserialize the "
+            "non-deepcopy, out parameters from the host memory, which does not "
+            "mitigate against the xAPIC vulnerability. "
+            "To enable in-enclave unserializing, declare a STRONG "
+            "oe_edger8r_secure_unserialize and set it to true");
 }
 
 /*
@@ -75,6 +94,10 @@ void oe_log_init_ecall(const char* enclave_path, uint32_t log_level)
     {
         memset(_enclave_filename, 0, sizeof(_enclave_filename));
     }
+
+    /* Log message for the edger8r secure_unserialize feature
+     * (for xAPIC vulnerability mitigation) */
+    oe_once(&_log_edger8r_once, _log_edger8r_secure_unserialize);
 }
 
 static void* _enclave_log_context = NULL;

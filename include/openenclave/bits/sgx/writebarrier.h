@@ -10,6 +10,28 @@
 
 OE_EXTERNC_BEGIN
 
+#ifdef __GNUC__
+/**
+ * memcpy for 8-byte aligned count.
+ *
+ * @param[out] dest Memory where the content is to be copied.
+ * @param[in] src A pointer to the source of data to be copied.
+ * @param[in] count The number of bytes to be copied.
+ *
+ */
+OE_ALWAYS_INLINE
+void oe_memcpy_aligned(void* dest, const void* src, size_t count)
+{
+    uint64_t rdi, rsi, rcx;
+    asm volatile(
+        "shr $3, %2\n\t"
+        "rep movsq\n\t"
+        : "=D"(rdi), "=S"(rsi), "=c"(rcx) /* rdi, rsi, and rcx are clobbered */
+        : "D"(dest), "S"(src), "c"(count)
+        : "memory");
+}
+#endif
+
 /**
  * Hardened version of memory copy against the MMIO-based vulnerability.
  *

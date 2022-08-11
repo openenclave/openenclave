@@ -14,8 +14,8 @@ typedef struct _oe_ecall_context
 {
     // Storage for making ocall
     oe_call_host_function_args_t ocall_args;
-    uint64_t ocall_buffer_size;
-    uint8_t* ocall_buffer;
+    volatile uint64_t ocall_buffer_size;
+    volatile uint8_t* ocall_buffer;
 
     // Enter frame information for ecall stack stitching.
     uint64_t debug_eenter_rip;
@@ -26,6 +26,17 @@ typedef struct _oe_ecall_context
     uint64_t debug_eexit_rbp;
     uint64_t debug_eexit_rsp;
 } oe_ecall_context_t;
+
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_ecall_context_t, ocall_args) == 0);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_ecall_context_t, ocall_buffer_size) == 56);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_ecall_context_t, ocall_buffer) == 64);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_ecall_context_t, debug_eenter_rip) == 72);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_ecall_context_t, debug_eenter_rbp) == 80);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_ecall_context_t, debug_eexit_rip) == 88);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_ecall_context_t, debug_eexit_rbp) == 96);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_ecall_context_t, debug_eexit_rsp) == 104);
+
+OE_STATIC_ASSERT(sizeof(oe_ecall_context_t) == 112);
 
 /**
  * Fetch the ocall_args field if an ecall context has been passed in.

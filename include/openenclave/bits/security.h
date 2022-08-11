@@ -14,9 +14,10 @@
 #if __x86_64__ || _M_X64
 #include "sgx/writebarrier.h"
 #elif defined(__aarch64__)
-/* Alias oe_memcpy_with_barrier with regular mempcy (required by
- * oeedger8r-generated code) */
+/* Alias oe_memcpy_with_barrier and oe_memcpy_aligned with regular mempcy
+ * (required by oeedger8r-generated code) */
 #define oe_memcpy_with_barrier memcpy
+#define oe_memcpy_aligned memcpy
 #endif
 
 #endif
