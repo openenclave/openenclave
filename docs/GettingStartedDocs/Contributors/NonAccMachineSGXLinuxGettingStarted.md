@@ -222,7 +222,7 @@ You should be able to see the service is running.
 
 Run the following command to verify if it can actually fetch the root CA CRL from the Intel PCK service
 ```bash
-curl --noproxy "*" -v -k -G "https://localhost:8081/sgx/certification/v2/rootcacrl"
+curl --noproxy "*" -v -k -G "https://localhost:8081/sgx/certification/v3/rootcacrl"
 ```
 
 To learn more about PCCS, please refer to the [PCCS GitHub repository](https://github.com/intel/SGXDataCenterAttestationPrimitives/tree/master/QuoteGeneration/pccs).
