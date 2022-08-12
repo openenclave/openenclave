@@ -12,7 +12,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ## Changed
-- Fix the incorrect behavior of pthread_mutex_init() and std::mutex such that they no longer create a recursive lock by default.
+
+
+
+[v0.18.2][v0.18.2_log]
+--------------
+### Changed
+- Fixed the incorrect behavior of pthread_mutex_init() and std::mutex such that they no longer create a recursive lock by default. Please see issue #4555 for more details.
+- Added sgx_dcap_ql logging callback for oeutil tool in Windows.
+- Enabled logging dcap_quoteprov logs for all OE_LOG_LEVELs.
+- Mitigated CVE-2022-21233. Please refer to the [security advisory](https://github.com/openenclave/openenclave/security/advisories/GHSA-v3vm-9h66-wm76) for the same.
 
 [v0.18.1][v0.18.1_log]
 --------------
@@ -20,6 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Calling oe_log from an enclave resulted in partial log output. #4547 fixed this.
 - Fixed #4540. The fix **does not** introduce functional changes, but updates `memcpy_with_barrier` such that the source address will be always aligned when the function does 2- or 4-byte memory write.
 - Fixed #4542. The issue affects only those applications that ignore `SIGHUP`, `SIGALRM`, `SIGPIPE`, `SIGPOLL`, `SIGUSR1`, or`SIGUSR2` using `signal(signum, SIG_IGN)` on Linux. The issue has **no impact** on the enclave runtime.
+- std::mutex is now non recursive by default. It was previously recursive. Please see issue #4555 for more details.
+- Added sgx_dcap_ql logging callback for oeutil tool in Windows.
+- Enabled logging dcap_quoteprov logs for all OE_LOG_LEVELs.
 
 
 [v0.18.0][v0.18.0_log]
@@ -763,7 +775,9 @@ as listed below.
 
 Initial private preview release, no longer supported.
 
-[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.18.1...HEAD
+[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.18.2...HEAD
+
+[v0.18.2_log]:https://github.com/openenclave/openenclave/compare/v0.18.1...v0.18.2
 
 [v0.18.1_log]:https://github.com/openenclave/openenclave/compare/v0.18.0...v0.18.1
 
