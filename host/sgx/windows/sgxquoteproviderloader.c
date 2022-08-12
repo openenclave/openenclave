@@ -29,15 +29,18 @@ void oe_load_quote_provider()
         if (_handle != 0)
         {
             provider.handle = _handle;
-            if (oe_sgx_set_quote_provider_logger(oe_quote_provider_log) ==
-                OE_OK)
+            if (oe_get_current_logging_level() >= OE_LOG_LEVEL_INFO)
             {
-                OE_TRACE_INFO("sgxquoteprovider: Installed log function\n");
-            }
-            else
-            {
-                OE_TRACE_WARNING(
-                    "sgxquoteprovider: Not able to install log function\n");
+                if (oe_sgx_set_quote_provider_logger(oe_quote_provider_log) ==
+                    OE_OK)
+                {
+                    OE_TRACE_INFO("sgxquoteprovider: Installed log function\n");
+                }
+                else
+                {
+                    OE_TRACE_WARNING(
+                        "sgxquoteprovider: Not able to install log function\n");
+                }
             }
 
             provider.get_sgx_quote_verification_collateral =

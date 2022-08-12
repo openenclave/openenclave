@@ -31,7 +31,7 @@ add_subdirectory(enclave_b)
 add_subdirectory(host)
 
 # Remove previously built CMakeFiles directory, if any. This avoids build
-# failures due to stale object files in CMakeFiles/.
+# failures due to stale object files in CMakeFiles/. 
 file(REMOVE_RECURSE ${CMAKE_CURRENT_BINARY_DIR}/enclave_a/CMakeFiles)
 file(REMOVE_RECURSE ${CMAKE_CURRENT_BINARY_DIR}/enclave_b/CMakeFiles)
 
@@ -41,20 +41,16 @@ if ((NOT DEFINED ENV{OE_SIMULATION}) OR (NOT $ENV{OE_SIMULATION}))
   add_custom_target(run DEPENDS runsgxlocal runsgxremote)
 
   add_custom_target(
-    runsgxremote
-    DEPENDS attestation_host sign
-    BYPRODUCTS sgxremote_log.txt
-    COMMAND
-      OE_LOG_LEVEL=INFO AZDCAP_DEBUG_LOG_LEVEL=ERROR host/attestation_host
-      sgxremote ${CMAKE_BINARY_DIR}/enclave_a/enclave_a.signed
-      ${CMAKE_BINARY_DIR}/enclave_b/enclave_b.signed sgxremote_log.txt
-    COMMAND grep -q "dcap_quoteprov:" ${CMAKE_BINARY_DIR}/sgxremote_log.txt)
-
-  add_custom_target(
     runsgxlocal
     DEPENDS attestation_host sign
     COMMAND
-      host/attestation_host sgxlocal
-      ${CMAKE_BINARY_DIR}/enclave_a/enclave_a.signed
+      attestation_host sgxlocal ${CMAKE_BINARY_DIR}/enclave_a/enclave_a.signed
+      ${CMAKE_BINARY_DIR}/enclave_b/enclave_b.signed)
+
+  add_custom_target(
+    runsgxremote
+    DEPENDS attestation_host sign
+    COMMAND
+      attestation_host sgxremote ${CMAKE_BINARY_DIR}/enclave_a/enclave_a.signed
       ${CMAKE_BINARY_DIR}/enclave_b/enclave_b.signed)
 endif ()
