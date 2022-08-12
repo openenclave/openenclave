@@ -213,19 +213,19 @@ static void oeutil_quote_provider_log(
     sgx_ql_log_level_t level,
     const char* message)
 {
-    if (level < SGX_QL_LOG_ERROR || level > SGX_QL_LOG_NONE)
-        level = SGX_QL_LOG_INFO;
-    const char* level_string[] = {"ERROR", "WARN", "INFO", "NONE"};
+    const char* level_string = level == 0 ? "ERROR" : "INFO";
 
-    log("dcap_quoteprov [%s]: %s\n", level_string[level], message);
+    log("[%s]: %s\n", level_string, message);
 }
 
 // Set DCAP client (libdcap_quoteprov) log callback
 static void set_log_callback()
 {
+#if defined(__linux__)
     // Initialize quote provider and set log callback
     oe_initialize_quote_provider();
     oe_sgx_set_quote_provider_logger(oeutil_quote_provider_log);
+#endif
 }
 
 oe_result_t output_file(
