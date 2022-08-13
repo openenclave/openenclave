@@ -3,6 +3,7 @@
 
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/trace.h>
+#include <openenclave/trace.h>
 
 #if defined(__x86_64__) || defined(_M_X64)
 #include "sgx/enclave.h"
@@ -19,7 +20,7 @@
 #include "core_u.h"
 
 /**
- * Declare the prototype of the following function to avoid the
+ * Declare the prototype of the following functions to avoid the
  * missing-prototypes warning.
  */
 oe_result_t _oe_log_init_ecall(
@@ -56,4 +57,19 @@ oe_result_t oe_log_enclave_init(oe_enclave_t* enclave)
     initialize_log_config();
 
     return oe_log_init_ecall(enclave, enclave->path, _log_level);
+}
+
+oe_result_t oe_set_enclave_log_level(oe_enclave_t* enclave, uint32_t log_level)
+{
+    if (!enclave || log_level >= OE_LOG_LEVEL_MAX)
+        return OE_INVALID_PARAMETER;
+
+    /*
+     * The enclave log level verbosity should not be greater
+     * than host log level.
+     */
+    if (log_level > (uint32_t)_log_level)
+        return OE_CONSTRAINT_FAILED;
+
+    return oe_log_init_ecall(enclave, NULL, log_level);
 }
