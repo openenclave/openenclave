@@ -3,7 +3,6 @@
 
 #include <openenclave/attestation/sgx/evidence.h>
 #include <openenclave/host.h>
-#include <openenclave/trace.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "attestation_u.h"
@@ -117,39 +116,6 @@ exit:
     return ret;
 }
 
-void host_logging_callback(
-    void* context,
-    bool is_enclave,
-    const struct tm* t,
-    long int usecs,
-    oe_log_level_t level,
-    uint64_t host_thread_id,
-    const char* message)
-{
-    char time[25];
-    FILE* log_file = NULL;
-    strftime(time, sizeof(time), "%Y-%m-%dT%H:%M:%S%z", t);
-
-    if (level == OE_LOG_LEVEL_ERROR)
-    {
-        log_file = stderr;
-    }
-    else
-    {
-        log_file = (FILE*)context;
-    }
-
-    fprintf(
-        log_file,
-        "%s.%06ld, %s, %s, %lx, %s",
-        time,
-        usecs,
-        (is_enclave ? "E" : "H"),
-        oe_log_level_strings[level],
-        host_thread_id,
-        message);
-}
-
 int main(int argc, const char* argv[])
 {
     oe_enclave_t* enclave_a = NULL;
@@ -161,12 +127,9 @@ int main(int argc, const char* argv[])
     oe_uuid_t* format_id = nullptr;
 
     /* Check argument count */
-    if (argc != 4 && argc != 5)
+    if (argc != 4)
     {
-        printf(
-            "Usage: %s <tee> ENCLAVE_PATH1 ENCLAVE_PATH2 "
-            "<optional:log_file_name>\n",
-            argv[0]);
+        printf("Usage: %s <tee> ENCLAVE_PATH1 ENCLAVE_PATH2\n", argv[0]);
         printf("       where <tee> is one of:\n");
         printf("           sgxlocal  : for SGX local attestation\n");
         printf("           sgxremote : for SGX remote attestation\n");
@@ -185,13 +148,6 @@ int main(int argc, const char* argv[])
     {
         printf("Unrecognized TEE type\n");
         return 1;
-    }
-
-    if (argc == 5)
-    {
-        /* Set logging callback */
-        FILE* out_file = fopen(argv[4], "w");
-        oe_log_set_callback((void*)out_file, host_logging_callback);
     }
 
     printf("Host: Creating two enclaves\n");
