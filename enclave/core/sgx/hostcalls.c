@@ -15,10 +15,9 @@
 static oe_ecall_context_t* _get_ecall_context()
 {
     oe_sgx_td_t* td = oe_sgx_get_td();
-    oe_ecall_context_t* ecall_context = td->host_ecall_context;
-    return oe_is_outside_enclave(ecall_context, sizeof(*ecall_context))
-               ? ecall_context
-               : NULL;
+    /* __oe_handle_main has already validated the alignment of ecall_context
+     * for mitigating the xAPIC vulnerability */
+    return td->host_ecall_context;
 }
 
 /**
@@ -39,11 +38,18 @@ void* oe_ecall_context_get_ocall_buffer(uint64_t size)
     oe_ecall_context_t* ecall_context = _get_ecall_context();
     if (ecall_context)
     {
-        // Copy to volatile variables to prevent TOCTOU attacks.
-        uint8_t* volatile ocall_buffer = ecall_context->ocall_buffer;
-        volatile uint64_t ocall_buffer_size = ecall_context->ocall_buffer_size;
+        /* ecall_context is 16-byte aligned. Thus the fields ocall_buffer and
+         * and ocall_buffer_size are guaranteed to by 8-byte aligned due to
+         * their statically determined offsets (for xAPIC vulnerability
+         * mitigation). Also, copy to volatile variables to prevent TOCTOU
+         * attacks. */
+        uint8_t* ocall_buffer = (uint8_t*)ecall_context->ocall_buffer;
+        uint64_t ocall_buffer_size = ecall_context->ocall_buffer_size;
+
+        /* Validate the ocall_buffer and ocall_buffer_size */
         if (ocall_buffer_size >= size &&
-            oe_is_outside_enclave(ocall_buffer, ocall_buffer_size))
+            oe_is_outside_enclave(ocall_buffer, ocall_buffer_size) &&
+            ((uint8_t)ocall_buffer % 8) == 0 && (ocall_buffer_size % 8) == 0)
             return (void*)ocall_buffer;
     }
     return NULL;

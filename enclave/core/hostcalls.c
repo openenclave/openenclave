@@ -12,6 +12,7 @@
 #include <openenclave/internal/stack_alloc.h>
 
 #include "core_t.h"
+#include "openenclave/edger8r/common.h"
 
 /**
  * Declare the prototypes of the following functions to avoid the
@@ -63,6 +64,12 @@ void* oe_host_malloc(size_t size)
 
     if (arg_out && !oe_is_outside_enclave((void*)arg_out, size))
         oe_abort();
+
+    /* Ensure that the returned buffer is aligned according to C's malloc
+     * specification as well as oeedger8r's expectations. This alignment is also
+     * necessary for mitigating the xAPIC vulnerability. */
+    if ((arg_out % OE_EDGER8R_BUFFER_ALIGNMENT) != 0)
+        return NULL;
 
     return (void*)arg_out;
 }

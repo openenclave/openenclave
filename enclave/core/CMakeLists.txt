@@ -362,6 +362,8 @@ enclave_compile_definitions(oedebugmalloc PUBLIC OE_USE_DEBUG_MALLOC)
 
 enclave_link_libraries(oedebugmalloc oecore)
 
+enclave_include_directories(oedebugmalloc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+
 set_enclave_property(TARGET oedebugmalloc PROPERTY ARCHIVE_OUTPUT_DIRECTORY
                      ${OE_LIBDIR}/openenclave/enclave)
 
