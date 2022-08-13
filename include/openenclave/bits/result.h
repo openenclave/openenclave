@@ -270,6 +270,11 @@ typedef enum _oe_result
     OE_UNSUPPORTED_ENCLAVE_IMAGE,
 
     /**
+     * Quote verification baseline policy error.
+     */
+    OE_VERIFY_BASELINE_INVALID,
+
+    /**
      * The CRL for a certificate has expired.
      */
     OE_VERIFY_CRL_EXPIRED,
@@ -280,14 +285,25 @@ typedef enum _oe_result
     OE_VERIFY_CRL_MISSING,
 
     /**
+     * Could not find a valid validity period.
+     */
+    OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
+
+    /**
+     * The signature attached to the quote is invalid.
+     */
+    OE_VERIFY_INVALID_SIGNATURE,
+
+    /**
      * The certificate or signature has been revoked.
      */
     OE_VERIFY_REVOKED,
 
     /**
-     * Could not find a valid validity period.
+     * There was an error verifying the PCK signature chain including PCK Cert
+     * revocation.
      */
-    OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
+    OE_VERIFY_SGX_PCK_CERT_CHAIN_ERROR,
 
     /**
      * An underlying crypto provider returned an error.

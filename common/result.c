@@ -100,14 +100,20 @@ const char* oe_result_str(oe_result_t result)
             return "OE_INVALID_ENDORSEMENT";
         case OE_UNSUPPORTED_ENCLAVE_IMAGE:
             return "OE_UNSUPPORTED_ENCLAVE_IMAGE";
+        case OE_VERIFY_BASELINE_INVALID:
+            return "OE_VERIFY_BASELINE_INVALID";
         case OE_VERIFY_CRL_EXPIRED:
             return "OE_VERIFY_CRL_EXPIRED";
         case OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD:
             return "OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD";
         case OE_VERIFY_CRL_MISSING:
             return "OE_VERIFY_CRL_MISSING";
+        case OE_VERIFY_INVALID_SIGNATURE:
+            return "OE_VERIFY_INVALID_SIGNATURE";
         case OE_VERIFY_REVOKED:
             return "OE_VERIFY_REVOKED";
+        case OE_VERIFY_SGX_PCK_CERT_CHAIN_ERROR:
+            return "OE_VERIFY_SGX_PCK_CERT_CHAIN_ERROR";
         case OE_CRYPTO_ERROR:
             return "OE_CRYPTO_ERROR";
         case OE_INCORRECT_REPORT_SIZE:
@@ -195,10 +201,13 @@ bool oe_is_valid_result(uint32_t result)
         case OE_INVALID_QE_IDENTITY_INFO:
         case OE_INVALID_ENDORSEMENT:
         case OE_UNSUPPORTED_ENCLAVE_IMAGE:
+        case OE_VERIFY_BASELINE_INVALID:
         case OE_VERIFY_CRL_EXPIRED:
-        case OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD:
         case OE_VERIFY_CRL_MISSING:
+        case OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD:
+        case OE_VERIFY_INVALID_SIGNATURE:
         case OE_VERIFY_REVOKED:
+        case OE_VERIFY_SGX_PCK_CERT_CHAIN_ERROR:
         case OE_CRYPTO_ERROR:
         case OE_INCORRECT_REPORT_SIZE:
         case OE_QUOTE_VERIFICATION_ERROR:

@@ -1029,14 +1029,6 @@ static oe_result_t sgx_qvl_error_to_oe(quote3_error_t error)
         case SGX_QL_ERROR_INVALID_PARAMETER:
             return OE_INVALID_PARAMETER;
 
-        case SGX_QL_PCK_CERT_UNSUPPORTED_FORMAT:
-        case SGX_QL_PCK_CERT_CHAIN_ERROR:
-        case SGX_QL_TCBINFO_UNSUPPORTED_FORMAT:
-        case SGX_QL_TCBINFO_CHAIN_ERROR:
-        case SGX_QL_TCBINFO_MISMATCH:
-        case SGX_QL_QEIDENTITY_UNSUPPORTED_FORMAT:
-        case SGX_QL_QEIDENTITY_CHAIN_ERROR:
-        case SGX_QL_TCB_OUT_OF_DATE:
         case SGX_QL_SGX_ENCLAVE_IDENTITY_OUT_OF_DATE:
         case SGX_QL_SGX_ENCLAVE_REPORT_ISVSVN_OUT_OF_DATE:
         case SGX_QL_QE_IDENTITY_OUT_OF_DATE:
@@ -1045,11 +1037,28 @@ static oe_result_t sgx_qvl_error_to_oe(quote3_error_t error)
         case SGX_QL_SGX_ENCLAVE_IDENTITY_EXPIRED:
             return OE_INVALID_ENDORSEMENT;
 
-        case SGX_QL_QUOTE_FORMAT_UNSUPPORTED:
-        case SGX_QL_QE_REPORT_INVALID_SIGNATURE:
+        case SGX_QL_PCK_CERT_UNSUPPORTED_FORMAT:
+        case SGX_QL_PCK_CERT_CHAIN_ERROR:
+            return OE_VERIFY_SGX_PCK_CERT_CHAIN_ERROR;
+
+        case SGX_QL_TCBINFO_UNSUPPORTED_FORMAT:
+        case SGX_QL_TCBINFO_CHAIN_ERROR:
+        case SGX_QL_TCBINFO_MISMATCH:
+        case SGX_QL_TCB_OUT_OF_DATE:
+            return OE_TCB_LEVEL_INVALID;
+
+        case SGX_QL_QEIDENTITY_UNSUPPORTED_FORMAT:
+        case SGX_QL_QEIDENTITY_MISMATCH:
+        case SGX_QL_QEIDENTITY_CHAIN_ERROR:
+            return OE_INVALID_QE_IDENTITY_INFO;
+
         case SGX_QL_QE_REPORT_UNSUPPORTED_FORMAT:
+        case SGX_QL_QUOTE_FORMAT_UNSUPPORTED:
         case SGX_QL_QUOTE_CERTIFICATION_DATA_UNSUPPORTED:
             return OE_QUOTE_VERIFICATION_ERROR;
+
+        case SGX_QL_QE_REPORT_INVALID_SIGNATURE:
+            return OE_VERIFY_INVALID_SIGNATURE;
 
         case SGX_QL_SGX_CRL_EXPIRED:
             return OE_VERIFY_CRL_EXPIRED;
@@ -1190,7 +1199,7 @@ oe_result_t oe_sgx_verify_quote(
         if (result != OE_OK)
         {
             OE_RAISE_MSG(
-                OE_PLATFORM_ERROR,
+                result,
                 "SGX ECDSA QVL-based quote verificaton error "
                 "quote3_error_t=0x%x\n",
                 error);
@@ -1200,7 +1209,7 @@ oe_result_t oe_sgx_verify_quote(
     }
     else
     {
-        // SGX_DCAP_QVL env doesn't set or QVL doesn't exist
+        // SGX_DCAP_QVL env isn't set or QVL doesn't exist
         result = OE_PLATFORM_ERROR;
     }
 

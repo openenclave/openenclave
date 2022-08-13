@@ -1088,7 +1088,7 @@ static void _test_endorsement_baseline(
         2,
         &claims,
         &claims_size);
-    OE_TEST(result == OE_INVALID_PARAMETER);
+    OE_TEST(result == OE_VERIFY_BASELINE_INVALID);
 }
 
 static const oe_uuid_t _local_uuid = {OE_FORMAT_UUID_SGX_LOCAL_ATTESTATION};
