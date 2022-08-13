@@ -45,9 +45,10 @@ if ((NOT DEFINED ENV{OE_SIMULATION}) OR (NOT $ENV{OE_SIMULATION}))
     DEPENDS attestation_host sign
     BYPRODUCTS sgxremote_log.txt
     COMMAND
-      OE_LOG_LEVEL=INFO AZDCAP_DEBUG_LOG_LEVEL=ERROR host/attestation_host
-      sgxremote ${CMAKE_BINARY_DIR}/enclave_a/enclave_a.signed
-      ${CMAKE_BINARY_DIR}/enclave_b/enclave_b.signed sgxremote_log.txt
+      OE_LOG_LEVEL=WARNING host/attestation_host sgxremote
+      ${CMAKE_BINARY_DIR}/enclave_a/enclave_a.signed
+      ${CMAKE_BINARY_DIR}/enclave_b/enclave_b.signed
+      ${CMAKE_BINARY_DIR}/sgxremote_log.txt
     COMMAND grep -q "dcap_quoteprov:" ${CMAKE_BINARY_DIR}/sgxremote_log.txt)
 
   add_custom_target(
