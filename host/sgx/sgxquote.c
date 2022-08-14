@@ -111,8 +111,8 @@ static quote3_error_t (*_sgx_qv_verify_quote)(
 
 #include <dlfcn.h>
 
-#define SGX_DCAP_QL_NAME "libsgx_dcap_ql.so"
-#define SGX_DCAP_QVL_NAME "libsgx_dcap_quoteverify.so"
+#define SGX_DCAP_QL_NAME "libsgx_dcap_ql.so.1"
+#define SGX_DCAP_QVL_NAME "libsgx_dcap_quoteverify.so.1"
 
 // Use best practices
 // - RTLD_NOW  Bind all undefined symbols before dlopen returns.
