@@ -4,3 +4,9 @@
 ---
 java_packages:
   - "openjdk-11-jre-headless"
+
+apt_packages_code_coverage:
+  - "lcov"
+
+pip_packages_code_coverage:
+  - "lcov-cobertura"
