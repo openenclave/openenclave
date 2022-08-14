@@ -14,7 +14,7 @@ set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
 
 # CPack variables for Debian packages
 set(CPACK_DEBIAN_PACKAGE_DEPENDS
-    "libsgx-enclave-common (>=2.3.100.46354-1), libsgx-dcap-ql (>=1.0.100.46460-1.0), libsgx-dcap-ql-dev (>=1.0.100.46460-1.0)"
+    "libsgx-enclave-common (>=2.3.100.46354-1), libsgx-dcap-ql (>=1.0.100.46460-1.0)"
 )
 set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "pkg-config")
 set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
