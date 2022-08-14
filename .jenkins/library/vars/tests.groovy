@@ -13,32 +13,24 @@ def ACCCodeCoverageTest(String label, String compiler, String build_type) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
-                def cmakeArgs = helpers.CmakeArgs(build_type)
-                // Removed command "ninja code_coverage" from task for now
-                // Should re-enable it later
+                def cmakeArgs = helpers.CmakeArgs(build_type, "ON", "OFF")
                 def task = """
                            ${helpers.ninjaBuildCommand(cmakeArgs)}
                            ${helpers.TestCommand()}
+                           ninja code_coverage
+
+                           genhtml --branch-coverage -o html_lcov coverage/cov_filtered.info
                            """
                 common.Run(compiler, task)
 
-                // Should re-enable following section later
-                // // Publish the report via Cobertura Plugin.
-                // cobertura coberturaReportFile: 'build/coverage/coverage.xml'
-
-                // // Publish the result to the PR(s) via GitHub Coverage reporter Plugin.
-                // // Workaround to obtain the PR id(s) as Bors does not us to grab them reliably.
-                // def log = sh (script: "git log -1 | grep -Po '(Try #\\K|Merge #\\K)[^:]*'", returnStdout: true).trim()
-                // def id_list = log.split(' #')
-                // id_list.each {
-                //     echo "PR ID: ${it}, REPOSITORY_NAME: ${REPOSITORY_NAME}"
-                //     withEnv(["CHANGE_URL=https://github.com/${REPOSITORY_NAME}/pull/${it}"]) {
-                //         publishCoverageGithub(filepath:'build/coverage/coverage.xml',
-                //                               coverageXmlType: 'cobertura',
-                //                               comparisonOption: [ value: 'optionFixedCoverage', fixedCoverage: '0.60' ],
-                //                               coverageRateType: 'Line')
-                //     }
-                // }
+                publishHTML(target: [
+                    allowMissing: false,
+                    alwaysLinkToLastBuild: false,
+                    keepAll: true,
+                    reportDir: "${WORKSPACE}/build/html_lcov",
+                    reportFiles: 'index.html',
+                    reportName: 'Code Coverage Report',
+                    reportTitles: ''])
             }
         }
     }
