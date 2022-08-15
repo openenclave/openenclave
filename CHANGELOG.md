@@ -19,9 +19,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 --------------
 ### Changed
 - Fixed the incorrect behavior of pthread_mutex_init() and std::mutex such that they no longer create a recursive lock by default. Please see issue #4555 for more details.
-- Added sgx_dcap_ql logging callback for oeutil tool in Windows.
-- Enabled logging dcap_quoteprov logs for all OE_LOG_LEVELs.
+
+
+### Security
 - Mitigated CVE-2022-21233. Please refer to the [security advisory](https://github.com/openenclave/openenclave/security/advisories/GHSA-v3vm-9h66-wm76) for the same.
+	- The mitigations require an extra copy for ocalls in oeedger8r generated code.
+	- If you are running on a processor that is not affected by the CVE, you can turn off oeedger8r introduced mitigations by setting
+`bool oe_edger8r_secure_unserialize = false;` in enclave side code.
 
 [v0.18.1][v0.18.1_log]
 --------------
