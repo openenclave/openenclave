@@ -146,6 +146,7 @@ if (UNIX
     add_subdirectory(cppException)
     add_subdirectory(crypto_crls_cert_chains)
     add_subdirectory(custom_claims)
+    add_subdirectory(dcap_quoteprov_log)
     add_subdirectory(debug-mode)
     add_subdirectory(ecall)
     add_subdirectory(ecall_conflict)
