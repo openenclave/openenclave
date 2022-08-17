@@ -72,6 +72,8 @@ static void _log_edger8r_secure_unserialize(void)
 ** Handle the OE_ECALL_LOG_INIT from host and initialize SDK logging
 ** configuration
 **
+** If enclave_path = NULL, then only the active log_level is modified.
+**
 **==============================================================================
 */
 
@@ -84,16 +86,24 @@ void oe_log_init_ecall(const char* enclave_path, uint32_t log_level)
     if (oe_log_is_supported_ocall() == OE_UNSUPPORTED)
         return;
 
+    if (oe_mutex_lock(&_log_lock) != OE_OK)
+        return;
+
     _active_log_level = (oe_log_level_t)log_level;
 
-    if ((filename = get_filename_from_path(enclave_path)))
+    if (enclave_path)
     {
-        oe_strlcpy(_enclave_filename, filename, sizeof(_enclave_filename));
+        if ((filename = get_filename_from_path(enclave_path)))
+        {
+            oe_strlcpy(_enclave_filename, filename, sizeof(_enclave_filename));
+        }
+        else
+        {
+            memset(_enclave_filename, 0, sizeof(_enclave_filename));
+        }
     }
-    else
-    {
-        memset(_enclave_filename, 0, sizeof(_enclave_filename));
-    }
+
+    oe_mutex_unlock(&_log_lock);
 
     /* Log message for the edger8r secure_unserialize feature
      * (for xAPIC vulnerability mitigation) */
