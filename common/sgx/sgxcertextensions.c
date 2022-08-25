@@ -201,15 +201,6 @@ done:
     return result;
 }
 
-static void _trace_hex_dump(const char* tag, const uint8_t* data, size_t size)
-{
-    if (oe_get_current_logging_level() >= OE_LOG_LEVEL_INFO)
-    {
-        OE_TRACE_INFO("%s = ", tag);
-        oe_hex_dump(data, size);
-    }
-}
-
 /**
  * Read an extension with given oid and data of type octet string.
  */
@@ -225,13 +216,13 @@ static oe_result_t _read_octet_extension(
     uint8_t* data = NULL;
     size_t data_length = 0;
 
+    OE_TRACE_INFO("Reading %s", tag);
     OE_CHECK(_read_extension(
         itr, end, oid, SGX_OCTET_STRING_TAG, &data, &data_length));
     if (data_length != length)
         OE_RAISE(OE_FAILURE);
 
     OE_CHECK(oe_memcpy_s(buffer, length, data, data_length));
-    _trace_hex_dump(tag, buffer, data_length);
     result = OE_OK;
 done:
     return result;
