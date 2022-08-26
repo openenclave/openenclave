@@ -65,6 +65,7 @@ oe_result_t _oe_vdso_enter(
 // The following function must not be inlined and must have a frame-pointer
 // so that the frame can be manipulated to stitch the ocall stack.
 // This is ensured by compiling this file with -fno-omit-frame-pointer.
+// Note: The requirements of this function on Windows is different.
 OE_NEVER_INLINE
 int __oe_host_stack_bridge(
     uint64_t arg1,

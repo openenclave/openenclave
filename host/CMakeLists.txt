@@ -198,7 +198,7 @@ if (OE_SGX AND WIN32)
     OUTPUT enter.obj
     DEPENDS sgx/windows/enter.c
     COMMAND
-      clang -c -O2 -fomit-frame-pointer -m64 -I${PROJECT_SOURCE_DIR}/include
+      clang -c -O2 -g -fomit-frame-pointer -m64 -I${PROJECT_SOURCE_DIR}/include
       -I${OE_INCDIR} ${CMAKE_CURRENT_SOURCE_DIR}/sgx/windows/enter.c -o
       enter.obj)
 endif ()
