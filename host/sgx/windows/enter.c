@@ -82,8 +82,11 @@
                    "ymm15")
 
 // The following function must not be inlined and must have a frame-pointer
-// so that the frame can be manipulated to stitch the ocall stack.
-// This is ensured by compiling this file with -fno-omit-frame-pointer.
+// Windows can use any register as the frame pointer or omit the frame-pointer
+// altogether. We just a constant offset from the seventh parameter
+// (ecall_context) to fetch the linux style frame-pointer.
+// See OE_FRAME_POINTER_VALUE above.
+// ATTENTION: ENSURE THAT ECALL_CONTEXT IS THE SEVENTH PARAMETER.
 OE_NEVER_INLINE
 int __oe_host_stack_bridge(
     uint64_t arg1,
@@ -101,7 +104,7 @@ int __oe_host_stack_bridge(
     if (debug)
     {
         // Fetch pointer to current frame.
-        current = (oe_host_ocall_frame_t*)__builtin_frame_address(0);
+        current = (oe_host_ocall_frame_t*)((uint64_t)&ecall_context - 0x40);
 
         // Back up current frame.
         backup = *current;
