@@ -42,6 +42,10 @@
 #define OE_ARG_FLAG_GS 0x0001
 #endif
 
+/* Padding needed to ensure that `callsite` fields's offset matches what Windows
+   debuggers expect */
+#define td_callsites_padding 24
+
 /* Offsets into oe_sgx_td_t structure */
 #define td_self_addr 0
 #define td_last_sp 8
@@ -51,7 +55,7 @@
 #define td_host_rcx (td_eenter_rax + 8)
 #define td_oret_func (td_host_rcx + 8)
 #define td_oret_arg (td_oret_func + 8)
-#define td_callsites (td_oret_arg + 8)
+#define td_callsites (td_oret_arg + 8 + td_callsites_padding)
 #define td_simulate (td_callsites + 8)
 #define td_host_ecall_context (td_simulate + 8)
 #define td_host_previous_ecall_context (td_host_ecall_context + 8)
