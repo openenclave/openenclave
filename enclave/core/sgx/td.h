@@ -48,9 +48,6 @@ struct _oe_callsite
     /* Enclave callsite stored here when exiting to make an OCALL */
     oe_jmpbuf_t jmpbuf;
 
-    /* Pointer to the ocall context */
-    oe_ocall_context_t* ocall_context;
-
     /* Control register values to preserve for Windows/Linux ABIs */
     uint32_t mxcsr;
     uint16_t fcw;
