@@ -96,7 +96,7 @@
         "set -o errexit",
         "systemctl disable apt-daily-upgrade.timer",
         "systemctl disable apt-daily.timer",
-        "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync"
+        "/usr/sbin/waagent -force -deprovision && export HISTSIZE=0 && sync"
       ],
       "inline_shebang": "/bin/bash",
       "type": "shell"

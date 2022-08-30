@@ -9,5 +9,5 @@
 FROM mcr.microsoft.com/windows/servercore:ltsc2019
 
 COPY . oe
-RUN powershell.exe -ExecutionPolicy Unrestricted -NoLogo -NonInteractive -NoProfile -WindowStyle Hidden -File oe\scripts\install-windows-prereqs.ps1 -InstallPath C:\oe_prereqs -LaunchConfiguration SGX1FLC-NoIntelDrivers -DCAPClientType Azure
+RUN powershell.exe -ExecutionPolicy Unrestricted -NoLogo -NonInteractive -NoProfile -WindowStyle Hidden -File oe\scripts\install-windows-prereqs.ps1 -InstallPath C:\oe_prereqs -LaunchConfiguration SGX1FLC-NoIntelDrivers -DCAPClientType None
 RUN del /s /q oe
