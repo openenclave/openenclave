@@ -4,8 +4,6 @@
 library "OpenEnclaveJenkinsLibrary@${params.OECI_LIB_VERSION}"
 
 CTEST_TIMEOUT_SECONDS = 480
-FOCAL_LABEL = "ACC-2004-DC2"
-BIONIC_LABEL = "ACC-1804-DC2"
 
 
 def ACCLibcxxTest(String label, String compiler, String build_type) {
@@ -48,20 +46,22 @@ pipeline {
         buildDiscarder(logRotator(artifactDaysToKeepStr: '90', artifactNumToKeepStr: '180', daysToKeepStr: '90', numToKeepStr: '180'))
     }
     parameters {
-        string(name: 'REPOSITORY_NAME',  defaultValue: 'openenclave/openenclave', description: 'GitHub repository to build.')
-        string(name: 'BRANCH_NAME',      defaultValue: 'master',                  description: 'Git branch to build.')
-        string(name: 'DOCKER_TAG',       defaultValue: 'latest',                  description: 'Tag used to pull oetools docker image.')
-        string(name: 'OECI_LIB_VERSION', defaultValue: 'master',                  description: 'Version of OE Libraries to use')
+        string(name: 'REPOSITORY_NAME',   defaultValue: 'openenclave/openenclave', description: 'GitHub repository to build.')
+        string(name: 'BRANCH_NAME',       defaultValue: 'master',                  description: 'Git branch to build.')
+        string(name: 'DOCKER_TAG',        defaultValue: 'latest',                  description: 'Tag used to pull oetools docker image.')
+        string(name: 'OECI_LIB_VERSION',  defaultValue: 'master',                  description: 'Version of OE Libraries to use')
+        string(name: 'UBUNTU_2004_LABEL', defaultValue: 'ACC-2004-DC2',            description: '[Optional] Agent label used for Ubuntu 20.04')
+        string(name: 'UBUNTU_1804_LABEL', defaultValue: 'ACC-1804-DC2',            description: '[Optional] Agent label used for Ubuntu 18.04')
     }
     stages {
         stage('Run tests') {
             steps {
                 script {
                     parallel([
-                        "Libcxx ACC2004 clang-10 Debug" :          { ACCLibcxxTest(FOCAL_LABEL,  'clang-10', 'Debug') },
-                        "Libcxx ACC2004 clang-10 RelWithDebInfo" : { ACCLibcxxTest(FOCAL_LABEL,  'clang-10', 'RelWithDebInfo') },
-                        "Libcxx ACC1804 clang-10 Debug" :          { ACCLibcxxTest(BIONIC_LABEL, 'clang-10', 'Debug') },
-                        "Libcxx ACC1804 clang-10 RelWithDebInfo" : { ACCLibcxxTest(BIONIC_LABEL, 'clang-10', 'RelWithDebInfo') }
+                        "Libcxx ACC2004 clang-10 Debug" :          { ACCLibcxxTest(params.UBUNTU_2004_LABEL, 'clang-10', 'Debug') },
+                        "Libcxx ACC2004 clang-10 RelWithDebInfo" : { ACCLibcxxTest(params.UBUNTU_2004_LABEL, 'clang-10', 'RelWithDebInfo') },
+                        "Libcxx ACC1804 clang-10 Debug" :          { ACCLibcxxTest(params.UBUNTU_1804_LABEL, 'clang-10', 'Debug') },
+                        "Libcxx ACC1804 clang-10 RelWithDebInfo" : { ACCLibcxxTest(params.UBUNTU_1804_LABEL, 'clang-10', 'RelWithDebInfo') }
                     ])
                 }
             }
