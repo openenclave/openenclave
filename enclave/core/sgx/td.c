@@ -13,6 +13,8 @@
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/utils.h>
 #include "asmdefs.h"
+#include "openenclave/bits/defs.h"
+#include "openenclave/internal/jump.h"
 #include "thread.h"
 #include "threadlocal.h"
 
@@ -30,11 +32,26 @@ OE_STATIC_ASSERT(
     OE_OFFSETOF(oe_sgx_td_t, host_previous_ecall_context) ==
     td_host_previous_ecall_context);
 
-// Static asserts for consistency with
-// debugger/pythonExtension/gdb_sgx_plugin.py
-OE_STATIC_ASSERT(td_callsites == 0xd8);
-OE_STATIC_ASSERT(OE_OFFSETOF(oe_callsite_t, ocall_context) == 0x40);
-OE_STATIC_ASSERT(sizeof(oe_ocall_context_t) == (2 * sizeof(uintptr_t)));
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// THE FOLLOWING STATIC ASSERTS MUST NOT BE CHANGED.
+// Linux debuggers (oegdb, oelldb) do not use `callsites` field, and instead
+// rely on the stitched stack to read register values of the OCALL EEXIT frame.
+// Windows debuggers, however rely on reading the register values saved in the
+// callsite's jumpbuf during OCALL eexit.
+// Thus `callsite` field's offset and contents (jmpbuf) are part of Windows
+// debugger contract.
+OE_STATIC_ASSERT(td_callsites == 0xf0);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_callsite_t, jmpbuf) == 0x0);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_jmpbuf_t, rsp) == 0x00);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_jmpbuf_t, rbp) == 0x08);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_jmpbuf_t, rip) == 0x10);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_jmpbuf_t, rbx) == 0x18);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_jmpbuf_t, r12) == 0x20);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_jmpbuf_t, r13) == 0x28);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_jmpbuf_t, r14) == 0x30);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_jmpbuf_t, r15) == 0x38);
+OE_STATIC_ASSERT(sizeof(oe_jmpbuf_t) == 64);
 
 // Offset of the td page from the tcs page in bytes. This varies depending on
 // the size of thread-local data.
