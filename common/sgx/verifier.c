@@ -931,20 +931,6 @@ oe_result_t oe_sgx_verify_evidence(
             &valid_until,
             claims,
             claims_length));
-
-        // Avoid running the loop unless traces are actually generated
-        if (oe_get_current_logging_level() >= OE_LOG_LEVEL_INFO)
-        {
-            OE_TRACE_INFO("extracted %lu claims", *claims_length);
-            for (size_t i = 0; i < *claims_length; i++)
-            {
-                OE_TRACE_INFO(
-                    "claim %s[%lu]: ",
-                    (*claims)[i].name,
-                    (*claims)[i].value_size);
-                oe_hex_dump((*claims)[i].value, (*claims)[i].value_size);
-            }
-        }
     }
 
     result = format_type == SGX_FORMAT_TYPE_LOCAL ? OE_OK : result_verify_quote;
