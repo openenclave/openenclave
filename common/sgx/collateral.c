@@ -260,9 +260,6 @@ oe_result_t oe_validate_revocation_list(
     oe_datetime_t until = {0};
     oe_datetime_t latest_from = {0};
     oe_datetime_t earliest_until = {0};
-    uint8_t* der_data = NULL;
-    size_t der_data_size = 0;
-    bool ishex = true;
 
     if (pck_cert == NULL || sgx_endorsements == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -341,43 +338,44 @@ oe_result_t oe_validate_revocation_list(
          */
         else
         {
-            der_data = sgx_endorsements->items[i].data;
-            der_data_size = sgx_endorsements->items[i].size;
+            uint8_t* der_data = sgx_endorsements->items[i].data;
+            size_t der_data_size = sgx_endorsements->items[i].size;
             if (der_data_size == 0 || der_data == NULL)
                 OE_RAISE(OE_INVALID_PARAMETER);
 
+            // If CRL buffer has null terminator, remove it.
+            if (der_data[der_data_size - 1] == 0)
+                der_data_size -= 1;
+
             // Check if the CRL is composed of only hex digits
-            for (size_t l = 0; l < der_data_size; l++)
+            bool ishex = der_data_size % 2 == 0;
+            if (ishex)
             {
-                const uint8_t c = sgx_endorsements->items[i].data[l];
-                if (!isxdigit(c))
+                for (size_t l = 0; l < der_data_size; l++)
                 {
-                    ishex = false;
-                    break;
+                    if (!isxdigit(der_data[l]))
+                    {
+                        ishex = false;
+                        break;
+                    }
                 }
             }
 
             // If CRL is a hex string, convert hex to der
             if (ishex)
             {
-                der_data_size = (der_data_size / 2) + (der_data_size % 2);
+                const char* const hex_data = (char*)der_data;
+                const size_t hex_data_size = der_data_size;
+                der_data_size /= 2;
                 der_data = oe_malloc(der_data_size);
                 if (!der_data)
                     OE_RAISE(OE_OUT_OF_MEMORY);
                 OE_CHECK_MSG(
                     _hex_to_raw(
-                        (const char*)sgx_endorsements->items[i].data,
-                        sgx_endorsements->items[i].size,
-                        der_data,
-                        der_data_size),
+                        hex_data, hex_data_size, der_data, der_data_size),
                     "Failed to convert to DER. %s",
                     oe_result_str(result));
             }
-
-            // If CRL buffer has null terminator, need to remove it before
-            // sending the DER data to crypto API for reading.
-            if (der_data[der_data_size - 1] == 0)
-                der_data_size -= 1;
 
             OE_CHECK_MSG(
                 oe_crl_read_der(&crls[j], der_data, der_data_size),
