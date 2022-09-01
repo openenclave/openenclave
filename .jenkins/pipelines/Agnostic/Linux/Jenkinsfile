@@ -18,14 +18,8 @@ try{
         stage("Full Test Suite") {
             testing_stages += [
                 "Sim 1804 clang-10 SGX1 Debug":                      { tests.simulationContainerTest('18.04', 'Debug',          ['-DHAS_QUOTE_PROVIDER=OFF', '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
-                "Sim 1804 clang-10 SGX1 RelWithDebInfo":             { tests.simulationContainerTest('18.04', 'RelWithDebInfo', ['-DHAS_QUOTE_PROVIDER=OFF', '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
-                "Sim 1804 clang-10 SGX1FLC Debug":                   { tests.simulationContainerTest('18.04', 'Debug',          ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
-                "Sim 1804 clang-10 SGX1FLC RelWithDebInfo":          { tests.simulationContainerTest('18.04', 'RelWithDebInfo', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
-                "Sim 1804 clang-10 SGX1FLC Debug snmalloc":          { tests.simulationContainerTest('18.04', 'Debug',          ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) },
                 "Sim 1804 clang-10 SGX1FLC RelWithDebInfo snmalloc": { tests.simulationContainerTest('18.04', 'RelWithDebInfo', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) },
-                "Sim 2004 clang-10 SGX1 Debug":                      { tests.simulationContainerTest('20.04', 'Debug',          ['-DHAS_QUOTE_PROVIDER=OFF', '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
                 "Sim 2004 clang-10 SGX1 RelWithDebInfo":             { tests.simulationContainerTest('20.04', 'RelWithDebInfo', ['-DHAS_QUOTE_PROVIDER=OFF', '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
-                "Sim 2004 clang-10 SGX1FLC Debug":                   { tests.simulationContainerTest('20.04', 'Debug',          ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
                 "Sim 2004 clang-10 SGX1FLC RelWithDebInfo":          { tests.simulationContainerTest('20.04', 'RelWithDebInfo', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
                 "Sim 2004 clang-10 SGX1FLC Debug snmalloc":          { tests.simulationContainerTest('20.04', 'Debug',          ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) },
                 "Sim 2004 clang-10 SGX1FLC RelWithDebInfo snmalloc": { tests.simulationContainerTest('20.04', 'RelWithDebInfo', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) },

@@ -63,19 +63,13 @@ pipeline {
             steps {
                 script {
                     parallel([
-                        "2004 SGX1FLC Package Debug":              { LinuxPackaging('2004', 'Debug') },
                         "2004 SGX1FLC Package Debug LVI":          { LinuxPackaging('2004', 'Debug', 'ControlFlow') },
-                        "2004 SGX1FLC Package RelWithDebInfo":     { LinuxPackaging('2004', 'RelWithDebInfo') },
                         "2004 SGX1FLC Package RelWithDebInfo LVI": { LinuxPackaging('2004', 'RelWithDebInfo', 'ControlFlow') },
-                        "1804 SGX1FLC Package Debug":              { LinuxPackaging('1804', 'Debug') },
                         "1804 SGX1FLC Package Debug LVI":          { LinuxPackaging('1804', 'Debug', 'ControlFlow') },
-                        "1804 SGX1FLC Package RelWithDebInfo":     { LinuxPackaging('1804', 'RelWithDebInfo') },
                         "1804 SGX1FLC Package RelWithDebInfo LVI": { LinuxPackaging('1804', 'RelWithDebInfo', 'ControlFlow') },
-                        "Windows 2019 Debug":                      { WindowsPackaging('2019','Debug') },
                         "Windows 2019 Debug LVI":                  { WindowsPackaging('2019','Debug', 'ControlFlow') },
                         "Windows 2019 RelWithDebInfo":             { WindowsPackaging('2019','RelWithDebInfo') },
                         "Windows 2019 RelWithDebInfo LVI":         { WindowsPackaging('2019','RelWithDebInfo', 'ControlFlow') },
-                        "Windows 2019 Sim Debug":                  { WindowsPackaging('2019','Debug', 'None', '1') },
                         "Windows 2019 Sim Debug LVI":              { WindowsPackaging('2019','Debug', 'ControlFlow', '1') },
                         "Windows 2019 Sim RelWithDebInfo":         { WindowsPackaging('2019','RelWithDebInfo', 'None', '1') },
                         "Windows 2019 Sim RelWithDebInfo LVI":     { WindowsPackaging('2019','RelWithDebInfo', 'ControlFlow', '1') }
