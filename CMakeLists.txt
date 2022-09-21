@@ -53,10 +53,10 @@ if (UNIX)
     # the CMAKE_C_COMPILER cmake variable has been passed to cmake, use the C compiler
     # that has been specified. Otherwise, prefer clang. Same for C++ compiler.
     if (NOT DEFINED ENV{CC} AND NOT DEFINED CMAKE_C_COMPILER)
-      find_program(CMAKE_C_COMPILER clang-10 clang)
+      find_program(CMAKE_C_COMPILER clang-11 clang)
     endif ()
     if (NOT DEFINED ENV{CXX} AND NOT DEFINED CMAKE_CXX_COMPILER)
-      find_program(CMAKE_CXX_COMPILER clang++-10 clang++)
+      find_program(CMAKE_CXX_COMPILER clang++-11 clang++)
     endif ()
   endif ()
 endif ()

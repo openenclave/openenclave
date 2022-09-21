@@ -95,6 +95,9 @@ if (OE_SGX)
   set_source_files_properties(sgx/td_basic.c PROPERTIES COMPILE_FLAGS
                                                         -fno-stack-protector)
 
+  set_source_files_properties(sgx/calls.c PROPERTIES COMPILE_FLAGS
+                                                    "-fno-stack-protector -Wno-frame-address")
+
   # To avoid the `unused-command-line-argument` warning, which we treat as an
   # error, we explicitly turn off the warning when compiling these assembly
   # files.

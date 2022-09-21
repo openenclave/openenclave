@@ -390,7 +390,7 @@ if (OE_SGX AND UNIX)
   # code in both debug and release builds.
   set_source_files_properties(
     oehost sgx/linux/enter.c PROPERTIES COMPILE_FLAGS
-                                        "-O2 -fno-omit-frame-pointer")
+                                        "-O2 -fno-omit-frame-pointer -Wno-frame-address")
 endif ()
 
 add_dependencies(oehost syscall_untrusted_edl)
