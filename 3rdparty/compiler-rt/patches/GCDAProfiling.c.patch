@@ -22,7 +22,7 @@ index 124be3c13..ecca1b16e 100644
  #include "InstrProfiling.h"
  #include "InstrProfilingUtil.h"
 
-@@ -288,14 +294,19 @@ static int map_file() {
+@@ -276,14 +282,19 @@ static int map_file() {
      return -1;
    }
  #else
@@ -42,7 +42,7 @@ index 124be3c13..ecca1b16e 100644
  #endif
 
    return 0;
-@@ -320,18 +331,25 @@ static void unmap_file() {
+@@ -308,18 +319,25 @@ static void unmap_file() {
 
    mmap_handle = NULL;
  #else
@@ -53,10 +53,10 @@ index 124be3c13..ecca1b16e 100644
              strerror(errnum));
    }
 +#endif
-
++
 +  fseek(output_file, 0L, SEEK_SET);
 +  fwrite(write_buffer, file_size, 1, output_file);
-+
+
 +#if defined(COMPILER_RT_HAS_MUNMAP)
    /* We explicitly ignore errors from unmapping because at this point the data
     * is written and we don't care.
@@ -69,7 +69,30 @@ index 124be3c13..ecca1b16e 100644
    write_buffer = NULL;
    file_size = 0;
  }
-@@ -695,6 +713,23 @@ void llvm_gcov_init(fn_ptr wfn, fn_ptr ffn, fn_ptr rfn) {
+@@ -612,15 +630,13 @@ void llvm_writeout_files(void) {
+   }
+ }
+
+-#ifndef _WIN32
+-// __attribute__((destructor)) and destructors whose priorities are greater than
+-// 100 run before this function and can thus be tracked. The priority is
+-// compatible with GCC 7 onwards.
+-#if __GNUC__ >= 9
+-#pragma GCC diagnostic ignored "-Wprio-ctor-dtor"
+-#endif
+-__attribute__((destructor(100)))
+-#endif
++/*
++Do not use __attribute__((destructor(100)))
++Instead use atexit
++
++This is because llvm_writeout_files needs mount table
++information, which is freed earlier during atexit()
++*/
+ static void llvm_writeout_and_clear(void) {
+   llvm_writeout_files();
+   fn_list_remove(&writeout_fn_list);
+@@ -700,12 +716,27 @@ void llvm_gcov_init(fn_ptr wfn, fn_ptr ffn, fn_ptr rfn) {
    if (atexit_ran == 0) {
      atexit_ran = 1;
 
@@ -93,3 +116,9 @@ index 124be3c13..ecca1b16e 100644
      /* Make sure we write out the data and delete the data structures. */
      atexit(llvm_delete_reset_function_list);
      atexit(llvm_delete_flush_function_list);
+-#ifdef _WIN32
+     atexit(llvm_writeout_and_clear);
+-#endif
+   }
+ }
+

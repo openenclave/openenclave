@@ -42,7 +42,7 @@ enclave {
             [string, in] const char* str1,
             [in] char str2[100]);
 
-	public void enc_test_large_switchless_ocall();
+	    public void enc_test_large_switchless_ocall();
     };
 
     untrusted {

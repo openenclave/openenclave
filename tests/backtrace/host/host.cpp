@@ -38,7 +38,6 @@ int main(int argc, const char* argv[])
             "ecall_test",
             "oe_handle_call_enclave_function",
             "_handle_ecall",
-            "__oe_handle_main",
             "oe_enter",
         };
         bool rval = false;
@@ -63,7 +62,6 @@ int main(int argc, const char* argv[])
             "ecall_test_unwind",
             "oe_handle_call_enclave_function",
             "_handle_ecall",
-            "__oe_handle_main",
             "oe_enter",
         };
         bool rval = false;
