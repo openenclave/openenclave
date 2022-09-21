@@ -48,9 +48,9 @@ function (configure_lvi_mitigation_build)
   endif ()
 
   if (NOT OE_IN_PACKAGE)
-    # Default to clang-10 when building SDK.
-    set(C_COMPILER clang-10)
-    set(CXX_COMPILER clang++-10)
+    # Default to clang-11 when building SDK.
+    set(C_COMPILER clang-11)
+    set(CXX_COMPILER clang++-11)
   else ()
     # Default to clang when building enclave applications.
     set(C_COMPILER clang)
