@@ -27,14 +27,21 @@ set(SYMCRYPT_NAME
 set(SYMCRYPT_LINK_NAME
     "libsymcrypt.so.${SYMCRYPT_VERSION_MAJOR}"
     CACHE INTERNAL "")
+# Specify the installed Clang version on Windows
+# This will not affect the clang version used to build OpenEnclave
+set(SYMCRYPT_WIN_CLANG_VERSION
+    "11.1.0"
+    CACHE
+      STRING
+      "Specify installed Clang version on Windows, that will only be used to build symcrypt_engine."
+)
 
 # Download the SymCrypt release package at config-time
 # The SymCrypt OpenSSL engine build requires the SymCrypt header
 include(FetchContent)
 FetchContent_Declare(
   symcrypt_package
-  SOURCE_DIR
-  ${CMAKE_CURRENT_BINARY_DIR}/SymCrypt
+  SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/SymCrypt
   URL https://github.com/microsoft/SymCrypt/releases/download/v101.3.0/symcrypt_AMD64_oe_full_v101.3.0-31e06ae.tgz
   URL_HASH
     SHA256=53fcbdbae3925b82e880c102969dc4c646b36dffbca602d2f85f967d54e958e7)
@@ -87,11 +94,8 @@ if (UNIX)
       "/usr/lib/llvm-${CLANG_MAJOR_VERSION}/lib/clang/${CMAKE_C_COMPILER_VERSION}/include"
   )
 elseif (WIN32)
-  # Update the string when the supported clang version is changed
-  set(CLANG_VERSION "10.0.0")
-
   set(CLANG_INTRINSIC_HEADERS_SEARCH_PATH
-      "C:/Program Files/LLVM/lib/clang/${CLANG_VERSION}/include")
+      "C:/Program Files/LLVM/lib/clang/${SYMCRYPT_WIN_CLANG_VERSION}/include")
 endif ()
 
 # Clang major version should match LLVM version
