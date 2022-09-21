@@ -53,10 +53,10 @@ if (UNIX)
     # the CMAKE_C_COMPILER cmake variable has been passed to cmake, use the C compiler
     # that has been specified. Otherwise, prefer clang. Same for C++ compiler.
     if (NOT DEFINED ENV{CC} AND NOT DEFINED CMAKE_C_COMPILER)
-      find_program(CMAKE_C_COMPILER clang-10 clang)
+      find_program(CMAKE_C_COMPILER clang-11 clang-10 clang)
     endif ()
     if (NOT DEFINED ENV{CXX} AND NOT DEFINED CMAKE_CXX_COMPILER)
-      find_program(CMAKE_CXX_COMPILER clang++-10 clang++)
+      find_program(CMAKE_CXX_COMPILER clang++-11 clang++-10 clang++)
     endif ()
   endif ()
 endif ()
@@ -343,9 +343,10 @@ if (CODE_COVERAGE)
     message(FATAL_ERROR "Code coverage is currently only supported by clang.")
   else ()
     if (CMAKE_C_COMPILER_VERSION VERSION_LESS 10 OR CMAKE_C_COMPILER_VERSION
-                                                    VERSION_GREATER 10.99)
+                                                    VERSION_GREATER 11.99)
       message(
-        WARNING "Code coverage may not work with clang versions other than 10.")
+        WARNING
+          "Code coverage may not work with clang versions other than 10 or 11.")
     endif ()
   endif ()
 
@@ -370,8 +371,8 @@ if (CODE_COVERAGE)
   add_custom_command(
     TARGET code_coverage
     COMMAND
-      lcov -d ${CMAKE_BINARY_DIR} --gcov-tool
-      ${OE_SCRIPTSDIR}/code-coverage/llvm-gcov -c -o cov.info --rc
+      lcov -c -d ${CMAKE_BINARY_DIR} --gcov-tool
+      ${OE_SCRIPTSDIR}/code-coverage/llvm-gcov -o cov.info --rc
       lcov_branch_coverage=1
     COMMAND lcov -a base.info -a cov.info -o cov_total.info --rc
             lcov_branch_coverage=1

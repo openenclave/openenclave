@@ -18,3 +18,10 @@ The following changes are made to the source to accommodate TEEs (see patches/ f
 - Replace `mmap` and `ummap` (in `map_file()` and `unmap_file()`)
   - `mmap` is not supported by OE. Use `fread()` instead.
   - Alternatively, OE can support `mmap` only for code coverage testing (if there is a performance gap). Note that `mmap` implies using the host memory.
+
+### How to generate patch
+The modification is stored in `patches/GCDAProfiling.c.patch`, to generate this file, first download the original, unmodified file from the 3rd party repo, then create a new file with relevant modification, and use `git diff` to generate the patch.
+
+For example:
+
+`git diff --no-index compiler-rt/lib/profile/GCDAProfiling.c compiler-rt/lib/profile/GCDAProfiling.new.c > GCDAProfiling.c.patch`

@@ -2454,7 +2454,6 @@
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.types/byteops/xor.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.types/max_align_t.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.types/null.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/language.support/support.types/nullptr_t.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.types/nullptr_t_integral_cast.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.types/offsetof.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.types/ptrdiff_t.pass.cpp
