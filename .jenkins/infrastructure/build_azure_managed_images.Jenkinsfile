@@ -38,7 +38,9 @@ def buildLinuxManagedImage(String os_type, String version, String managed_image_
                 "MANAGED_IMAGE_NAME_ID=${managed_image_name_id}",
                 "GALLERY_IMAGE_VERSION=${gallery_image_version}",
                 "RESOURCE_GROUP=${params.RESOURCE_GROUP}",
-                "GALLERY_NAME=${params.GALLERY_NAME}"]) {
+                "GALLERY_NAME=${params.GALLERY_NAME}",
+                "OS_TYPE=${os_type}",
+                "OS_VERSION=${version}"]) {
             stage("Run Packer Job") {
                 timeout(GLOBAL_TIMEOUT_MINUTES) {
                     withCredentials([
@@ -58,12 +60,12 @@ def buildLinuxManagedImage(String os_type, String version, String managed_image_
                             az account set -s ${SUBSCRIPTION_ID}
                         '''
                         retry(5) {
-                            sh """#!/bin/bash
+                            sh '''#!/bin/bash
                                 packer build -force \
-                                    -var-file=${WORKSPACE}/.jenkins/infrastructure/provision/templates/packer/azure_managed_image/${os_type}-${version}-variables.json \
+                                    -var-file=${WORKSPACE}/.jenkins/infrastructure/provision/templates/packer/azure_managed_image/${OS_TYPE}-${OS_VERSION}-variables.json \
                                     -var "use_azure_cli_auth=true" \
-                                    ${WORKSPACE}/.jenkins/infrastructure/provision/templates/packer/azure_managed_image/packer-${os_type}.json
-                            """
+                                    ${WORKSPACE}/.jenkins/infrastructure/provision/templates/packer/azure_managed_image/packer-${OS_TYPE}.json
+                            '''
                         }
                     }
                 }
