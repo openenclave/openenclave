@@ -10,7 +10,7 @@ if (BUILD_ENCLAVES)
     COMMAND openssl genrsa -out oeutil_enc_private.pem -3 3072
     COMMAND openssl rsa -in oeutil_enc_private.pem -pubout -out
             oeutil_enc_public.pem
-    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/gen_pubkey_header.sh oeutil_enc_pubkey.h
+    COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/gen_pubkey_header.sh oeutil_enc_pubkey.h
             oeutil_enc_public.pem
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
