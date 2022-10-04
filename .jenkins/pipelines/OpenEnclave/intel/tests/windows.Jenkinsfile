@@ -19,7 +19,6 @@ properties(
                 string(name: "REPOSITORY", defaultValue: "openenclave/openenclave"),
                 string(name: "BRANCH_NAME", defaultValue: "master"),
                 string(name: "DCAP_URL", description: "Intel DCAP Package URL"),
-                string(name: "PSW_URL", description: "Intel PSW Package URL"),
                 string(name: "OECI_LIB_VERSION", defaultValue: "master", description: 'Version of OE Libraries to use'),
                 string(name: "OE_RELEASE_VERSION", description: "Open Enclave Release Version"),
                 choice(name: "OE_PACKAGE", choices: ["open-enclave", "open-enclave-hostverify"], description: "Open Enclave package type to install"),
@@ -29,6 +28,6 @@ properties(
     ]
 )
 
-parallel "Windows Server 2019": { tests.TestIntelRCs(globalvars.AGENTS_LABELS["acc-win2019-dcap-us"], params.OE_RELEASE_VERSION, params.OE_PACKAGE, params.RELEASE_SOURCE, false, params.DCAP_URL, params.PSW_URL, "-SkipVSInstall") }
+parallel "Windows Server 2019": { tests.TestIntelRCs(globalvars.AGENTS_LABELS["acc-win2019-dcap-us"], params.OE_RELEASE_VERSION, params.OE_PACKAGE, params.RELEASE_SOURCE, false, params.DCAP_URL, "-SkipVSInstall") }
 // TODO: enable when we have vanilla Windows ACC image
 //       "Windows Server 2019 - Upgrade": { tests.TestIntelRCs(globalvars.AGENTS_LABELS["acc-win2019-dcap"], params.OE_RELEASE_VERSION, params.OE_PACKAGE, params.RELEASE_SOURCE, false, params.DCAP_URL, params.PSW_URL, true) }
