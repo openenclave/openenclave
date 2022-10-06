@@ -238,7 +238,6 @@ static void _test_generate_from_private()
         sizeof(private_raw),
         &private_key,
         &public_key);
-    OE_TEST(r == OE_OK);
 
     /* Test that signing works with ECC key. */
     _verify_generated_keys(&private_key, &public_key);

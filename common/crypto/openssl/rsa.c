@@ -32,6 +32,7 @@ static void RSA_get0_key(
 OE_STATIC_ASSERT(sizeof(oe_public_key_t) <= sizeof(oe_rsa_public_key_t));
 OE_STATIC_ASSERT(sizeof(oe_private_key_t) <= sizeof(oe_rsa_private_key_t));
 
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 static oe_result_t _private_key_write_pem_callback(BIO* bio, EVP_PKEY* pkey)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -52,7 +53,44 @@ done:
 
     return result;
 }
+#else
+static oe_result_t _private_key_write_pem_callback(BIO* bio, EVP_PKEY* pkey)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    unsigned char* buffer = NULL;
+    size_t bytes_written = 0;
+    OSSL_ENCODER_CTX* ctx = NULL;
 
+    ctx = OSSL_ENCODER_CTX_new_for_pkey(
+        pkey, EVP_PKEY_KEYPAIR, "PEM", NULL, NULL);
+
+    if (!ctx)
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    if (!OSSL_ENCODER_to_data(ctx, &buffer, &bytes_written))
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    if (buffer == NULL || bytes_written <= 0)
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    if (!BIO_write(bio, buffer, (int)bytes_written))
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    result = OE_OK;
+
+done:
+
+    if (ctx)
+        OSSL_ENCODER_CTX_free(ctx);
+
+    if (buffer)
+        OPENSSL_free(buffer);
+
+    return result;
+}
+#endif
+
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 static oe_result_t _get_public_key_get_modulus_or_exponent(
     const oe_public_key_t* public_key,
     uint8_t* buffer,
@@ -121,6 +159,73 @@ done:
 
     return result;
 }
+#else
+static oe_result_t _get_public_key_get_modulus_or_exponent(
+    const oe_public_key_t* public_key,
+    uint8_t* buffer,
+    size_t* buffer_size,
+    bool get_modulus)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    size_t required_size = 0;
+    const BIGNUM* bn = NULL;
+    BIGNUM* e = NULL;
+    BIGNUM* n = NULL;
+
+    /* Check for invalid parameters */
+    if (!public_key || !buffer_size)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* If buffer is null, then buffer_size must be zero */
+    if (!buffer && *buffer_size != 0)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Select modulus or exponent */
+    EVP_PKEY_get_bn_param(public_key->pkey, OSSL_PKEY_PARAM_RSA_N, &n);
+    EVP_PKEY_get_bn_param(public_key->pkey, OSSL_PKEY_PARAM_RSA_E, &e);
+    bn = get_modulus ? n : e;
+
+    /* Determine the required size in bytes */
+    {
+        int n = BN_num_bytes(bn);
+
+        if (n <= 0)
+            OE_RAISE(OE_CRYPTO_ERROR);
+
+        /* Add one leading byte for the leading zero byte */
+        required_size = (size_t)n;
+    }
+
+    /* If buffer is null or not big enough */
+    if (!buffer || (*buffer_size < required_size))
+    {
+        *buffer_size = required_size;
+
+        if (buffer)
+            OE_RAISE(OE_BUFFER_TOO_SMALL);
+        /* If buffer is null, this call is intented to get the correct
+         * buffer_size so no need to trace OE_BUFFER_TOO_SMALL */
+        else
+            OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
+    }
+
+    /* Copy key bytes to the caller's buffer */
+    if (!BN_bn2bin(bn, buffer))
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    *buffer_size = required_size;
+
+    result = OE_OK;
+
+done:
+    if (e)
+        BN_free(e);
+    if (n)
+        BN_free(n);
+
+    return result;
+}
+#endif
 
 static oe_result_t _public_key_get_modulus(
     const oe_public_key_t* public_key,
@@ -140,6 +245,7 @@ static oe_result_t _public_key_get_exponent(
         public_key, buffer, buffer_size, false);
 }
 
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 static oe_result_t _public_key_equal(
     const oe_public_key_t* public_key1,
     const oe_public_key_t* public_key2,
@@ -186,6 +292,37 @@ done:
 
     return result;
 }
+#else
+static oe_result_t _public_key_equal(
+    const oe_public_key_t* public_key1,
+    const oe_public_key_t* public_key2,
+    bool* equal)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    if (equal)
+        *equal = false;
+
+    /* Reject bad parameters */
+    if (!oe_public_key_is_valid(public_key1, OE_RSA_PUBLIC_KEY_MAGIC) ||
+        !oe_public_key_is_valid(public_key2, OE_RSA_PUBLIC_KEY_MAGIC) || !equal)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (EVP_PKEY_get_id(public_key1->pkey) != EVP_PKEY_RSA ||
+        EVP_PKEY_get_id(public_key2->pkey) != EVP_PKEY_RSA)
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    if (EVP_PKEY_eq(public_key1->pkey, public_key2->pkey))
+    {
+        *equal = true;
+    }
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+#endif
 
 void oe_rsa_public_key_init(oe_rsa_public_key_t* public_key, EVP_PKEY* pkey)
 {

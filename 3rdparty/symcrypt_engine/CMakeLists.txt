@@ -61,6 +61,22 @@ add_enclave_library(
   ${SYMCRYPT_ENGINE_DIR}/src/scossl_rsapss.c
   ${SYMCRYPT_ENGINE_DIR}/src/scossl_tls1prf.c)
 
+set_source_files_properties(
+  ${SYMCRYPT_ENGINE_DIR}/src/scossl.c
+  ${SYMCRYPT_ENGINE_DIR}/src/scossl_ciphers.c
+  ${SYMCRYPT_ENGINE_DIR}/src/scossl_dh.c
+  ${SYMCRYPT_ENGINE_DIR}/src/scossl_digests.c
+  ${SYMCRYPT_ENGINE_DIR}/src/scossl_dsa.c
+  ${SYMCRYPT_ENGINE_DIR}/src/scossl_ecc.c
+  ${SYMCRYPT_ENGINE_DIR}/src/scossl_helpers.c
+  ${SYMCRYPT_ENGINE_DIR}/src/scossl_hkdf.c
+  ${SYMCRYPT_ENGINE_DIR}/src/scossl_pkey_meths.c
+  ${SYMCRYPT_ENGINE_DIR}/src/scossl_rand.c
+  ${SYMCRYPT_ENGINE_DIR}/src/scossl_rsa.c
+  ${SYMCRYPT_ENGINE_DIR}/src/scossl_rsapss.c
+  ${SYMCRYPT_ENGINE_DIR}/src/scossl_tls1prf.c
+  PROPERTIES COMPILE_FLAGS "-Wno-deprecated-declarations -Wno-incompatible-pointer-types-discards-qualifiers")
+
 enclave_compile_definitions(oesymcryptengine PRIVATE -D_AMD64_)
 
 if (uppercase_CMAKE_BUILD_TYPE STREQUAL "DEBUG")

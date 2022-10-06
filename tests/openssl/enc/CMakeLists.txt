@@ -29,13 +29,19 @@ add_enclave_library(
   # Ensure that openssl_t.h is generated.
   openssl_t.h)
 
+enclave_compile_definitions(openssl-support PRIVATE __STDC_NO_ATOMICS__)
+
 enclave_compile_options(
   openssl-support PRIVATE -Wno-shorten-64-to-32 -Wno-sign-conversion
   -Wno-conversion -Wno-unused-parameter)
 
 enclave_link_libraries(openssl-support PRIVATE oelibcxx oelibc oe_includes)
 enclave_include_directories(
-  openssl-support PRIVATE ${OPENSSL_DIR}/include
+  openssl-support
+  PRIVATE
+  ${OPENSSL_DIR}
+  ${OPENSSL_DIR}/include
+  ${OPENSSL_DIR}/apps/include
   ${CMAKE_BINARY_DIR}/3rdparty/openssl/build/include
   ${CMAKE_CURRENT_BINARY_DIR})
 
@@ -103,7 +109,11 @@ enclave_compile_definitions(openssl-common PRIVATE OECRYPTO_OPENSSL_VER=1)
 
 enclave_link_libraries(openssl-common PRIVATE oelibc oe_includes)
 enclave_include_directories(
-  openssl-common PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${OPENSSL_DIR}/include
+  openssl-common
+  PRIVATE
+  ${CMAKE_CURRENT_BINARY_DIR}
+  ${OPENSSL_DIR}/include
+  ${OPENSSL_DIR}/apps/include
   ${OPENSSL_DIR}/test/testutil
   ${CMAKE_BINARY_DIR}/3rdparty/openssl/build/include)
 
@@ -333,6 +343,10 @@ function (add_openssl_test_enc NAME BUILDTEST CRYPTO_LIB)
 
   if ("${NAME}" STREQUAL "rsa_sp800_56b_test")
     list(APPEND INCLUDE_PATHS ${TEST_OPENSSL_DIR}/crypto/rsa)
+  endif ()
+
+  if ("${NAME}" STREQUAL "rsa_sp800_56b_test")
+    list(APPEND INCLUDE_PATHS ${OPENSSL_DIR}/crypto/rsa)
   endif ()
 
   enclave_include_directories(openssl-${TEST_NAME}_enc PRIVATE ${INCLUDE_PATHS})

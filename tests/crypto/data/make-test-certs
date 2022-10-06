@@ -115,7 +115,15 @@ sleep 1
 
 # Create Leaf certificate signed by the Root CA
 echo 'Creating Leaf certificates signed by the root CA ...'
-openssl genrsa -out leaf.key.pem
+version=$(openssl version | cut -d' ' -f2)
+major_version=$(echo $version | cut -d'.' -f1)
+if [[ $major_version -ge 3 ]]; then
+    # OpenSSL 3 or newer
+    openssl genrsa -out leaf.key.pem -traditional
+else
+    # OpenSSL 1.x
+    openssl genrsa -out leaf.key.pem
+fi
 openssl req -new -key leaf.key.pem -out leaf.csr -subj "${TEST_LEAF_DN}"
 openssl x509 -req -in leaf.csr -CA root.cert.pem -CAkey root.key.pem -CAcreateserial -out leaf.cert.pem -days 3650
 

@@ -276,6 +276,16 @@ function (add_openssl_test_supported NAME OPENSSL3)
     return()
   endif ()
 
+  if ("${name}" STREQUAL algorithmid_test)
+    add_openssl_test(
+      "${name}-1" "${name}" "-x509" ${OPENSSL_TEST_DIR}/certs/ee-cert.pem
+      ${OPENSSL_TEST_DIR}/certs/ca-cert.pem)
+    add_openssl_test(
+      "${name}-2" "${name}" "-x509" ${OPENSSL_TEST_DIR}/certs/ee-cert2.pem
+      ${OPENSSL_TEST_DIR}/certs/ca-cert2.pem)
+    continue()
+  endif ()
+
   if ("${name}" STREQUAL asynciotest)
     add_openssl_test(
       OPENSSL3 "${name}" "${name}" ${OPENSSL_APPS_DIR}/server.pem
@@ -289,6 +299,13 @@ function (add_openssl_test_supported NAME OPENSSL3)
     add_openssl_test(OPENSSL3 "${name}-der" "${name}"
                      ${OPENSSL_RECIPE_DIR}/65-test_cmp_msg_data/pkcs10.der)
     return()
+  endif ()
+
+  if ("${name}" STREQUAL bio_readbuffer_test)
+    add_openssl_test("${name}-pem" "${name}" ${OPENSSL_APPS_DIR}/server.pem)
+    add_openssl_test("${name}-der" "${name}"
+                     ${OPENSSL_RECIPE_DIR}/65-test_cmp_msg_data/pkcs10.der)
+    continue()
   endif ()
 
   if ("${name}" STREQUAL clienthellotest)
@@ -366,6 +383,73 @@ function (add_openssl_test_supported NAME OPENSSL3)
       "default"
       ${OPENSSL_TEST_DIR}/default.cnf)
     return()
+  endif ()
+
+  if ("${name}" STREQUAL cmp_ctx_test)
+    add_openssl_test("${name}" "${name}" ${OPENSSL_TEST_DIR}/certs/ee-cert.pem)
+    continue()
+  endif ()
+
+  if ("${name}" STREQUAL cmp_msg_test)
+    add_openssl_test(
+      "${name}"
+      "${name}"
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_msg_data/new.key
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_msg_data/server.crt
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_msg_data/pkcs10.der
+      "default"
+      ${OPENSSL_TEST_DIR}/default.cnf)
+    continue()
+  endif ()
+
+  if ("${name}" STREQUAL cmp_protect_test)
+    add_openssl_test(
+      "${name}"
+      "${name}"
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_protect_data/server.pem
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_protect_data/IR_protected.der
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_protect_data/IR_unprotected.der
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_protect_data/IP_PBM.der
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_protect_data/server.crt
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_protect_data/server.pem
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_protect_data/EndEntity1.crt
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_protect_data/EndEntity2.crt
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_protect_data/Root_CA.crt
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_protect_data/Intermediate_CA.crt
+      "default"
+      ${OPENSSL_TEST_DIR}/default.cnf)
+    continue()
+  endif ()
+
+  if ("${name}" STREQUAL cmp_server_test)
+    add_openssl_test(
+      "${name}" "${name}"
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_server_data/CR_protected_PBM_1234.der
+      "default" ${OPENSSL_TEST_DIR}/default.cnf)
+    continue()
+  endif ()
+
+  if ("${name}" STREQUAL cmp_vfy_test)
+    add_openssl_test(
+      "${name}"
+      "${name}"
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/server.crt
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/client.crt
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/EndEntity1.crt
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/EndEntity2.crt
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/Root_CA.crt
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/Intermediate_CA.crt
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/IR_protected.der
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/IR_unprotected.der
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/IP_waitingStatus_PBM.der
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/IR_rmprotection.der
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/insta.cert.pem
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/insta_ca.cert.pem
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/IR_protected_0_extraCerts.der
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/IR_protected_2_extraCerts.der
+      "default"
+      ${OPENSSL_TEST_DIR}/default.cnf)
+    continue()
   endif ()
 
   if ("${name}" STREQUAL cmsapitest)
@@ -797,6 +881,13 @@ function (add_openssl_test_supported NAME OPENSSL3)
       OPENSSL3 "${name}" "${name}" "-config" "${OPENSSL_TEST_DIR}/default.cnf"
       ${OPENSSL_RECIPE_DIR}/90-test_threads_data)
     return()
+  endif ()
+
+  if ("${name}" STREQUAL threadstest)
+    add_openssl_test(
+      "${name}" "${name}" "-config" "${OPENSSL_TEST_DIR}/default.cnf"
+      ${OPENSSL_RECIPE_DIR}/90-test_threads_data)
+    continue()
   endif ()
 
   if ("${name}" STREQUAL tls13ccstest)

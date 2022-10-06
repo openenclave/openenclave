@@ -169,6 +169,13 @@ oe_result_t oe_ec_generate_key_pair_from_private(
     oe_ec_private_key_t* private_key,
     oe_ec_public_key_t* public_key);
 
+oe_result_t oe_ec_generate_key_pair_from_private_old(
+    oe_ec_type_t curve,
+    const uint8_t* private_key_buf,
+    size_t private_key_buf_size,
+    oe_ec_private_key_t* private_key,
+    oe_ec_public_key_t* public_key);
+
 /**
  * Determine whether two EC public keys are identical.
  *
