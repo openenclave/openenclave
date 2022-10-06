@@ -157,22 +157,14 @@ static oe_result_t _public_key_equal(
         !oe_public_key_is_valid(public_key2, OE_RSA_PUBLIC_KEY_MAGIC) || !equal)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (!(rsa1 = EVP_PKEY_get1_RSA(public_key1->pkey)))
-        OE_RAISE(OE_INVALID_PARAMETER);
+    if (EVP_PKEY_get_id(public_key1->pkey) != EVP_PKEY_RSA ||
+        EVP_PKEY_get_id(public_key2->pkey) != EVP_PKEY_RSA)
+        OE_RAISE(OE_CRYPTO_ERROR);
 
-    if (!(rsa2 = EVP_PKEY_get1_RSA(public_key2->pkey)))
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    const BIGNUM* e1;
-    const BIGNUM* e2;
-    const BIGNUM* n1;
-    const BIGNUM* n2;
-    RSA_get0_key(rsa1, &n1, &e1, NULL);
-    RSA_get0_key(rsa2, &n2, &e2, NULL);
-
-    /* Compare modulus and exponent */
-    if (BN_cmp(n1, n2) == 0 && BN_cmp(e1, e2) == 0)
+    if (EVP_PKEY_eq(public_key1->pkey, public_key2->pkey))
+    {
         *equal = true;
+    }
 
     result = OE_OK;
 

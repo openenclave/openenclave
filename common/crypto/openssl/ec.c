@@ -46,7 +46,8 @@ static oe_result_t _private_key_write_pem_callback(BIO* bio, EVP_PKEY* pkey)
     oe_result_t result = OE_UNEXPECTED;
     EC_KEY* ec = NULL;
 
-    if (!(ec = EVP_PKEY_get1_EC_KEY(pkey)))
+    // if (!(ec = EVP_PKEY_get1_EC_KEY(pkey)))
+    if (EVP_PKEY_get_id(pkey) != EVP_PKEY_EC)
         OE_RAISE(OE_CRYPTO_ERROR);
 
     if (!PEM_write_bio_ECPrivateKey(bio, ec, NULL, NULL, 0, 0, NULL))
@@ -68,8 +69,8 @@ static oe_result_t _public_key_equal(
     bool* equal)
 {
     oe_result_t result = OE_UNEXPECTED;
-    EC_KEY* ec1 = NULL;
-    EC_KEY* ec2 = NULL;
+    // EC_KEY* ec1 = NULL;
+    // EC_KEY* ec2 = NULL;
 
     if (equal)
         *equal = false;
@@ -80,19 +81,11 @@ static oe_result_t _public_key_equal(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     {
-        ec1 = EVP_PKEY_get1_EC_KEY(public_key1->pkey);
-        ec2 = EVP_PKEY_get1_EC_KEY(public_key2->pkey);
-        const EC_GROUP* group1 = EC_KEY_get0_group(ec1);
-        const EC_GROUP* group2 = EC_KEY_get0_group(ec2);
-        const EC_POINT* point1 = EC_KEY_get0_public_key(ec1);
-        const EC_POINT* point2 = EC_KEY_get0_public_key(ec2);
-
-        if (!ec1 || !ec2 || !group1 || !group2 || !point1 || !point2)
+        if (EVP_PKEY_get_id(public_key1->pkey) != EVP_PKEY_EC ||
+            EVP_PKEY_get_id(public_key2->pkey) != EVP_PKEY_EC)
             OE_RAISE(OE_CRYPTO_ERROR);
 
-        /* Compare group and public key point */
-        if (EC_GROUP_cmp(group1, group2, NULL) == 0 &&
-            EC_POINT_cmp(group1, point1, point2, NULL) == 0)
+        if (EVP_PKEY_eq(public_key1->pkey, public_key2->pkey))
         {
             *equal = true;
         }
@@ -101,13 +94,6 @@ static oe_result_t _public_key_equal(
     result = OE_OK;
 
 done:
-
-    if (ec1)
-        EC_KEY_free(ec1);
-
-    if (ec2)
-        EC_KEY_free(ec2);
-
     return result;
 }
 
@@ -343,10 +329,14 @@ oe_result_t oe_ec_public_key_from_coordinates(
     int nid;
     EC_KEY* ec = NULL;
     EVP_PKEY* pkey = NULL;
+    EVP_PKEY_CTX* ctx = NULL;
     EC_GROUP* group = NULL;
     EC_POINT* point = NULL;
+    // BN_CTX* bn_ctx = NULL;
     BIGNUM* x = NULL;
     BIGNUM* y = NULL;
+    OSSL_PARAM_BLD* param_bld = NULL;
+    OSSL_PARAM* params = NULL;
 
     if (public_key)
         oe_secure_zero_fill(public_key, sizeof(oe_ec_public_key_t));
@@ -356,7 +346,7 @@ oe_result_t oe_ec_public_key_from_coordinates(
     oe_crypto_initialize();
 #endif
 
-    /* Reject invalid parameters */
+    /* Reject invalid parameter */
     if (!public_key || !x_data || !x_size || x_size > OE_INT_MAX || !y_data ||
         !y_size || y_size > OE_INT_MAX)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -370,14 +360,28 @@ oe_result_t oe_ec_public_key_from_coordinates(
         if (!(group = EC_GROUP_new_by_curve_name(nid)))
             OE_RAISE(OE_CRYPTO_ERROR);
 
-        if (!(ec = EC_KEY_new()))
-            OE_RAISE(OE_CRYPTO_ERROR);
+        // if (!(ec = EC_KEY_new()))
+        //     OE_RAISE(OE_CRYPTO_ERROR);
 
-        if (!(EC_KEY_set_group(ec, group)))
-            OE_RAISE(OE_CRYPTO_ERROR);
+        // if (!(EC_KEY_set_group(ec, group)))
+        //     OE_RAISE(OE_CRYPTO_ERROR);
 
+        // Create new
         if (!(point = EC_POINT_new(group)))
             OE_RAISE(OE_CRYPTO_ERROR);
+
+        // if (!EC_KEY_set_public_key(ec, point))
+        //     OE_RAISE(OE_CRYPTO_ERROR);
+
+        if (!(param_bld = OSSL_PARAM_BLD_new()))
+            OE_RAISE(OE_CRYPTO_ERROR);
+
+        if (!OSSL_PARAM_BLD_push_utf8_string(
+                param_bld, "group", OBJ_nid2sn(nid), 0))
+            OE_RAISE(OE_CRYPTO_ERROR);
+
+        // if (!(bn_ctx = BN_CTX_new()))
+        //     OE_RAISE(OE_CRYPTO_ERROR);
 
         if (!(x = BN_new()) || !(y = BN_new()))
             OE_RAISE(OE_CRYPTO_ERROR);
@@ -388,26 +392,47 @@ oe_result_t oe_ec_public_key_from_coordinates(
         if (!(BN_bin2bn(y_data, (int)y_size, y)))
             OE_RAISE(OE_CRYPTO_ERROR);
 
-        if (!EC_POINT_set_affine_coordinates_GFp(group, point, x, y, NULL))
+        if (!EC_POINT_set_affine_coordinates(group, point, x, y, NULL))
             OE_RAISE(OE_CRYPTO_ERROR);
 
-        if (!EC_KEY_set_public_key(ec, point))
+        size_t bufsize = EC_POINT_point2oct(
+            group, point, POINT_CONVERSION_UNCOMPRESSED, NULL, 256, NULL);
+        unsigned char pub_data[bufsize];
+        if (!EC_POINT_point2oct(
+                group,
+                point,
+                POINT_CONVERSION_UNCOMPRESSED,
+                &pub_data[0],
+                bufsize,
+                NULL))
+            OE_RAISE(OE_CRYPTO_ERROR);
+
+        if (OSSL_PARAM_BLD_push_octet_string(
+                param_bld, "pub", pub_data, sizeof(pub_data)))
+            OE_RAISE(OE_CRYPTO_ERROR);
+
+        params = OSSL_PARAM_BLD_to_param(param_bld);
+
+        ctx = EVP_PKEY_CTX_new_from_name(NULL, "EC", NULL);
+        if (ctx == NULL || params == NULL || EVP_PKEY_fromdata_init(ctx) <= 0 ||
+            EVP_PKEY_fromdata(ctx, &pkey, EVP_PKEY_PUBLIC_KEY, params) <= 0)
+
             OE_RAISE(OE_CRYPTO_ERROR);
     }
 
     /* Create the PKEY public key wrapper */
     {
-        /* Create the public key structure */
-        if (!(pkey = EVP_PKEY_new()))
-            OE_RAISE(OE_CRYPTO_ERROR);
+        // /* Create the public key structure */
+        // if (!(pkey = EVP_PKEY_new()))
+        //     OE_RAISE(OE_CRYPTO_ERROR);
 
-        /* Initialize the public key from the generated key pair */
-        {
-            if (!EVP_PKEY_assign_EC_KEY(pkey, ec))
-                OE_RAISE(OE_CRYPTO_ERROR);
+        // /* Initialize the public key from the generated key pair */
+        // {
+        //     if (!EVP_PKEY_assign_EC_KEY(pkey, ec))
+        //         OE_RAISE(OE_CRYPTO_ERROR);
 
-            ec = NULL;
-        }
+        //     ec = NULL;
+        // }
 
         /* Initialize the public key */
         {
@@ -420,14 +445,17 @@ oe_result_t oe_ec_public_key_from_coordinates(
 
 done:
 
-    if (ec)
-        EC_KEY_free(ec);
+    // if (ec)
+    //     EC_KEY_free(ec);
 
     if (group)
         EC_GROUP_free(group);
 
     if (pkey)
         EVP_PKEY_free(pkey);
+
+    if (ctx)
+        EVP_PKEY_CTX_free(ctx);
 
     if (x)
         BN_free(x);
@@ -437,6 +465,12 @@ done:
 
     if (point)
         EC_POINT_free(point);
+
+    if (params)
+        OSSL_PARAM_free(params);
+
+    if (param_bld)
+        OSSL_PARAM_BLD_free(param_bld);
 
     return result;
 }
