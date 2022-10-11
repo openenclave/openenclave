@@ -3,4 +3,4 @@
 
 ---
 java_packages:
-  - "openjdk-8-jre"
+  - "openjdk-11-jre-headless"
