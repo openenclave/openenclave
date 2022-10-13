@@ -386,7 +386,7 @@ def ACCHostVerificationPackageTest(String version, String build_type) {
                             copy tests\\host_verify\\host\\*.bin ${WORKSPACE}\\samples\\host_verify
                             if exist C:\\oe (rmdir C:\\oe)
                             nuget.exe install open-enclave.OEHOSTVERIFY -Source ${WORKSPACE}\\build -OutputDirectory C:\\oe -ExcludeVersion
-                            xcopy /E C:\\oe\\open-enclave.OEHOSTVERIFY\\openenclave C:\\openenclave\\
+                            xcopy /E C:\\oe\\open-enclave.OEHOSTVERIFY\\OEHOSTVERIFY\\openenclave C:\\openenclave\\
                             pushd ${WORKSPACE}\\samples\\host_verify
                             if not exist build\\ (mkdir build)
                             cd build
