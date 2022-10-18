@@ -7,8 +7,8 @@ Param(
     [string]$GitHash = '1966761AD2C9E4CBD38F9E583B1125949B011A5A250A99D65E9BB21958E6EF8B',
     [string]$OpenSSLURL = 'https://oejenkins.blob.core.windows.net/oejenkins/openssl.1.1.1579.74.nupkg',
     [string]$OpenSSLHash = '82678FC7C71CBACA420BC869A1938BC80F2876148A5870D46B4C9A746F6BCEB6',
-    [string]$SevenZipURL = 'https://www.7-zip.org/a/7z1806-x64.msi',
-    [string]$SevenZipHash = 'F00E1588ED54DDF633D8652EB89D0A8F95BD80CCCFC3EED362D81927BEC05AA5',
+    [string]$SevenZipURL = 'https://7-zip.org/a/7z2201-x64.msi',
+    [string]$SevenZipHash = 'F4AFBA646166999D6090B5BEDDDE546450262DC595DDDEB62132DA70F70D14CA',
     # We skip the hash check for the vs_buildtools.exe file because it is regularly updated without a change to the URL, unfortunately.
     [string]$VSBuildToolsURL = 'https://aka.ms/vs/16/release/vs_buildtools.exe',
     [string]$VSBuildToolsHash = '',
