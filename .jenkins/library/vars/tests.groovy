@@ -415,13 +415,19 @@ def OEReleaseTest(String label, String release_version, String oe_package = "ope
     }
 }
 
-def TestIntelRCs(String label, String release_version, String oe_package = "open-enclave", String source = "GitHub", boolean lvi_mitigation = false, String dcap_url, String psw_url, String install_flags = "") {
+def TestIntelRCs(String label, String release_version, String oe_package = "open-enclave", String source = "GitHub", boolean lvi_mitigation = false, String dcap_url = "", String local_repository_name = "", String install_flags = "") {
     stage("Test Intel Drivers RCs ${label}") {
         node(label) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
-                helpers.dependenciesInstall(dcap_url, psw_url, install_flags)
+                def local_repository_path = ""
+                if (local_repository_name) {
+                    helpers.azureContainerDownload('intelreleasecandidates', local_repository_name, 'jenkins-private-intel-release-candidates')
+                    sh "tar xzf ${local_repository_name} --directory=${WORKSPACE}"
+                    local_repository_path = "${WORKSPACE}/sgx_debian_local_repo"
+                }
+                helpers.dependenciesInstall(dcap_url, local_repository_path, install_flags)
                 helpers.releaseInstall(release_version, oe_package, source)
                 helpers.TestSamplesCommand(lvi_mitigation, oe_package)
             }

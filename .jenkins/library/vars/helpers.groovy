@@ -283,25 +283,35 @@ def azureContainerDownload(String container_name, String file_pattern, String st
 /**
  * Install Open Enclave dependencies on host machine
  *
- * @param dcap_url      URL of DCAP package, leave blank to use default
- * @param psw_url       URL of PSW package, leave blank to use default
- * @param install_flags Linux: set Ansible environment variables,
- *                      Windows: set additional args for install-windows-prereqs.ps1 script
- * @param build_dir     String that is a path to the directory that contains CMakeList.txt
- *                      Can be relative to current working directory or an absolute path
+ * @param dcap_url        URL of DCAP package, leave blank to use default
+ * @param local_repo_path Local file path to the Intel SGX repository
+ * @param install_flags   Linux: set Ansible environment variables,
+ *                        Windows: set additional args for install-windows-prereqs.ps1 script
+ * @param build_dir       String that is a path to the directory that contains CMakeList.txt
+ *                        Can be relative to current working directory or an absolute path
  */
-def dependenciesInstall(String dcap_url = "", String psw_url = "", String install_flags = "", String build_dir = "${WORKSPACE}") {
+def dependenciesInstall(String dcap_url = "", local_repo_path = "", String install_flags = "", String build_dir = "${WORKSPACE}") {
     if(isUnix()) {
         sh """
             sudo bash ${build_dir}/scripts/ansible/install-ansible.sh
             cp ${WORKSPACE}/scripts/ansible/ansible.cfg ${WORKSPACE}/ansible.cfg
-            ansible-playbook ${build_dir}/scripts/ansible/oe-contributors-acc-setup.yml --extra-vars "intel_sgx_w_flc_driver_url=${dcap_url} intel_sgx1_driver_url=${psw_url} ${install_flags}"
-            apt list --installed | grep libsgx
             ${WaitForAptLock()}
             sudo apt install -y dkms
         """
+        if (local_repo_path) {
+            sh """
+                ansible-playbook ${build_dir}/scripts/ansible/oe-contributors-acc-setup.yml \
+                  --extra-vars "intel_sgx_apt_repository=file://${local_repo_path} intel_sgx_apt_repository_config=\'trusted=yes arch=amd64\' ${install_flags}"
+            """
+        } else {
+            sh """
+                ansible-playbook ${build_dir}/scripts/ansible/oe-contributors-acc-setup.yml --extra-vars "${install_flags}"
+            """
+        }
+        sh 'apt list --installed | grep libsgx'
+        sh 'ls -l /usr/lib/x86_64-linux-gnu | grep libsgx'
     } else {
-        if (dcap_url == "" || psw_url == "") {
+        if (dcap_url == "") {
             powershell """#Requires -RunAsAdministrator
                 ${build_dir}\\scripts\\install-windows-prereqs.ps1 -InstallPath C:\\oe_prereqs -LaunchConfiguration SGX1FLC -DCAPClientType None ${install_flags}
             """
