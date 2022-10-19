@@ -149,13 +149,6 @@ static oe_result_t _log_enclave_message(
     }
     else
     {
-        // Check if this message should be skipped
-        if (level > _active_log_level)
-        {
-            result = OE_OK;
-            goto done;
-        }
-
         if ((result = oe_log_ocall(level, message)) != OE_OK)
             goto done;
     }
@@ -176,6 +169,13 @@ oe_result_t oe_log(oe_log_level_t level, const char* fmt, ...)
 
     // Skip logging for non-debug-allowed enclaves
     if (!oe_is_enclave_debug_allowed())
+    {
+        result = OE_OK;
+        goto done;
+    }
+
+    // Check if this message should be skipped
+    if (level > _active_log_level)
     {
         result = OE_OK;
         goto done;
