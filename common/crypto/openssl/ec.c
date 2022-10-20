@@ -44,20 +44,21 @@ static int _get_nid(oe_ec_type_t ec_type)
 static oe_result_t _private_key_write_pem_callback(BIO* bio, EVP_PKEY* pkey)
 {
     oe_result_t result = OE_UNEXPECTED;
-    EC_KEY* ec = NULL;
-
-    if (!(ec = EVP_PKEY_get1_EC_KEY(pkey)))
+    unsigned char *buffer;
+    size_t bytes_written;
+    OSSL_ENCODER_CTX* ctx = OSSL_ENCODER_CTX_new_for_pkey(pkey, EVP_PKEY_KEYPAIR, "PEM", NULL, NULL);
+    if (!ctx)
         OE_RAISE(OE_CRYPTO_ERROR);
-
-    if (!PEM_write_bio_ECPrivateKey(bio, ec, NULL, NULL, 0, 0, NULL))
+    if (!OSSL_ENCODER_to_data(ctx, &buffer, &bytes_written))
         OE_RAISE(OE_CRYPTO_ERROR);
+    BIO_write(bio, buffer, bytes_written);
 
     result = OE_OK;
 
 done:
 
-    if (ec)
-        EC_KEY_free(ec);
+    if (ctx)
+        OSSL_ENCODER_CTX_free(ctx);
 
     return result;
 }
@@ -223,7 +224,7 @@ oe_result_t oe_ec_generate_key_pair_from_private(
     BIGNUM* priv = NULL;
     EC_POINT* point = NULL;
     uint8_t buffer[1024];
-    int keysize;
+    size_t keysize;
     OSSL_PARAM params[3];
 
     if (!private_key_buf || !private_key || !public_key ||
@@ -278,12 +279,12 @@ done:
         EC_POINT_free(point);
     if (group)
         EC_GROUP_free(group);
-    if (Ctx)
+    if (ctx)
         EVP_PKEY_CTX_free(ctx);
     if (public_pkey)
         EVP_PKEY_free(public_pkey);
     if (private_pkey)
-        EVP_PKEY_free(private_key);
+        EVP_PKEY_free(private_pkey);
 }
 
 oe_result_t oe_ec_public_key_equal(
@@ -500,7 +501,7 @@ done:
     if (bn != NULL)
         BN_clear_free(bn);
     if (group != NULL)
-        EC_GROUP_clear_free(group);
+        EC_GROUP_free(group);
     if (order != NULL)
         BN_clear_free(order);
     return is_valid;
