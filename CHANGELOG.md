@@ -34,6 +34,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 	- If you are running on a processor that is not affected by the CVE, you can turn off oeedger8r introduced mitigations by setting
 `bool oe_edger8r_secure_unserialize = false;` in enclave side code.
 
+### Security
+- Updated openssl to version 1.1.1q. Please refer to release log to find list of CVEs addressed by this version.
+
 [v0.18.1][v0.18.1_log]
 --------------
 ### Changed
