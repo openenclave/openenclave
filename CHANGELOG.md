@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Changed
 - Fix the incorrect behavior of pthread_mutex_init() and std::mutex such that they no longer create a recursive lock by default.
 
+### Security
+- Updated openssl to version 1.1.1q. Please refer to release log to find list of CVEs addressed by this version.
+
 [v0.18.1][v0.18.1_log]
 --------------
 ### Changed
