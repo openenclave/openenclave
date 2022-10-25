@@ -92,7 +92,7 @@ def ACCUpgradeTest(String label, String compiler, String version, List extra_cma
     }
 }
 
-def ACCContainerTest(String label, String version, List extra_cmake_args = []) {
+def ACCContainerTest(String label, String version, String compiler, List extra_cmake_args = []) {
     stage("${label} Container ${version} RelWithDebInfo, extra_cmake_args: ${extra_cmake_args}") {
         node("${label}") {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
@@ -106,7 +106,7 @@ def ACCContainerTest(String label, String version, List extra_cmake_args = []) {
                            ${helpers.ninjaBuildCommand(cmakeArgs)}
                            ${helpers.TestCommand()}
                            """
-                common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", "clang-10", task, runArgs)
+                common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", compiler, task, runArgs)
             }
         }
     }
@@ -141,7 +141,7 @@ def ACCPackageTest(String label, String version, List extra_cmake_args = []) {
     }
 }
 
-def ACCHostVerificationTest(String version, String build_type) {
+def ACCHostVerificationTest(String version, String build_type, String compiler) {
     /* Compile tests in SGX machine.  This will generate the necessary certs for the
     * host_verify test.
     */
@@ -170,7 +170,7 @@ def ACCHostVerificationTest(String version, String build_type) {
                            ../../../output/bin/oeutil gen --format sgx_ecdsa --quote-proc out --verify
                            popd
                            """
-                common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", "clang-10", task, runArgs)
+                common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", compiler, task, runArgs)
 
                 def ec_cert_created = fileExists 'build/tests/host_verify/host/sgx_cert_ec.der'
                 def rsa_cert_created = fileExists 'build/tests/host_verify/host/sgx_cert_rsa.der'
@@ -216,7 +216,7 @@ def ACCHostVerificationTest(String version, String build_type) {
                            ctest -R host_verify --output-on-failure --timeout ${globalvars.CTEST_TIMEOUT_SECONDS}
                            """
                 // Note: Include the commands to build and run the quote verification test above
-                common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", "clang-10", task, runArgs)
+                common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", compiler, task, runArgs)
             }
         }
     }
@@ -245,7 +245,7 @@ def ACCHostVerificationTest(String version, String build_type) {
     }
 }
 
-def ACCHostVerificationPackageTest(String version, String build_type) {
+def ACCHostVerificationPackageTest(String version, String build_type, String compiler) {
     /* Generate an SGX report and two SGX certificates for the host_verify sample.
     * Also generate and install the host_verify package. Then run the host_verify sample.
     */
@@ -274,7 +274,7 @@ def ACCHostVerificationPackageTest(String version, String build_type) {
                            ../../../output/bin/oeutil gen --format sgx_ecdsa --quote-proc out --verify
                            popd
                            """
-                common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", "clang-10", task, runArgs)
+                common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", compiler , task, runArgs)
 
                 def ec_cert_created = fileExists 'build/tests/host_verify/host/sgx_cert_ec.der'
                 def rsa_cert_created = fileExists 'build/tests/host_verify/host/sgx_cert_rsa.der'
@@ -341,7 +341,7 @@ def ACCHostVerificationPackageTest(String version, String build_type) {
                            popd
                            """
                 // Note: Include the commands to build and run the quote verification test above
-                common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", "clang-10", task, runArgs)
+                common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", compiler, task, runArgs)
             }
         }
     }
@@ -542,8 +542,8 @@ def windowsCrossPlatform(String label) {
 
 // Agnostic Linux
 
-def simulationContainerTest(String version, String build_type, List extra_cmake_args = []) {
-    stage("Simulation Ubuntu ${version} clang-10 ${build_type}, extra_cmake_args: ${extra_cmake_args}") {
+def simulationContainerTest(String version, String build_type, String compiler, List extra_cmake_args = []) {
+    stage("Simulation Ubuntu ${version} clang-${compiler} ${build_type}, extra_cmake_args: ${extra_cmake_args}") {
         node(globalvars.AGENTS_LABELS["ubuntu-nonsgx-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
@@ -560,14 +560,14 @@ def simulationContainerTest(String version, String build_type, List extra_cmake_
                            ctest --output-on-failure --timeout ${globalvars.CTEST_TIMEOUT_SECONDS}
                            """
                 withEnv(["OE_SIMULATION=1"]) {
-                    common.ContainerRun("oetools-${version}:${DOCKER_TAG}", "clang-10", task, runArgs)
+                    common.ContainerRun("oetools-${version}:${DOCKER_TAG}", compiler, task, runArgs)
                 }
             }
         }
     }
 }
 
-def buildCrossPlatform(String version) {
+def buildCrossPlatform(String version, String compiler) {
     stage("Ubuntu ${version} OP-TEE Build") {
         node(globalvars.AGENTS_LABELS["ubuntu-nonsgx-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
@@ -592,7 +592,7 @@ def buildCrossPlatform(String version) {
                            bash devex/cross-nuget/standalone-builds/linux/runner.sh
                            """
 
-                common.ContainerRun("oetools-${version}:${DOCKER_TAG}", "clang-10", task, runArgs)
+                common.ContainerRun("oetools-${version}:${DOCKER_TAG}", compiler, task, runArgs)
             }
         }
     }
@@ -621,7 +621,7 @@ def AArch64GNUTest(String version, String build_type) {
     }
 }
 
-def checkDevFlows(String version) {
+def checkDevFlows(String version, String compiler) {
     stage('Default compiler') {
         node(globalvars.AGENTS_LABELS["ubuntu-nonsgx-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
@@ -632,13 +632,13 @@ def checkDevFlows(String version) {
                            cmake ${WORKSPACE} -G Ninja -DHAS_QUOTE_PROVIDER=OFF -Wdev --warn-uninitialized -Werror=dev
                            ninja -v
                            """
-                common.ContainerRun("oetools-${version}:${DOCKER_TAG}", "clang-10", task, runArgs)
+                common.ContainerRun("oetools-${version}:${DOCKER_TAG}", compiler, task, runArgs)
             }
         }
     }
 }
 
-def checkCI() {
+def checkCI(String compiler) {
     stage('Check CI') {
         node(globalvars.AGENTS_LABELS["ubuntu-nonsgx-20.04"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
@@ -652,7 +652,7 @@ def checkCI() {
                 """
                 // At the moment, the check-ci script assumes that it's executed from the
                 // root source code directory.
-                common.ContainerRun("oetools-18.04:${DOCKER_TAG}", "clang-10", task, runArgs)
+                common.ContainerRun("oetools-18.04:${DOCKER_TAG}", compiler, task, runArgs)
             }
         }
     }

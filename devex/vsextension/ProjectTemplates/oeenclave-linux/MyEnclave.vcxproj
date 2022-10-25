@@ -57,9 +57,9 @@
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(NoInherit)</IncludePath>
     <LibraryPath>$(NoInherit)</LibraryPath>
-    <RemoteCCompileToolExe>clang-10</RemoteCCompileToolExe>
-    <RemoteCppCompileToolExe>clang-10</RemoteCppCompileToolExe>
-    <RemoteLdToolExe>clang-10</RemoteLdToolExe>
+    <RemoteCCompileToolExe>clang-11</RemoteCCompileToolExe>
+    <RemoteCppCompileToolExe>clang-11</RemoteCppCompileToolExe>
+    <RemoteLdToolExe>clang-11</RemoteLdToolExe>
     <RemoteLdCommmandTimeout />
     <TargetExt />
     <TargetName>$(ProjectName)</TargetName>
@@ -70,9 +70,9 @@
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(NoInherit)</IncludePath>
     <LibraryPath>$(NoInherit)</LibraryPath>
-    <RemoteCCompileToolExe>clang-10</RemoteCCompileToolExe>
-    <RemoteCppCompileToolExe>clang-10</RemoteCppCompileToolExe>
-    <RemoteLdToolExe>clang-10</RemoteLdToolExe>
+    <RemoteCCompileToolExe>clang-11</RemoteCCompileToolExe>
+    <RemoteCppCompileToolExe>clang-11</RemoteCppCompileToolExe>
+    <RemoteLdToolExe>clang-11</RemoteLdToolExe>
     <RemoteLdCommmandTimeout />
     <TargetExt />
     <TargetName>$(ProjectName)</TargetName>
@@ -83,9 +83,9 @@
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(NoInherit)</IncludePath>
     <LibraryPath>$(NoInherit)</LibraryPath>
-    <RemoteCCompileToolExe>clang-10</RemoteCCompileToolExe>
-    <RemoteCppCompileToolExe>clang-10</RemoteCppCompileToolExe>
-    <RemoteLdToolExe>clang-10</RemoteLdToolExe>
+    <RemoteCCompileToolExe>clang-11</RemoteCCompileToolExe>
+    <RemoteCppCompileToolExe>clang-11</RemoteCppCompileToolExe>
+    <RemoteLdToolExe>clang-11</RemoteLdToolExe>
     <RemoteLdCommmandTimeout />
     <TargetExt />
     <TargetName>$(ProjectName)</TargetName>
@@ -96,9 +96,9 @@
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(NoInherit)</IncludePath>
     <LibraryPath>$(NoInherit)</LibraryPath>
-    <RemoteCCompileToolExe>clang-10</RemoteCCompileToolExe>
-    <RemoteCppCompileToolExe>clang-10</RemoteCppCompileToolExe>
-    <RemoteLdToolExe>clang-10</RemoteLdToolExe>
+    <RemoteCCompileToolExe>clang-11</RemoteCCompileToolExe>
+    <RemoteCppCompileToolExe>clang-11</RemoteCppCompileToolExe>
+    <RemoteLdToolExe>clang-11</RemoteLdToolExe>
     <RemoteLdCommmandTimeout />
     <TargetExt />
     <TargetName>$(ProjectName)</TargetName>

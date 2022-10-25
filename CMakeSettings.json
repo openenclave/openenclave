@@ -3,10 +3,10 @@
   // Licensed under the MIT License.
   //
   // This file illustrates CMake settings to use for building and testing
-  // Open Enclave SDK from Visual 2017. It is based on the default
+  // Open Enclave SDK from Visual 2019. It is based on the default
   // CMakeSettings.json.
   // Prerequisites:
-  //  1. clang (preferable clang-8) must be installed on the machine
+  //  1. clang (preferable clang-11) must be installed on the machine
   //     The following programs must be available in the path:
   //         clang
   //         llvm-ar
@@ -14,7 +14,7 @@
   //  2. bash (Git's bash or WSL bash) must be available in the path.
   //
   // The following 3 configurations are available for building with
-  // Visual Studio 2017:
+  // Visual Studio 2019:
   //    x64-Debug
   //    x64-RelWithDebInfo
   //    x64-Release

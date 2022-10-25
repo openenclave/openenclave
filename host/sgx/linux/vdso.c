@@ -163,7 +163,7 @@ static int oe_vdso_user_handler(
                 /* Should always be this case */
                 if (action == OE_SGX_EXCEPTION_ENCLAVE_NOT_HANDLED)
                     OE_TRACE_ERROR(
-                        "Unhanded in-enclave exception. To get more "
+                        "Unhandled in-enclave exception. To get more "
                         "information, configure the enclave with "
                         "CapturePFGPExceptions=1 and enable the in-enclave "
                         "logging.");

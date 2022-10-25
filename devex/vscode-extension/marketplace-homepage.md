@@ -239,7 +239,7 @@ system you run the extension on.
   wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | sudo apt-key add -
 
   # Add the LLVM repository and key.
-  echo "deb [arch=amd64] http://apt.llvm.org/bionic/ llvm-toolchain-bionic-7 main" | sudo tee /etc/apt/sources.list.d/llvm-toolchain-bionic-7.list
+  echo "deb [arch=amd64] http://apt.llvm.org/bionic/ llvm-toolchain-bionic-11 main" | sudo tee /etc/apt/sources.list.d/llvm-toolchain-bionic-11.list
   wget -qO - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
 
   # Add the Microsoft repository and key.
@@ -256,7 +256,7 @@ system you run the extension on.
 
   # Install all prerequisites.
   sudo apt install -y apt-transport-https az-dcap-client binfmt-support      \
-    build-essential clang-10 docker.io g++-aarch64-linux-gnu                  \
+    build-essential clang-11 docker.io g++-aarch64-linux-gnu                  \
     gcc-aarch64-linux-gnu gdb gdb-multiarch libc6 libc6-dev:arm64 libfdt1    \
     libglib2.0-0 libpcre3 libpixman-1-0 libprotobuf10 libsgx-dcap-ql         \
     libsgx-dcap-ql-dev libsgx-enclave-common                                 \
