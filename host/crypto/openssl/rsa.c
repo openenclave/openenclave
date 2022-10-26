@@ -62,11 +62,7 @@ oe_result_t oe_rsa_get_public_key_from_private(
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_private_key_t* private_key_temp = (oe_private_key_t*)private_key;
-    RSA* rsa_private = NULL;
-    RSA* rsa_public = NULL;
     EVP_PKEY* rsa_public_pkey = NULL;
-    const BIGNUM* private_e = NULL;
-    const BIGNUM* private_n = NULL;
     const BIGNUM* public_e = NULL;
     const BIGNUM* public_n = NULL;
 
@@ -74,21 +70,9 @@ oe_result_t oe_rsa_get_public_key_from_private(
     if (!private_key || !public_key)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Get RSA private key */
-    if (!(rsa_private = EVP_PKEY_get1_RSA(private_key_temp->pkey)))
-        OE_RAISE(OE_CRYPTO_ERROR);
-
-    RSA_get0_key(rsa_private, &private_e, &private_n, NULL);
-
-    /* Check if it's possible to get the public key. */
-    if (!private_e || !private_n)
-        OE_RAISE(OE_CRYPTO_ERROR);
-
-    /* Create RSA public key. */
-    if (!(rsa_public = RSA_new()))
-        OE_RAISE(OE_CRYPTO_ERROR);
-
-    RSA_get0_key(rsa_private, &public_e, &public_n, NULL);
+    // RSA_get0_key(rsa_private, &public_e, &public_n, NULL);
+    EVP_PKEY_get_bn_param(private_key_temp->pkey, OSSL_PKEY_PARAM_RSA_N, &public_n);
+    EVP_PKEY_get_bn_param(private_key_temp->pkey, OSSL_PKEY_PARAM_RSA_E, &public_e);
 
     if (!public_e)
         OE_RAISE(OE_CRYPTO_ERROR);
@@ -96,14 +80,12 @@ oe_result_t oe_rsa_get_public_key_from_private(
     if (!public_n)
         OE_RAISE(OE_CRYPTO_ERROR);
 
-    if (!RSA_set0_key(rsa_public, BN_dup(public_e), BN_dup(public_n), NULL))
-        OE_RAISE(OE_CRYPTO_ERROR);
-
     /* Init the OE public key type. */
     if (!(rsa_public_pkey = EVP_PKEY_new()))
         OE_RAISE(OE_CRYPTO_ERROR);
 
-    if (EVP_PKEY_set1_RSA(rsa_public_pkey, rsa_public) == 0)
+    if ((EVP_PKEY_set_bn_param(rsa_public_pkey, OSSL_PKEY_PARAM_RSA_N, public_n) == 0) ||
+        (EVP_PKEY_set_bn_param(rsa_public_pkey, OSSL_PKEY_PARAM_RSA_E, public_e) == 0))
         OE_RAISE(OE_CRYPTO_ERROR);
 
     oe_rsa_public_key_init(public_key, rsa_public_pkey);
@@ -114,12 +96,6 @@ oe_result_t oe_rsa_get_public_key_from_private(
 done:
     if (rsa_public_pkey)
         EVP_PKEY_free(rsa_public_pkey);
-
-    if (rsa_public)
-        RSA_free(rsa_public);
-
-    if (rsa_private)
-        RSA_free(rsa_private);
 
     return result;
 }
@@ -141,12 +117,10 @@ oe_result_t oe_rsa_public_key_from_modulus(
 
     bignum_modulus = BN_bin2bn(modulus, (int)modulus_size, 0);
     bignum_exponent = BN_bin2bn(exponent, (int)exponent_size, 0);
-    rsa = RSA_new();
-    if (RSA_set0_key(rsa, bignum_modulus, bignum_exponent, NULL) != 1)
-        OE_RAISE(OE_INVALID_PARAMETER);
 
     pkey = EVP_PKEY_new();
-    if (EVP_PKEY_assign_RSA(pkey, rsa) != 1)
+    if ((EVP_PKEY_set_bn_param(pkey, OSSL_PKEY_PARAM_RSA_N, bignum_modulus) == 0) ||
+        (EVP_PKEY_set_bn_param(pkey, OSSL_PKEY_PARAM_RSA_E, bignum_exponent) == 0))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     oe_rsa_public_key_init(public_key, pkey);

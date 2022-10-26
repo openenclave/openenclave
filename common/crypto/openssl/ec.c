@@ -44,14 +44,16 @@ static int _get_nid(oe_ec_type_t ec_type)
 static oe_result_t _private_key_write_pem_callback(BIO* bio, EVP_PKEY* pkey)
 {
     oe_result_t result = OE_UNEXPECTED;
-    unsigned char *buffer;
+    unsigned char *buffer = NULL;
     size_t bytes_written;
     OSSL_ENCODER_CTX* ctx = OSSL_ENCODER_CTX_new_for_pkey(pkey, EVP_PKEY_KEYPAIR, "PEM", NULL, NULL);
     if (!ctx)
         OE_RAISE(OE_CRYPTO_ERROR);
     if (!OSSL_ENCODER_to_data(ctx, &buffer, &bytes_written))
         OE_RAISE(OE_CRYPTO_ERROR);
-    BIO_write(bio, buffer, bytes_written);
+    if (bytes_written <= 0)
+        OE_RAISE(OE_CRYPTO_ERROR);
+    BIO_write(bio, buffer, (int) bytes_written);
 
     result = OE_OK;
 
@@ -263,7 +265,7 @@ oe_result_t oe_ec_generate_key_pair_from_private(
     if (!(ctx = EVP_PKEY_CTX_new_from_name(NULL, "EC", NULL)))
         OE_RAISE(OE_CRYPTO_ERROR);
     EVP_PKEY_fromdata_init(ctx);
-    params[0] = OSSL_PARAM_construct_utf8_string("group", OBJ_nid2sn(_get_nid(curve)), 0);
+    params[0] = OSSL_PARAM_construct_utf8_string("group", (char*)OBJ_nid2sn(_get_nid(curve)), 0);
     params[1] = OSSL_PARAM_construct_octet_string("pub", buffer, keysize);
     params[2] = params[2] = OSSL_PARAM_construct_end();
     if (EVP_PKEY_fromdata(ctx, &public_pkey, EVP_PKEY_PUBLIC_KEY, params) <= 0)
@@ -273,6 +275,7 @@ oe_result_t oe_ec_generate_key_pair_from_private(
     result = OE_OK;
 
 done:
+    // Deallocate all temporary OpenSSL structures
     if (priv)
         BN_free(priv);
     if (point)
@@ -285,6 +288,7 @@ done:
         EVP_PKEY_free(public_pkey);
     if (private_pkey)
         EVP_PKEY_free(private_pkey);
+    return result;
 }
 
 oe_result_t oe_ec_public_key_equal(

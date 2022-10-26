@@ -35,20 +35,23 @@ OE_STATIC_ASSERT(sizeof(oe_private_key_t) <= sizeof(oe_rsa_private_key_t));
 static oe_result_t _private_key_write_pem_callback(BIO* bio, EVP_PKEY* pkey)
 {
     oe_result_t result = OE_UNEXPECTED;
-    RSA* rsa = NULL;
-
-    if (!(rsa = EVP_PKEY_get1_RSA(pkey)))
+    unsigned char *buffer = NULL;
+    size_t bytes_written;
+    OSSL_ENCODER_CTX* ctx = OSSL_ENCODER_CTX_new_for_pkey(pkey, EVP_PKEY_KEYPAIR, "PEM", NULL, NULL);
+    if (!ctx)
         OE_RAISE(OE_CRYPTO_ERROR);
-
-    if (!PEM_write_bio_RSAPrivateKey(bio, rsa, NULL, NULL, 0, 0, NULL))
+    if (!OSSL_ENCODER_to_data(ctx, &buffer, &bytes_written))
         OE_RAISE(OE_CRYPTO_ERROR);
+    if (bytes_written <= 0)
+        OE_RAISE(OE_CRYPTO_ERROR);
+    BIO_write(bio, buffer, (int) bytes_written);
 
     result = OE_OK;
 
 done:
 
-    if (rsa)
-        RSA_free(rsa);
+    if (ctx)
+        OSSL_ENCODER_CTX_free(ctx);
 
     return result;
 }
@@ -62,7 +65,7 @@ static oe_result_t _get_public_key_get_modulus_or_exponent(
     oe_result_t result = OE_UNEXPECTED;
     size_t required_size;
     const BIGNUM* bn;
-    RSA* rsa = NULL;
+    // RSA* rsa = NULL;
 
     /* Check for invalid parameters */
     if (!public_key || !buffer_size)
@@ -73,13 +76,15 @@ static oe_result_t _get_public_key_get_modulus_or_exponent(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Get RSA key */
-    if (!(rsa = EVP_PKEY_get1_RSA(public_key->pkey)))
-        OE_RAISE(OE_CRYPTO_ERROR);
+    // if (!(rsa = EVP_PKEY_get1_RSA(public_key->pkey)))
+    //     OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Select modulus or exponent */
-    const BIGNUM* e;
-    const BIGNUM* n;
-    RSA_get0_key(rsa, &n, &e, NULL);
+    const BIGNUM* e = NULL;
+    const BIGNUM* n = NULL;
+    // RSA_get0_key(rsa, &n, &e, NULL);
+    EVP_PKEY_get_bn_param(public_key->pkey, OSSL_PKEY_PARAM_RSA_N, &n);
+    EVP_PKEY_get_bn_param(public_key->pkey, OSSL_PKEY_PARAM_RSA_E, &e);
     bn = get_modulus ? n : e;
 
     /* Determine the required size in bytes */
@@ -115,9 +120,10 @@ static oe_result_t _get_public_key_get_modulus_or_exponent(
     result = OE_OK;
 
 done:
-
-    if (rsa)
-        RSA_free(rsa);
+    if (e)
+        BN_free(e);
+    if (n)
+        BN_free(n);
 
     return result;
 }
@@ -169,13 +175,6 @@ static oe_result_t _public_key_equal(
     result = OE_OK;
 
 done:
-
-    if (rsa1)
-        RSA_free(rsa1);
-
-    if (rsa2)
-        RSA_free(rsa2);
-
     return result;
 }
 
