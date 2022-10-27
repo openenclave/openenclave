@@ -18,7 +18,7 @@
 [submodule "3rdparty/mbedtls/mbedtls"]
 	path = 3rdparty/mbedtls/mbedtls
 	url = https://github.com/openenclave/openenclave-mbedtls.git
-	branch = openenclave-mbedtls-2.28
+	branch = openenclave-mbedtls-2.28.1
 [submodule "3rdparty/openssl/intel-sgx-ssl"]
 	path = 3rdparty/openssl/intel-sgx-ssl
 	url = https://github.com/intel/intel-sgx-ssl
