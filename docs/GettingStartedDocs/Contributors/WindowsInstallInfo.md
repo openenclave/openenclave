@@ -27,7 +27,7 @@ Please note that NUGET_PACKAGE_PATH in the above command points to the directory
 To create a redistributable NuGet package use the following commands from your build subfolder:
 
 ```cmd
-cmake .. -G  Ninja -DNUGET_PACKAGE_PATH=C:\oe_prereqs -DCPACK_GENERATOR=NuGet -DLVI_MITIGATION=ControlFlow -DCMAKE_BUILD_TYPE=Release
+cmake .. -G  Ninja -DNUGET_PACKAGE_PATH=C:\oe_prereqs -DCPACK_GENERATOR=NuGet -DLVI_MITIGATION=ControlFlow -DCMAKE_BUILD_TYPE=RelWithDebugInfo
 ninja
 cpack -D CPACK_NUGET_COMPONENT_INSTALL=ON -DCPACK_COMPONENTS_ALL=OEHOSTVERIFY && cpack
 ```
