@@ -29,11 +29,8 @@ void oe_quote_provider_log(sgx_ql_log_level_t level, const char* message)
 {
     char formatted[OE_LOG_MESSAGE_LEN_MAX] = {0};
     oe_log_level_t oe_log_level[] = {
-        OE_LOG_LEVEL_ERROR,
-        OE_LOG_LEVEL_WARNING,
-        OE_LOG_LEVEL_INFO,
-        OE_LOG_LEVEL_NONE};
-    const char* dcap_level_strings[] = {"ERROR", "WARN", "INFO", "NONE"};
+        OE_LOG_LEVEL_ERROR, OE_LOG_LEVEL_INFO, OE_LOG_LEVEL_NONE};
+    const char* dcap_level_strings[] = {"ERROR", "INFO", "NONE"};
 
     if (level >= SGX_QL_LOG_NONE || level < SGX_QL_LOG_ERROR)
     {
