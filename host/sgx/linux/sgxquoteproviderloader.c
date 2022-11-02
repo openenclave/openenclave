@@ -97,24 +97,33 @@ void oe_load_quote_provider()
 
 oe_result_t oe_sgx_set_quote_provider_logger(sgx_ql_logging_function_t logger)
 {
-    sgx_ql_set_logging_function_t set_log_fcn = NULL;
+    sgx_ql_set_logging_callback_t set_log_callback = NULL;
+
     if (provider.handle == 0)
     {
         // Quote provider is not loaded.
         return OE_QUOTE_PROVIDER_LOAD_ERROR;
     }
 
-    set_log_fcn = (sgx_ql_set_logging_function_t)dlsym(
+    set_log_callback = (sgx_ql_set_logging_callback_t)dlsym(
         provider.handle, SGX_QL_SET_LOGGING_FUNCTION_NAME);
-    if (set_log_fcn == NULL)
+    if (set_log_callback != NULL)
     {
-        set_log_fcn = (sgx_ql_set_logging_function_t)dlsym(
-            provider.handle, SGX_QL_SET_LOGGING_CALLBACK_NAME);
+        OE_TRACE_INFO("sgxquoteprovider: "
+                      "dcap_quoteprov: " SGX_QL_SET_LOGGING_FUNCTION_NAME
+                      " is set\n");
+        set_log_callback(logger, SGX_QL_LOG_INFO);
+        return OE_OK;
     }
 
-    if (set_log_fcn != NULL)
+    set_log_callback = (sgx_ql_set_logging_callback_t)dlsym(
+        provider.handle, SGX_QL_SET_LOGGING_CALLBACK_NAME);
+    if (set_log_callback != NULL)
     {
-        set_log_fcn(logger);
+        OE_TRACE_INFO("sgxquoteprovider: "
+                      "dcap_quoteprov: " SGX_QL_SET_LOGGING_FUNCTION_NAME
+                      " is set\n");
+        set_log_callback(logger, SGX_QL_LOG_INFO);
         return OE_OK;
     }
 
