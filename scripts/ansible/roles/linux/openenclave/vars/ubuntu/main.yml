@@ -36,6 +36,7 @@ apt_packages:
   - "clang-format-11"
   - "llvm-11"
   - "lldb-11"
+  - "python3-lldb-11"
   - "clang-10"
   - "clang-format-10"
   - "lldb-10"
