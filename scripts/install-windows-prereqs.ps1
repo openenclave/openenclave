@@ -12,8 +12,10 @@ Param(
     # We skip the hash check for the vs_buildtools.exe file because it is regularly updated without a change to the URL, unfortunately.
     [string]$VSBuildToolsURL = 'https://aka.ms/vs/16/release/vs_buildtools.exe',
     [string]$VSBuildToolsHash = '',
-    [string]$ClangURL = 'https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/LLVM-10.0.0-win64.exe',
-    [string]$ClangHash = '893f8a12506f8ad29ca464d868fb432fdadd782786a10655b86575fc7fc1a562',
+    [string]$PreviousClangURL = 'https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/LLVM-10.0.0-win64.exe',
+    [string]$PreviousClangHash = '893f8a12506f8ad29ca464d868fb432fdadd782786a10655b86575fc7fc1a562',
+    [string]$ClangURL = 'https://github.com/llvm/llvm-project/releases/download/llvmorg-11.1.0/LLVM-11.1.0-win64.exe',
+    [string]$ClangHash = 'B5770BBFAC712D273938CD155E232AFAA85C2E8D865C7CA504A104A838568516',
     [string]$ShellCheckURL = 'https://oejenkins.blob.core.windows.net/oejenkins/shellcheck-v0.7.0.zip',
     [string]$ShellCheckHash = '02CFA14220C8154BB7C97909E80E74D3A7FE2CBB7D80AC32ADCAC7988A95E387',
     [string]$NugetURL = 'https://www.nuget.org/api/v2/package/NuGet.exe/3.4.3',
@@ -60,6 +62,11 @@ $PACKAGES = @{
         "url" = $VSBuildToolsURL
         "hash" = $VSBuildToolsHash
         "local_file" = Join-Path $PACKAGES_DIRECTORY "vs_buildtools.exe"
+    }
+    "previous_clang" = @{
+        "url" = $PreviousClangURL
+        "hash" = $PreviousClangHash
+        "local_file" = Join-Path $PACKAGES_DIRECTORY "previous-LLVM-win64.exe"
     }
     "clang" = @{
         "url" = $ClangURL
@@ -391,9 +398,16 @@ function Install-VisualStudio {
                                    "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\BuildTools\Common7\Tools")
 }
 
+# See https://nsis.sourceforge.io/Docs/Chapter3.html#installerusagecommon for valid installer args
+function Install-Previous-LLVM {
+    Install-Tool -InstallerPath $PACKAGES["previous_clang"]["local_file"] `
+                 -ArgumentList @("/S", "/D=C:\${env:ProgramFiles}\LLVM-previous") `
+                 -EnvironmentPath "${env:ProgramFiles}\LLVM-previous\bin"
+}
+
 function Install-LLVM {
     Install-Tool -InstallerPath $PACKAGES["clang"]["local_file"] `
-                 -ArgumentList "/S" `
+                 -ArgumentList @("/S", "/D=C:\${env:ProgramFiles}\LLVM") `
                  -EnvironmentPath "${env:ProgramFiles}\LLVM\bin"
 }
 
@@ -584,6 +598,7 @@ try {
     if (!$SkipVSInstall) {
         Install-VisualStudio
     }
+    Install-Previous-LLVM
     Install-LLVM
     Install-Git
     Install-Shellcheck
