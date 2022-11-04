@@ -401,13 +401,13 @@ function Install-VisualStudio {
 # See https://nsis.sourceforge.io/Docs/Chapter3.html#installerusagecommon for valid installer args
 function Install-Previous-LLVM {
     Install-Tool -InstallerPath $PACKAGES["previous_clang"]["local_file"] `
-                 -ArgumentList @("/S", "/D=C:\${env:ProgramFiles}\LLVM-previous") `
+                 -ArgumentList @("/S", "/D=${env:ProgramFiles}\LLVM-previous") `
                  -EnvironmentPath "${env:ProgramFiles}\LLVM-previous\bin"
 }
 
 function Install-LLVM {
     Install-Tool -InstallerPath $PACKAGES["clang"]["local_file"] `
-                 -ArgumentList @("/S", "/D=C:\${env:ProgramFiles}\LLVM") `
+                 -ArgumentList @("/S", "/D=${env:ProgramFiles}\LLVM") `
                  -EnvironmentPath "${env:ProgramFiles}\LLVM\bin"
 }
 
