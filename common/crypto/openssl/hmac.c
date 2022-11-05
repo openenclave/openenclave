@@ -6,14 +6,22 @@
 #include <openenclave/internal/raise.h>
 #include <openssl/hmac.h>
 
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 typedef struct _oe_hmac_sha256_context_impl
 {
     HMAC_CTX* ctx;
 } oe_hmac_sha256_context_impl_t;
+#else
+typedef struct _oe_hmac_sha256_context_impl
+{
+    EVP_MAC_CTX* ctx;
+} oe_hmac_sha256_context_impl_t;
+#endif
 
 OE_STATIC_ASSERT(
     sizeof(oe_hmac_sha256_context_impl_t) <= sizeof(oe_hmac_sha256_context_t));
 
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 static void _free_hmac_ctx(HMAC_CTX* ctx)
 {
     if (!ctx)
@@ -26,7 +34,15 @@ static void _free_hmac_ctx(HMAC_CTX* ctx)
     HMAC_CTX_free(ctx);
 #endif
 }
+#else
+static void _free_hmac_ctx(EVP_MAC_CTX* ctx) {
+    if (!ctx)
+        return;
+    EVP_MAC_CTX_free(ctx);
+}
+#endif
 
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 oe_result_t oe_hmac_sha256_init(
     oe_hmac_sha256_context_t* context,
     const uint8_t* key,
@@ -67,6 +83,43 @@ done:
 
     return result;
 }
+#else
+oe_result_t oe_hmac_sha256_init(
+    oe_hmac_sha256_context_t* context,
+    const uint8_t* key,
+    size_t keysize)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    EVP_MAC_CTX* ctx = NULL;
+    int openssl_result;
+
+    if (!context || !key || keysize > OE_INT_MAX)
+        OE_RAISE(OE_INVALID_PARAMETER);
+    EVP_MAC* mac = EVP_MAC_fetch(NULL, OSSL_MAC_NAME_HMAC, NULL);
+    if (!mac)
+        OE_RAISE(OE_CRYPTO_ERROR);
+    ctx = EVP_MAC_CTX_new(mac);
+    if (ctx == NULL)
+        OE_RAISE(OE_OUT_OF_MEMORY);
+    OSSL_PARAM params[3];
+    params[0] = OSSL_PARAM_construct_octet_string(OSSL_MAC_PARAM_KEY, (const void *)key, keysize);
+    params[1] = OSSL_PARAM_construct_utf8_string(OSSL_MAC_PARAM_DIGEST, OSSL_DIGEST_NAME_SHA2_256, 0);
+    params[2] = OSSL_PARAM_construct_end();
+    openssl_result = EVP_MAC_init(ctx, NULL, 0, params);
+    if (openssl_result == 0)
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    ((oe_hmac_sha256_context_impl_t*)context)->ctx = ctx;
+    ctx = NULL;
+    result = OE_OK;
+
+done:
+    if (ctx != NULL)
+        _free_hmac_ctx(ctx);
+
+    return result;
+}
+#endif
 
 oe_result_t oe_hmac_sha256_update(
     oe_hmac_sha256_context_t* context,
@@ -80,8 +133,13 @@ oe_result_t oe_hmac_sha256_update(
     if (!context || !data || size > OE_INT_MAX)
         OE_RAISE(OE_INVALID_PARAMETER);
 
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
     if (HMAC_Update(impl->ctx, (const uint8_t*)data, size) == 0)
         OE_RAISE(OE_CRYPTO_ERROR);
+#else
+    if (EVP_MAC_update(impl->ctx, (const uint8_t*)data, size) == 0)
+        OE_RAISE(OE_CRYPTO_ERROR);
+#endif
 
     result = OE_OK;
 
@@ -101,8 +159,13 @@ oe_result_t oe_hmac_sha256_final(
     if (!context || !sha256)
         OE_RAISE(OE_INVALID_PARAMETER);
 
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
     if (HMAC_Final(impl->ctx, sha256->buf, &hmac_size) == 0)
         OE_RAISE(OE_CRYPTO_ERROR);
+#else
+    if (EVP_MAC_final(impl->ctx, sha256->buf, &hmac_size, sizeof(OE_SHA256)) == 0)
+        OE_RAISE(OE_CRYPTO_ERROR);
+#endif
 
     if (hmac_size != sizeof(sha256->buf))
         OE_RAISE(OE_CRYPTO_ERROR);

@@ -41,6 +41,28 @@ static int _get_nid(oe_ec_type_t ec_type)
     }
 }
 
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+static oe_result_t _private_key_write_pem_callback(BIO* bio, EVP_PKEY* pkey)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    EC_KEY* ec = NULL;
+
+    if (!(ec = EVP_PKEY_get1_EC_KEY(pkey)))
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    if (!PEM_write_bio_ECPrivateKey(bio, ec, NULL, NULL, 0, 0, NULL))
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    result = OE_OK;
+
+done:
+
+    if (ec)
+        EC_KEY_free(ec);
+
+    return result;
+}
+#else
 static oe_result_t _private_key_write_pem_callback(BIO* bio, EVP_PKEY* pkey)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -64,7 +86,58 @@ done:
 
     return result;
 }
+#endif
 
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+static oe_result_t _public_key_equal(
+    const oe_public_key_t* public_key1,
+    const oe_public_key_t* public_key2,
+    bool* equal)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    EC_KEY* ec1 = NULL;
+    EC_KEY* ec2 = NULL;
+
+    if (equal)
+        *equal = false;
+
+    /* Reject bad parameters */
+    if (!oe_public_key_is_valid(public_key1, OE_EC_PUBLIC_KEY_MAGIC) ||
+        !oe_public_key_is_valid(public_key2, OE_EC_PUBLIC_KEY_MAGIC) || !equal)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    {
+        ec1 = EVP_PKEY_get1_EC_KEY(public_key1->pkey);
+        ec2 = EVP_PKEY_get1_EC_KEY(public_key2->pkey);
+        const EC_GROUP* group1 = EC_KEY_get0_group(ec1);
+        const EC_GROUP* group2 = EC_KEY_get0_group(ec2);
+        const EC_POINT* point1 = EC_KEY_get0_public_key(ec1);
+        const EC_POINT* point2 = EC_KEY_get0_public_key(ec2);
+
+        if (!ec1 || !ec2 || !group1 || !group2 || !point1 || !point2)
+            OE_RAISE(OE_CRYPTO_ERROR);
+
+        /* Compare group and public key point */
+        if (EC_GROUP_cmp(group1, group2, NULL) == 0 &&
+            EC_POINT_cmp(group1, point1, point2, NULL) == 0)
+        {
+            *equal = true;
+        }
+    }
+
+    result = OE_OK;
+
+done:
+
+    if (ec1)
+        EC_KEY_free(ec1);
+
+    if (ec2)
+        EC_KEY_free(ec2);
+
+    return result;
+}
+#else
 static oe_result_t _public_key_equal(
     const oe_public_key_t* public_key1,
     const oe_public_key_t* public_key2,
@@ -98,6 +171,7 @@ static oe_result_t _public_key_equal(
 done:
     return result;
 }
+#endif
 
 void oe_ec_public_key_init(oe_ec_public_key_t* public_key, EVP_PKEY* pkey)
 {
@@ -210,6 +284,106 @@ oe_result_t oe_ec_public_key_verify(
         OE_EC_PUBLIC_KEY_MAGIC);
 }
 
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+oe_result_t oe_ec_generate_key_pair_from_private(
+    oe_ec_type_t curve,
+    const uint8_t* private_key_buf,
+    size_t private_key_buf_size,
+    oe_ec_private_key_t* private_key,
+    oe_ec_public_key_t* public_key)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    int openssl_result;
+    EC_KEY* key = NULL;
+    BIGNUM* private_bn = NULL;
+    EC_POINT* public_point = NULL;
+    EVP_PKEY* public_pkey = NULL;
+    EVP_PKEY* private_pkey = NULL;
+
+    if (!private_key_buf || !private_key || !public_key ||
+        private_key_buf_size > OE_INT_MAX)
+    {
+        OE_RAISE(OE_INVALID_PARAMETER);
+    }
+
+#if !defined(OE_BUILD_ENCLAVE)
+    /* Initialize OpenSSL. */
+    oe_crypto_initialize();
+#endif
+
+    /* Initialize the EC key. */
+    key = EC_KEY_new_by_curve_name(_get_nid(curve));
+    if (key == NULL)
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    /* Set the EC named-curve flag. */
+    EC_KEY_set_asn1_flag(key, OPENSSL_EC_NAMED_CURVE);
+
+    /* Load private key into the EC key. */
+    private_bn = BN_bin2bn(private_key_buf, (int)private_key_buf_size, NULL);
+
+    if (private_bn == NULL)
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    if (EC_KEY_set_private_key(key, private_bn) == 0)
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    public_point = EC_POINT_new(EC_KEY_get0_group(key));
+    if (public_point == NULL)
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    /*
+     * To get the public key, we perform the elliptical curve point
+     * multiplication with the factors being the private key and the base
+     * generator point of the curve.
+     */
+    openssl_result = EC_POINT_mul(
+        EC_KEY_get0_group(key), public_point, private_bn, NULL, NULL, NULL);
+    if (openssl_result == 0)
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    /* Sanity check the params. */
+    if (EC_KEY_set_public_key(key, public_point) == 0)
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    if (EC_KEY_check_key(key) == 0)
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    /* Map the key to the EVP_PKEY wrapper. */
+    public_pkey = EVP_PKEY_new();
+    if (public_pkey == NULL)
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    if (EVP_PKEY_set1_EC_KEY(public_pkey, key) == 0)
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    private_pkey = EVP_PKEY_new();
+    if (private_pkey == NULL)
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    if (EVP_PKEY_set1_EC_KEY(private_pkey, key) == 0)
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    oe_ec_public_key_init(public_key, public_pkey);
+    oe_ec_private_key_init(private_key, private_pkey);
+    public_pkey = NULL;
+    private_pkey = NULL;
+    result = OE_OK;
+
+done:
+    if (key != NULL)
+        EC_KEY_free(key);
+    if (private_bn != NULL)
+        BN_clear_free(private_bn);
+    if (public_point != NULL)
+        EC_POINT_clear_free(public_point);
+    if (public_pkey != NULL)
+        EVP_PKEY_free(public_pkey);
+    if (private_pkey != NULL)
+        EVP_PKEY_free(private_pkey);
+    return result;
+}
+#else
 oe_result_t oe_ec_generate_key_pair_from_private(
     oe_ec_type_t curve,
     const uint8_t* private_key_buf,
@@ -290,6 +464,7 @@ done:
         EVP_PKEY_free(private_pkey);
     return result;
 }
+#endif
 
 oe_result_t oe_ec_public_key_equal(
     const oe_ec_public_key_t* public_key1,
@@ -300,6 +475,118 @@ oe_result_t oe_ec_public_key_equal(
         (oe_public_key_t*)public_key1, (oe_public_key_t*)public_key2, equal);
 }
 
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+oe_result_t oe_ec_public_key_from_coordinates(
+    oe_ec_public_key_t* public_key,
+    oe_ec_type_t ec_type,
+    const uint8_t* x_data,
+    size_t x_size,
+    const uint8_t* y_data,
+    size_t y_size)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_public_key_t* impl = (oe_public_key_t*)public_key;
+    int nid;
+    EC_KEY* ec = NULL;
+    EVP_PKEY* pkey = NULL;
+    EC_GROUP* group = NULL;
+    EC_POINT* point = NULL;
+    BIGNUM* x = NULL;
+    BIGNUM* y = NULL;
+
+    if (public_key)
+        oe_secure_zero_fill(public_key, sizeof(oe_ec_public_key_t));
+
+#if !defined(OE_BUILD_ENCLAVE)
+    /* Initialize OpenSSL */
+    oe_crypto_initialize();
+#endif
+
+    /* Reject invalid parameters */
+    if (!public_key || !x_data || !x_size || x_size > OE_INT_MAX || !y_data ||
+        !y_size || y_size > OE_INT_MAX)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Get the NID for this curve type */
+    if ((nid = _get_nid(ec_type)) == NID_undef)
+        OE_RAISE(OE_FAILURE);
+
+    /* Create the public EC key */
+    {
+        if (!(group = EC_GROUP_new_by_curve_name(nid)))
+            OE_RAISE(OE_CRYPTO_ERROR);
+
+        if (!(ec = EC_KEY_new()))
+            OE_RAISE(OE_CRYPTO_ERROR);
+
+        if (!(EC_KEY_set_group(ec, group)))
+            OE_RAISE(OE_CRYPTO_ERROR);
+
+        if (!(point = EC_POINT_new(group)))
+            OE_RAISE(OE_CRYPTO_ERROR);
+
+        if (!(x = BN_new()) || !(y = BN_new()))
+            OE_RAISE(OE_CRYPTO_ERROR);
+
+        if (!(BN_bin2bn(x_data, (int)x_size, x)))
+            OE_RAISE(OE_CRYPTO_ERROR);
+
+        if (!(BN_bin2bn(y_data, (int)y_size, y)))
+            OE_RAISE(OE_CRYPTO_ERROR);
+
+        if (!EC_POINT_set_affine_coordinates_GFp(group, point, x, y, NULL))
+            OE_RAISE(OE_CRYPTO_ERROR);
+
+        if (!EC_KEY_set_public_key(ec, point))
+            OE_RAISE(OE_CRYPTO_ERROR);
+    }
+
+    /* Create the PKEY public key wrapper */
+    {
+        /* Create the public key structure */
+        if (!(pkey = EVP_PKEY_new()))
+            OE_RAISE(OE_CRYPTO_ERROR);
+
+        /* Initialize the public key from the generated key pair */
+        {
+            if (!EVP_PKEY_assign_EC_KEY(pkey, ec))
+                OE_RAISE(OE_CRYPTO_ERROR);
+
+            ec = NULL;
+        }
+
+        /* Initialize the public key */
+        {
+            oe_public_key_init(impl, pkey, OE_EC_PUBLIC_KEY_MAGIC);
+            pkey = NULL;
+        }
+    }
+
+    result = OE_OK;
+
+done:
+
+    if (ec)
+        EC_KEY_free(ec);
+
+    if (group)
+        EC_GROUP_free(group);
+
+    if (pkey)
+        EVP_PKEY_free(pkey);
+
+    if (x)
+        BN_free(x);
+
+    if (y)
+        BN_free(y);
+
+    if (point)
+        EC_POINT_free(point);
+
+    return result;
+}
+#else
 oe_result_t oe_ec_public_key_from_coordinates(
     oe_ec_public_key_t* public_key,
     oe_ec_type_t ec_type,
@@ -385,6 +672,7 @@ done:
 
     return result;
 }
+#endif
 
 oe_result_t oe_ecdsa_signature_write_der(
     unsigned char* signature,
