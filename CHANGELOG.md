@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Unreleased][Unreleased_log]
 --------------
 ### Added
+
+
+[v0.18.4][v0.18.4_log]
+--------------
+### Added
 - `oe_set_host_log_level(oe_log_level_t log_level)` allows applications to dynamically modify the verbosity of logs captured from the host.
   - It can be called with or without logging callback set and is thread safe. There is no limit on the number of calls per application.
 
@@ -17,12 +22,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - This API is enabled only when logging.edl is imported.
   - This API can be used only after enclave creation and before enclave termination for an enclave. An application can call this API any number of times, for any number of enclaves. There is no limit on the number of calls and is thread safe.
   - This is an host API. To modify verbosity of enclave log level from within enclaves, consider using enclave logging callbacks.
-  - Updated the mbedTLS from 2.28.0 to 2.28.1
-## Changed
-- Fix the incorrect behavior of pthread_mutex_init() and std::mutex such that they no longer create a recursive lock by default.
+- Added backtrace debug log for unhandled exceptions if the enclave is configured with and CapturePFGPExceptions=1, the backtrace information will be printed in the enclave log when an in-enclave exception is not handled by trusted handlers. If the enclave is not configured with CapturePFGPExceptions=1, the similar helper message in the following will be printed in the log: `2022-07-13T00:25:05+0000.276579Z  (H)ERROR] tid(0x7f6cbb2b1f40) | Unhandled in-enclave exception. To get more information, configure the enclave with CapturePFGPExceptions=1 and enable the in-enclave logging.`
+
+### Changed
+- Fixed bugs in oe_validate_revocation_list regarding PCCS API v3.0
+- Fixed issue where oe_hex_dump prints data to stdout, even when logging callback is set
+- Fixed the issue where enclave stack was not showing up in ocall callstack. Added padding to restore offset of callsites field to previous value.
 
 ### Security
-- Updated openssl to version 1.1.1q. Please refer to release log to find list of CVEs addressed by this version.
+- Updated OpenSSL used inside the enclave to v1.1.1q. See [OpenSSL's release notes](https://www.openssl.org/news/openssl-1.1.1-notes.html) for more details
+- Update Mbed-TLS used inside the enclave to 2.28.1. See [Mbed-TLS's release notes](https://github.com/Mbed-TLS/mbedtls/releases/tag/v2.28.1) for more details.
+
+
+[v0.18.2][v0.18.2_log]
+--------------
+### Changed
+- Fixed the incorrect behavior of pthread_mutex_init() and std::mutex such that they no longer create a recursive lock by default. Please see issue #4555 for more details.
+
+
+### Security
+- Mitigated CVE-2022-21233. Please refer to the [security advisory](https://github.com/openenclave/openenclave/security/advisories/GHSA-v3vm-9h66-wm76) for the same.
+	- The mitigations require an extra copy for ocalls in oeedger8r generated code.
+	- If you are running on a processor that is not affected by the CVE, you can turn off oeedger8r introduced mitigations by setting
+`bool oe_edger8r_secure_unserialize = false;` in enclave side code.
+
 
 [v0.18.1][v0.18.1_log]
 --------------
@@ -773,7 +796,11 @@ as listed below.
 
 Initial private preview release, no longer supported.
 
-[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.18.1...HEAD
+[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.18.4...HEAD
+
+[v0.18.4_log]:https://github.com/openenclave/openenclave/compare/v0.18.2...v0.18.4
+
+[v0.18.2_log]:https://github.com/openenclave/openenclave/compare/v0.18.1...v0.18.2
 
 [v0.18.1_log]:https://github.com/openenclave/openenclave/compare/v0.18.0...v0.18.1
 
