@@ -75,6 +75,7 @@ done:
     return result;
 }
 
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 oe_result_t oe_sha256_final(oe_sha256_context_t* context, OE_SHA256* sha256)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -83,13 +84,25 @@ oe_result_t oe_sha256_final(oe_sha256_context_t* context, OE_SHA256* sha256)
     if (!context)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-#if OPENSSL_VERSION_NUMBER < 0x30000000L
     if (!SHA256_Final(sha256->buf, &impl->ctx))
         OE_RAISE(OE_CRYPTO_ERROR);
+
+    result = OE_OK;
+
+done:
+    return result;
+}
 #else
+oe_result_t oe_sha256_final(oe_sha256_context_t* context, OE_SHA256* sha256)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_sha256_context_impl_t* impl = (oe_sha256_context_impl_t*)context;
+
+    if (!context)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
     if (!EVP_DigestFinal_ex(sha256->buf, impl->ctx, NULL))
         OE_RAISE(OE_CRYPTO_ERROR);
-#endif
 
     result = OE_OK;
 
@@ -99,6 +112,7 @@ done:
 
     return result;
 }
+#endif
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
 oe_result_t oe_sha256_save(

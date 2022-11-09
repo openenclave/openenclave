@@ -804,10 +804,18 @@ oe_result_t oe_cert_get_ec_public_key(
 
     /* If this is not an EC key */
     {
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+        EC_KEY* ec;
+        if (!(ec = EVP_PKEY_get1_EC_KEY(pkey)))
+            OE_RAISE_NO_TRACE(OE_CRYPTO_ERROR);
+
+        EC_KEY_free(ec);
+#else
         if (EVP_PKEY_get_id(pkey) != EVP_PKEY_EC)
         {
             OE_RAISE_NO_TRACE(OE_CRYPTO_ERROR);
         }
+#endif
     }
 
     /* Initialize the EC public key */

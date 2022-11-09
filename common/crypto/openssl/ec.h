@@ -8,8 +8,11 @@
 #include <openssl/bn.h>
 #include <openssl/ec.h>
 #include <openssl/evp.h>
-#include <openssl/param_build.h>
+
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
 #include <openssl/encoder.h>
+#include <openssl/param_build.h>
+#endif
 
 /* Caller is responsible for validating parameters */
 void oe_ec_public_key_init(oe_ec_public_key_t* public_key, EVP_PKEY* pkey);
