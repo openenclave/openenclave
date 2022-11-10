@@ -17,7 +17,7 @@ typedef struct _oe_sha256_context_impl
 #else
 typedef struct _oe_sha256_context_impl
 {
-    EVP_MD_CTX *ctx;
+    EVP_MD_CTX* ctx;
 } oe_sha256_context_impl_t;
 #endif
 
@@ -28,7 +28,6 @@ oe_result_t oe_sha256_init(oe_sha256_context_t* context)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_sha256_context_impl_t* impl = (oe_sha256_context_impl_t*)context;
-    
 
     if (!context)
         OE_RAISE(OE_INVALID_PARAMETER);

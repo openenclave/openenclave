@@ -57,16 +57,17 @@ done:
 static oe_result_t _private_key_write_pem_callback(BIO* bio, EVP_PKEY* pkey)
 {
     oe_result_t result = OE_UNEXPECTED;
-    unsigned char *buffer = NULL;
+    unsigned char* buffer = NULL;
     size_t bytes_written;
-    OSSL_ENCODER_CTX* ctx = OSSL_ENCODER_CTX_new_for_pkey(pkey, EVP_PKEY_KEYPAIR, "PEM", NULL, NULL);
+    OSSL_ENCODER_CTX* ctx = OSSL_ENCODER_CTX_new_for_pkey(
+        pkey, EVP_PKEY_KEYPAIR, "PEM", NULL, NULL);
     if (!ctx)
         OE_RAISE(OE_CRYPTO_ERROR);
     if (!OSSL_ENCODER_to_data(ctx, &buffer, &bytes_written))
         OE_RAISE(OE_CRYPTO_ERROR);
     if (bytes_written <= 0)
         OE_RAISE(OE_CRYPTO_ERROR);
-    BIO_write(bio, buffer, (int) bytes_written);
+    BIO_write(bio, buffer, (int)bytes_written);
 
     result = OE_OK;
 

@@ -140,8 +140,10 @@ oe_result_t oe_rsa_get_public_key_from_private(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // RSA_get0_key(rsa_private, &public_e, &public_n, NULL);
-    EVP_PKEY_get_bn_param(private_key_temp->pkey, OSSL_PKEY_PARAM_RSA_N, &public_n);
-    EVP_PKEY_get_bn_param(private_key_temp->pkey, OSSL_PKEY_PARAM_RSA_E, &public_e);
+    EVP_PKEY_get_bn_param(
+        private_key_temp->pkey, OSSL_PKEY_PARAM_RSA_N, &public_n);
+    EVP_PKEY_get_bn_param(
+        private_key_temp->pkey, OSSL_PKEY_PARAM_RSA_E, &public_e);
 
     if (!public_e)
         OE_RAISE(OE_CRYPTO_ERROR);
@@ -153,8 +155,10 @@ oe_result_t oe_rsa_get_public_key_from_private(
     if (!(rsa_public_pkey = EVP_PKEY_new()))
         OE_RAISE(OE_CRYPTO_ERROR);
 
-    if ((EVP_PKEY_set_bn_param(rsa_public_pkey, OSSL_PKEY_PARAM_RSA_N, public_n) == 0) ||
-        (EVP_PKEY_set_bn_param(rsa_public_pkey, OSSL_PKEY_PARAM_RSA_E, public_e) == 0))
+    if ((EVP_PKEY_set_bn_param(
+             rsa_public_pkey, OSSL_PKEY_PARAM_RSA_N, public_n) == 0) ||
+        (EVP_PKEY_set_bn_param(
+             rsa_public_pkey, OSSL_PKEY_PARAM_RSA_E, public_e) == 0))
         OE_RAISE(OE_CRYPTO_ERROR);
 
     oe_rsa_public_key_init(public_key, rsa_public_pkey);
@@ -223,8 +227,10 @@ oe_result_t oe_rsa_public_key_from_modulus(
     bignum_exponent = BN_bin2bn(exponent, (int)exponent_size, 0);
 
     pkey = EVP_PKEY_new();
-    if ((EVP_PKEY_set_bn_param(pkey, OSSL_PKEY_PARAM_RSA_N, bignum_modulus) == 0) ||
-        (EVP_PKEY_set_bn_param(pkey, OSSL_PKEY_PARAM_RSA_E, bignum_exponent) == 0))
+    if ((EVP_PKEY_set_bn_param(pkey, OSSL_PKEY_PARAM_RSA_N, bignum_modulus) ==
+         0) ||
+        (EVP_PKEY_set_bn_param(pkey, OSSL_PKEY_PARAM_RSA_E, bignum_exponent) ==
+         0))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     oe_rsa_public_key_init(public_key, pkey);

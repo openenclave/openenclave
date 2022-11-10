@@ -66,16 +66,17 @@ done:
 static oe_result_t _private_key_write_pem_callback(BIO* bio, EVP_PKEY* pkey)
 {
     oe_result_t result = OE_UNEXPECTED;
-    unsigned char *buffer = NULL;
+    unsigned char* buffer = NULL;
     size_t bytes_written;
-    OSSL_ENCODER_CTX* ctx = OSSL_ENCODER_CTX_new_for_pkey(pkey, EVP_PKEY_KEYPAIR, "PEM", NULL, NULL);
+    OSSL_ENCODER_CTX* ctx = OSSL_ENCODER_CTX_new_for_pkey(
+        pkey, EVP_PKEY_KEYPAIR, "PEM", NULL, NULL);
     if (!ctx)
         OE_RAISE(OE_CRYPTO_ERROR);
     if (!OSSL_ENCODER_to_data(ctx, &buffer, &bytes_written))
         OE_RAISE(OE_CRYPTO_ERROR);
     if (bytes_written <= 0)
         OE_RAISE(OE_CRYPTO_ERROR);
-    BIO_write(bio, buffer, (int) bytes_written);
+    BIO_write(bio, buffer, (int)bytes_written);
 
     result = OE_OK;
 
@@ -425,10 +426,17 @@ oe_result_t oe_ec_generate_key_pair_from_private(
     openssl_result = EC_POINT_mul(group, point, priv, NULL, NULL, NULL);
     if (openssl_result == 0)
         OE_RAISE(OE_CRYPTO_ERROR);
-    keysize = EC_POINT_point2oct(group, point, POINT_CONVERSION_UNCOMPRESSED, NULL, 0, NULL);
+    keysize = EC_POINT_point2oct(
+        group, point, POINT_CONVERSION_UNCOMPRESSED, NULL, 0, NULL);
     if (keysize == 0 || keysize > 1024)
         OE_RAISE(OE_CRYPTO_ERROR);
-    if (EC_POINT_point2oct(group, point, POINT_CONVERSION_UNCOMPRESSED, buffer, keysize, NULL) > 1024)
+    if (EC_POINT_point2oct(
+            group,
+            point,
+            POINT_CONVERSION_UNCOMPRESSED,
+            buffer,
+            keysize,
+            NULL) > 1024)
         OE_RAISE(OE_CRYPTO_ERROR);
     // Generate EVP_PKEY for private key
     if (!(public_pkey = EVP_PKEY_new()))
@@ -439,7 +447,8 @@ oe_result_t oe_ec_generate_key_pair_from_private(
     if (!(ctx = EVP_PKEY_CTX_new_from_name(NULL, "EC", NULL)))
         OE_RAISE(OE_CRYPTO_ERROR);
     EVP_PKEY_fromdata_init(ctx);
-    params[0] = OSSL_PARAM_construct_utf8_string("group", (char*)OBJ_nid2sn(_get_nid(curve)), 0);
+    params[0] = OSSL_PARAM_construct_utf8_string(
+        "group", (char*)OBJ_nid2sn(_get_nid(curve)), 0);
     params[1] = OSSL_PARAM_construct_octet_string("pub", buffer, keysize);
     params[2] = params[2] = OSSL_PARAM_construct_end();
     if (EVP_PKEY_fromdata(ctx, &public_pkey, EVP_PKEY_PUBLIC_KEY, params) <= 0)
@@ -628,10 +637,10 @@ oe_result_t oe_ec_public_key_from_coordinates(
         if (!OSSL_PARAM_BLD_push_utf8_string(
                 param_bld, "group", OBJ_nid2sn(nid), 0))
             OE_RAISE(OE_CRYPTO_ERROR);
-        unsigned char pub_data[1+x_size+y_size];
-        pub_data[0] = (uint8_t) POINT_CONVERSION_UNCOMPRESSED;
+        unsigned char pub_data[1 + x_size + y_size];
+        pub_data[0] = (uint8_t)POINT_CONVERSION_UNCOMPRESSED;
         memcpy(&pub_data[1], &x_data[0], x_size);
-        memcpy(&pub_data[1+x_size], &y_data[0], y_size);
+        memcpy(&pub_data[1 + x_size], &y_data[0], y_size);
         if (OSSL_PARAM_BLD_push_octet_string(
                 param_bld, "pub", pub_data, sizeof(pub_data)))
             OE_RAISE(OE_CRYPTO_ERROR);
