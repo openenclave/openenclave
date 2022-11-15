@@ -12,8 +12,6 @@ Param(
     # We skip the hash check for the vs_buildtools.exe file because it is regularly updated without a change to the URL, unfortunately.
     [string]$VSBuildToolsURL = 'https://aka.ms/vs/16/release/vs_buildtools.exe',
     [string]$VSBuildToolsHash = '',
-    [string]$PreviousClangURL = 'https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/LLVM-10.0.0-win64.exe',
-    [string]$PreviousClangHash = '893f8a12506f8ad29ca464d868fb432fdadd782786a10655b86575fc7fc1a562',
     [string]$ClangURL = 'https://github.com/llvm/llvm-project/releases/download/llvmorg-11.1.0/LLVM-11.1.0-win64.exe',
     [string]$ClangHash = 'B5770BBFAC712D273938CD155E232AFAA85C2E8D865C7CA504A104A838568516',
     [string]$ShellCheckURL = 'https://oejenkins.blob.core.windows.net/oejenkins/shellcheck-v0.7.0.zip',
@@ -35,6 +33,7 @@ Param(
     [string]$GetPipURL = 'https://bootstrap.pypa.io/pip/3.4/get-pip.py',
     [string]$GetPipHash = 'DBD5DAE3D1E7F6DF844D630CDF65E0F0D98E483C9997DAEA17C7C9D86F7B38AD',
     [Parameter(mandatory=$true)][string]$InstallPath,
+    # SGX1 and SGX1-NoIntelDrivers will be deprecated.
     [Parameter(mandatory=$true)][ValidateSet("SGX1FLC", "SGX1", "SGX1FLC-NoIntelDrivers", "SGX1-NoIntelDrivers")][string]$LaunchConfiguration,
     [Parameter(mandatory=$true)][ValidateSet("None", "Azure")][string]$DCAPClientType,
     [Parameter(mandatory=$false)][switch]$InstallDocker=$false,
@@ -62,11 +61,6 @@ $PACKAGES = @{
         "url" = $VSBuildToolsURL
         "hash" = $VSBuildToolsHash
         "local_file" = Join-Path $PACKAGES_DIRECTORY "vs_buildtools.exe"
-    }
-    "previous_clang" = @{
-        "url" = $PreviousClangURL
-        "hash" = $PreviousClangHash
-        "local_file" = Join-Path $PACKAGES_DIRECTORY "previous-LLVM-win64.exe"
     }
     "clang" = @{
         "url" = $ClangURL
@@ -399,12 +393,6 @@ function Install-VisualStudio {
 }
 
 # See https://nsis.sourceforge.io/Docs/Chapter3.html#installerusagecommon for valid installer args
-function Install-Previous-LLVM {
-    Install-Tool -InstallerPath $PACKAGES["previous_clang"]["local_file"] `
-                 -ArgumentList @("/S", "/D=${env:ProgramFiles}\LLVM-previous") `
-                 -EnvironmentPath "${env:ProgramFiles}\LLVM-previous\bin"
-}
-
 function Install-LLVM {
     Install-Tool -InstallerPath $PACKAGES["clang"]["local_file"] `
                  -ArgumentList @("/S", "/D=${env:ProgramFiles}\LLVM") `
@@ -598,7 +586,6 @@ try {
     if (!$SkipVSInstall) {
         Install-VisualStudio
     }
-    Install-Previous-LLVM
     Install-LLVM
     Install-Git
     Install-Shellcheck
