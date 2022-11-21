@@ -6,6 +6,7 @@
 #include <openenclave/internal/defs.h>
 #include <openenclave/internal/raise.h>
 #include <openssl/sha.h>
+#include <openssl/evp.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -100,7 +101,7 @@ oe_result_t oe_sha256_final(oe_sha256_context_t* context, OE_SHA256* sha256)
     if (!context)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (!EVP_DigestFinal_ex(sha256->buf, impl->ctx, NULL))
+    if (!EVP_DigestFinal_ex(impl->ctx, sha256->buf, NULL))
         OE_RAISE(OE_CRYPTO_ERROR);
 
     result = OE_OK;

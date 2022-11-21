@@ -18,6 +18,8 @@ typedef struct _oe_ec_private_key
     uint64_t impl[4];
 } oe_ec_private_key_t;
 
+void print_private_key(oe_ec_private_key_t* private_key);
+
 /* Opaque representation of a public EC key */
 typedef struct _oe_ec_public_key
 {

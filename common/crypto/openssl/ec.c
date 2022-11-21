@@ -41,6 +41,32 @@ static int _get_nid(oe_ec_type_t ec_type)
     }
 }
 
+void print_bn(BIGNUM* bn) {
+    int size = BN_num_bytes(bn);
+    uint8_t buffer[size];
+    BN_bn2bin(bn, buffer);
+    for (int i = 0; i < size; i++) {
+        printf("%02X ", buffer[i]);
+    }
+    printf("\n");
+    printf("%d bytes written\n", size);
+}
+
+void print_private_key(oe_ec_private_key_t* private_key) {
+    oe_private_key_t* key = (oe_private_key_t *) private_key;
+    BIGNUM* key_bn = NULL;
+    EVP_PKEY_get_bn_param(key->pkey, OSSL_PKEY_PARAM_PRIV_KEY, &key_bn);
+    print_bn(key->pkey);
+    BN_free(key_bn);
+}
+
+void print_pkey(EVP_PKEY* pkey, const char* type) {
+    BIGNUM* key_bn = NULL;
+    EVP_PKEY_get_bn_param(pkey, type, &key_bn);
+    print_bn(pkey);
+    BN_free(key_bn);
+}
+
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
 static oe_result_t _private_key_write_pem_callback(BIO* bio, EVP_PKEY* pkey)
 {
@@ -402,7 +428,10 @@ oe_result_t oe_ec_generate_key_pair_from_private(
     EC_POINT* point = NULL;
     uint8_t buffer[1024];
     size_t keysize;
-    OSSL_PARAM params[3];
+    OSSL_PARAM_BLD* bld_pub;
+    OSSL_PARAM* params_pub;
+    OSSL_PARAM_BLD* bld_priv;
+    OSSL_PARAM* params_priv;
 
     if (!private_key_buf || !private_key || !public_key ||
         private_key_buf_size > OE_INT_MAX)
@@ -438,27 +467,42 @@ oe_result_t oe_ec_generate_key_pair_from_private(
             keysize,
             NULL) > 1024)
         OE_RAISE(OE_CRYPTO_ERROR);
-    // Generate EVP_PKEY for private key
-    if (!(public_pkey = EVP_PKEY_new()))
-        OE_RAISE(OE_CRYPTO_ERROR);
-    if (!(EVP_PKEY_set_bn_param(private_pkey, "priv", priv)))
-        OE_RAISE(OE_CRYPTO_ERROR);
-    // Generate EVP_PKEY for public key
+
     if (!(ctx = EVP_PKEY_CTX_new_from_name(NULL, "EC", NULL)))
         OE_RAISE(OE_CRYPTO_ERROR);
-    EVP_PKEY_fromdata_init(ctx);
-    params[0] = OSSL_PARAM_construct_utf8_string(
-        "group", (char*)OBJ_nid2sn(_get_nid(curve)), 0);
-    params[1] = OSSL_PARAM_construct_octet_string("pub", buffer, keysize);
-    params[2] = params[2] = OSSL_PARAM_construct_end();
-    if (EVP_PKEY_fromdata(ctx, &public_pkey, EVP_PKEY_PUBLIC_KEY, params) <= 0)
+    if (EVP_PKEY_fromdata_init(ctx) <= 0)
         OE_RAISE(OE_CRYPTO_ERROR);
+    // Generate EVP_PKEY for private key
+    bld_priv = OSSL_PARAM_BLD_new();
+    if (!OSSL_PARAM_BLD_push_utf8_string(bld_priv, "group", (char*)OBJ_nid2sn(_get_nid(curve)), 0))
+        OE_RAISE(OE_CRYPTO_ERROR);
+    if (!OSSL_PARAM_BLD_push_BN(bld_priv, "priv", priv))
+        OE_RAISE(OE_CRYPTO_ERROR);
+    params_priv = OSSL_PARAM_BLD_to_param(bld_priv);
+    if (EVP_PKEY_fromdata(ctx, &private_pkey, EVP_PKEY_KEYPAIR, params_priv) <= 0)
+        OE_RAISE(OE_CRYPTO_ERROR);
+    // Generate EVP_PKEY for public key
+    bld_pub = OSSL_PARAM_BLD_new();
+    OSSL_PARAM_BLD_push_utf8_string(bld_pub, "group", (char*)OBJ_nid2sn(_get_nid(curve)), 0);
+    OSSL_PARAM_BLD_push_octet_string(bld_pub, "pub", buffer, keysize);
+    params_pub = OSSL_PARAM_BLD_to_param(bld_pub);
+    if (EVP_PKEY_fromdata(ctx, &public_pkey, EVP_PKEY_PUBLIC_KEY, params_pub) <= 0)
+        OE_RAISE(OE_CRYPTO_ERROR);
+    // Wrap both keys in OE data types
     oe_ec_public_key_init(public_key, public_pkey);
     oe_ec_private_key_init(private_key, private_pkey);
     result = OE_OK;
 
 done:
     // Deallocate all temporary OpenSSL structures
+    if (bld_priv)
+        OSSL_PARAM_BLD_free(bld_priv);
+    if (params_priv)
+        OSSL_PARAM_free(params_priv);
+    if (bld_pub)
+        OSSL_PARAM_BLD_free(bld_pub);
+    if (params_pub)
+        OSSL_PARAM_free(params_pub);
     if (priv)
         BN_free(priv);
     if (point)

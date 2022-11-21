@@ -8,6 +8,8 @@
 
 OE_EXTERNC_BEGIN
 
+void print_private_key(oe_ec_private_key_t* private_key);
+
 /**
  * Reads a private EC key from PEM data
  *

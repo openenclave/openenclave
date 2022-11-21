@@ -463,8 +463,9 @@ oe_result_t oe_private_key_sign(
 #endif
 
     /* Create signing context */
-    if (!(ctx = EVP_PKEY_CTX_new(impl->pkey, NULL)))
+    if (!(ctx = EVP_PKEY_CTX_new(impl->pkey, NULL))) {
         OE_RAISE(OE_CRYPTO_ERROR);
+    }
 
     /* Initialize the signing context */
     if (EVP_PKEY_sign_init(ctx) <= 0)
