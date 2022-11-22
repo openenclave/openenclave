@@ -504,12 +504,11 @@ def windowsLinuxElfBuild(String windows_label, String ubuntu_label, String compi
     }
 }
 
-def windowsCrossCompile(String label, String build_type, String lvi_mitigation = 'None', String OE_SIMULATION = "0", String lvi_mitigation_skip_tests = 'OFF', List extra_cmake_args = []) {
-    stage("Windows ${label} ${build_type} with SGX LVI_MITIGATION=${lvi_mitigation}") {
-        node(label) {
+def windowsCrossCompile(String label, String clang_version, String build_type, String lvi_mitigation = 'None', String OE_SIMULATION = "0", String lvi_mitigation_skip_tests = 'OFF', List extra_cmake_args = []) {
+    stage("Windows ${label}-${clang_version} ${build_type} with SGX LVI_MITIGATION=${lvi_mitigation}") {
+        node("${label}-${clang_version}") {
             withEnv(["OE_SIMULATION=${OE_SIMULATION}"]) {
                 timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
-                    // OFF value of quote provider until https://github.com/openenclave/openenclave-ci/pull/29 is merged
                     common.WinCompilePackageTest("build/X64-${build_type}", build_type, 'OFF', globalvars.CTEST_TIMEOUT_SECONDS, lvi_mitigation, lvi_mitigation_skip_tests, extra_cmake_args)
                 }
             }
