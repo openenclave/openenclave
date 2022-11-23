@@ -31,33 +31,46 @@ elseif (WIN32)
 endif ()
 
 # Will be overwritten during the cmake initialization.
+
+# Value can be one of "None" and "ControlFlow"
+# If None, no LVI mitigation will be applied
+# If ControlFlow, only control-flow mitigations will be applied
+# Support of All LVI hardening (-mlvi-hardening) is omitted
 set(LVI_MITIGATION
     "None"
-    CACHE STRING "Build with LVI mitigation.")
+    CACHE STRING "Build with LVI mitigation. Options: [None, ControlFlow]")
 set(LVI_MITIGATION_BINDIR
     "None"
-    CACHE STRING "Path to the LVI mitigation bindir.")
+    CACHE STRING "[clang-10 only] Path to the LVI mitigation bindir.")
 
 # On Unix, configuring cmake to use the preferred compiler.
 # Note that this must be done before the `project` command.
 if (UNIX)
-  if (LVI_MITIGATION MATCHES ControlFlow)
-    # If the LVI mitigation is enabled, use the customized compilation toolchain.
+  # For the normal build, if the CC environment variable has been specified or if
+  # the CMAKE_C_COMPILER cmake variable has been passed to cmake, use the C compiler
+  # that has been specified. Otherwise, prefer clang. Same for C++ compiler.
+  if (NOT DEFINED ENV{CC} AND NOT DEFINED CMAKE_C_COMPILER)
+    find_program(CMAKE_C_COMPILER clang-11 clang-10 clang)
+  endif ()
+  if (NOT DEFINED ENV{CXX} AND NOT DEFINED CMAKE_CXX_COMPILER)
+    find_program(CMAKE_CXX_COMPILER clang++-11 clang++-10 clang++)
+  endif ()
+
+  if (CMAKE_C_COMPILER MATCHES "10$" OR CMAKE_CXX_COMPILER MATCHES "10$")
+    set(OE_USING_CLANG_10 TRUE)
+  else ()
+    set(OE_USING_CLANG_10 FALSE)
+  endif ()
+
+  # For clang-10, check options for Load Value Injection (LVI) mitigation
+  if (OE_USING_CLANG_10 AND LVI_MITIGATION MATCHES ControlFlow)
     if (${LVI_MITIGATION_BINDIR} MATCHES None)
       message(FATAL_ERROR "LVI_MITIGATION_BINDIR is not specified.")
     endif ()
+
+    # If the LVI mitigation is enabled, use the customized compilation toolchain.
     include(configure_lvi_mitigation_build)
     configure_lvi_mitigation_build(BINDIR ${LVI_MITIGATION_BINDIR})
-  else ()
-    # For the normal build, if the CC environment variable has been specified or if
-    # the CMAKE_C_COMPILER cmake variable has been passed to cmake, use the C compiler
-    # that has been specified. Otherwise, prefer clang. Same for C++ compiler.
-    if (NOT DEFINED ENV{CC} AND NOT DEFINED CMAKE_C_COMPILER)
-      find_program(CMAKE_C_COMPILER clang-11 clang-10 clang)
-    endif ()
-    if (NOT DEFINED ENV{CXX} AND NOT DEFINED CMAKE_CXX_COMPILER)
-      find_program(CMAKE_CXX_COMPILER clang++-11 clang++-10 clang++)
-    endif ()
   endif ()
 endif ()
 

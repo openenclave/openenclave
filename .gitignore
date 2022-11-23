@@ -8,6 +8,8 @@
 .vscode/
 graphviz/
 build/
+build_10/
+build_11/
 winbuild/
 
 3rdparty/compiler-rt/compiler-rt

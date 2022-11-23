@@ -95,7 +95,7 @@ if (OE_SGX)
   set_source_files_properties(sgx/td_basic.c PROPERTIES COMPILE_FLAGS
                                                         -fno-stack-protector)
 
-  if (CMAKE_C_COMPILER MATCHES "10$" OR CMAKE_CXX_COMPILER MATCHES "10$")
+  if (OE_USING_CLANG_10)
     set_source_files_properties(
       sgx/calls.c PROPERTIES COMPILE_FLAGS
                              "-O2 -fno-omit-frame-pointer -fno-stack-protector")
@@ -328,7 +328,7 @@ if (CODE_COVERAGE)
   set_source_files_properties(once.c sgx/init.c PROPERTIES COMPILE_FLAGS
                                                            "-fno-profile-arcs")
   # Adding "-fno-profile-arcs" for Code Coverage, in additional to existing flags
-  if (CMAKE_C_COMPILER MATCHES "10$" OR CMAKE_CXX_COMPILER MATCHES "10$")
+  if (OE_USING_CLANG_10)
     set_source_files_properties(
       sgx/calls.c
       PROPERTIES
