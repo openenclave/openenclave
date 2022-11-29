@@ -18,8 +18,6 @@ typedef struct _oe_ec_private_key
     uint64_t impl[4];
 } oe_ec_private_key_t;
 
-void print_private_key(oe_ec_private_key_t* private_key);
-
 /* Opaque representation of a public EC key */
 typedef struct _oe_ec_public_key
 {
@@ -35,6 +33,9 @@ typedef enum oe_ec_type_t
 } oe_ec_type_t;
 
 OE_STATIC_ASSERT(sizeof(oe_ec_type_t) == sizeof(unsigned int));
+
+void print_public_key(oe_ec_public_key_t* ec_public_key);
+void print_private_key(oe_ec_private_key_t* ec_private_key);
 
 /**
  * Reads a public EC key from PEM data
@@ -165,6 +166,13 @@ oe_result_t oe_ec_public_key_verify(
  * @param public_key the output public key parameter
  */
 oe_result_t oe_ec_generate_key_pair_from_private(
+    oe_ec_type_t curve,
+    const uint8_t* private_key_buf,
+    size_t private_key_buf_size,
+    oe_ec_private_key_t* private_key,
+    oe_ec_public_key_t* public_key);
+
+oe_result_t oe_ec_generate_key_pair_from_private_old(
     oe_ec_type_t curve,
     const uint8_t* private_key_buf,
     size_t private_key_buf_size,
