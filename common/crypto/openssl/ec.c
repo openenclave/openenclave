@@ -41,22 +41,6 @@ static int _get_nid(oe_ec_type_t ec_type)
     }
 }
 
-void print_public_key(oe_ec_public_key_t* ec_public_key) {
-    oe_public_key_t* public_key = (oe_public_key_t*) ec_public_key;
-    EVP_PKEY* pkey = public_key->pkey;
-    BIO* outbio = BIO_new(BIO_s_file());
-    outbio = BIO_new_fp(stdout, BIO_NOCLOSE);
-    EVP_PKEY_print_public(outbio, pkey, 0, NULL);
-}
-
-void print_private_key(oe_ec_private_key_t* ec_private_key) {
-    oe_public_key_t* private_key = (oe_public_key_t*) ec_private_key;
-    EVP_PKEY* pkey = private_key->pkey;
-    BIO* outbio = BIO_new(BIO_s_file());
-    outbio = BIO_new_fp(stdout, BIO_NOCLOSE);
-    EVP_PKEY_print_private(outbio, pkey, 0, NULL);
-}
-
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
 static oe_result_t _private_key_write_pem_callback(BIO* bio, EVP_PKEY* pkey)
 {
@@ -301,8 +285,8 @@ oe_result_t oe_ec_public_key_verify(
         OE_EC_PUBLIC_KEY_MAGIC);
 }
 
-// #if OPENSSL_VERSION_NUMBER < 0x30000000L
-oe_result_t oe_ec_generate_key_pair_from_private_old(
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+oe_result_t oe_ec_generate_key_pair_from_private(
     oe_ec_type_t curve,
     const uint8_t* private_key_buf,
     size_t private_key_buf_size,
@@ -400,7 +384,7 @@ done:
         EVP_PKEY_free(private_pkey);
     return result;
 }
-// #else
+#else
 oe_result_t oe_ec_generate_key_pair_from_private(
     oe_ec_type_t curve,
     const uint8_t* private_key_buf,
@@ -471,12 +455,10 @@ oe_result_t oe_ec_generate_key_pair_from_private(
     params = OSSL_PARAM_BLD_to_param(bld);
     if (EVP_PKEY_fromdata(ctx, &private_pkey, EVP_PKEY_KEYPAIR, params) <= 0)
         OE_RAISE(OE_CRYPTO_ERROR);
-    if (EVP_PKEY_private_check(ctx) != 1) {
-        BIO* outbio = BIO_new(BIO_s_file());
-        outbio = BIO_new_fp(stdout, BIO_NOCLOSE);
-        EVP_PKEY_print_private(outbio, private_pkey, 0, NULL);
+    if (!(ctx = EVP_PKEY_CTX_new(private_pkey, NULL)))
         OE_RAISE(OE_CRYPTO_ERROR);
-    }
+    if (EVP_PKEY_check(ctx) != 1)
+        OE_RAISE(OE_CRYPTO_ERROR);
     public_pkey = EVP_PKEY_dup(private_pkey);
     // Wrap both keys in OE data types
     oe_ec_public_key_init(public_key, public_pkey);
@@ -506,7 +488,7 @@ done:
         EVP_PKEY_free(private_pkey);
     return result;
 }
-// #endif
+#endif
 
 oe_result_t oe_ec_public_key_equal(
     const oe_ec_public_key_t* public_key1,

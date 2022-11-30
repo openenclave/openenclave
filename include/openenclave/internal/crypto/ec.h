@@ -34,9 +34,6 @@ typedef enum oe_ec_type_t
 
 OE_STATIC_ASSERT(sizeof(oe_ec_type_t) == sizeof(unsigned int));
 
-void print_public_key(oe_ec_public_key_t* ec_public_key);
-void print_private_key(oe_ec_private_key_t* ec_private_key);
-
 /**
  * Reads a public EC key from PEM data
  *

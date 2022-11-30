@@ -229,10 +229,6 @@ static void _test_generate_from_private()
 
     /* Generate a random 256 bit key. */
     r = oe_random_internal(private_raw, sizeof(private_raw));
-    for (int i = 0; i < 32; i++) {
-        printf("%02X ", private_raw[i]);
-    }
-    printf("\n");
     OE_TEST(r == OE_OK);
 
     /* Set the MSB to 0 so we always have a valid NIST 256P key. */
@@ -245,7 +241,7 @@ static void _test_generate_from_private()
         &private_key,
         &public_key);
 
-    r = oe_ec_generate_key_pair_from_private_old(
+    r = oe_ec_generate_key_pair_from_private(
         OE_EC_TYPE_SECP256R1,
         private_raw,
         sizeof(private_raw),
@@ -986,9 +982,9 @@ void TestEC()
     _test_cert_without_extensions();
     _test_crl_distribution_points();
     _test_sign_and_verify();
-    // _test_generate_from_private();
+    _test_generate_from_private();
     _test_private_key_limits();
-    // _test_write_private();
+    _test_write_private();
     _test_write_public();
     _test_cert_methods();
     _test_key_from_bytes();
