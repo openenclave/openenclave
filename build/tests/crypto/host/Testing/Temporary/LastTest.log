@@ -1,0 +1,115 @@
+Start testing: Nov 29 19:51 UTC
+----------------------------------------------------------
+1/1 Testing: tests/crypto/host
+1/1 Test: tests/crypto/host
+Command: "/home/luongminh97/openenclave/build/tests/crypto/host/hostcrypto"
+Directory: /home/luongminh97/openenclave/build/tests/crypto/host
+"tests/crypto/host" start time: Nov 29 19:51 UTC
+Output:
+----------------------------------------------------------
+=== begin _test_asn1_parsing()
+308201c1301e060a2a864886f84d010d010104101f8c1e7ba6bd107d8424dd35649dcd7230820164060a2a864886f84d010d0102308201543010060b2a864886f84d010d0102010201043010060b2a864886f84d010d0102020201043010060b2a864886f84d010d0102030201023010060b2a864886f84d010d0102040201043010060b2a864886f84d010d0102050201013011060b2a864886f84d010d010206020200803010060b2a864886f84d010d0102070201003010060b2a864886f84d010d0102080201003010060b2a864886f84d010d0102090201003010060b2a864886f84d010d01020a0201003010060b2a864886f84d010d01020b0201003010060b2a864886f84d010d01020c0201003010060b2a864886f84d010d01020d0201003010060b2a864886f84d010d01020e0201003010060b2a864886f84d010d01020f0201003010060b2a864886f84d010d0102100201003010060b2a864886f84d010d010211020105301f060b2a864886f84d010d0102120410040402040180000000000000000000003010060a2a864886f84d010d0103040200003014060a2a864886f84d010d0104040600906ea10000300f060a2a864886f84d010d01050a0100
+str=SEQUENCE: length=1c1
+    SEQUENCE: length=1e
+        OID: 1.2.840.113741.1.13.1.1
+        OCTET_STRING:
+            length=10
+            data=1f8c1e7ba6bd107d8424dd35649dcd72
+    SEQUENCE: length=164
+        OID: 1.2.840.113741.1.13.1.2
+        SEQUENCE: length=154
+            SEQUENCE: length=10
+                OID: 1.2.840.113741.1.13.1.2.1
+                INTEGER: value=4
+            SEQUENCE: length=10
+                OID: 1.2.840.113741.1.13.1.2.2
+                INTEGER: value=4
+            SEQUENCE: length=10
+                OID: 1.2.840.113741.1.13.1.2.3
+                INTEGER: value=2
+            SEQUENCE: length=10
+                OID: 1.2.840.113741.1.13.1.2.4
+                INTEGER: value=4
+            SEQUENCE: length=10
+                OID: 1.2.840.113741.1.13.1.2.5
+                INTEGER: value=1
+            SEQUENCE: length=11
+                OID: 1.2.840.113741.1.13.1.2.6
+                INTEGER: value=128
+            SEQUENCE: length=10
+                OID: 1.2.840.113741.1.13.1.2.7
+                INTEGER: value=0
+            SEQUENCE: length=10
+                OID: 1.2.840.113741.1.13.1.2.8
+                INTEGER: value=0
+            SEQUENCE: length=10
+                OID: 1.2.840.113741.1.13.1.2.9
+                INTEGER: value=0
+            SEQUENCE: length=10
+                OID: 1.2.840.113741.1.13.1.2.10
+                INTEGER: value=0
+            SEQUENCE: length=10
+                OID: 1.2.840.113741.1.13.1.2.11
+                INTEGER: value=0
+            SEQUENCE: length=10
+                OID: 1.2.840.113741.1.13.1.2.12
+                INTEGER: value=0
+            SEQUENCE: length=10
+                OID: 1.2.840.113741.1.13.1.2.13
+                INTEGER: value=0
+            SEQUENCE: length=10
+                OID: 1.2.840.113741.1.13.1.2.14
+                INTEGER: value=0
+            SEQUENCE: length=10
+                OID: 1.2.840.113741.1.13.1.2.15
+                INTEGER: value=0
+            SEQUENCE: length=10
+                OID: 1.2.840.113741.1.13.1.2.16
+                INTEGER: value=0
+            SEQUENCE: length=10
+                OID: 1.2.840.113741.1.13.1.2.17
+                INTEGER: value=5
+            SEQUENCE: length=1f
+                OID: 1.2.840.113741.1.13.1.2.18
+                OCTET_STRING:
+                    length=10
+                    data=04040204018000000000000000000000
+    SEQUENCE: length=10
+        OID: 1.2.840.113741.1.13.1.3
+        OCTET_STRING:
+            length=2
+            data=0000
+    SEQUENCE: length=14
+        OID: 1.2.840.113741.1.13.1.4
+        OCTET_STRING:
+            length=6
+            data=00906ea10000
+    SEQUENCE: length=f
+        OID: 1.2.840.113741.1.13.1.5
+        UNKNOWN:
+            tag=0a
+            length=1
+            data=00
+
+=== passed _test_asn1_parsing()
+=== begin _test_verify_without_crl()
+=== passed _test_verify_without_crl()
+=== begin _test_verify_without_crl()
+=== passed _test_verify_without_crl()
+=== begin _test_verify_with_crl()
+2022-11-29T19:51:38+0000.769384Z [(H)ERROR] tid(0x7fbc363efc00) | X509_verify_cert failed!
+ error: (23) certificate revoked
+ (oe_result_t=OE_VERIFY_REVOKED) [/ho[Actual CRL last] Year=2022, Month=11, Day=16, Hour=16, Minute=44, Second=5
+[Expected CRL last] Year=2022, Month=11, Day=16, Hour=16, Minute=44, Second=5
+[Actual CRL next] Year=2023, Month=11, Day=16, Hour=16, Minute=44, Second=5
+[Expected CRL next] Year=2023, Month=11, Day=16, Hour=16, Minute=44, Second=5
+Test failed: /home/luongminh97/openenclave/tests/crypto/ec_tests.c(186): _verify_generated_keys r == OE_BUFFER_TOO_SMALL
+<end of output>
+Test time =   0.04 sec
+----------------------------------------------------------
+Test Failed.
+"tests/crypto/host" end time: Nov 29 19:51 UTC
+"tests/crypto/host" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Nov 29 19:51 UTC
