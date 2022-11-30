@@ -446,7 +446,8 @@ oe_result_t oe_ec_generate_key_pair_from_private(
         OE_RAISE(OE_CRYPTO_ERROR);
     // Generate EVP_PKEY for private key
     bld = OSSL_PARAM_BLD_new();
-    if (!OSSL_PARAM_BLD_push_utf8_string(bld, "group", (char*)OBJ_nid2sn(_get_nid(curve)), 0))
+    if (!OSSL_PARAM_BLD_push_utf8_string(
+            bld, "group", (char*)OBJ_nid2sn(_get_nid(curve)), 0))
         OE_RAISE(OE_CRYPTO_ERROR);
     if (!OSSL_PARAM_BLD_push_BN(bld, "priv", priv))
         OE_RAISE(OE_CRYPTO_ERROR);
@@ -656,7 +657,8 @@ oe_result_t oe_ec_public_key_from_coordinates(
         pub_data[0] = (uint8_t)POINT_CONVERSION_UNCOMPRESSED;
         memcpy(&pub_data[1], &x_data[0], x_size);
         memcpy(&pub_data[1 + x_size], &y_data[0], y_size);
-        if (!OSSL_PARAM_BLD_push_octet_string(param_bld, "pub", pub_data, sizeof(pub_data)))
+        if (!OSSL_PARAM_BLD_push_octet_string(
+                param_bld, "pub", pub_data, sizeof(pub_data)))
             OE_RAISE(OE_CRYPTO_ERROR);
 
         params = OSSL_PARAM_BLD_to_param(param_bld);
