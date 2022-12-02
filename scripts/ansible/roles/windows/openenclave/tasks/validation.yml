@@ -30,6 +30,8 @@
   failed_when: ninja_check_version.stdout.find(ninja_target_version) == -1
 
 - name: Clang version check
-  ansible.builtin.raw: "clang --version"
+  ansible.builtin.raw: "& 'C:\\Program Files\\LLVM\\bin\\clang.exe' --version"
   register: clang_check_version
   failed_when: clang_check_version.stdout.find(clang_target_version) == -1
+  args:
+    executable: ansible.windows.win_shell

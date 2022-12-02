@@ -5,8 +5,8 @@
 ---
 - name: Set clang and lvi facts
   ansible.builtin.set_fact:
-    clang_previous_version: "8"
-    clang_current_version: "10"
+    clang_previous_version: "10"
+    clang_current_version: "11"
     local_lvi_directory: '/usr/local/lvi-mitigation'
     scripts_lvi_directory: '{{ playbook_dir }}/../lvi-mitigation'
 

@@ -35,4 +35,4 @@ import groovy.transform.Field
     // Others
     "shared":                      "Jenkins-Shared-DC2"
 ]
-@Field COMPILER = "clang-10"
+@Field COMPILER = "clang-11"
