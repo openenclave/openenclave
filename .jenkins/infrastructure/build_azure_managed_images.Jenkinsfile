@@ -74,15 +74,29 @@ def buildLinuxManagedImage(String os_type, String version, String managed_image_
     }
 }
 
-def buildWindowsManagedImage(String os_series, String img_name_suffix, String launch_configuration, String image_id, String image_version) {
+/* This builds a Windows image for Azure Managed Images
+ * @param os_series            String for Windows OS version. 
+ *                             Options: "win2019"
+ * @param image_type           String for image type that forms part of the image definition. 
+ *                             Options: "nonSGX", "SGX-DCAP"
+ * @param launch_configuration String for the configuration used to provision the Windows image for the install-windows-prereqs.ps1 script. 
+ *                             Options: "SGX1FLC-NoIntelDrivers", "SGX1FLC"
+ * @param clang_version        String for the clang version.
+ *                             Options: "11.1.0", "10.0.0"
+ * @param image_id
+ * @param image_version
+ */
+ 
+def buildWindowsManagedImage(String os_series, String image_type, String launch_configuration, String clang_version, String image_id, String image_version) {
 
     stage("${launch_configuration} Build") {
 
         def managed_image_name_id = image_id
         def gallery_image_version = image_version
-        def vm_rg_name = "build-${managed_image_name_id}-${img_name_suffix}-${BUILD_NUMBER}"
+        def vm_rg_name = "build-${managed_image_name_id}-ws2019-${image_type}-${clang_version}-${BUILD_NUMBER}"
+        def clang_version_short = clang_version.take(2)
         // Azure VM names must be 15 characters or less
-        def vm_name = img_name_suffix.drop(7) + "-${BUILD_NUMBER}"
+        def vm_name = image_type + "-" + clang_version_short + "-" + BUILD_NUMBER
         def jenkins_rg_name = params.JENKINS_RESOURCE_GROUP
         def jenkins_vnet_name = params.JENKINS_VNET_NAME
         def jenkins_subnet_name = params.JENKINS_SUBNET_NAME
@@ -158,10 +172,10 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
 
                             PRIVATE_IP=\$(echo \$VM_DETAILS | jq -r '.privateIps')
 
-                            rm -f ${WORKSPACE}/scripts/ansible/inventory/hosts-${LAUNCH_CONFIGURATION}
+                            rm -f ${WORKSPACE}/scripts/ansible/inventory/host-${VM_NAME}
 
-                            echo "[windows-agents]" >> ${WORKSPACE}/scripts/ansible/inventory/hosts-${LAUNCH_CONFIGURATION}
-                            echo "\$PRIVATE_IP" >> ${WORKSPACE}/scripts/ansible/inventory/hosts-${LAUNCH_CONFIGURATION}
+                            echo "[windows-agents]" >> ${WORKSPACE}/scripts/ansible/inventory/hosts-${VM_NAME}
+                            echo "\$PRIVATE_IP" >> ${WORKSPACE}/scripts/ansible/inventory/hosts-${VM_NAME}
                             echo "ansible_connection: winrm" >> ${WORKSPACE}/scripts/ansible/inventory/host_vars/\$PRIVATE_IP
                             echo "ansible_winrm_transport: ntlm" >> ${WORKSPACE}/scripts/ansible/inventory/host_vars/\$PRIVATE_IP
                             echo "launch_configuration: ${LAUNCH_CONFIGURATION}" >> ${WORKSPACE}/scripts/ansible/inventory/host_vars/\$PRIVATE_IP
@@ -173,7 +187,7 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                 sh """
                     cd ${WORKSPACE}/scripts/ansible
                     ansible windows-agents \
-                        -i ${WORKSPACE}/scripts/ansible/inventory/hosts-${launch_configuration} \
+                        -i ${WORKSPACE}/scripts/ansible/inventory/hosts-${vm_name} \
                         -m ansible.builtin.wait_for_connection \
                         -a "sleep=10 timeout=600"
                 """
@@ -183,7 +197,11 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                 common.exec_with_retry(5, 60) {
                     sh """
                         cd ${WORKSPACE}/scripts/ansible
-                        ansible-playbook -i ${WORKSPACE}/scripts/ansible/inventory/hosts-${launch_configuration} oe-windows-acc-setup.yml jenkins-packer.yml
+                        ansible-playbook \
+                            -i ${WORKSPACE}/scripts/ansible/inventory/hosts-${vm_name} \
+                            --extra-vars \"clang_target_version=${clang_version}\" \
+                            oe-windows-acc-setup.yml \
+                            jenkins-packer.yml
 
                         az vm run-command invoke \
                             --resource-group ${vm_rg_name} \
@@ -217,11 +235,11 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                             # will not fail because it is idempotent.
                             az image delete \
                                 --resource-group ${RESOURCE_GROUP} \
-                                --name ${managed_image_name_id}-${img_name_suffix}
+                                --name ${managed_image_name_id}-${image_type}-${clang_version}
 
                             az image create \
                                 --resource-group ${RESOURCE_GROUP} \
-                                --name ${managed_image_name_id}-${img_name_suffix} \
+                                --name ${managed_image_name_id}-${image_type}-${clang_version} \
                                 --hyper-v-generation ${AZURE_IMAGES_MAP[os_series]["generation"]} \
                                 --source \$VM_ID
                         """
@@ -235,7 +253,7 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                         sh """
                             MANAGED_IMG_ID=\$(az image show \
                                 --resource-group ${RESOURCE_GROUP} \
-                                --name ${managed_image_name_id}-${img_name_suffix} \
+                                --name ${managed_image_name_id}-${image_type}-${clang_version} \
                                 | jq -r '.id' )
 
                             # If the target image version doesn't exist, the below
@@ -243,13 +261,13 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                             az sig image-version delete \
                                 --resource-group ${RESOURCE_GROUP} \
                                 --gallery-name ${GALLERY_NAME} \
-                                --gallery-image-definition ${img_name_suffix} \
+                                --gallery-image-definition ${image_type}-clang-${clang_version_short} \
                                 --gallery-image-version ${gallery_image_version}
 
                             az sig image-version create \
                                 --resource-group ${RESOURCE_GROUP} \
                                 --gallery-name ${GALLERY_NAME} \
-                                --gallery-image-definition ${img_name_suffix} \
+                                --gallery-image-definition ${image_type}-clang-${clang_version_short} \
                                 --gallery-image-version ${gallery_image_version} \
                                 --managed-image \$MANAGED_IMG_ID \
                                 --target-regions ${env.REPLICATION_REGIONS.split(',').join(' ')} \
@@ -259,12 +277,12 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                 }
             }
         } finally {
-            stage("${img_name_suffix}-cleanup") {
+            stage("${image_type}-cleanup") {
                 sh """
                     az group delete --name ${vm_rg_name} --yes
                     az image delete \
                         --resource-group ${RESOURCE_GROUP} \
-                        --name ${managed_image_name_id}-${img_name_suffix}
+                        --name ${managed_image_name_id}-${image_type}-${clang_version}
                 """
             }
         }
@@ -337,9 +355,10 @@ node(params.AGENTS_LABEL) {
         }
         stage("Build images") {
             def windows_images = [
-                "Build Windows Server 2019 - nonSGX"       : { buildWindowsManagedImage("win2019", "ws2019-nonSGX", "SGX1FLC-NoIntelDrivers", image_id, image_version) },
-                "Build Windows Server 2019 - SGX1"         : { buildWindowsManagedImage("win2019", "ws2019-SGX", "SGX1", image_id, image_version) },
-                "Build Windows Server 2019 - SGX1FLC DCAP" : { buildWindowsManagedImage("win2019", "ws2019-SGX-DCAP", "SGX1FLC", image_id, image_version) }
+                "Build WS2019 - nonSGX - clang11"       : { buildWindowsManagedImage("win2019", "nonSGX", "SGX1FLC-NoIntelDrivers", "11.1.0", image_id, image_version) },
+                "Build WS2019 - nonSGX - clang10"       : { buildWindowsManagedImage("win2019", "nonSGX", "SGX1FLC-NoIntelDrivers", "10.0.0", image_id, image_version) },
+                "Build WS2019 - SGX1FLC DCAP - clang11" : { buildWindowsManagedImage("win2019", "SGX-DCAP", "SGX1FLC", "11.1.0", image_id, image_version) },
+                "Build WS2019 - SGX1FLC DCAP - clang10" : { buildWindowsManagedImage("win2019", "SGX-DCAP", "SGX1FLC", "10.0.0", image_id, image_version) }
             ]
             def linux_images = [
                 "Build Ubuntu 18.04" : { buildLinuxManagedImage("ubuntu", "18.04", image_id, image_version) },
