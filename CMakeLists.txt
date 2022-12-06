@@ -35,7 +35,7 @@ endif ()
 # Value can be one of "None" and "ControlFlow"
 # If None, no LVI mitigation will be applied
 # If ControlFlow, only control-flow mitigations will be applied
-# Support of All LVI hardening (-mlvi-hardening) is omitted
+# Support of full-LVI hardening (-mlvi-hardening) is omitted
 set(LVI_MITIGATION
     "None"
     CACHE STRING "Build with LVI mitigation. Options: [None, ControlFlow]")
