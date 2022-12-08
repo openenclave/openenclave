@@ -54,7 +54,7 @@ do
 
     -s | --staged)
         # Split into array
-        mapfile -t userFiles <<< "$(git diff --cached --name-only --diff-filter=ACMR)"
+        mapfile -t userFiles <<< "$(git diff --name-only --diff-filter=ACMR)"
         ;;
 
     --exclude-dirs=*)

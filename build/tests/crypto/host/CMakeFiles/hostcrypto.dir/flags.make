@@ -9,7 +9,7 @@ ASM_DEFINES = -DOE_API_VERSION=2
 
 ASM_INCLUDES = -I/home/luongminh97/openenclave/include -I/home/luongminh97/openenclave/build/output/include 
 
-C_FLAGS =  -fsanitize=address -g -O0   -mllvm -x86-speculative-load-hardening -Wall -Wpointer-arith -Wconversion -Wextra -Wno-missing-field-initializers -fno-strict-aliasing -Wno-type-limits -mxsave -fstack-protector-strong -std=gnu11
+C_FLAGS = -g -O0   -mllvm -x86-speculative-load-hardening -Wall -Wpointer-arith -Wconversion -Wextra -Wno-missing-field-initializers -fno-strict-aliasing -Wno-type-limits -mxsave -fstack-protector-strong -std=gnu11
 
 C_DEFINES = -DOE_API_VERSION=2
 

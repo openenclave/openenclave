@@ -126,7 +126,7 @@ done:
     return result;
 }
 #endif
-
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 oe_result_t oe_hmac_sha256_update(
     oe_hmac_sha256_context_t* context,
     const void* data,
@@ -139,20 +139,38 @@ oe_result_t oe_hmac_sha256_update(
     if (!context || !data || size > OE_INT_MAX)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-#if OPENSSL_VERSION_NUMBER < 0x30000000L
     if (HMAC_Update(impl->ctx, (const uint8_t*)data, size) == 0)
         OE_RAISE(OE_CRYPTO_ERROR);
-#else
-    if (EVP_MAC_update(impl->ctx, (const uint8_t*)data, size) == 0)
-        OE_RAISE(OE_CRYPTO_ERROR);
-#endif
 
     result = OE_OK;
 
 done:
     return result;
 }
+#else
+oe_result_t oe_hmac_sha256_update(
+    oe_hmac_sha256_context_t* context,
+    const void* data,
+    size_t size)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_hmac_sha256_context_impl_t* impl =
+        (oe_hmac_sha256_context_impl_t*)context;
 
+    if (!context || !data || size > OE_INT_MAX)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (EVP_MAC_update(impl->ctx, (const uint8_t*)data, size) == 0)
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+#endif
+
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 oe_result_t oe_hmac_sha256_final(
     oe_hmac_sha256_context_t* context,
     OE_SHA256* sha256)
@@ -165,14 +183,8 @@ oe_result_t oe_hmac_sha256_final(
     if (!context || !sha256)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-#if OPENSSL_VERSION_NUMBER < 0x30000000L
     if (HMAC_Final(impl->ctx, sha256->buf, &hmac_size) == 0)
         OE_RAISE(OE_CRYPTO_ERROR);
-#else
-    if (EVP_MAC_final(impl->ctx, sha256->buf, &hmac_size, sizeof(OE_SHA256)) ==
-        0)
-        OE_RAISE(OE_CRYPTO_ERROR);
-#endif
 
     if (hmac_size != sizeof(sha256->buf))
         OE_RAISE(OE_CRYPTO_ERROR);
@@ -182,7 +194,34 @@ oe_result_t oe_hmac_sha256_final(
 done:
     return result;
 }
+#else
+oe_result_t oe_hmac_sha256_final(
+    oe_hmac_sha256_context_t* context,
+    OE_SHA256* sha256)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_hmac_sha256_context_impl_t* impl =
+        (oe_hmac_sha256_context_impl_t*)context;
+    size_t hmac_size = 0;
 
+    if (!context || !sha256)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    // EVP_MAC_final(impl->ctx, NULL, &hmac_size, 0);
+    // printf("Memory required: %zu bytes\n", hmac_size);
+    if (EVP_MAC_final(impl->ctx, sha256->buf, &hmac_size, sizeof(OE_SHA256)) ==
+        0)
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    if (hmac_size != sizeof(sha256->buf))
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+#endif
 oe_result_t oe_hmac_sha256_free(oe_hmac_sha256_context_t* context)
 {
     oe_result_t result = OE_UNEXPECTED;
