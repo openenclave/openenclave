@@ -58,16 +58,23 @@ static oe_result_t _private_key_write_pem_callback(BIO* bio, EVP_PKEY* pkey)
 {
     oe_result_t result = OE_UNEXPECTED;
     unsigned char* buffer = NULL;
-    size_t bytes_written;
-    OSSL_ENCODER_CTX* ctx = OSSL_ENCODER_CTX_new_for_pkey(
+    size_t bytes_written = 0;
+    OSSL_ENCODER_CTX* ctx = NULL;
+
+    ctx = OSSL_ENCODER_CTX_new_for_pkey(
         pkey, EVP_PKEY_KEYPAIR, "PEM", NULL, NULL);
+
     if (!ctx)
         OE_RAISE(OE_CRYPTO_ERROR);
+
     if (!OSSL_ENCODER_to_data(ctx, &buffer, &bytes_written))
         OE_RAISE(OE_CRYPTO_ERROR);
-    if (bytes_written <= 0)
+
+    if (buffer == NULL || bytes_written <= 0)
         OE_RAISE(OE_CRYPTO_ERROR);
-    BIO_write(bio, buffer, (int)bytes_written);
+
+    if (!BIO_write(bio, buffer, (int)bytes_written))
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     result = OE_OK;
 
@@ -75,6 +82,9 @@ done:
 
     if (ctx)
         OSSL_ENCODER_CTX_free(ctx);
+
+    if (buffer)
+        OPENSSL_free(buffer);
 
     return result;
 }
@@ -157,9 +167,10 @@ static oe_result_t _get_public_key_get_modulus_or_exponent(
     bool get_modulus)
 {
     oe_result_t result = OE_UNEXPECTED;
-    size_t required_size;
-    const BIGNUM* bn;
-    // RSA* rsa = NULL;
+    size_t required_size = 0;
+    const BIGNUM* bn = NULL;
+    BIGNUM* e = NULL;
+    BIGNUM* n = NULL;
 
     /* Check for invalid parameters */
     if (!public_key || !buffer_size)
@@ -169,14 +180,7 @@ static oe_result_t _get_public_key_get_modulus_or_exponent(
     if (!buffer && *buffer_size != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Get RSA key */
-    // if (!(rsa = EVP_PKEY_get1_RSA(public_key->pkey)))
-    //     OE_RAISE(OE_CRYPTO_ERROR);
-
     /* Select modulus or exponent */
-    const BIGNUM* e = NULL;
-    const BIGNUM* n = NULL;
-    // RSA_get0_key(rsa, &n, &e, NULL);
     EVP_PKEY_get_bn_param(public_key->pkey, OSSL_PKEY_PARAM_RSA_N, &n);
     EVP_PKEY_get_bn_param(public_key->pkey, OSSL_PKEY_PARAM_RSA_E, &e);
     bn = get_modulus ? n : e;
@@ -295,8 +299,6 @@ static oe_result_t _public_key_equal(
     bool* equal)
 {
     oe_result_t result = OE_UNEXPECTED;
-    RSA* rsa1 = NULL;
-    RSA* rsa2 = NULL;
 
     if (equal)
         *equal = false;

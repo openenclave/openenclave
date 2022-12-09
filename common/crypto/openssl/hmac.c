@@ -42,6 +42,7 @@ static void _free_hmac_ctx(EVP_MAC_CTX* ctx)
 {
     if (!ctx)
         return;
+
     EVP_MAC_CTX_free(ctx);
 }
 #endif
@@ -95,24 +96,28 @@ oe_result_t oe_hmac_sha256_init(
 {
     oe_result_t result = OE_UNEXPECTED;
     EVP_MAC_CTX* ctx = NULL;
-    int openssl_result;
+    EVP_MAC* mac = NULL;
+    OSSL_PARAM params[3];
 
     if (!context || !key || keysize > OE_INT_MAX)
         OE_RAISE(OE_INVALID_PARAMETER);
-    EVP_MAC* mac = EVP_MAC_fetch(NULL, OSSL_MAC_NAME_HMAC, NULL);
+    mac = EVP_MAC_fetch(NULL, OSSL_MAC_NAME_HMAC, NULL);
+
     if (!mac)
         OE_RAISE(OE_CRYPTO_ERROR);
+
     ctx = EVP_MAC_CTX_new(mac);
+
     if (ctx == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
-    OSSL_PARAM params[3];
+
     params[0] = OSSL_PARAM_construct_octet_string(
-        OSSL_MAC_PARAM_KEY, (const void*)key, keysize);
+        OSSL_MAC_PARAM_KEY, (void*)key, keysize);
     params[1] = OSSL_PARAM_construct_utf8_string(
         OSSL_MAC_PARAM_DIGEST, OSSL_DIGEST_NAME_SHA2_256, 0);
     params[2] = OSSL_PARAM_construct_end();
-    openssl_result = EVP_MAC_init(ctx, NULL, 0, params);
-    if (openssl_result == 0)
+
+    if (!EVP_MAC_init(ctx, NULL, 0, params))
         OE_RAISE(OE_CRYPTO_ERROR);
 
     ((oe_hmac_sha256_context_impl_t*)context)->ctx = ctx;

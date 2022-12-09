@@ -132,8 +132,8 @@ oe_result_t oe_rsa_get_public_key_from_private(
     oe_result_t result = OE_UNEXPECTED;
     oe_private_key_t* private_key_temp = (oe_private_key_t*)private_key;
     EVP_PKEY* rsa_public_pkey = NULL;
-    const BIGNUM* public_e = NULL;
-    const BIGNUM* public_n = NULL;
+    BIGNUM* public_e = NULL;
+    BIGNUM* public_n = NULL;
 
     /* Check for invalid parameters */
     if (!private_key || !public_key)
@@ -221,7 +221,6 @@ oe_result_t oe_rsa_public_key_from_modulus(
 {
     oe_result_t result = OE_UNEXPECTED;
     BIGNUM *bignum_modulus = NULL, *bignum_exponent = NULL;
-    RSA* rsa = NULL;
     EVP_PKEY* pkey = NULL;
 
     if (!public_key || modulus_size > INT_MAX || exponent_size > INT_MAX)

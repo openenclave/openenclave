@@ -803,20 +803,16 @@ oe_result_t oe_cert_get_ec_public_key(
         OE_RAISE(OE_CRYPTO_ERROR);
 
     /* If this is not an EC key */
-    {
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
-        EC_KEY* ec;
-        if (!(ec = EVP_PKEY_get1_EC_KEY(pkey)))
-            OE_RAISE_NO_TRACE(OE_CRYPTO_ERROR);
+    EC_KEY* ec;
+    if (!(ec = EVP_PKEY_get1_EC_KEY(pkey)))
+        OE_RAISE_NO_TRACE(OE_CRYPTO_ERROR);
 
-        EC_KEY_free(ec);
+    EC_KEY_free(ec);
 #else
-        if (EVP_PKEY_get_id(pkey) != EVP_PKEY_EC)
-        {
-            OE_RAISE_NO_TRACE(OE_CRYPTO_ERROR);
-        }
+    if (EVP_PKEY_get_id(pkey) != EVP_PKEY_EC)
+        OE_RAISE_NO_TRACE(OE_CRYPTO_ERROR);
 #endif
-    }
 
     /* Initialize the EC public key */
     oe_ec_public_key_init(public_key, pkey);
@@ -826,11 +822,9 @@ oe_result_t oe_cert_get_ec_public_key(
 
 done:
 
+    /* Decrement reference count (incremented above) */
     if (pkey)
-    {
-        /* Decrement reference count (incremented above) */
         EVP_PKEY_free(pkey);
-    }
 
     return result;
 }

@@ -7,6 +7,8 @@ target_include_directories(oesign_test_engine PRIVATE include)
 
 set(OESIGN_TEST_INPUTS_DIR ${CMAKE_CURRENT_BINARY_DIR}/../test-inputs)
 
+set_source_files_properties(oesign-test-engine.c PROPERTIES COMPILE_FLAGS "-Wno-deprecated-declarations")
+
 add_custom_command(
   OUTPUT sign-and-verify.py
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../sign-and-verify.py

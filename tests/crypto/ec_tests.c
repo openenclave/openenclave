@@ -223,8 +223,6 @@ static void _test_generate_from_private()
     oe_ec_public_key_t public_key = {0};
     oe_ec_private_key_t private_key2 = {0};
     oe_ec_public_key_t public_key2 = {0};
-    oe_ec_private_key_t private_key3 = {0};
-    oe_ec_public_key_t public_key3 = {0};
     bool equal = false;
 
     /* Generate a random 256 bit key. */
@@ -240,14 +238,6 @@ static void _test_generate_from_private()
         sizeof(private_raw),
         &private_key,
         &public_key);
-
-    r = oe_ec_generate_key_pair_from_private(
-        OE_EC_TYPE_SECP256R1,
-        private_raw,
-        sizeof(private_raw),
-        &private_key3,
-        &public_key3);
-    OE_TEST(r == OE_OK);
 
     /* Test that signing works with ECC key. */
     _verify_generated_keys(&private_key, &public_key);
