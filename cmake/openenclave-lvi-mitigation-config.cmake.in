@@ -6,12 +6,11 @@
 # OE_LVI_MITIGATION holds the value of LVI_MITIGATION from the configuration of OE SDK.
 # OE_LVI_MITIGATION=ControlFlow indicates that the SDK supports LVI mitigation.
 set(OE_LVI_MITIGATION "@LVI_MITIGATION@")
-set(OE_USING_CLANG_10 "@OE_USING_CLANG_10@")
 
 # Include the helper function to apply lvi mitigation.
 if (OE_LVI_MITIGATION MATCHES ControlFlow)
   set(LVI_MITIGATION "None" CACHE STRING "LVI Mitigation.")
-  if (UNIX AND OE_USING_CLANG_10)
+  if (UNIX AND OE_LVI_MITIGATION STREQUAL ControlFlow-GNU)
     set(LVI_MITIGATION_BINDIR "None" CACHE STRING "Path to the LVI mitigation bindir.")
     if (LVI_MITIGATION_BINDIR MATCHES None)
       message(FATAL_ERROR "LVI_MITIGATION_BINDIR is not specified.")

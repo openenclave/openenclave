@@ -39,7 +39,7 @@ macro (detect_compiler BINDIR CC)
   endif ()
 endmacro ()
 
-# [clang-10 only] Adopt customized compiler wrappers for LVI mitigation.
+# Adopt customized compiler wrappers for LVI mitigation.
 function (configure_lvi_mitigation_build)
   cmake_parse_arguments(OE "IN_PACKAGE" "BINDIR" "" ${ARGN})
 

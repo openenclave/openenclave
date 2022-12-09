@@ -18,13 +18,11 @@ endmacro ()
 function (apply_lvi_mitigation NAME)
   # Add LVI mitigation compliation options.
   if (UNIX)
-    if (NOT OE_USING_CLANG_10)
+    if (LVI_MITIGATION STREQUAL ControlFlow-Clang)
       # Enable clang-11 built-in LVI mitigation
-      if (LVI_MITIGATION MATCHES ControlFlow)
-        target_compile_options(${NAME} PRIVATE -mlvi-cfi)
-      endif ()
-    else ()
-      # Enable clang-10 custom LVI mitigation
+      target_compile_options(${NAME} PRIVATE -mlvi-cfi)
+    elseif (LVI_MITIGATION STREQUAL ControlFlow-GNU)
+      # Enable custom LVI mitigation
       if (CMAKE_C_COMPILER_ID MATCHES Clang)
         # Enforce clang to invoke the gnu assembler instead of the integrated one.
         target_compile_options(

@@ -388,7 +388,9 @@ if (OE_SGX AND UNIX)
   # for ocall stack-stitching by using the -fno-omit-frame-pointer flag.
   # It is compiled with -O2 flag to retain the same generated assembly
   # code in both debug and release builds.
-  if (OE_USING_CLANG_10)
+  if (CMAKE_C_COMPILER_ID MATCHES Clang AND CMAKE_C_COMPILER_VERSION
+                                            VERSION_LESS 11)
+    # Don't add -Wno-frame-address for clang-10 as it's not supported
     set_source_files_properties(
       oehost sgx/linux/enter.c PROPERTIES COMPILE_FLAGS
                                           "-O2 -fno-omit-frame-pointer")

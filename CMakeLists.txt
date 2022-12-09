@@ -32,16 +32,26 @@ endif ()
 
 # Will be overwritten during the cmake initialization.
 
-# Value can be one of "None" and "ControlFlow"
+# Value can be one of "None", "ControlFlow-GNU", ""ControlFlow-Clang" and "ControlFlow" (which is alias to ControlFlow-GNU)
 # If None, no LVI mitigation will be applied
 # If ControlFlow, only control-flow mitigations will be applied
+# If ControlFlow-Clang, the Clang's built-in mitigation will be applied (only support clang-11 and later)
+# If ControlFlow-GNU, the custom mitigation will be applied
 # Support of full-LVI hardening (-mlvi-hardening) is omitted
 set(LVI_MITIGATION
     "None"
-    CACHE STRING "Build with LVI mitigation. Options: [None, ControlFlow]")
+    CACHE
+      STRING
+      "Build with LVI mitigation. Options: [None, ControlFlow-GNU, ControlFlow-Clang, ControlFlow]"
+)
 set(LVI_MITIGATION_BINDIR
     "None"
-    CACHE STRING "[clang-10 only] Path to the LVI mitigation bindir.")
+    CACHE STRING "Path to the LVI mitigation bindir.")
+
+# alias ControlFlow to ControlFlow-GNU
+if (LVI_MITIGATION STREQUAL "ControlFlow")
+  set(LVI_MITIGATION "ControlFlow-GNU")
+endif ()
 
 # On Unix, configuring cmake to use the preferred compiler.
 # Note that this must be done before the `project` command.
@@ -56,14 +66,7 @@ if (UNIX)
     find_program(CMAKE_CXX_COMPILER clang++-11 clang++-10 clang++)
   endif ()
 
-  if (CMAKE_C_COMPILER MATCHES "10$" OR CMAKE_CXX_COMPILER MATCHES "10$")
-    set(OE_USING_CLANG_10 TRUE)
-  else ()
-    set(OE_USING_CLANG_10 FALSE)
-  endif ()
-
-  # For clang-10, check options for Load Value Injection (LVI) mitigation
-  if (OE_USING_CLANG_10 AND LVI_MITIGATION MATCHES ControlFlow)
+  if (LVI_MITIGATION STREQUAL ControlFlow-GNU)
     if (${LVI_MITIGATION_BINDIR} MATCHES None)
       message(FATAL_ERROR "LVI_MITIGATION_BINDIR is not specified.")
     endif ()
@@ -80,6 +83,15 @@ project(
   HOMEPAGE_URL "https://github.com/openenclave/openenclave")
 set(PROJECT_VERSION ${OE_VERSION})
 set(OE_SCRIPTSDIR "${PROJECT_SOURCE_DIR}/scripts")
+
+if (LVI_MITIGATION STREQUAL ControlFlow-Clang
+    AND (NOT CMAKE_C_COMPILER_ID MATCHES Clang OR CMAKE_C_COMPILER_VERSION
+                                                  VERSION_LESS 11))
+  message(
+    FATAL_ERROR
+      "ControlFlow-Clang only works with clang version >= 11. But got ${CMAKE_C_COMPILER}"
+  )
+endif ()
 
 # Collect Git info
 if (IS_DIRECTORY "${PROJECT_SOURCE_DIR}/.git")
@@ -355,11 +367,9 @@ if (CODE_COVERAGE)
   if (CMAKE_C_COMPILER_ID MATCHES GNU)
     message(FATAL_ERROR "Code coverage is currently only supported by clang.")
   else ()
-    if (CMAKE_C_COMPILER_VERSION VERSION_LESS 10 OR CMAKE_C_COMPILER_VERSION
-                                                    VERSION_GREATER 11.99)
-      message(
-        WARNING
-          "Code coverage may not work with clang versions other than 10 or 11.")
+    if (CMAKE_C_COMPILER_VERSION VERSION_LESS 11 OR CMAKE_C_COMPILER_VERSION
+                                                    VERSION_GREATER_EQUAL 12)
+      message(WARNING "Code coverage may only work with clang versions 11.")
     endif ()
   endif ()
 

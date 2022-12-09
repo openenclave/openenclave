@@ -95,13 +95,15 @@ if (OE_SGX)
   set_source_files_properties(sgx/td_basic.c PROPERTIES COMPILE_FLAGS
                                                         -fno-stack-protector)
 
-  if (OE_USING_CLANG_10)
+  if (CMAKE_C_COMPILER_ID MATCHES Clang AND CMAKE_C_COMPILER_VERSION
+                                            VERSION_LESS 11)
+    # Don't add -Wno-frame-address for clang-10 as it's not supported
     set_source_files_properties(
       sgx/calls.c PROPERTIES COMPILE_FLAGS
                              "-O2 -fno-omit-frame-pointer -fno-stack-protector")
   else ()
     # Adding "-O2 -fno-omit-frame-pointer" to ensure frame pointer works as intented
-    # Adding "-Wno-frame-address" because for clang-11
+    # Adding "-Wno-frame-address" because for clang-11,
     # usage of __builtin_frame_address(1) is triggering -Wframe-address
     set_source_files_properties(
       sgx/calls.c
@@ -328,7 +330,9 @@ if (CODE_COVERAGE)
   set_source_files_properties(once.c sgx/init.c PROPERTIES COMPILE_FLAGS
                                                            "-fno-profile-arcs")
   # Adding "-fno-profile-arcs" for Code Coverage, in additional to existing flags
-  if (OE_USING_CLANG_10)
+  if (CMAKE_C_COMPILER_ID MATCHES Clang AND CMAKE_C_COMPILER_VERSION
+                                            VERSION_LESS 11)
+    # Don't add -Wno-frame-address for clang-10 as it's not supported
     set_source_files_properties(
       sgx/calls.c
       PROPERTIES
