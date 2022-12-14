@@ -41,7 +41,7 @@ list(JOIN ENCLAVE_CFLAGS_LIST " " ENCLAVE_CFLAGS_GCC)
 
 # See `cmake/apply_lvi_mitigation.cmake`.
 if (LVI_MITIGATION MATCHES ControlFlow)
-  if (OS_USE_CLANG_10)
+  if (LVI_MITIGATION STREQUAL ControlFlow-GNU)
     set(LVI_MITIGATION_FLAGS -Wa,-mlfence-before-indirect-branch=register
                              -Wa,-mlfence-before-ret=not)
     if (NOT GLIBC_VERSION)
@@ -58,8 +58,7 @@ if (LVI_MITIGATION MATCHES ControlFlow)
                                    ${LVI_MITIGATION_FLAGS} -no-integrated-as)
     list(JOIN LVI_MITIGATION_FLAGS_CLANG " "
          ENCLAVE_LVI_MITIGATION_CFLAGS_CLANG)
-  else ()
-    # clang-11 LVI
+  elseif (LVI_MITIGATION STREQUAL ControlFlow-Clang)
     set(LVI_MITIGATION_FLAGS -mlvi-cfi)
     set(LVI_MITIGATION_FLAGS_CLANG ${ENCLAVE_CFLAGS_CLANG_LIST}
                                    ${LVI_MITIGATION_FLAGS})
