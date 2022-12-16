@@ -6,6 +6,8 @@
 # Please read The Ultimate Guide to CMake:
 # https://rix0r.nl/blog/2015/08/13/cmake-guide/
 cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
+# Suppress error when using FetchContent_Declare in subprojects
+cmake_policy(SET CMP0135 NEW)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
