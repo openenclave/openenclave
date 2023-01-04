@@ -515,7 +515,7 @@ helloworld sample can run under OE simulation mode.
 On Linux, to run the helloworld sample in simulation mode from the command like, use the following:
 
 ```bash
-./host/helloworldhost ./enclave/helloworldenc.signed --simulate
+./host/helloworld_host ./enclave/enclave.signed --simulate
 ```
 
 On Windows, to run the helloworld sample in simulation mode from the command like, use the following:
