@@ -17,9 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - This API is enabled only when logging.edl is imported.
   - This API can be used only after enclave creation and before enclave termination for an enclave. An application can call this API any number of times, for any number of enclaves. There is no limit on the number of calls and is thread safe.
   - This is an host API. To modify verbosity of enclave log level from within enclaves, consider using enclave logging callbacks.
-
+  - Updated the mbedTLS from 2.28.0 to 2.28.1
 ## Changed
 - Fix the incorrect behavior of pthread_mutex_init() and std::mutex such that they no longer create a recursive lock by default.
+
+### Security
+- Updated openssl to version 1.1.1q. Please refer to release log to find list of CVEs addressed by this version.
 
 [v0.18.1][v0.18.1_log]
 --------------

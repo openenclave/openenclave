@@ -13,32 +13,24 @@ def ACCCodeCoverageTest(String label, String compiler, String build_type) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
-                def cmakeArgs = helpers.CmakeArgs(build_type)
-                // Removed command "ninja code_coverage" from task for now
-                // Should re-enable it later
+                def cmakeArgs = helpers.CmakeArgs(build_type, "ON", "OFF")
                 def task = """
                            ${helpers.ninjaBuildCommand(cmakeArgs)}
                            ${helpers.TestCommand()}
+                           ninja code_coverage
+
+                           genhtml --branch-coverage -o html_lcov coverage/cov_filtered.info
                            """
                 common.Run(compiler, task)
 
-                // Should re-enable following section later
-                // // Publish the report via Cobertura Plugin.
-                // cobertura coberturaReportFile: 'build/coverage/coverage.xml'
-
-                // // Publish the result to the PR(s) via GitHub Coverage reporter Plugin.
-                // // Workaround to obtain the PR id(s) as Bors does not us to grab them reliably.
-                // def log = sh (script: "git log -1 | grep -Po '(Try #\\K|Merge #\\K)[^:]*'", returnStdout: true).trim()
-                // def id_list = log.split(' #')
-                // id_list.each {
-                //     echo "PR ID: ${it}, REPOSITORY_NAME: ${REPOSITORY_NAME}"
-                //     withEnv(["CHANGE_URL=https://github.com/${REPOSITORY_NAME}/pull/${it}"]) {
-                //         publishCoverageGithub(filepath:'build/coverage/coverage.xml',
-                //                               coverageXmlType: 'cobertura',
-                //                               comparisonOption: [ value: 'optionFixedCoverage', fixedCoverage: '0.60' ],
-                //                               coverageRateType: 'Line')
-                //     }
-                // }
+                publishHTML(target: [
+                    allowMissing: false,
+                    alwaysLinkToLastBuild: false,
+                    keepAll: true,
+                    reportDir: "${WORKSPACE}/build/html_lcov",
+                    reportFiles: 'index.html',
+                    reportName: 'Code Coverage Report',
+                    reportTitles: ''])
             }
         }
     }
@@ -386,7 +378,7 @@ def ACCHostVerificationPackageTest(String version, String build_type) {
                             copy tests\\host_verify\\host\\*.bin ${WORKSPACE}\\samples\\host_verify
                             if exist C:\\oe (rmdir C:\\oe)
                             nuget.exe install open-enclave.OEHOSTVERIFY -Source ${WORKSPACE}\\build -OutputDirectory C:\\oe -ExcludeVersion
-                            xcopy /E C:\\oe\\open-enclave.OEHOSTVERIFY\\openenclave C:\\openenclave\\
+                            xcopy /E C:\\oe\\open-enclave.OEHOSTVERIFY\\OEHOSTVERIFY\\openenclave C:\\openenclave\\
                             pushd ${WORKSPACE}\\samples\\host_verify
                             if not exist build\\ (mkdir build)
                             cd build
@@ -415,13 +407,19 @@ def OEReleaseTest(String label, String release_version, String oe_package = "ope
     }
 }
 
-def TestIntelRCs(String label, String release_version, String oe_package = "open-enclave", String source = "GitHub", boolean lvi_mitigation = false, String dcap_url, String psw_url, String install_flags = "") {
+def TestIntelRCs(String label, String release_version, String oe_package = "open-enclave", String source = "GitHub", boolean lvi_mitigation = false, String dcap_url = "", String local_repository_name = "", String install_flags = "") {
     stage("Test Intel Drivers RCs ${label}") {
         node(label) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
-                helpers.dependenciesInstall(dcap_url, psw_url, install_flags)
+                def local_repository_path = ""
+                if (local_repository_name) {
+                    helpers.azureContainerDownload('intelreleasecandidates', local_repository_name, 'jenkins-private-intel-release-candidates')
+                    sh "tar xzf ${local_repository_name} --directory=${WORKSPACE}"
+                    local_repository_path = "${WORKSPACE}/sgx_debian_local_repo"
+                }
+                helpers.dependenciesInstall(dcap_url, local_repository_path, install_flags)
                 helpers.releaseInstall(release_version, oe_package, source)
                 helpers.TestSamplesCommand(lvi_mitigation, oe_package)
             }

@@ -77,3 +77,18 @@
   community.general.docker_login:
     registry_url: "{{ docker_registry }}"
     state: absent
+
+- name: Install Code Coverage dependency - APT
+  ansible.builtin.apt:
+    name: "{{ apt_packages_code_coverage }}"
+    state: latest
+    update_cache: yes
+    install_recommends: no
+  retries: 100
+  register: install
+  until: install is success
+
+- name: Install Code Coverage dependency - Python3
+  ansible.builtin.pip:
+    name: "{{ pip_packages_code_coverage }}"
+    executable: pip3

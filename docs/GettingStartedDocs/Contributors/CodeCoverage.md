@@ -61,6 +61,8 @@ The reports can be found in `build/coverage/coverage.xml` (cobertura) and `build
 ## Code Coverage reports for PRs
 
 After a bors run on a PR, developers can view the code coverage report on the PR.
-![Code Coverage Report Github](CodeCoverageOnGithub.png)
+
+Go to the "Artifacts" tab on the Jenkins' pipeline run and click "Code Coverage Report":
+![Code Coverage Report Jenkins](CodeCoverageOnJenkins.png)
 
 Click on "Details" to drill into the code coverage report.

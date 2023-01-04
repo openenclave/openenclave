@@ -21,6 +21,7 @@
   retries: 10
   register: add_key
   until: add_key is success
+  when: apt_key_url is defined
 
 - name: Add APT repository
   ansible.builtin.apt_repository:
