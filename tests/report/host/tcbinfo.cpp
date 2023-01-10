@@ -113,7 +113,9 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave, const char* test_filename)
 {
     const uint32_t version = 1;
     oe_tcb_info_tcb_level_t platform_tcb_level = {
-        {4, 4, 2, 4, 1, 128, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, 8};
+        {4, 4, 2, 4, 1, 128, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+        {0, 0, 0, 0, 0, 0, 0, 0},
+        8};
     oe_parsed_tcb_info_t parsed_info = {0};
 
     // ./data/tcbInfo.json contains 4 tcb levels.
@@ -229,7 +231,9 @@ void TestVerifyTCBInfoV2(oe_enclave_t* enclave, const char* test_filename)
 {
     const uint32_t version = 2;
     oe_tcb_info_tcb_level_t platform_tcb_level = {
-        {4, 4, 2, 4, 1, 128, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, 8};
+        {4, 4, 2, 4, 1, 128, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+        {0, 0, 0, 0, 0, 0, 0, 0},
+        8};
     oe_parsed_tcb_info_t parsed_info = {0};
 
     printf("TCB Info Version 2 tests:\n");
@@ -390,7 +394,9 @@ void TestVerifyTCBInfo_AdvisoryIDs(
     OE_TEST(FileToBytes(test_filename, &tcbInfo) == 0);
 
     oe_tcb_info_tcb_level_t platform_tcb_level = {
-        {4, 4, 2, 4, 1, 128, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, 8};
+        {4, 4, 2, 4, 1, 128, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+        {0, 0, 0, 0, 0, 0, 0, 0},
+        8};
     oe_parsed_tcb_info_t parsed_info = {0};
 
     // Set platform pce svn to 8 and assert that

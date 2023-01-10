@@ -33,20 +33,40 @@ typedef union _oe_tcb_level_status
 
 } oe_tcb_level_status_t;
 
+/*! \struct oe_tcb_component_t
+ */
+typedef struct _oe_tcb_component
+{
+    uint8_t svn;
+
+} oe_tcb_component_t;
+
 /*! \struct oe_tcb_info_tcb_level_t
  *  \brief TCB level field in the SGX TCB Info.
  *
- *  Version 2 of the SGX endorsements/collaterals, the QE Identiy
+ *  Version 3 of the SGX endorsements/collaterals, the QE Identiy
  *  Info structure also has a TCB level field (\ref See oe_qe_info_tcb_level_t).
  */
 typedef struct _oe_tcb_info_tcb_level
 {
-    uint8_t sgx_tcb_comp_svn[16];
+    /* In V3, tcbComponent has been defined as a structure with svn (mandatory),
+     category (optional), type (optional) fields.
+     * In our implementation, choose to ignore the optional fields.
+     *
+     * uint8_t svn; // SVN of TCB Component. This field is mandatory.
+     * char category[16]; // Category of TCB Component (e.g. ucode, BIOS, SW).
+                          //This field is optional and will be present only for
+     selected TCB Components.
+     * char type[16]; // Type of TCB Component (e.g. Patch@Reset, Late Patch).
+                      // This field is optional and will be present only for
+     selected TCB Components.
+     */
+    uint8_t sgx_tcb_comp_svn[16]; // V3 field
+    uint8_t tdx_tcb_comp_svn[16]; // V3 field
     uint16_t pce_svn;
     oe_tcb_level_status_t status;
 
-    // V2 fields
-    oe_datetime_t tcb_date;
+    oe_datetime_t tcb_date; // V2 field
 
     /*! Offset into the json QE Identity info where
      * the advisoryIDs fields start.
@@ -57,6 +77,22 @@ typedef struct _oe_tcb_info_tcb_level
     size_t advisory_ids_size;
 } oe_tcb_info_tcb_level_t;
 
+/*! \struct oe_tdx_module_t
+ *  \brief TDX module field in the SGX TCB Info.
+ *
+ *  Version 3 of the SGX/TDX endorsements/collaterals, the QE Identity
+ *  Info structure also has a TDX module field (\ref See
+ * oe_qe_info_tcb_level_t).
+ */
+typedef struct _oe_tdx_module
+{
+    // Base 16-encoded string representation of the measurement of a TDX SEAM
+    // module’s signer
+    uint8_t mrsigner[OE_SHA256_SIZE];
+    uint8_t attributes;
+    uint8_t attributesMask;
+} oe_tdx_module_t;
+
 #define OE_SGX_FMSPC_SIZE 6
 
 /*! \struct oe_parsed_tcb_info_t
@@ -64,6 +100,7 @@ typedef struct _oe_tcb_info_tcb_level
  */
 typedef struct _oe_parsed_tcb_info
 {
+    uint32_t id; // V3 field
     uint32_t version;
     oe_datetime_t issue_date;
     oe_datetime_t next_update;
@@ -150,7 +187,8 @@ oe_result_t oe_verify_ecdsa256_signature(
 typedef enum _oe_qe_identity_id
 {
     QE_IDENTITY_ID_QE,
-    QE_IDENTITY_ID_QVE
+    QE_IDENTITY_ID_QVE,
+    QE_IDENTITY_ID_TD_QE
 } oe_qe_identity_id_t;
 
 /*! \struct oe_qe_tcb_level

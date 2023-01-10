@@ -631,6 +631,20 @@ done:
  *    "tcbEvaluationDataNumber" : integer
  *    "tcbLevels" : [ objects of type oe_tcb_info_tcb_level_t ]
  * }
+ *
+ * V3 Schema:
+ * {
+ *    "id" : string, ("SGX"/"TDX")
+ *    "version" : integer,
+ *    "issueDate" : string,
+ *    "nextUpdate" : string,
+ *    "fmspc" : "hex string (12 nibbles)"
+ *    "pceId" : "hex string (4 nibbles)"
+ *    "tcbType" : integer
+ *    "tcbEvaluationDataNumber" : integer
+ *    "tdxModule" : TDX module object,
+ *    "tcbLevels" : [ objects of type oe_tcb_info_tcb_level_t ]
+ * }
  */
 static oe_result_t _read_tcb_info(
     const uint8_t* tcb_info_json,
@@ -1129,7 +1143,7 @@ done:
  * type = enclaveIdentity
  * V2 Schema:
  * {
- *    "id" : string ("QE" | "QVE")
+ *    "id" : string ("QE" | "QVE" | "TD QE")
  *    "version" : integer,
  *    "issueDate" : string,
  *    "nextUpdate" : string,
@@ -1176,6 +1190,8 @@ static oe_result_t _read_qe_identity_info_v2(
         parsed_info->id = QE_IDENTITY_ID_QE;
     else if (_json_str_equal(str, size, "QVE"))
         parsed_info->id = QE_IDENTITY_ID_QVE;
+    else if (_json_str_equal(str, size, "TD_QE"))
+        parsed_info->id = QE_IDENTITY_ID_TD_QE;
     else
         OE_RAISE_MSG(OE_JSON_INFO_PARSE_ERROR, "Invalid id %s", str);
     OE_CHECK(_read(',', itr, end));
