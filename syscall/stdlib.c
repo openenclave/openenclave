@@ -27,6 +27,9 @@ char* oe_realpath(const char* path, oe_syscall_path_t* resolved_path)
     if (!path)
         OE_RAISE_ERRNO(OE_EINVAL);
 
+    if (path[0] == '\0')
+        OE_RAISE_ERRNO(OE_ENOENT);
+
     /* Allocate variables on the heap since too big for the stack. */
     if (!(v = oe_calloc(1, sizeof(variables_t))))
         OE_RAISE_ERRNO(OE_ENOMEM);
