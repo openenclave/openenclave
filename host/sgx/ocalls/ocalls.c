@@ -336,6 +336,27 @@ oe_result_t oe_get_supported_attester_format_ids_ocall(format_ids_t* format_ids)
         &format_ids->data, &format_ids->size);
 }
 
+oe_result_t oe_verify_tdx_quote_ocall(
+    const uint8_t* quote,
+    size_t quote_size,
+    const uint8_t* endorsements,
+    size_t endorsements_size,
+    void* p_qve_report_info,
+    uint32_t qve_report_info_size)
+{
+    oe_result_t result;
+
+    result = tdx_verify_quote(
+        quote,
+        quote_size,
+        endorsements,
+        endosements_size,
+        p_qve_report_info,
+        qve_report_info_size);
+
+    return result;
+}
+
 oe_result_t oe_verify_quote_ocall(
     const oe_uuid_t* format_id,
     const void* opt_params,

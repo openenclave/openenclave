@@ -85,6 +85,20 @@ static quote3_error_t (*_sgx_qv_verify_quote)(
     uint32_t supplemental_data_size,
     uint8_t* p_supplemental_data);
 
+static quote3_error_t (*_tdx_qv_get_quote_supplemental_data_size)(
+    uint32_t* p_data_size);
+
+static quote3_error_t (*_tdx_qv_verify_quote)(
+    const uint8_t* p_quote,
+    uint32_t quote_size,
+    const tdx_ql_qve_collateral_t* p_quote_collateral,
+    const time_t expiration_check_date,
+    uint32_t* p_collateral_expiration_status,
+    sgx_ql_qv_result_t* p_quote_verification_result,
+    sgx_ql_qe_report_info_t* p_qve_report_info,
+    uint32_t supplemental_data_size,
+    uint8_t* p_supplemental_data);
+
 #ifdef _WIN32
 
 #include <windows.h>
@@ -413,7 +427,13 @@ static void _load_sgx_dcap_qvl_impl(void)
             "sgx_qv_get_quote_supplemental_data_size",
             (void**)&_sgx_qv_get_quote_supplemental_data_size));
         OE_CHECK(_lookup_function(
+            _qvl_module,
+            "tdx_qv_get_quote_supplemental_data_size",
+            (void**)&_tdx_qv_get_quote_supplemental_data_size));
+        OE_CHECK(_lookup_function(
             _qvl_module, "sgx_qv_verify_quote", (void**)&_sgx_qv_verify_quote));
+        OE_CHECK(_lookup_function(
+            _qvl_module, "tdx_qv_verify_quote", (void**)&_tdx_qv_verify_quote));
 
         atexit(_unload_sgx_dcap_qvl);
         result = OE_OK;
@@ -1066,6 +1086,84 @@ static oe_result_t sgx_qvl_error_to_oe(quote3_error_t error)
         default:
             return OE_UNEXPECTED;
     }
+}
+
+oe_result_t oe_tdx_verify_quote(
+    const uint8_t* quote,
+    size_t quote_size,
+    const uint8_t* endorsements,
+    size_t endorsements_size,
+    void* p_qve_report_info,
+    uint32_t qve_report_info_size,
+    oe_datetime_t* input_validation_time)
+{
+    sgx_ql_qv_result_t quote_verification_result = SGX_QL_QV_RESULT_UNSPECIFIED;
+    quote3_error_t dcap_ret = SGX_QL_ERROR_UNEXPECTED;
+    uint32_t collateral_expiration_status = 1;
+    uint8_t* p_supplemental_data = NULL;
+    uint32_t supplemental_data_size = 0;
+    time_t validation_time = 0;
+    oe_result_t result = OE_UNEXPECTED;
+
+    if (!quote || !quote_size)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if ((p_qve_report_info &&
+         qve_report_info_size != sizeof(sgx_ql_qe_report_info_t)) ||
+        (!p_qve_report_info && qve_report_info_size > 0))
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* call DCAP quote verify library to get supplemental data size */
+    dcap_ret = tdx_qv_get_quote_supplemental_data_size(&supplemental_data_size);
+    if (dcap_ret == SGX_QL_SUCCESS &&
+        supplemental_data_size == sizeof(sgx_ql_qv_supplemental_t))
+    {
+        p_supplemental_data = (uint8_t*)malloc(supplemental_data_size);
+        if (!p_supplemental_data)
+            OE_RAISE(OE_OUT_OF_MEMORY);
+
+        memset(p_supplemental_data, 0, sizeof(supplemental_data_size));
+    }
+    else
+    {
+        OE_LOG_ERROR(
+            "tdx_qv_get_quote_supplemental_data_size failed: 0x%04x", dcap_ret);
+        supplemental_data_size = 0;
+        OE_RAISE(
+            OE_SGX_QUOTE_LIBRARY_ERROR); // Should define a better error code
+    }
+
+    validation_time = convert_oe_datetime_to_time_t(input_validation_time);
+
+    /* call DCAP quote verify library for quote verification */
+    dcap_ret = _tdx_qv_verify_quote(
+        quote,
+        (uint32_t)quote_size,
+        NULL, // collaterals can be extracted from endorsements or left blank to
+              // let Intel QPL fetch them from configured end-point ({PCCS +
+              // Intel PCS} or THIM (not ready yet))
+        current_time,
+        &collateral_expiration_status,
+        &quote_verification_result,
+        (sgx_ql_qe_report_info_t*)p_qve_report_info,
+        supplemental_data_size,
+        p_supplemental_data);
+
+    if (dcap_ret != SGX_QL_SUCCESS)
+    {
+        OE_LOG_ERROR(
+            "tdx_qv_verify_quote failed: 0x%04x, %s",
+            dcap_ret,
+            get_quote3_error_t_string(dcap_ret));
+        OE_RAISE(OE_SGX_QUOTE_LIBRARY_ERROR); // define better error code
+    }
+
+    // We might need to check `quote_verification_result` in detail for more
+    // info and bubbleup relevant return code
+    result = quote3_to_oe_error_codes_mapping(
+        dcap_ret); // Need to define this function
+
+    return result;
 }
 
 oe_result_t oe_sgx_verify_quote(

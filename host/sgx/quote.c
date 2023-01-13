@@ -150,6 +150,30 @@ done:
     return result;
 }
 
+oe_result_t tdx_verify_quote(
+    const uint8_t* quote,
+    size_t quote_size,
+    const uint8_t* endorsements,
+    size_t endorsements_size,
+    void* p_qve_report_info,
+    uint32_t qve_report_info_size,
+    oe_datetime_t* input_validation_time)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    result = oe_tdx_verify_quote(
+        quote,
+        (uint32_t)quote_size,
+        endorsements,
+        endorsements_size,
+        p_qve_report_info,
+        qve_report_info_size,
+        supplemental_data_size,
+        p_supplemental_data);
+
+    return result;
+}
+
 oe_result_t sgx_verify_quote(
     const oe_uuid_t* format_id,
     const void* opt_params,

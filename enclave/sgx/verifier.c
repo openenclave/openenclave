@@ -347,6 +347,77 @@ done:
     return result;
 }
 
+oe_result_t tdx_verify_quote(
+    const uint8_t* quote,
+    size_t quote_size,
+    const uint8_t* endorsements,
+    size_t endorsements_size,
+    void* p_qve_report_info,
+    uint32_t qve_report_info_size,
+    oe_datetime_t* input_validation_time)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    sgx_nonce_t nonce = {0};
+    uint8_t* p_self_report = NULL;
+    size_t report_size = 0;
+    sgx_target_info_t* p_self_target_info = NULL;
+    size_t target_info_size = 0;
+    uint16_t qve_isvsvn_threshold = 3;
+    oe_result_t retval = OE_UNEXPECTED;
+
+    /* Here we need to create and populate p_qve_report_info_internal
+     * as done in sgx_verify_quote below. We would need to use TDX specific APIs
+     * for that.
+     */
+
+    OE_CHECK(oe_verify_tdx_quote_ocall(
+        &retval,
+        p_quote,
+        quote_size,
+        endorsements,
+        endorsements_size,
+        p_qve_report_info_internal,
+        qve_report_info_size));
+
+    result = (oe_result_t)retval;
+
+    if (result != OE_OK)
+    {
+        OE_RAISE_MSG(
+            result,
+            "SGX QvE-based TDX quote verification failed with error 0x%x",
+            result);
+    }
+
+    // Defense in depth
+    if (memcmp(
+            &nonce, &p_qve_report_info_internal->nonce, sizeof(sgx_nonce_t)) !=
+        0)
+    {
+        OE_RAISE_MSG(
+            OE_VERIFY_FAILED,
+            "Nonce during SGX quote verification has been tampered with.\n",
+            NULL);
+    }
+
+    // Call internal API to verify QvE identity
+    OE_CHECK_MSG(
+        oe_verify_qve_report_and_identity(
+            p_quote,
+            quote_size,
+            p_qve_report_info_internal,
+            expiration_check_date,
+            *p_collateral_expiration_status,
+            *p_quote_verification_result,
+            p_supplemental_data,
+            *p_supplemental_data_size_out,
+            qve_isvsvn_threshold),
+        "Failed to check QvE report and identity",
+        oe_result_str(result));
+
+    result = OE_OK;
+}
+
 oe_result_t sgx_verify_quote(
     const oe_uuid_t* format_id,
     const void* opt_params,

@@ -439,6 +439,11 @@ static void _update_validity(
     }
 }
 
+// As defined in
+// https://github.com/intel/SGXDataCenterAttestationPrimitives/blob/85cf8bdd393ab273a308be3f41d2f7cc25c0ec0c/QuoteVerification/dcap_quoteverify/inc/sgx_dcap_qv_internal.h#L48
+#define SGX_QUOTE_TYPE 0x0
+#define TDX_QUOTE_TYPE 0x81
+
 oe_result_t oe_verify_sgx_quote(
     const uint8_t* quote,
     size_t quote_size,
@@ -453,6 +458,24 @@ oe_result_t oe_verify_sgx_quote(
 
     if (quote == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
+
+    // Check if TDX quote
+    uint32_t quote_type =
+        *((uint32_t*)(quote + sizeof(uint16_t) + sizeof(uint16_t)));
+    if (quote_type == TDX_QUOTE_TYPE)
+    {
+        // p_qve_report_info = NULL, qve_report_info_size = 0 for host calls,
+        // since we do not use qve
+        result = tdx_verify_quote(
+            quote,
+            quote_size,
+            endorsements,
+            endorsements_size,
+            NULL,
+            0,
+            input_validation_time);
+        return result;
+    }
 
     if (endorsements == NULL && input_validation_time != NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
