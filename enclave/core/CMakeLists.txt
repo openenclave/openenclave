@@ -117,11 +117,12 @@ if (OE_SGX)
     )
   endif ()
 
-  # Add optimization levels and include frame pointers to ensure frame pointer works as intended.
+  # For clang-10 support specifically, add optimization levels and include frame pointers
+  # to ensure frame pointer works as intended.
   if (CMAKE_C_COMPILER_VERSION MATCHES "^10" OR CLANG_C_COMPILER_VERSION MATCHES "^10")
     set(C_COMPILER_FLAGS "-O2;-fno-omit-frame-pointer;-fno-stack-protector")
   else ()
-    # Adding "-Wno-frame-address" because for clang-11
+    # Adding "-Wno-frame-address" because for clang-11 and above as
     # usage of __builtin_frame_address(1) is triggering -Wframe-address
     set(C_COMPILER_FLAGS "-O2;-fno-omit-frame-pointer;-fno-stack-protector;-Wno-frame-address")
   endif ()

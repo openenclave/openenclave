@@ -85,7 +85,7 @@ if (UNIX)
   set(CLANG_INTRINSIC_HEADERS_SEARCH_PATH
       "/usr/lib/llvm-${CLANG_MAJOR_VERSION}/lib/clang/${CMAKE_C_COMPILER_VERSION}/include"
   )
-elseif (WIN32 AND MSVC)
+elseif (WIN32)
   find_program(
     CLANG_COMPILER clang
     PATHS "C:/Program Files/LLVM/bin"

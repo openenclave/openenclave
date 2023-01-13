@@ -3,9 +3,9 @@
 
 # Check Clang version.
 if (CMAKE_C_COMPILER_ID MATCHES Clang)
-  if (CMAKE_C_COMPILER_VERSION VERSION_LESS 11 OR CMAKE_C_COMPILER_VERSION
+  if (CMAKE_C_COMPILER_VERSION VERSION_LESS 10 OR CMAKE_C_COMPILER_VERSION
                                                   VERSION_GREATER 11.99)
-    message(WARNING "Open Enclave officially supports Clang 11 only, "
+    message(WARNING "Open Enclave officially supports Clang 10 and 11 only, "
                     "but your Clang version (${CMAKE_C_COMPILER_VERSION}) "
                     "is older or newer than that. Build problems may occur.")
   endif ()

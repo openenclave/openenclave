@@ -160,8 +160,8 @@ If the script ran successfully, the `lvi_mitigation_bin` should contain a list o
 ~/openenclave/lvi_mitigation_bin$ ls -l
 total 16
 -rwxrwxr-x 1 yourname yourname 2121936 Mar  10 10:00 as
--rwxrwxr-x 1 yourname yourname     233 Mar  10 10:00 clang++-10
-lrwxrwxrwx 1 yourname yourname      18 Mar  10 10:00 clang++-10_symlink -> /usr/bin/clang++-10
+-rwxrwxr-x 1 yourname yourname     233 Mar  10 10:00 clang++-11
+lrwxrwxrwx 1 yourname yourname      18 Mar  10 10:00 clang++-11_symlink -> /usr/bin/clang++-11
 -rwxrwxr-x 1 yourname yourname     231 Mar  10 10:00 clang-11
 lrwxrwxrwx 1 yourname yourname      16 Mar  10 10:00 clang-11_symlink -> /usr/bin/clang-11
 -rwxrwxr-x 1 yourname yourname     227 Mar  10 10:00 g++
@@ -173,11 +173,11 @@ lrwxrwxrwx 1 yourname yourname      12 Mar  10 10:00 gcc_symlink -> /usr/bin/gcc
 ```
 
 `as` and `ld` are the customized GNU assembler and linker obtained from Intel, which support the
-LVI mitigation. `clang-11`, `clang++-10`, `gcc`, and `g++` are the copies of previously shown wrappers that invoke the
+LVI mitigation. `clang-11`, `clang++-11`, `gcc`, and `g++` are the copies of previously shown wrappers that invoke the
 customized `as` and `ld` when compiling enclave code with LVI mitigation. The remaining files with the `_symlink`
 suffix link to the actual compilers installed in the system, which are required by the wrappers.
 
-**Note**: `clang-11` and `clang++-10` may be missing if the system does not have the `clang` version 10 installed. If you encounter this, you will need to install Clang as GCC is not supported.
+**Note**: `clang-11` and `clang++-11` may be missing if the system does not have the `clang` version 11 installed. If you encounter this, you will need to install Clang as GCC is not supported.
 
 **Note**: If the version of `glibc` is older than `2.27`, the `ld` will be missing in the above output.
 Consequently, `ld` will not be installed. Without a compatible version of `ld`,

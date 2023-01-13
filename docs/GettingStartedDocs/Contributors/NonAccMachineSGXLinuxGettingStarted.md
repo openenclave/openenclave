@@ -215,14 +215,13 @@ You can skip the following two items.
 
 Then check the status of your service.
 ```bash
-pm2 status
+systemctl status pccs
 ```
 You should be able to see the service is running.
-![nodejs](/docs/GettingStartedDocs/images/nodejs.png)
 
 Run the following command to verify if it can actually fetch the root CA CRL from the Intel PCK service
 ```bash
-curl --noproxy "*" -v -k -G "https://localhost:8081/sgx/certification/v2/rootcacrl"
+curl --noproxy "*" -v -k -G "https://localhost:8081/sgx/certification/v4/rootcacrl"
 ```
 
 To learn more about PCCS, please refer to the [PCCS GitHub repository](https://github.com/intel/SGXDataCenterAttestationPrimitives/tree/master/QuoteGeneration/pccs).
@@ -295,7 +294,7 @@ Get the SBX primary key from https://sbx.api.portal.trustedservices.intel.com/pr
 The steps of installing and configuring PCCS are similar to Step 4.2.
 
 Please check PCCS configuration file (config/production-0.json)
-- uri - The URL needs to be set as https://sbx.api.trustedservices.intel.com/sgx/certification/v2/.
+- uri - The URL needs to be set as https://sbx.api.trustedservices.intel.com/sgx/certification/v4/.
 - ApiKey - The API key needs to be set as SBX primary key.
 
 ### 6.2 Replace the Intel root certificate's public key value before Step 5
