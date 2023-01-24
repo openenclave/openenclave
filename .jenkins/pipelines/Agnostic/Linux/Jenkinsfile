@@ -9,10 +9,10 @@ try{
         "Check CI":                                { tests.checkCI() },
         "Check Developer Experience Ubuntu 20.04": { tests.checkDevFlows('20.04') },
         "Check Developer Experience Ubuntu 18.04": { tests.checkDevFlows('18.04') },
-        "AArch64 2004 GNU gcc Debug":              { tests.AArch64GNUTest('20.04', 'Debug') },
-        "AArch64 2004 GNU gcc RelWithDebInfo":     { tests.AArch64GNUTest('20.04', 'RelWithDebInfo') },
-        "AArch64 1804 GNU gcc Debug":              { tests.AArch64GNUTest('18.04', 'Debug') },
-        "AArch64 1804 GNU gcc RelWithDebInfo":     { tests.AArch64GNUTest('18.04', 'RelWithDebInfo') }
+        // "AArch64 2004 GNU gcc Debug":              { tests.AArch64GNUTest('20.04', 'Debug') },
+        // "AArch64 2004 GNU gcc RelWithDebInfo":     { tests.AArch64GNUTest('20.04', 'RelWithDebInfo') },
+        // "AArch64 1804 GNU gcc Debug":              { tests.AArch64GNUTest('18.04', 'Debug') },
+        // "AArch64 1804 GNU gcc RelWithDebInfo":     { tests.AArch64GNUTest('18.04', 'RelWithDebInfo') }
     ]
     if(FULL_TEST_SUITE == "true") {
         stage("Full Test Suite") {
@@ -35,7 +35,7 @@ try{
                 "Sim 1804 clang-10 SGX1FLC Debug":                   { tests.simulationContainerTest('18.04', 'Debug',          ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
                 "Sim 2004 clang-10 SGX1FLC RelWithDebInfo":          { tests.simulationContainerTest('20.04', 'RelWithDebInfo', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
                 "Sim 2004 clang-10 SGX1FLC RelWithDebInfo snmalloc": { tests.simulationContainerTest('20.04', 'RelWithDebInfo', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON', '-DUSE_SNMALLOC=ON']) },
-                "Ubuntu 1804 Cross Platform Build":                  { tests.buildCrossPlatform("18.04") }
+                // "Ubuntu 1804 Cross Platform Build":                  { tests.buildCrossPlatform("18.04") }
             ]
             parallel testing_stages
         }

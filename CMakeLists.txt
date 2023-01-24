@@ -125,7 +125,8 @@ if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
   # TODO: Right now assume it's Intel+SGX for x86_64 processors
   set(OE_SGX 1)
 elseif (CMAKE_SYSTEM_PROCESSOR MATCHES "arm.*|ARM.*|aarch64.*|AARCH64.*")
-  set(OE_TRUSTZONE 1)
+  # Disable OE_TRUSTZONE until OP-TEE can be updated
+  set(OE_TRUSTZONE 0)
 else ()
   message(
     FATAL_ERROR

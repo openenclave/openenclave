@@ -1,11 +1,3 @@
-[submodule "3rdparty/optee/optee_os"]
-	path = 3rdparty/optee/optee_os
-	url = https://github.com/ms-iot/optee_os
-	branch = ms-iot-openenclave
-[submodule "3rdparty/optee/optee_client"]
-	path = 3rdparty/optee/optee_client
-	url = https://github.com/ms-iot/optee_client
-	branch = ms-iot-openenclave
 [submodule "3rdparty/snmalloc"]
 	path = 3rdparty/snmalloc/snmalloc
 	url = https://github.com/Microsoft/snmalloc.git
