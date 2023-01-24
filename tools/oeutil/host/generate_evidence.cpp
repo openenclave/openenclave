@@ -64,6 +64,9 @@ extern FILE* log_file;
 #define INPUT_PARAM_OPTION_SGX_ECDSA "SGX_ECDSA"
 #define INPUT_PARAM_OPTION_SGX_EPID_LINKABLE "SGX_EPID_LINKABLE"
 #define INPUT_PARAM_OPTION_SGX_EPID_UNLINKABLE "SGX_EPID_UNLINKABLE"
+#ifdef OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
+#define INPUT_PARAM_OPTION_ROOT_PUB_KEY "--rootkey"
+#endif
 #define SHORT_INPUT_PARAM_OPTION_FORMAT "-f"
 #define SHORT_INPUT_PARAM_OPTION_ENDORSEMENTS_FILENAME "-e"
 #define SHORT_INPUT_PARAM_OPTION_QUOTE_PROC "-p"
@@ -87,6 +90,15 @@ static const oe_uuid_t _sgx_epid_linkable_uuid = {
 static const oe_uuid_t _sgx_epid_unlinkable_uuid = {
     OE_FORMAT_UUID_SGX_EPID_UNLINKABLE};
 
+#ifdef OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
+// Override weak variable in common/sgx/tcbinfo.c
+const char* _trusted_root_key_pem =
+    "-----BEGIN PUBLIC KEY-----\n"
+    "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEC6nEwMDIYZOj/iPWsCzaEKi71OiO\n"
+    "SLRFhWGjbnBVJfVnkY4u3IjkDYYL0MxO4mqsyYjlBalTVYxFP2sJBK5zlA==\n"
+    "-----END PUBLIC KEY-----\n";
+#endif
+
 // Structure to store input parameters
 typedef struct _input_parameters
 {
@@ -94,6 +106,9 @@ typedef struct _input_parameters
     const char* public_key_filename;
     const char* out_filename;
     const char* log_filename;
+#ifdef OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
+    const char* override_pubkey_filename;
+#endif
     const char* endorsements_filename;
     const char* quote_proc;
     const char* baseline;
@@ -299,6 +314,12 @@ static void _display_help(const char* command)
         SHORT_INPUT_PARAM_OPTION_BASELINE,
         INPUT_PARAM_OPTION_BASELINE);
     printf("\t%s: enable verbose output.\n", INPUT_PARAM_OPTION_VERBOSE);
+#ifdef OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
+    printf(
+        "\t%s <pub key>: replace hard-coded Intel trusted public key with "
+        "given one\n",
+        INPUT_PARAM_OPTION_ROOT_PUB_KEY);
+#endif
     printf("Examples:\n");
     printf("\t1. Show the verification results of evidence in SGX_ECDSA "
            "format:\n");
@@ -1411,6 +1432,9 @@ int _parse_args(int argc, const char* argv[])
     _parameters.out_filename = nullptr;
     _parameters.endorsements_filename = nullptr;
     _parameters.log_filename = DEFAULT_LOG_FILE;
+#ifdef OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
+    _parameters.override_pubkey_filename = nullptr;
+#endif
     _parameters.quote_proc = "";
     _parameters.verify = false;
     _parameters.verbose = false;
@@ -1539,6 +1563,16 @@ int _parse_args(int argc, const char* argv[])
             _parameters.log_filename = argv[i + 1];
             i += 2;
         }
+#ifdef OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
+        else if (strcasecmp(INPUT_PARAM_OPTION_ROOT_PUB_KEY, argv[i]) == 0)
+        {
+            if (argc < i + 2)
+                break;
+
+            _parameters.override_pubkey_filename = argv[i + 1];
+            i += 2;
+        }
+#endif
         else if (
             strcasecmp(INPUT_PARAM_OPTION_BASELINE, argv[i]) == 0 ||
             strcasecmp(SHORT_INPUT_PARAM_OPTION_BASELINE, argv[i]) == 0)
@@ -1587,6 +1621,11 @@ int _parse_args(int argc, const char* argv[])
 oe_result_t _process_parameters(oe_enclave_t* enclave)
 {
     oe_result_t result = OE_FAILURE;
+
+#ifdef OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
+    size_t override_public_key_size = 0;
+    uint8_t* override_public_key = nullptr;
+#endif
 
 #if defined(__linux__)
     char* sgx_aesm_env = getenv(SGX_AESM_ADDR);
@@ -1639,6 +1678,18 @@ oe_result_t _process_parameters(oe_enclave_t* enclave)
     {
         printf("Failed to unset environment variable 'SGX_AESM_ADDR'\n");
         goto done;
+    }
+#endif
+
+#ifdef OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
+    // Load public key and assign it to _trusted_root_key_pem
+    if (_parameters.override_pubkey_filename)
+    {
+        OE_CHECK(_read_key(
+            _parameters.override_pubkey_filename,
+            &override_public_key,
+            &override_public_key_size));
+        _trusted_root_key_pem = (const char*)override_public_key;
     }
 #endif
 
