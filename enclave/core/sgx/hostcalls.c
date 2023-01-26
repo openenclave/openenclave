@@ -39,7 +39,7 @@ void* oe_ecall_context_get_ocall_buffer(uint64_t size)
     if (ecall_context)
     {
         /* ecall_context is 16-byte aligned. Thus the fields ocall_buffer and
-         * and ocall_buffer_size are guaranteed to by 8-byte aligned due to
+         * and ocall_buffer_size are guaranteed to be 8-byte aligned due to
          * their statically determined offsets (for xAPIC vulnerability
          * mitigation). Also, copy to volatile variables to prevent TOCTOU
          * attacks. */

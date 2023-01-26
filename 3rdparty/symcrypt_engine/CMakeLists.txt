@@ -27,14 +27,6 @@ set(SYMCRYPT_NAME
 set(SYMCRYPT_LINK_NAME
     "libsymcrypt.so.${SYMCRYPT_VERSION_MAJOR}"
     CACHE INTERNAL "")
-# Specify the installed Clang version on Windows
-# This will not affect the clang version used to build OpenEnclave
-set(SYMCRYPT_WIN_CLANG_VERSION
-    "11.1.0"
-    CACHE
-      STRING
-      "Specify installed Clang version on Windows, that will only be used to build symcrypt_engine."
-)
 
 # Download the SymCrypt release package at config-time
 # The SymCrypt OpenSSL engine build requires the SymCrypt header
@@ -94,8 +86,15 @@ if (UNIX)
       "/usr/lib/llvm-${CLANG_MAJOR_VERSION}/lib/clang/${CMAKE_C_COMPILER_VERSION}/include"
   )
 elseif (WIN32)
-  set(CLANG_INTRINSIC_HEADERS_SEARCH_PATH
-      "C:/Program Files/LLVM/lib/clang/${SYMCRYPT_WIN_CLANG_VERSION}/include")
+  find_program(
+    CLANG_COMPILER clang
+    PATHS "C:/Program Files/LLVM/bin"
+    NO_DEFAULT_PATH
+    REQUIRED)
+  get_filename_component(CLANG_COMPILER_ROOT_DIR ${CLANG_COMPILER} DIRECTORY)
+  file(GLOB 
+    CLANG_INTRINSIC_HEADERS_SEARCH_PATHS
+    "${CLANG_COMPILER_ROOT_DIR}/../lib/clang/*/include")
 endif ()
 
 # Clang major version should match LLVM version
@@ -124,7 +123,7 @@ if (CLANG_INTRINSIC_HEADERS_DIR)
 else ()
   message(
     FATAL_ERROR
-      "Cannot find clang intrinstics header (required by SymCrypt OpenSSL engine)"
+      "Cannot find clang intrinstics header (required by SymCrypt OpenSSL engine) in ${CLANG_INTRINSIC_HEADERS_SEARCH_PATH}"
   )
 endif ()
 

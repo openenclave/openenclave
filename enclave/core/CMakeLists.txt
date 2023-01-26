@@ -95,20 +95,41 @@ if (OE_SGX)
   set_source_files_properties(sgx/td_basic.c PROPERTIES COMPILE_FLAGS
                                                         -fno-stack-protector)
 
-  if (CMAKE_C_COMPILER MATCHES "10$" OR CMAKE_CXX_COMPILER MATCHES "10$")
-    set_source_files_properties(
-      sgx/calls.c PROPERTIES COMPILE_FLAGS
-                             "-O2 -fno-omit-frame-pointer -fno-stack-protector")
-  else ()
-    # Adding "-O2 -fno-omit-frame-pointer" to ensure frame pointer works as intented
-    # Adding "-Wno-frame-address" because for clang-11
-    # usage of __builtin_frame_address(1) is triggering -Wframe-address
-    set_source_files_properties(
-      sgx/calls.c
-      PROPERTIES
-        COMPILE_FLAGS
-        "-O2 -fno-omit-frame-pointer -fno-stack-protector -Wno-frame-address")
+  # Switch compiler from MSVC to Clang for compiling enclave libraries
+  if (WIN32 AND MSVC)
+    find_program(CLANG_C_COMPILER
+                 NAMES clang
+                 PATHS "C:/Program Files/LLVM/bin"
+                 NO_DEFAULT_PATH
+                 REQUIRED)
+    execute_process(
+      COMMAND ${CLANG_C_COMPILER} --version
+      OUTPUT_VARIABLE CLANG_C_COMPILER_VERSION
+      OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if (CLANG_C_COMPILER_VERSION MATCHES "clang version ([0-9]+\.[0-9]+\.[0-9]+)")
+      set(CLANG_C_COMPILER_VERSION ${CMAKE_MATCH_1})
+    else ()
+      set(CLANG_C_COMPILER_VERSION "null")
+    endif ()
+    message(
+      STATUS
+      "${CLANG_C_COMPILER} (version: ${CLANG_C_COMPILER_VERSION}) will be used to compile enclave libraries"
+    )
   endif ()
+
+  # For clang-10 support specifically, add optimization levels and include frame pointers
+  # to ensure frame pointer works as intended.
+  if (CMAKE_C_COMPILER_VERSION MATCHES "^10" OR CLANG_C_COMPILER_VERSION MATCHES "^10")
+    set(C_COMPILER_FLAGS "-O2;-fno-omit-frame-pointer;-fno-stack-protector")
+  else ()
+    # Adding "-Wno-frame-address" because for clang-11 and above as
+    # usage of __builtin_frame_address(1) is triggering -Wframe-address
+    set(C_COMPILER_FLAGS "-O2;-fno-omit-frame-pointer;-fno-stack-protector;-Wno-frame-address")
+  endif ()
+  set_source_files_properties(
+    sgx/calls.c
+    PROPERTIES
+      COMPILE_OPTIONS "${C_COMPILER_FLAGS}")
 
   # To avoid the `unused-command-line-argument` warning, which we treat as an
   # error, we explicitly turn off the warning when compiling these assembly
@@ -327,7 +348,7 @@ if (CODE_COVERAGE)
   # avoid conflicts.
   set_source_files_properties(once.c sgx/init.c PROPERTIES COMPILE_FLAGS
                                                            "-fno-profile-arcs")
-  # Adding "-fno-profile-arcs" for Code Coverage, in additional to existing flags
+  # Adding "-fno-profile-arcs" for Code Coverage, in addition to existing flags
   if (CMAKE_C_COMPILER MATCHES "10$" OR CMAKE_CXX_COMPILER MATCHES "10$")
     set_source_files_properties(
       sgx/calls.c

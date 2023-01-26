@@ -67,7 +67,7 @@ foreach (TEST IN LISTS TEST_FILES)
   if (${NAME} MATCHES "extendhfsf2")
     # This testcase fails when compiled with optimizations.
     # The same failure can be reproduced outside OE by doing:
-    #    clang-10 ../../../lib/builtins/extendhfsf2.c extendhfsf2_test.c
+    #    clang-11 ../../../lib/builtins/extendhfsf2.c extendhfsf2_test.c
     #          -fpic -O2 -fno-builtin -ffreestanding
     #    ./a.out
     # Therefore disable optimizations for this testcase.
