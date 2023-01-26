@@ -41,21 +41,30 @@ list(JOIN ENCLAVE_CFLAGS_LIST " " ENCLAVE_CFLAGS_GCC)
 
 # See `cmake/apply_lvi_mitigation.cmake`.
 if (LVI_MITIGATION MATCHES ControlFlow)
-  set(LVI_MITIGATION_FLAGS -Wa,-mlfence-before-indirect-branch=register
-                           -Wa,-mlfence-before-ret=not)
-  if (NOT GLIBC_VERSION)
-    get_glibc_version()
-  endif ()
-  if (GLIBC_VERSION LESS 2.27)
-    set(LVI_MITIGATION_FLAGS ${LVI_MITIGATION_FLAGS} -g0)
-  endif ()
-  set(LVI_MITIGATION_FLAGS_GCC ${ENCLAVE_CFLAGS_GCC} ${LVI_MITIGATION_FLAGS}
-                               -mindirect-branch-register)
-  list(JOIN LVI_MITIGATION_FLAGS_GCC " " ENCLAVE_LVI_MITIGATION_CFLAGS_GCC)
+  if (LVI_MITIGATION STREQUAL ControlFlow-GNU)
+    set(LVI_MITIGATION_FLAGS -Wa,-mlfence-before-indirect-branch=register
+                             -Wa,-mlfence-before-ret=not)
+    if (NOT GLIBC_VERSION)
+      get_glibc_version()
+    endif ()
+    if (GLIBC_VERSION LESS 2.27)
+      set(LVI_MITIGATION_FLAGS ${LVI_MITIGATION_FLAGS} -g0)
+    endif ()
+    set(LVI_MITIGATION_FLAGS_GCC ${ENCLAVE_CFLAGS_GCC} ${LVI_MITIGATION_FLAGS}
+                                 -mindirect-branch-register)
+    list(JOIN LVI_MITIGATION_FLAGS_GCC " " ENCLAVE_LVI_MITIGATION_CFLAGS_GCC)
 
-  set(LVI_MITIGATION_FLAGS_CLANG ${ENCLAVE_CFLAGS_CLANG_LIST}
-                                 ${LVI_MITIGATION_FLAGS} -no-integrated-as)
-  list(JOIN LVI_MITIGATION_FLAGS_CLANG " " ENCLAVE_LVI_MITIGATION_CFLAGS_CLANG)
+    set(LVI_MITIGATION_FLAGS_CLANG ${ENCLAVE_CFLAGS_CLANG_LIST}
+                                   ${LVI_MITIGATION_FLAGS} -no-integrated-as)
+    list(JOIN LVI_MITIGATION_FLAGS_CLANG " "
+         ENCLAVE_LVI_MITIGATION_CFLAGS_CLANG)
+  elseif (LVI_MITIGATION STREQUAL ControlFlow-Clang)
+    set(LVI_MITIGATION_FLAGS -mlvi-cfi)
+    set(LVI_MITIGATION_FLAGS_CLANG ${ENCLAVE_CFLAGS_CLANG_LIST}
+                                   ${LVI_MITIGATION_FLAGS})
+    list(JOIN LVI_MITIGATION_FLAGS_CLANG " "
+         ENCLAVE_LVI_MITIGATION_CFLAGS_CLANG)
+  endif ()
 endif ()
 
 ##==============================================================================

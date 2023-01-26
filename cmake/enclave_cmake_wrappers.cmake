@@ -96,12 +96,14 @@ endfunction (enclave_link_libraries)
 
 # Wrapper of `set_tests_properties`
 macro (set_enclave_tests_properties NAME PROPERTIES PROP)
-  if (UNIX OR USE_CLANGW OR ADD_WINDOWS_ENCLAVE_TESTS)
+  if (UNIX
+      OR USE_CLANGW
+      OR ADD_WINDOWS_ENCLAVE_TESTS)
     set_tests_properties(${NAME} PROPERTIES ${PROP} "${ARGN}")
     if (TEST ${NAME}-lvi-cfg)
       set_tests_properties(${NAME}-lvi-cfg PROPERTIES ${PROP} "${ARGN}")
     endif ()
-  endif()
+  endif ()
 endmacro (set_enclave_tests_properties)
 
 macro (set_enclave_properties NAME PROPERTIES)

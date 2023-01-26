@@ -349,6 +349,7 @@ if (CODE_COVERAGE)
   set_source_files_properties(once.c sgx/init.c PROPERTIES COMPILE_FLAGS
                                                            "-fno-profile-arcs")
   # Adding "-fno-profile-arcs" for Code Coverage, in addition to existing flags
+  # Don't add -Wno-frame-address for clang-10 as it's not supported
   if (CMAKE_C_COMPILER MATCHES "10$" OR CMAKE_CXX_COMPILER MATCHES "10$")
     set_source_files_properties(
       sgx/calls.c
