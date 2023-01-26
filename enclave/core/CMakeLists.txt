@@ -109,21 +109,34 @@ if (OE_SGX)
     if (CLANG_C_COMPILER_VERSION MATCHES "clang version ([0-9]+\.[0-9]+\.[0-9]+)")
       set(CLANG_C_COMPILER_VERSION ${CMAKE_MATCH_1})
     else ()
-      set(CLANG_C_COMPILER_VERSION "null")
+      message(
+        FATAL_ERROR
+        "Could not determine Clang version from ${CLANG_C_COMPILER}"
+      )
     endif ()
+    set(CMAKE_C_COMPILER ${CLANG_C_COMPILER})
+    set(CMAKE_C_COMPILER_VERSION ${CLANG_C_COMPILER_VERSION})
     message(
       STATUS
-      "${CLANG_C_COMPILER} (version: ${CLANG_C_COMPILER_VERSION}) will be used to compile enclave libraries"
+      "${CMAKE_C_COMPILER} (version: ${CMAKE_C_COMPILER_VERSION}) will be used to compile enclave libraries"
     )
+    if (CMAKE_C_COMPILER_VERSION VERSION_LESS 10 
+        OR CMAKE_C_COMPILER_VERSION VERSION_GREATER 11.99)
+      message(
+        WARNING "Open Enclave officially supports Clang 11 and 10 only, "
+        "but your Clang version (${CMAKE_C_COMPILER_VERSION}) "
+        "is older or newer than that. Build problems may occur.")
+    endif ()
   endif ()
 
-  # For clang-10 support specifically, add optimization levels and include frame pointers
-  # to ensure frame pointer works as intended.
-  if (CMAKE_C_COMPILER_VERSION MATCHES "^10" OR CLANG_C_COMPILER_VERSION MATCHES "^10")
+  # Adding "-Wno-frame-address" because, for clang-11 and above, usage of
+  # __builtin_frame_address() with a non-zero argument is triggering 
+  # -Wframe-address.
+  # -Wno-frame-address is not used for clang-10 as it does not emit such 
+  # an error, and does not support the option.
+  if (CMAKE_C_COMPILER_VERSION VERSION_EQUAL 10)
     set(C_COMPILER_FLAGS "-O2;-fno-omit-frame-pointer;-fno-stack-protector")
   else ()
-    # Adding "-Wno-frame-address" because for clang-11 and above as
-    # usage of __builtin_frame_address(1) is triggering -Wframe-address
     set(C_COMPILER_FLAGS "-O2;-fno-omit-frame-pointer;-fno-stack-protector;-Wno-frame-address")
   endif ()
   set_source_files_properties(
@@ -350,7 +363,7 @@ if (CODE_COVERAGE)
                                                            "-fno-profile-arcs")
   # Adding "-fno-profile-arcs" for Code Coverage, in addition to existing flags
   # Don't add -Wno-frame-address for clang-10 as it's not supported
-  if (CMAKE_C_COMPILER MATCHES "10$" OR CMAKE_CXX_COMPILER MATCHES "10$")
+  if (CMAKE_C_COMPILER_VERSION VERSION_EQUAL 10)
     set_source_files_properties(
       sgx/calls.c
       PROPERTIES

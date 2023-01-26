@@ -12,7 +12,7 @@ add_custom_command(
 
 set(USE_LD "")
 if (UNIX)
-  if (CMAKE_C_COMPILER MATCHES "10$" OR CMAKE_CXX_COMPILER MATCHES "10$")
+  if (CMAKE_C_COMPILER_VERSION VERSION_EQUAL 10)
     find_program(OE_LLD lld-10)
   else ()
     find_program(OE_LLD lld-11)

@@ -50,6 +50,7 @@ sudo ./sgx_linux_x64_driver.bin
 ```bash
 sudo apt -y install clang-11 libssl-dev gdb libsgx-enclave-common libsgx-quote-ex libprotobuf10 libsgx-dcap-ql libsgx-dcap-ql-dev az-dcap-client open-enclave
 ```
+**Note**:  While `clang-11` is our supported and recommended version, Open Enclave may be built with `clang-10` as well. To install `clang-10`, ensure you use `llvm-toolchain-bionic-10` in step 1.
 
 > This step also installs the [az-dcap-client](https://github.com/microsoft/azure-dcap-client)
 > package which is necessary for performing remote attestation in Azure. A general

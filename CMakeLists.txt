@@ -6,8 +6,11 @@
 # Please read The Ultimate Guide to CMake:
 # https://rix0r.nl/blog/2015/08/13/cmake-guide/
 cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
-# Suppress error when using FetchContent_Declare in subprojects
-cmake_policy(SET CMP0135 NEW)
+
+if(${CMAKE_VERSION} GREATER_EQUAL "3.24.0") 
+    # Suppress error when using FetchContent_Declare in subprojects
+    cmake_policy(SET CMP0135 NEW)
+endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -77,6 +80,24 @@ if (UNIX)
       find_program(CMAKE_CXX_COMPILER clang++-11 clang++-10 clang++)
     endif ()
   endif ()
+# On Windows, find if Clang is available and determine the version
+elseif (WIN32)
+  find_program(CLANG_C_COMPILER
+               NAMES clang
+               PATHS "C:/Program Files/LLVM/bin")
+  if (CLANG_C_COMPILER)
+    execute_process(
+      COMMAND ${CLANG_C_COMPILER} --version
+      OUTPUT_VARIABLE CLANG_C_COMPILER_VERSION
+      OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if (CLANG_C_COMPILER_VERSION MATCHES "clang version ([0-9]+\.[0-9]+\.[0-9]+)")
+      set(CLANG_C_COMPILER_VERSION ${CMAKE_MATCH_1})
+    else ()
+      message(WARNING "Could not determine the version of ${CLANG_C_COMPILER}.")
+    endif ()
+  else ()
+    message(WARNING "Could not find an installed version of Clang.")
+  endif ()
 endif ()
 
 project(
@@ -86,13 +107,28 @@ project(
 set(PROJECT_VERSION ${OE_VERSION})
 set(OE_SCRIPTSDIR "${PROJECT_SOURCE_DIR}/scripts")
 
-if (LVI_MITIGATION STREQUAL ControlFlow-Clang
-    AND (NOT CMAKE_C_COMPILER_ID MATCHES Clang 
-         OR CMAKE_C_COMPILER_VERSION VERSION_LESS 11))
-  message(
-    FATAL_ERROR
-      "ControlFlow-Clang only works with clang version >= 11. But got ${CMAKE_C_COMPILER}"
-  )
+if (LVI_MITIGATION STREQUAL ControlFlow-Clang)
+  if (UNIX)
+    if (NOT CMAKE_C_COMPILER_ID MATCHES Clang)
+      message(
+        FATAL_ERROR
+        "ControlFlow-Clang requires Clang but got ${CMAKE_C_COMPILER_ID}.")
+    elseif (CMAKE_C_COMPILER_VERSION VERSION_LESS 11)
+      message(
+        FATAL_ERROR
+        "ControlFlow-Clang requires Clang version >= 11 but got ${CMAKE_C_COMPILER_VERSION}.")
+    endif ()
+  elseif (WIN32)
+      if (NOT CLANG_C_COMPILER)
+        message(
+          FATAL_ERROR
+          "ControlFlow-Clang requires Clang to be installed.")
+      elseif (CLANG_C_COMPILER_VERSION VERSION_LESS 11)
+        message(
+          FATAL_ERROR
+          "ControlFlow-Clang only works with Clang version >= 11. But got ${CLANG_C_COMPILER_VERSION}")
+      endif ()
+  endif ()
 endif ()
 
 # Collect Git info
@@ -187,9 +223,12 @@ if (OE_SGX)
     string(REPLACE " " ";" CONFIG_OUTPUT ${CONFIG_OUTPUT})
     # Get the major version for clang
     list(GET CONFIG_OUTPUT 2 MAJOR_VERSION)
-    if (MAJOR_VERSION VERSION_LESS 7)
-      message(FATAL_ERROR "Clang version 7.0 or higher is required")
-    endif ()
+    if (MAJOR_VERSION VERSION_LESS 10
+        OR MAJOR_VERSION VERSION_GREATER 11)
+      message(FATAL_ERROR
+        "Building ELF enclaves with Clang version ${CLANG_C_COMPILER_VERSION} is not supported.
+        Only Clang version 10 and 11 is supported")
+    endif()
 
     set(USE_CLANGW ON)
   endif ()

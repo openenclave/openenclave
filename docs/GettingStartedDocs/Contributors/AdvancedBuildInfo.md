@@ -179,6 +179,8 @@ suffix link to the actual compilers installed in the system, which are required 
 
 **Note**: `clang-11` and `clang++-11` may be missing if the system does not have the `clang` version 11 installed. If you encounter this, you will need to install Clang as GCC is not supported.
 
+**Note**:  While `clang-11` is our supported and recommended version, Open Enclave may be built with `clang-10` as well.
+
 **Note**: If the version of `glibc` is older than `2.27`, the `ld` will be missing in the above output.
 Consequently, `ld` will not be installed. Without a compatible version of `ld`,
 debug symbol generation (i.e. use of the `-g` option) cannot be used when compiling with LVI mitigation.

@@ -2,9 +2,6 @@
 # Licensed under the MIT License.
 
 ---
-- name: Include vars
-  ansible.builtin.include_vars: "{{ ansible_os_family | lower }}.yml"
-
 - name: Check for existing required folders and files
   ansible.windows.win_stat:
     path: "{{ item }}"
