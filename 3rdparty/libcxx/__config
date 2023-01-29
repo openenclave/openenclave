@@ -8,13 +8,22 @@
 #include <bits/alltypes.h>
 #include <locale.h>
 
-extern "C" long long strtoll_l(
+#ifdef __cplusplus  
+    extern "C" 
+#endif
+long long strtoll_l(
     const char *__restrict, char **__restrict, int, locale_t loc);
 
-extern "C" unsigned long long int strtoull_l(
+#ifdef __cplusplus  
+    extern "C" 
+#endif
+unsigned long long int strtoull_l(
     const char *nptr, char **endptr, int base, locale_t loc);
 
-extern "C" unsigned int arc4random(void);
+#ifdef __cplusplus  
+    extern "C" 
+#endif
+unsigned int arc4random(void);
 
 #include <__config_original>
 
