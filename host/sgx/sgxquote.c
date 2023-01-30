@@ -221,6 +221,14 @@ static const char* get_quote3_error_t_string(quote3_error_t error)
         CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_QVEIDENTITY_MISMATCH);
         CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_QVE_OUT_OF_DATE);
         CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_PSW_NOT_AVAILABLE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_COLLATERAL_VERSION_NOT_SUPPORTED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_TDX_MODULE_MISMATCH);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_QEIDENTITY_NOT_FOUND);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_TCBINFO_NOT_FOUND);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_INTERNAL_SERVER_ERROR);
+        CASE_ERROR_RETURN_ERROR_STRING(
+            SGX_QL_SUPPLEMENTAL_DATA_VERSION_NOT_SUPPORTED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ROOT_CA_UNTRUSTED);
 
         // return the error number as is in the default case
         default:
@@ -1043,6 +1051,8 @@ static oe_result_t sgx_qvl_error_to_oe(quote3_error_t error)
         case SGX_QL_SGX_PCK_CERT_CHAIN_EXPIRED:
         case SGX_QL_SGX_SIGNING_CERT_CHAIN_EXPIRED:
         case SGX_QL_SGX_ENCLAVE_IDENTITY_EXPIRED:
+        case SGX_QL_QEIDENTITY_NOT_FOUND:
+        case SGX_QL_NO_QVE_IDENTITY_DATA:
             return OE_INVALID_ENDORSEMENT;
 
         case SGX_QL_QUOTE_FORMAT_UNSUPPORTED:
@@ -1061,6 +1071,7 @@ static oe_result_t sgx_qvl_error_to_oe(quote3_error_t error)
         case SGX_QL_TCB_CONFIGURATION_NEEDED:
         case SGX_QL_TCB_OUT_OF_DATE_CONFIGURATION_NEEDED:
         case SGX_QL_TCB_CONFIGURATION_AND_SW_HARDENING_NEEDED:
+        case SGX_QL_TCBINFO_NOT_FOUND:
             return OE_TCB_LEVEL_INVALID;
 
         default:
@@ -1190,17 +1201,17 @@ oe_result_t oe_sgx_verify_quote(
         if (result != OE_OK)
         {
             OE_RAISE_MSG(
-                OE_PLATFORM_ERROR,
+                result,
                 "SGX ECDSA QVL-based quote verificaton error "
-                "quote3_error_t=0x%x\n",
-                error);
+                "quote3_error_t=%s\n",
+                get_quote3_error_t_string(error));
         }
 
         OE_TRACE_INFO("verfication status=%d", *p_quote_verification_result);
     }
     else
     {
-        // SGX_DCAP_QVL env doesn't set or QVL doesn't exist
+        // SGX_DCAP_QVL env isn't set or QVL doesn't exist
         result = OE_PLATFORM_ERROR;
     }
 
