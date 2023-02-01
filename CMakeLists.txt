@@ -216,7 +216,7 @@ if (WIN32)
     # OpenSSL relies on Perl to generate files (e.g., headers, assembly files, and test cases).
     find_program(
       OE_PERL perl
-      PATHS "C:/Program Files/Git/bin" "${GIT_DIR}/../usr/bin"
+      PATHS "C:/Program Files/Git/bin" "C:/Program Files/Git/usr/bin" "${GIT_DIR}/../usr/bin"
       NO_DEFAULT_PATH)
     if (NOT OE_PERL)
       message(FATAL_ERROR "Perl not found!")
@@ -226,7 +226,7 @@ if (WIN32)
     # OpenSSL tests.
     find_program(
       OE_DOS2UNIX dos2unix
-      PATHS "C:/Program Files/Git/bin" "${GIT_DIR}/../usr/bin"
+      PATHS "C:/Program Files/Git/bin" "C:/Program Files/Git/usr/bin" "${GIT_DIR}/../usr/bin"
       NO_DEFAULT_PATH)
     if (NOT OE_DOS2UNIX)
       message(FATAL_ERROR "Dos2unix not found!")

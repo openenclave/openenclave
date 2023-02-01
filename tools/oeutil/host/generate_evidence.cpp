@@ -215,7 +215,7 @@ static void oeutil_quote_provider_log(
 {
     if (level < SGX_QL_LOG_ERROR || level > SGX_QL_LOG_NONE)
         level = SGX_QL_LOG_INFO;
-    const char* level_string[] = {"ERROR", "WARN", "INFO", "NONE"};
+    const char* level_string[] = {"ERROR", "INFO", "NONE"};
 
     log("dcap_quoteprov [%s]: %s\n", level_string[level], message);
 }

@@ -11,7 +11,7 @@
 #include "stack_overflow_exception_t.h"
 
 #define PAGE_SIZE 4096
-#define EXCEPTION_HANDLER_STACK_SIZE 8192
+#define EXCEPTION_HANDLER_STACK_SIZE 16384
 #define STACK_PAGE_NUMBER 4
 #define STACK_SIZE (STACK_PAGE_NUMBER * PAGE_SIZE)
 void* td_to_tcs(const oe_sgx_td_t* td);
