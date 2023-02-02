@@ -426,26 +426,36 @@ install(
           COMPONENT OEHOSTVERIFY)
 
 # Build oehost
-macro (add_library_oehost_wrapper lib_name)
+# Usage:
+# add_library_oehost_wrapper(<LIB_NAME name of lib> [SKIP_INSTALL])
+macro (add_library_oehost_wrapper)
+  set(options SKIP_INSTALL)
+  set(oneValueArgs LIB_NAME)
+  set(multiValueArgs)
+
+  cmake_parse_arguments(PARA "${options}" "${oneValueArgs}" "${multiValueArgs}"
+                        ${ARGN})
+
   # Combine the following common code along with the platform specific code and
   # host verification code to get the full oehost target provided by the OE SDK.
-  add_library(${lib_name} STATIC ${PLATFORM_HOST_ONLY_SRC}
-                                 ${PLATFORM_SDK_ONLY_SRC})
+  add_library(${PARA_LIB_NAME} STATIC ${PLATFORM_HOST_ONLY_SRC}
+                                      ${PLATFORM_SDK_ONLY_SRC})
 
-  add_dependencies(${lib_name} syscall_untrusted_edl)
-  add_dependencies(${lib_name} core_untrusted_edl)
+  add_dependencies(${PARA_LIB_NAME} syscall_untrusted_edl)
+  add_dependencies(${PARA_LIB_NAME} core_untrusted_edl)
   if (OE_SGX)
-    add_dependencies(${lib_name} platform_untrusted_edl)
+    add_dependencies(${PARA_LIB_NAME} platform_untrusted_edl)
   endif ()
 
   # For including edge routines.
-  target_include_directories(${lib_name} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+  target_include_directories(${PARA_LIB_NAME}
+                             PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-  target_link_libraries(${lib_name} PUBLIC oe_includes)
+  target_link_libraries(${PARA_LIB_NAME} PUBLIC oe_includes)
 
   # Compile definitions and options for oehost
   target_compile_definitions(
-    ${lib_name}
+    ${PARA_LIB_NAME}
     PUBLIC # NOTE: This definition is public to the rest of our project's
            # targets, but should not yet be exposed to consumers of our
            # package.
@@ -455,71 +465,75 @@ macro (add_library_oehost_wrapper lib_name)
 
   if (OE_SGX)
     target_include_directories(
-      ${lib_name} PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/sgxsdk/include
-                          ${CMAKE_CURRENT_BINARY_DIR})
+      ${PARA_LIB_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/sgxsdk/include
+                               ${CMAKE_CURRENT_BINARY_DIR})
   endif ()
 
   if (OE_SGX AND UNIX)
     # Link oedebugrt static library.
-    target_link_libraries(${lib_name} PRIVATE oedebugrt)
+    target_link_libraries(${PARA_LIB_NAME} PRIVATE oedebugrt)
 
     # enter.c must be forced to retain the frame-pointer
     # for ocall stack-stitching by using the -fno-omit-frame-pointer flag.
     # It is compiled with -O2 flag to retain the same generated assembly
     # code in both debug and release builds.
     set_source_files_properties(
-      ${lib_name} sgx/linux/enter.c PROPERTIES COMPILE_FLAGS
-                                               "-O2 -fno-omit-frame-pointer")
+      ${PARA_LIB_NAME} sgx/linux/enter.c
+      PROPERTIES COMPILE_FLAGS "-O2 -fno-omit-frame-pointer")
   endif ()
 
   if (UNIX)
-    target_link_libraries(${lib_name} PRIVATE openenclave::crypto
-                                              openenclave::dl Threads::Threads)
+    target_link_libraries(
+      ${PARA_LIB_NAME} PRIVATE openenclave::crypto openenclave::dl
+                               Threads::Threads)
     target_compile_options(
-      ${lib_name}
+      ${PARA_LIB_NAME}
       PRIVATE -Wno-attributes -Wmissing-prototypes -fPIC ${PLATFORM_FLAGS}
       PUBLIC -fstack-protector-strong)
     target_compile_definitions(
-      ${lib_name}
+      ${PARA_LIB_NAME}
       PRIVATE _GNU_SOURCE
       PUBLIC $<$<NOT:$<CONFIG:debug>>:_FORTIFY_SOURCE=2>)
-    target_link_libraries(${lib_name} INTERFACE -Wl,-z,noexecstack)
+    target_link_libraries(${PARA_LIB_NAME} INTERFACE -Wl,-z,noexecstack)
 
     if (OE_TRUSTZONE)
-      target_include_directories(${lib_name} PRIVATE ${OE_TZ_OPTEE_CLIENT_INC})
-      target_link_libraries(${lib_name} PRIVATE teec)
+      target_include_directories(${PARA_LIB_NAME}
+                                 PRIVATE ${OE_TZ_OPTEE_CLIENT_INC})
+      target_link_libraries(${PARA_LIB_NAME} PRIVATE teec)
     endif ()
   elseif (WIN32)
-    target_link_libraries(${lib_name} PUBLIC ws2_32 shlwapi)
+    target_link_libraries(${PARA_LIB_NAME} PUBLIC ws2_32 shlwapi)
     target_include_directories(
-      ${lib_name}
+      ${PARA_LIB_NAME}
       PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
     # Synchronization library is needed for WaitOnAddress/WakeByAddress functions
     # used by switchless ocalls worker threads.
-    target_link_libraries(${lib_name} PRIVATE bcrypt Crypt32 Synchronization)
+    target_link_libraries(${PARA_LIB_NAME} PRIVATE bcrypt Crypt32
+                                                   Synchronization)
     # TODO: Handle TrustZone on Windows.
   endif ()
 
   if (WITH_EEID)
-    target_compile_definitions(${lib_name} PRIVATE OE_WITH_EXPERIMENTAL_EEID)
+    target_compile_definitions(${PARA_LIB_NAME}
+                               PRIVATE OE_WITH_EXPERIMENTAL_EEID)
   endif ()
 
   if (CMAKE_C_COMPILER_ID MATCHES GNU)
-    target_compile_options(${lib_name} PRIVATE -Wjump-misses-init)
+    target_compile_options(${PARA_LIB_NAME} PRIVATE -Wjump-misses-init)
   endif ()
 
-  if (NOT "${lib_name}" MATCHES "_loophole$")
+  if (NOT PARA_SKIP_INSTALL)
     # TODO: Remove this hard coded output directory.
-    set_property(TARGET ${lib_name} PROPERTY ARCHIVE_OUTPUT_DIRECTORY
-                                             ${OE_LIBDIR}/openenclave/host)
+    set_property(TARGET ${PARA_LIB_NAME} PROPERTY ARCHIVE_OUTPUT_DIRECTORY
+                                                  ${OE_LIBDIR}/openenclave/host)
 
     # Install targets
     install(
-      TARGETS ${lib_name}
+      TARGETS ${PARA_LIB_NAME}
       EXPORT openenclave-targets
       ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host)
   endif ()
-  host_enable_fuzzing(${lib_name})
+  host_enable_fuzzing(${PARA_LIB_NAME})
 endmacro ()
 
 # TODO: Replace these with `find_package` and add as dependencies to
@@ -554,7 +568,8 @@ find_package(Threads REQUIRED)
 
 include(measure/CMakeLists.txt)
 
-add_library_oehost_wrapper(oehost)
+add_library_oehost_wrapper(LIB_NAME oehost)
 # This lib is only used to build oeutil
-add_library_oehost_wrapper(oehost_loophole)
-target_compile_definitions(oehost_loophole PUBLIC OEUTIL_TCB_ALLOW_ANY_ROOT_KEY)
+add_library_oehost_wrapper(LIB_NAME oehost_prerelease_test SKIP_INSTALL)
+target_compile_definitions(oehost_prerelease_test
+                           PUBLIC OEUTIL_TCB_ALLOW_ANY_ROOT_KEY)

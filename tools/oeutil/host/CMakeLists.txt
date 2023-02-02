@@ -23,7 +23,7 @@ add_dependencies(oeutil enclave_key_pair)
 target_include_directories(oeutil PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
                                           -I/usr/include/openssl)
 
-target_link_libraries(oeutil oehost_loophole OpenSSL::SSL)
+target_link_libraries(oeutil oehost_prerelease_test OpenSSL::SSL)
 
 # To enable oeutil to load any public key
 target_compile_definitions(oeutil PUBLIC OEUTIL_TCB_ALLOW_ANY_ROOT_KEY)
