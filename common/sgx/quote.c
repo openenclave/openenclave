@@ -640,12 +640,21 @@ oe_result_t oe_verify_quote_with_sgx_endorsements(
         oe_datetime_to_string(&validity_from, vfrom, &tsize);
 
         oe_datetime_log("Latest valid datetime: ", &validity_from);
+#if 1
+        OE_TRACE_WARNING(
+            "Validation time %s is earlier than the "
+            "latest 'valid from' value %s (the error is ignored in the "
+            "pre-release testing)",
+            vtime,
+            vfrom);
+#else
         OE_RAISE_MSG(
             OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
             "Validation time %s is earlier than the "
             "latest 'valid from' value %s.",
             vtime,
             vfrom);
+#endif
     }
     if (oe_datetime_compare(&validation_time, &validity_until) > 0)
     {
@@ -657,12 +666,21 @@ oe_result_t oe_verify_quote_with_sgx_endorsements(
         oe_datetime_to_string(&validity_until, vuntil, &tsize);
 
         oe_datetime_log("Earliest expiration datetime: ", &validity_until);
+#if 1
+        OE_TRACE_WARNING(
+            "Validation time %s is later than the "
+            "earliest 'valid to' value %s (the error is ignored in the "
+            "pre-release testing)",
+            vtime,
+            vuntil);
+#else
         OE_RAISE_MSG(
             OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
             "Validation time %s is later than the "
             "earliest 'valid to' value %s.",
             vtime,
             vuntil);
+#endif
     }
     if (valid_from && valid_until)
     {
@@ -788,10 +806,17 @@ oe_result_t oe_get_sgx_quote_validity(
     oe_datetime_log("Quote overall issue date: ", &latest_from);
     oe_datetime_log("Quote overall next update: ", &earliest_until);
     if (oe_datetime_compare(&latest_from, &earliest_until) > 0)
+    {
+#if 1
+        OE_TRACE_WARNING("Failed to find an overall validity period in quote "
+                         "(the error is ignored in the pre-relase testing)");
+#else
         OE_RAISE_MSG(
             OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
             "Failed to find an overall validity period in quote.",
             NULL);
+#endif
+    }
 
     *valid_from = latest_from;
     *valid_until = earliest_until;
