@@ -435,6 +435,7 @@ add_enclave_library(
   openssl/crypto/bn/bn_word.c
   openssl/crypto/bn/bn_x931p.c
   openssl/crypto/bn/rsaz_exp.c
+  openssl/crypto/bn/rsa_sup_mul.c
   openssl/crypto/buffer/buf_err.c
   openssl/crypto/buffer/buffer.c
   openssl/crypto/cmac/cm_ameth.c
