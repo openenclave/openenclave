@@ -609,7 +609,7 @@ oe_result_t oe_verify_quote_with_sgx_endorsements(
         result = OE_OK;
     }
 
-    // DCAP QVL doesn't exist or system env `SGX_DCAP_QVL` doesn't set
+    // DCAP QVL doesn't exist or system env `SGX_DCAP_QVL` isn't set
     if (result == OE_PLATFORM_ERROR)
     {
         OE_CHECK_MSG(

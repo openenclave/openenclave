@@ -4,10 +4,10 @@
 # Licensed under the MIT License.
 
 SDK_VERSION=sgx_2.10_reproducible
-DCAP_VERSION=dcap_1.7_reproducible
+DCAP_VERSION=DCAP_1.15
 
 all: update-sgxsdk-headers
-	echo All done - please review changes
+	echo "All done - please review changes"
 
 update-sgxsdk-headers:
 	rm -rf include
