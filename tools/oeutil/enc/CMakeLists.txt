@@ -31,7 +31,7 @@ set_enclave_properties(oeutil_enc PROPERTIES RUNTIME_OUTPUT_DIRECTORY
                        ${OE_BINDIR})
 
 add_custom_target(oeutil_enclave_signed DEPENDS oeutil_enc.signed
-                                                oeutil_enc_pubkey.h)
+                                                enclave_key_pair)
 
 install(FILES ${OE_BINDIR}/oeutil_enc.signed
         DESTINATION ${CMAKE_INSTALL_BINDIR})

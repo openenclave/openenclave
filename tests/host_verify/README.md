@@ -17,5 +17,3 @@ Test scenario:
   2. Copy invalid certificates and report from the data folder.
   3. Read certificates/report/evidence from file.
   4. Pass certificates/report/evidence to the oe_verify* functions and check their results.
-
-
