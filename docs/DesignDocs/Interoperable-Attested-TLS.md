@@ -5,7 +5,7 @@ Add Support of Interoperable TLS Proposal
 
 The Interoperable Attested TLS proposal enables Interoperability among RA-TLS based libraries, so different libraries can be used on either end of a TLS session. This proposal aligns with relevant standards, and is readily extensible to support new TEEs and evidence formats.
 
-This proposal has been reviewed in the CCC Attestation SIG, and the presentation is in the [CCC github site](https://github.com/CCC-Attestation/meetings/blob/main/materials/ShanweiCen_Interoperable_ATLS.pdf). Please refer to this presentation for certificate and evidence formats definition.
+This proposal has been reviewed in the CCC Attestation SIG, and the presentation is in the [CCC Attestation SIG github repo](https://github.com/CCC-Attestation/meetings/blob/main/materials/ShanweiCen_Interoperable_ATLS.pdf). The SIG has created a project [interoperable-ra-tls](https://github.com/ccc-attestation/interoperable-ra-tls) with design documents and discussions on interoperability tests. Please refer to the [design documents](https://github.com/CCC-Attestation/interoperable-ra-tls/tree/main/docs) for certificate and evidence formats definition.
 
 The objective is to add support of this proposal while maintaining backward compatibility, so that existing API and legacy applications continue to work without impact.
 
