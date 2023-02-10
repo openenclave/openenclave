@@ -359,45 +359,182 @@ list(
   strings.c
   traceh_enclave.c)
 
-# Combine the following common code along with the platform specific code and
-# host verification code to get the full oehost target provided by the OE SDK.
-add_library(oehost STATIC ${PLATFORM_HOST_ONLY_SRC} ${PLATFORM_SDK_ONLY_SRC})
-
+# Build oehostverify
 add_library(oehostverify STATIC ${PLATFORM_HOST_ONLY_SRC})
-
 target_link_libraries(oehostverify PUBLIC oe_includes)
-target_link_libraries(oehost PUBLIC oe_includes)
+target_compile_definitions(oehostverify PUBLIC OE_BUILD_HOST_VERIFY)
+target_compile_definitions(
+  oehostverify
+  PUBLIC # NOTE: This definition is public to the rest of our project's
+         # targets, but should not be exposed to consumers of our
+         # package.
+         $<BUILD_INTERFACE:OE_API_VERSION=2>
+  PRIVATE OE_BUILD_UNTRUSTED OE_REPO_BRANCH_NAME="${GIT_BRANCH}"
+          OE_REPO_LAST_COMMIT="${GIT_COMMIT}")
 
 if (OE_SGX)
-  target_include_directories(
-    oehost PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/sgxsdk/include
-                   ${CMAKE_CURRENT_BINARY_DIR})
   target_include_directories(
     oehostverify PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/sgxsdk/include)
 endif ()
 
+if (UNIX)
+  target_link_libraries(oehostverify PRIVATE openenclave::crypto
+                                             openenclave::dl Threads::Threads)
+  target_compile_options(
+    oehostverify
+    PRIVATE -Wno-attributes -Wmissing-prototypes -fPIC ${PLATFORM_FLAGS}
+    PUBLIC -fstack-protector-strong)
+  target_compile_definitions(
+    oehostverify
+    PRIVATE _GNU_SOURCE
+    PUBLIC $<$<NOT:$<CONFIG:debug>>:_FORTIFY_SOURCE=2>)
+  target_link_libraries(oehostverify INTERFACE -Wl,-z,noexecstack -rdynamic)
+elseif (WIN32)
+  target_include_directories(
+    oehostverify PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
+  target_link_libraries(oehostverify PRIVATE bcrypt Crypt32)
+endif ()
+
+if (WITH_EEID)
+  target_compile_definitions(oehostverify PRIVATE OE_WITH_EXPERIMENTAL_EEID)
+endif ()
+
+if (CMAKE_C_COMPILER_ID MATCHES GNU)
+  target_compile_options(oehostverify PRIVATE -Wjump-misses-init)
+endif ()
+
+# Install oehostverify
 if (WIN32)
-  target_link_libraries(oehost PUBLIC ws2_32 shlwapi)
+  # Install .pdb files to enable stepping into oehost srcs for Debug
+  # and RelWithDebInfo builds.
+  # Note: PDB_OUTPUT_DIRECTORY is defined only for shared library and
+  # executable targets.
+  string(FIND "${CMAKE_BUILD_TYPE}" "Deb" BUILD_TYPE_DEBUG)
+  if (${BUILD_TYPE_DEBUG} GREATER_EQUAL 0)
+    install(
+      FILES
+        ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/oehost.dir/oehost.pdb
+        ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/oehostverify.dir/oehostverify.pdb
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host)
+  endif ()
 endif ()
 
-if (OE_SGX AND UNIX)
-  # Link oedebugrt static library.
-  target_link_libraries(oehost PRIVATE oedebugrt)
+install(
+  TARGETS oehostverify
+  EXPORT openenclave-hostverify-targets
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host
+          COMPONENT OEHOSTVERIFY)
 
-  # enter.c must be forced to retain the frame-pointer
-  # for ocall stack-stitching by using the -fno-omit-frame-pointer flag.
-  # It is compiled with -O2 flag to retain the same generated assembly
-  # code in both debug and release builds.
-  set_source_files_properties(
-    oehost sgx/linux/enter.c PROPERTIES COMPILE_FLAGS
-                                        "-O2 -fno-omit-frame-pointer")
-endif ()
+# Build oehost
+# Usage:
+# add_library_oehost_wrapper(<LIB_NAME name of lib> [SKIP_INSTALL])
+macro (add_library_oehost_wrapper)
+  set(options SKIP_INSTALL)
+  set(oneValueArgs LIB_NAME)
+  set(multiValueArgs)
 
-add_dependencies(oehost syscall_untrusted_edl)
-add_dependencies(oehost core_untrusted_edl)
-if (OE_SGX)
-  add_dependencies(oehost platform_untrusted_edl)
-endif ()
+  cmake_parse_arguments(PARA "${options}" "${oneValueArgs}" "${multiValueArgs}"
+                        ${ARGN})
+
+  # Combine the following common code along with the platform specific code and
+  # host verification code to get the full oehost target provided by the OE SDK.
+  add_library(${PARA_LIB_NAME} STATIC ${PLATFORM_HOST_ONLY_SRC}
+                                      ${PLATFORM_SDK_ONLY_SRC})
+
+  add_dependencies(${PARA_LIB_NAME} syscall_untrusted_edl)
+  add_dependencies(${PARA_LIB_NAME} core_untrusted_edl)
+  if (OE_SGX)
+    add_dependencies(${PARA_LIB_NAME} platform_untrusted_edl)
+  endif ()
+
+  # For including edge routines.
+  target_include_directories(${PARA_LIB_NAME}
+                             PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+
+  target_link_libraries(${PARA_LIB_NAME} PUBLIC oe_includes)
+
+  # Compile definitions and options for oehost
+  target_compile_definitions(
+    ${PARA_LIB_NAME}
+    PUBLIC # NOTE: This definition is public to the rest of our project's
+           # targets, but should not yet be exposed to consumers of our
+           # package.
+           $<BUILD_INTERFACE:OE_API_VERSION=2>
+    PRIVATE OE_BUILD_UNTRUSTED OE_REPO_BRANCH_NAME="${GIT_BRANCH}"
+            OE_REPO_LAST_COMMIT="${GIT_COMMIT}")
+
+  if (OE_SGX)
+    target_include_directories(
+      ${PARA_LIB_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/sgxsdk/include
+                               ${CMAKE_CURRENT_BINARY_DIR})
+  endif ()
+
+  if (OE_SGX AND UNIX)
+    # Link oedebugrt static library.
+    target_link_libraries(${PARA_LIB_NAME} PRIVATE oedebugrt)
+
+    # enter.c must be forced to retain the frame-pointer
+    # for ocall stack-stitching by using the -fno-omit-frame-pointer flag.
+    # It is compiled with -O2 flag to retain the same generated assembly
+    # code in both debug and release builds.
+    set_source_files_properties(
+      ${PARA_LIB_NAME} sgx/linux/enter.c
+      PROPERTIES COMPILE_FLAGS "-O2 -fno-omit-frame-pointer")
+  endif ()
+
+  if (UNIX)
+    target_link_libraries(
+      ${PARA_LIB_NAME} PRIVATE openenclave::crypto openenclave::dl
+                               Threads::Threads)
+    target_compile_options(
+      ${PARA_LIB_NAME}
+      PRIVATE -Wno-attributes -Wmissing-prototypes -fPIC ${PLATFORM_FLAGS}
+      PUBLIC -fstack-protector-strong)
+    target_compile_definitions(
+      ${PARA_LIB_NAME}
+      PRIVATE _GNU_SOURCE
+      PUBLIC $<$<NOT:$<CONFIG:debug>>:_FORTIFY_SOURCE=2>)
+    target_link_libraries(${PARA_LIB_NAME} INTERFACE -Wl,-z,noexecstack)
+
+    if (OE_TRUSTZONE)
+      target_include_directories(${PARA_LIB_NAME}
+                                 PRIVATE ${OE_TZ_OPTEE_CLIENT_INC})
+      target_link_libraries(${PARA_LIB_NAME} PRIVATE teec)
+    endif ()
+  elseif (WIN32)
+    target_link_libraries(${PARA_LIB_NAME} PUBLIC ws2_32 shlwapi)
+    target_include_directories(
+      ${PARA_LIB_NAME}
+      PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
+    # Synchronization library is needed for WaitOnAddress/WakeByAddress functions
+    # used by switchless ocalls worker threads.
+    target_link_libraries(${PARA_LIB_NAME} PRIVATE bcrypt Crypt32
+                                                   Synchronization)
+    # TODO: Handle TrustZone on Windows.
+  endif ()
+
+  if (WITH_EEID)
+    target_compile_definitions(${PARA_LIB_NAME}
+                               PRIVATE OE_WITH_EXPERIMENTAL_EEID)
+  endif ()
+
+  if (CMAKE_C_COMPILER_ID MATCHES GNU)
+    target_compile_options(${PARA_LIB_NAME} PRIVATE -Wjump-misses-init)
+  endif ()
+
+  if (NOT PARA_SKIP_INSTALL)
+    # TODO: Remove this hard coded output directory.
+    set_property(TARGET ${PARA_LIB_NAME} PROPERTY ARCHIVE_OUTPUT_DIRECTORY
+                                                  ${OE_LIBDIR}/openenclave/host)
+
+    # Install targets
+    install(
+      TARGETS ${PARA_LIB_NAME}
+      EXPORT openenclave-targets
+      ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host)
+  endif ()
+  host_enable_fuzzing(${PARA_LIB_NAME})
+endmacro ()
 
 # TODO: Replace these with `find_package` and add as dependencies to
 # the CMake package.
@@ -429,116 +566,10 @@ endif ()
 
 find_package(Threads REQUIRED)
 
-if (UNIX)
-  target_link_libraries(oehost PRIVATE openenclave::crypto openenclave::dl
-                                       Threads::Threads)
-  target_link_libraries(oehostverify PRIVATE openenclave::crypto
-                                             openenclave::dl Threads::Threads)
-
-  if (OE_TRUSTZONE)
-    target_include_directories(oehost PRIVATE ${OE_TZ_OPTEE_CLIENT_INC})
-    target_link_libraries(oehost PRIVATE teec)
-  endif ()
-elseif (WIN32)
-  target_include_directories(
-    oehost PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
-  # Synchronization library is needed for WaitOnAddress/WakeByAddress functions
-  # used by switchless ocalls worker threads.
-  target_link_libraries(oehost PRIVATE bcrypt Crypt32 Synchronization)
-  target_include_directories(
-    oehostverify PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
-  target_link_libraries(oehostverify PRIVATE bcrypt Crypt32)
-
-  # TODO: Handle TrustZone on Windows.
-endif ()
-
-# For including edge routines.
-target_include_directories(oehost PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-
-# Compile definitions and options for oehost and oehostverify
-target_compile_definitions(
-  oehost
-  PUBLIC # NOTE: This definition is public to the rest of our project's
-         # targets, but should not yet be exposed to consumers of our
-         # package.
-         $<BUILD_INTERFACE:OE_API_VERSION=2>
-  PRIVATE OE_BUILD_UNTRUSTED OE_REPO_BRANCH_NAME="${GIT_BRANCH}"
-          OE_REPO_LAST_COMMIT="${GIT_COMMIT}")
-target_compile_definitions(
-  oehostverify
-  PUBLIC # NOTE: This definition is public to the rest of our project's
-         # targets, but should not be exposed to consumers of our
-         # package.
-         $<BUILD_INTERFACE:OE_API_VERSION=2>
-  PRIVATE OE_BUILD_UNTRUSTED OE_REPO_BRANCH_NAME="${GIT_BRANCH}"
-          OE_REPO_LAST_COMMIT="${GIT_COMMIT}")
-
-if (WITH_EEID)
-  target_compile_definitions(oehost PRIVATE OE_WITH_EXPERIMENTAL_EEID)
-  target_compile_definitions(oehostverify PRIVATE OE_WITH_EXPERIMENTAL_EEID)
-endif ()
-
-if (UNIX)
-  target_compile_options(
-    oehost
-    PRIVATE -Wno-attributes -Wmissing-prototypes -fPIC ${PLATFORM_FLAGS}
-    PUBLIC -fstack-protector-strong)
-  target_compile_definitions(
-    oehost
-    PRIVATE _GNU_SOURCE
-    PUBLIC $<$<NOT:$<CONFIG:debug>>:_FORTIFY_SOURCE=2>)
-  target_compile_options(
-    oehostverify
-    PRIVATE -Wno-attributes -Wmissing-prototypes -fPIC ${PLATFORM_FLAGS}
-    PUBLIC -fstack-protector-strong)
-  target_compile_definitions(
-    oehostverify
-    PRIVATE _GNU_SOURCE
-    PUBLIC $<$<NOT:$<CONFIG:debug>>:_FORTIFY_SOURCE=2>)
-endif ()
-
-if (CMAKE_C_COMPILER_ID MATCHES GNU)
-  target_compile_options(oehost PRIVATE -Wjump-misses-init)
-  target_compile_options(oehostverify PRIVATE -Wjump-misses-init)
-endif ()
-
-target_compile_definitions(oehostverify PUBLIC OE_BUILD_HOST_VERIFY)
-
-# TODO: Remove this hard coded output directory.
-set_property(TARGET oehost PROPERTY ARCHIVE_OUTPUT_DIRECTORY
-                                    ${OE_LIBDIR}/openenclave/host)
-
-if (UNIX)
-  target_link_libraries(oehost INTERFACE -Wl,-z,noexecstack)
-  target_link_libraries(oehostverify INTERFACE -Wl,-z,noexecstack -rdynamic)
-endif ()
-
-# Install targets
-install(
-  TARGETS oehost
-  EXPORT openenclave-targets
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host)
-if (WIN32)
-  # Install .pdb files to enable stepping into oehost srcs for Debug
-  # and RelWithDebInfo builds.
-  # Note: PDB_OUTPUT_DIRECTORY is defined only for shared library and
-  # executable targets.
-  string(FIND "${CMAKE_BUILD_TYPE}" "Deb" BUILD_TYPE_DEBUG)
-  if (${BUILD_TYPE_DEBUG} GREATER_EQUAL 0)
-    install(
-      FILES
-        ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/oehost.dir/oehost.pdb
-        ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/oehostverify.dir/oehostverify.pdb
-      DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host)
-  endif ()
-endif ()
-
-install(
-  TARGETS oehostverify
-  EXPORT openenclave-hostverify-targets
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host
-          COMPONENT OEHOSTVERIFY)
-
 include(measure/CMakeLists.txt)
 
-host_enable_fuzzing(oehost)
+add_library_oehost_wrapper(LIB_NAME oehost)
+# This lib is only used to build oeutil
+add_library_oehost_wrapper(LIB_NAME oehost_prerelease_test SKIP_INSTALL)
+target_compile_definitions(oehost_prerelease_test
+                           PUBLIC OEUTIL_TCB_ALLOW_ANY_ROOT_KEY)

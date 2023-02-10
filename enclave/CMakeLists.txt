@@ -32,61 +32,84 @@ elseif (OE_TRUSTZONE)
   message("TODO: ADD ARM files.")
 endif ()
 
-add_enclave_library(
-  oeenclave
-  STATIC
-  attest_plugin.c
-  ../common/attest_plugin.c
-  ../common/custom_claims.c
-  ../common/datetime.c
-  ../common/sha.c
-  asym_keys.c
-  link.c
-  tls_cert.c
-  ${PLATFORM_SRC})
+# build oeenclave
+# Usage:
+# add_library_oeenclave_wrapper(<LIB_NAME name of lib> [SKIP_INSTALL])
+macro (add_library_oeenclave_wrapper)
+  set(options SKIP_INSTALL)
+  set(oneValueArgs LIB_NAME)
+  set(multiValueArgs)
 
-maybe_build_using_clangw(oeenclave)
+  cmake_parse_arguments(PARA "${options}" "${oneValueArgs}" "${multiValueArgs}"
+                        ${ARGN})
 
-if (CMAKE_C_COMPILER_ID MATCHES GNU)
-  enclave_compile_options(oeenclave PRIVATE -Wjump-misses-init)
+  add_enclave_library(
+    ${PARA_LIB_NAME}
+    STATIC
+    attest_plugin.c
+    ../common/attest_plugin.c
+    ../common/custom_claims.c
+    ../common/datetime.c
+    ../common/sha.c
+    asym_keys.c
+    link.c
+    tls_cert.c
+    ${PLATFORM_SRC})
+
+  maybe_build_using_clangw(${PARA_LIB_NAME})
+
+  if (CMAKE_C_COMPILER_ID MATCHES GNU)
+    enclave_compile_options(${PARA_LIB_NAME} PRIVATE -Wjump-misses-init)
+
+    if (OE_TRUSTZONE)
+      target_compile_options(${PARA_LIB_NAME} PUBLIC ${OE_TZ_TA_C_FLAGS})
+    endif ()
+  endif ()
+
+  enclave_enable_code_coverage(${PARA_LIB_NAME})
+
+  # Add location of the oeedger8r-generated trusted headers for internal
+  # functions implemented via EDL files.
+  enclave_include_directories(${PARA_LIB_NAME} PRIVATE
+                              ${CMAKE_CURRENT_BINARY_DIR}/core)
+
+  enclave_link_libraries(${PARA_LIB_NAME} PUBLIC oelibc)
 
   if (OE_TRUSTZONE)
-    target_compile_options(oeenclave PUBLIC ${OE_TZ_TA_C_FLAGS})
+    enclave_link_libraries(${PARA_LIB_NAME} PUBLIC oelibutee)
   endif ()
-endif ()
 
-enclave_enable_code_coverage(oeenclave)
+  if (NOT PARA_SKIP_INSTALL)
+    set_enclave_property(
+      TARGET ${PARA_LIB_NAME} PROPERTY ARCHIVE_OUTPUT_DIRECTORY
+      ${OE_LIBDIR}/openenclave/enclave)
+    install_enclaves(
+      TARGETS
+      ${PARA_LIB_NAME}
+      EXPORT
+      openenclave-targets
+      ARCHIVE
+      DESTINATION
+      ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+  endif ()
 
-# Add location of the oeedger8r-generated trusted headers for internal
-# functions implemented via EDL files.
-enclave_include_directories(oeenclave PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/core)
+  if (WITH_EEID)
+    enclave_compile_definitions(${PARA_LIB_NAME} PRIVATE
+                                OE_WITH_EXPERIMENTAL_EEID)
+    # oeenclave currently does not link against the oecrypto* library by default.
+    # Consequently, it does not inherit the include paths of the crypto (e.g., mbedtls)
+    # headers, which are needed by eeid.c. Therefore, we add the paths here.
+    enclave_include_directories(
+      ${PARA_LIB_NAME} PRIVATE
+      $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include>
+      $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/3rdparty/mbedtls>)
+  endif ()
 
-enclave_link_libraries(oeenclave PUBLIC oelibc)
+  enclave_enable_fuzzing(${PARA_LIB_NAME})
+endmacro ()
 
-if (OE_TRUSTZONE)
-  enclave_link_libraries(oeenclave PUBLIC oelibutee)
-endif ()
-
-set_enclave_property(TARGET oeenclave PROPERTY ARCHIVE_OUTPUT_DIRECTORY
-                     ${OE_LIBDIR}/openenclave/enclave)
-install_enclaves(
-  TARGETS
-  oeenclave
-  EXPORT
-  openenclave-targets
-  ARCHIVE
-  DESTINATION
-  ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
-
-if (WITH_EEID)
-  enclave_compile_definitions(oeenclave PRIVATE OE_WITH_EXPERIMENTAL_EEID)
-  # oeenclave currently does not link against the oecrypto* library by default.
-  # Consequently, it does not inherit the include paths of the crypto (e.g., mbedtls)
-  # headers, which are needed by eeid.c. Therefore, we add the paths here.
-  enclave_include_directories(
-    oeenclave PRIVATE
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include>
-    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/3rdparty/mbedtls>)
-endif ()
-
-enclave_enable_fuzzing(oeenclave)
+add_library_oeenclave_wrapper(LIB_NAME oeenclave)
+# This lib should only be used to build oeutil
+add_library_oeenclave_wrapper(LIB_NAME oeenclave_prerelease_test SKIP_INSTALL)
+target_compile_definitions(oeenclave_prerelease_test
+                           PUBLIC OEUTIL_TCB_ALLOW_ANY_ROOT_KEY)
