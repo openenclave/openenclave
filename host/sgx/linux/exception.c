@@ -157,6 +157,13 @@ static void _register_signal_handlers(void)
     // registered in a non-C language like Go with alternate stack
     // implementations.
     sig_action.sa_flags = SA_SIGINFO | SA_NODEFER | SA_RESTART | SA_ONSTACK;
+    // Set up the alt stack for SA_ONSTACK:
+    static char stack[SIGSTKSZ];
+    stack_t ss = {
+        .ss_size = sizeof(stack),
+        .ss_sp = stack,
+    };
+    sigaltstack(&ss, 0);
 
     // Should honor the current signal masks.
     sigemptyset(&sig_action.sa_mask);
