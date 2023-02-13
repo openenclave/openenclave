@@ -395,12 +395,12 @@ def ACCHostVerificationPackageTest(String version, String build_type) {
     }
 }
 
-def OEReleaseTest(String label, String release_version, String oe_package = "open-enclave", String source = "Azure", boolean lvi_mitigation = false) {
+def OEReleaseTest(String label, String release_version, String oe_package = "open-enclave", String source = "Azure", String storage_credentials_id, String storage_blob, boolean lvi_mitigation = false) {
     stage("OE Release Test ${label}") {
         node(label) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
-                helpers.releaseInstall(release_version, oe_package, source)
+                helpers.releaseInstall(release_version, oe_package, source, storage_credentials_id, storage_blob)
                 helpers.TestSamplesCommand(lvi_mitigation, oe_package)
             }
         }
