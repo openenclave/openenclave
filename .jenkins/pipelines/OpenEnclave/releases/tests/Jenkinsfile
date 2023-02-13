@@ -1,32 +1,10 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-properties(
-    [
-        buildDiscarder(
-            logRotator(
-                artifactDaysToKeepStr: '90',
-                artifactNumToKeepStr: '180',
-                daysToKeepStr: '90',
-                numToKeepStr: '180'
-            )
-        ),
-        [$class: 'JobRestrictionProperty'],
-        parameters(
-            [
-                string(name: "OECI_LIB_VERSION", defaultValue: 'master', description: 'Version of OE Libraries to use'),
-                string(name: "OE_RELEASE_VERSION", description: "Open Enclave Release Version"),
-                choice(name: "OE_PACKAGE", choices: ["open-enclave", "open-enclave-hostverify"], description: "Open Enclave package type to install"),
-                choice(name: "RELEASE_SOURCE", choices: ["Azure", "GitHub"], description: "Source to download the OE Release from")
-            ]
-        )
-    ]
-)
-
 library "OpenEnclaveJenkinsLibrary@${params.OECI_LIB_VERSION}"
 
-parallel "Ubuntu 20.04":        { tests.OEReleaseTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04"], params.OE_RELEASE_VERSION, params.OE_PACKAGE, params.RELEASE_SOURCE, false) },
-         "Ubuntu 18.04":        { tests.OEReleaseTest(globalvars.AGENTS_LABELS["acc-ubuntu-18.04"], params.OE_RELEASE_VERSION, params.OE_PACKAGE, params.RELEASE_SOURCE, false) },
-         "Ubuntu 20.04 w/ LVI": { tests.OEReleaseTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04"], params.OE_RELEASE_VERSION, params.OE_PACKAGE, params.RELEASE_SOURCE, true)  },
-         "Ubuntu 18.04 w/ LVI": { tests.OEReleaseTest(globalvars.AGENTS_LABELS["acc-ubuntu-18.04"], params.OE_RELEASE_VERSION, params.OE_PACKAGE, params.RELEASE_SOURCE, true)  },
-         "Windows Server 2019": { tests.OEReleaseTest(globalvars.AGENTS_LABELS["acc-win2019-dcap"], params.OE_RELEASE_VERSION, params.OE_PACKAGE, params.RELEASE_SOURCE, false) }
+parallel "Ubuntu 20.04":        { tests.OEReleaseTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04"], params.OE_RELEASE_VERSION, params.OE_PACKAGE, params.RELEASE_SOURCE, params.STORAGE_CREDENTIALS_ID, params.STORAGE_BLOB, false) },
+         "Ubuntu 18.04":        { tests.OEReleaseTest(globalvars.AGENTS_LABELS["acc-ubuntu-18.04"], params.OE_RELEASE_VERSION, params.OE_PACKAGE, params.RELEASE_SOURCE, params.STORAGE_CREDENTIALS_ID, params.STORAGE_BLOB, false) },
+         "Ubuntu 20.04 w/ LVI": { tests.OEReleaseTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04"], params.OE_RELEASE_VERSION, params.OE_PACKAGE, params.RELEASE_SOURCE, params.STORAGE_CREDENTIALS_ID, params.STORAGE_BLOB, true)  },
+         "Ubuntu 18.04 w/ LVI": { tests.OEReleaseTest(globalvars.AGENTS_LABELS["acc-ubuntu-18.04"], params.OE_RELEASE_VERSION, params.OE_PACKAGE, params.RELEASE_SOURCE, params.STORAGE_CREDENTIALS_ID, params.STORAGE_BLOB, true)  },
+         "Windows Server 2019": { tests.OEReleaseTest(globalvars.AGENTS_LABELS["acc-win2019-dcap"], params.OE_RELEASE_VERSION, params.OE_PACKAGE, params.RELEASE_SOURCE, params.STORAGE_CREDENTIALS_ID, params.STORAGE_BLOB, false) }
