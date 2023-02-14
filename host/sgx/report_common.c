@@ -129,6 +129,7 @@ oe_result_t oe_verify_report_internal(
     oe_result_t result = OE_UNEXPECTED;
     oe_report_t oe_report = {0};
     oe_report_header_t* header = (oe_report_header_t*)report;
+    uint32_t verification_result = 0;
 
     if (report == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -147,8 +148,13 @@ oe_result_t oe_verify_report_internal(
         OE_CHECK(oe_initialize_quote_provider());
 
         // Quote attestation can be done entirely on the host side.
-        OE_CHECK(oe_verify_sgx_quote(
-            header->report, header->report_size, NULL, 0, NULL));
+        result = oe_verify_sgx_quote(
+            header->report,
+            header->report_size,
+            NULL,
+            0,
+            NULL,
+            &verification_result);
     }
 #ifndef OE_BUILD_HOST_VERIFY
     else if (header->report_type == OE_REPORT_TYPE_SGX_LOCAL)
@@ -156,7 +162,7 @@ oe_result_t oe_verify_report_internal(
         if (enclave == NULL)
             OE_RAISE(OE_INVALID_PARAMETER);
         oe_result_t retval = OE_OK;
-        OE_CHECK(oe_verify_report_ecall(enclave, &retval, report, report_size));
+        result = oe_verify_report_ecall(enclave, &retval, report, report_size);
         OE_CHECK(retval);
     }
 #endif
@@ -166,11 +172,13 @@ oe_result_t oe_verify_report_internal(
         OE_RAISE(OE_INVALID_PARAMETER);
     }
 
-    // Optionally return parsed report.
+    // Optionally return parsed report and set the verification result
     if (parsed_report != NULL)
-        OE_CHECK(oe_parse_report(report, report_size, parsed_report));
+    {
+        *parsed_report = oe_report;
+        parsed_report->verification_result = verification_result;
+    }
 
-    result = OE_OK;
 done:
     if (result == OE_UNSUPPORTED)
         OE_TRACE_WARNING("oe_verify_report_ecall is not supported. To "

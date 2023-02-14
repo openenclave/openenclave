@@ -240,6 +240,7 @@ static int _verify_report(
             report_file_size,
             endorsements_data,
             endorsements_file_size,
+            NULL,
             NULL);
 
         if (pass)
