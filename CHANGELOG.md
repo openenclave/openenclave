@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated the mbedTLS from 2.28.0 to 2.28.1
 ## Changed
 - Fix the incorrect behavior of pthread_mutex_init() and std::mutex such that they no longer create a recursive lock by default.
+- `oe_verify_report` now reports the verification result in the `parsed_report` output (only valid when the API returns OE_OK or OE_TCB_LEVEL_INVALID). For the SGX case, the definition of the result is based on `oe_sgx_tcb_status_t`.
 
 ### Security
 - Updated openssl to version 1.1.1q. Please refer to release log to find list of CVEs addressed by this version.

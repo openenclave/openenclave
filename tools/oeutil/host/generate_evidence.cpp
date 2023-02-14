@@ -1151,11 +1151,25 @@ oe_result_t generate_oe_report(
 
         oe_report_t parsed_report;
 
-        OE_CHECK_MSG(
-            oe_verify_report(
-                nullptr, remote_report, report_size, &parsed_report),
-            "Failed to verify report. Error: (%s)\n",
-            oe_result_str(result));
+        result = oe_verify_report(
+            nullptr, remote_report, report_size, &parsed_report);
+
+        if (result == OE_OK)
+        {
+            log("========== TCB is up-to-date\n");
+        }
+        else if (result == OE_TCB_LEVEL_INVALID)
+        {
+            log("========== Non-terminal TCB: 0x:%0x\n",
+                parsed_report.verification_result);
+        }
+        else
+        {
+            OE_CHECK_MSG(
+                result,
+                "Failed to verify report. Error: (%s)\n",
+                oe_result_str(result));
+        }
 
         // verify signer id
         OE_CHECK_MSG(

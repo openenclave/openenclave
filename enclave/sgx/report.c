@@ -101,29 +101,37 @@ oe_result_t oe_verify_report_internal(
     oe_result_t result = OE_UNEXPECTED;
     oe_report_t oe_report = {0};
     oe_report_header_t* header = (oe_report_header_t*)report;
+    uint32_t verification_result = 0;
 
     // Ensure that the report is parseable before using the header.
     OE_CHECK(oe_parse_report(report, report_size, &oe_report));
 
     if (header->report_type == OE_REPORT_TYPE_SGX_REMOTE)
     {
-        OE_CHECK(oe_verify_sgx_quote(
-            header->report, header->report_size, NULL, 0, NULL));
+        result = oe_verify_sgx_quote(
+            header->report,
+            header->report_size,
+            NULL,
+            0,
+            NULL,
+            &verification_result);
     }
     else if (header->report_type == OE_REPORT_TYPE_SGX_LOCAL)
     {
-        OE_CHECK(oe_verify_raw_sgx_report(header->report, header->report_size));
+        result = oe_verify_raw_sgx_report(header->report, header->report_size);
     }
     else
     {
         OE_RAISE(OE_INVALID_PARAMETER);
     }
 
-    // Optionally return parsed report.
+    // Optionally return parsed report and set the verification
+    // result
     if (parsed_report != NULL)
+    {
         *parsed_report = oe_report;
-
-    result = OE_OK;
+        parsed_report->verification_result = verification_result;
+    }
 
 done:
     return result;
