@@ -48,6 +48,7 @@ pipeline {
                         string(name: 'REPOSITORY_NAME', value: env.REPOSITORY),
                         string(name: 'BRANCH_NAME', value: env.BRANCH),
                         string(name: 'DOCKER_TAG', value: DOCKER_TAG),
+                        string(name: 'BASE_DOCKER_TAG', value: DOCKER_TAG),
                         string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
                         string(name: 'SGX_VERSION', value: params.SGX_VERSION),
                         booleanParam(name: 'TAG_LATEST', value: false),

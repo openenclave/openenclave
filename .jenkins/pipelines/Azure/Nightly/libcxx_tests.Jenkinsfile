@@ -58,10 +58,10 @@ pipeline {
             steps {
                 script {
                     parallel([
-                        "Libcxx ACC2004 clang-10 Debug" :          { ACCLibcxxTest(params.UBUNTU_2004_LABEL, 'clang-10', 'Debug') },
-                        "Libcxx ACC2004 clang-10 RelWithDebInfo" : { ACCLibcxxTest(params.UBUNTU_2004_LABEL, 'clang-10', 'RelWithDebInfo') },
-                        "Libcxx ACC1804 clang-10 Debug" :          { ACCLibcxxTest(params.UBUNTU_1804_LABEL, 'clang-10', 'Debug') },
-                        "Libcxx ACC1804 clang-10 RelWithDebInfo" : { ACCLibcxxTest(params.UBUNTU_1804_LABEL, 'clang-10', 'RelWithDebInfo') }
+                        "Libcxx ACC2004 clang-11 Debug" :          { ACCLibcxxTest(params.UBUNTU_2004_LABEL, 'clang-11', 'Debug') },
+                        "Libcxx ACC2004 clang-11 RelWithDebInfo" : { ACCLibcxxTest(params.UBUNTU_2004_LABEL, 'clang-11', 'RelWithDebInfo') },
+                        "Libcxx ACC1804 clang-11 Debug" :          { ACCLibcxxTest(params.UBUNTU_1804_LABEL, 'clang-11', 'Debug') },
+                        "Libcxx ACC1804 clang-11 RelWithDebInfo" : { ACCLibcxxTest(params.UBUNTU_1804_LABEL, 'clang-11', 'RelWithDebInfo') }
                     ])
                 }
             }

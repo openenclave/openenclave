@@ -22,7 +22,7 @@ macro (detect_compiler BINDIR CC)
     else ()
       # Build enclave applications. Try to search newer versions of clang/clang++.
       # Be consistent to the logic implemented by samples/config.mk.
-      foreach (VERSION 10 9 8)
+      foreach (VERSION 11 10)
         set(CLANG_VERSION "")
         if (EXISTS "${BINDIR}/${${COMPILER}}-${VERSION}")
           set(CLANG_VERSION ${VERSION})
@@ -42,15 +42,14 @@ endmacro ()
 # Adopt customized compiler wrappers for LVI mitigation.
 function (configure_lvi_mitigation_build)
   cmake_parse_arguments(OE "IN_PACKAGE" "BINDIR" "" ${ARGN})
-
   if (NOT EXISTS "${OE_BINDIR}")
     message(FATAL_ERROR "${OE_BINDIR} does not exist.")
   endif ()
 
   if (NOT OE_IN_PACKAGE)
-    # Default to clang-10 when building SDK.
-    set(C_COMPILER clang-10)
-    set(CXX_COMPILER clang++-10)
+    # Default to clang-11 when building SDK.
+    set(C_COMPILER clang-11)
+    set(CXX_COMPILER clang++-11)
   else ()
     # Default to clang when building enclave applications.
     set(C_COMPILER clang)

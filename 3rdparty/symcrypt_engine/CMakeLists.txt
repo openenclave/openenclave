@@ -33,8 +33,7 @@ set(SYMCRYPT_LINK_NAME
 include(FetchContent)
 FetchContent_Declare(
   symcrypt_package
-  SOURCE_DIR
-  ${CMAKE_CURRENT_BINARY_DIR}/SymCrypt
+  SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/SymCrypt
   URL https://github.com/microsoft/SymCrypt/releases/download/v101.3.0/symcrypt_AMD64_oe_full_v101.3.0-31e06ae.tgz
   URL_HASH
     SHA256=53fcbdbae3925b82e880c102969dc4c646b36dffbca602d2f85f967d54e958e7)
@@ -87,11 +86,15 @@ if (UNIX)
       "/usr/lib/llvm-${CLANG_MAJOR_VERSION}/lib/clang/${CMAKE_C_COMPILER_VERSION}/include"
   )
 elseif (WIN32)
-  # Update the string when the supported clang version is changed
-  set(CLANG_VERSION "10.0.0")
-
-  set(CLANG_INTRINSIC_HEADERS_SEARCH_PATH
-      "C:/Program Files/LLVM/lib/clang/${CLANG_VERSION}/include")
+  find_program(
+    CLANG_COMPILER clang
+    PATHS "C:/Program Files/LLVM/bin"
+    NO_DEFAULT_PATH
+    REQUIRED)
+  get_filename_component(CLANG_COMPILER_ROOT_DIR ${CLANG_COMPILER} DIRECTORY)
+  file(GLOB 
+    CLANG_INTRINSIC_HEADERS_SEARCH_PATH
+    "${CLANG_COMPILER_ROOT_DIR}/../lib/clang/*/include")
 endif ()
 
 # Clang major version should match LLVM version
@@ -120,7 +123,7 @@ if (CLANG_INTRINSIC_HEADERS_DIR)
 else ()
   message(
     FATAL_ERROR
-      "Cannot find clang intrinstics header (required by SymCrypt OpenSSL engine)"
+      "Cannot find clang intrinstics header (required by SymCrypt OpenSSL engine) in ${CLANG_INTRINSIC_HEADERS_SEARCH_PATH}"
   )
 endif ()
 

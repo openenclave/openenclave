@@ -10,16 +10,18 @@ try{
     if(FULL_TEST_SUITE == "true") {
         stage("Full Test Suite") {
             testing_stages += [
-                "Win2019 Ubuntu2004 clang-10 RelWithDebInfo Linux-Elf-build LVI": { tests.windowsLinuxElfBuild(params.WS2019_DCAP_CFL_LABEL, params.UBUNTU_2004_NONSGX_LABEL, 'clang-10', 'RelWithDebInfo', 'ControlFlow') },
-                "Win2019 Ubuntu2004 clang-10 Debug Linux-Elf-build":              { tests.windowsLinuxElfBuild(params.WS2019_DCAP_CFL_LABEL, params.UBUNTU_2004_NONSGX_LABEL, 'clang-10', 'Debug') },
-                "Win2019 Ubuntu1804 clang-10 RelWithDebInfo Linux-Elf-build LVI": { tests.windowsLinuxElfBuild(params.WS2019_DCAP_CFL_LABEL, params.UBUNTU_1804_NONSGX_LABEL, 'clang-10', 'RelWithDebInfo', 'ControlFlow') },
-                "Win2019 Sim Debug Cross Compile LVI ":                           { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'Debug',          'ControlFlow', '1') },
-                "Win2019 Sim RelWithDebInfo Cross Compile LVI ":                  { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'RelWithDebInfo', 'ControlFlow', '1') },
-                "Win2019 Debug Cross Compile DCAP LVI":                           { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'Debug',          'ControlFlow') },
-                "Win2019 RelWithDebInfo Cross Compile DCAP LVI":                  { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'RelWithDebInfo', 'ControlFlow') },
-                "Win2019ICX RelWithDebInfo Cross Compile DCAP LVI":               { tests.windowsCrossCompile(params.WS2019_DCAP_ICX_LABEL, 'RelWithDebInfo', 'ControlFlow') },
-                "Win2019 Sim Debug Cross Compile LVI snmalloc":                   { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'Debug',          'ControlFlow', '1', 'OFF', ['-DUSE_SNMALLOC=ON']) },
-                "Win2019 RelWithDebInfo Cross Compile DCAP LVI snmalloc":         { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'RelWithDebInfo', 'ControlFlow', '0', 'OFF', ['-DUSE_SNMALLOC=ON']) },
+                "Win2019 Ubuntu2004 clang-11 RelWithDebInfo Linux-Elf-build LVI": { tests.windowsLinuxElfBuild(params.WS2019_DCAP_CFL_LABEL, params.UBUNTU_2004_NONSGX_LABEL, 'clang-11', 'RelWithDebInfo', 'ControlFlow') },
+                "Win2019 Ubuntu2004 clang-11 Debug Linux-Elf-build":              { tests.windowsLinuxElfBuild(params.WS2019_DCAP_CFL_LABEL, params.UBUNTU_2004_NONSGX_LABEL, 'clang-11', 'Debug') },
+                "Win2019 Ubuntu1804 clang-11 RelWithDebInfo Linux-Elf-build LVI": { tests.windowsLinuxElfBuild(params.WS2019_DCAP_CFL_LABEL, params.UBUNTU_1804_NONSGX_LABEL, 'clang-11', 'RelWithDebInfo', 'ControlFlow') },
+                "Win2019 Sim Debug Cross Compile LVI ":                           { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'clang-11', 'Debug',          'ControlFlow', '1') },
+                "Win2019 Sim RelWithDebInfo Cross Compile LVI ":                  { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'clang-11', 'RelWithDebInfo', 'ControlFlow', '1') },
+                "Win2019 Debug Cross Compile DCAP LVI":                           { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'clang-11', 'Debug',          'ControlFlow') },
+                "Win2019 RelWithDebInfo Cross Compile DCAP LVI":                  { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'clang-11', 'RelWithDebInfo', 'ControlFlow') },
+                "Win2019 clang-10 RelWithDebInfo Cross Compile DCAP LVI":         { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'clang-10', 'RelWithDebInfo', 'ControlFlow') },
+                "Win2019 clang-11 RelWithDebInfo XC DCAP ControlFlow-Clang":      { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'clang-11', 'RelWithDebInfo', 'ControlFlow-Clang') },
+                "Win2019 ICX RelWithDebInfo Cross Compile DCAP LVI":              { tests.windowsCrossCompile(params.WS2019_DCAP_ICX_LABEL, 'clang-11', 'RelWithDebInfo', 'ControlFlow') },
+                "Win2019 Sim Debug Cross Compile LVI snmalloc":                   { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'clang-11', 'Debug',          'ControlFlow', '1', 'OFF', ['-DUSE_SNMALLOC=ON']) },
+                "Win2019 RelWithDebInfo Cross Compile DCAP LVI snmalloc":         { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'clang-11', 'RelWithDebInfo', 'ControlFlow', '0', 'OFF', ['-DUSE_SNMALLOC=ON']) },
                 "Win2019 Cross Platform":                                         { tests.windowsCrossPlatform(params.WS2019_DCAP_CFL_LABEL) }
             ]
             parallel testing_stages
@@ -27,11 +29,11 @@ try{
     } else {
         stage("PR Testing") {
             testing_stages += [
-                "Win2019 Ubuntu1804 clang-10 RelWithDebInfo Linux-Elf-build LVI":    { tests.windowsLinuxElfBuild(params.WS2019_DCAP_CFL_LABEL, params.UBUNTU_1804_NONSGX_LABEL, 'clang-10', 'RelWithDebInfo', 'ControlFlow', 'ON') },
-                "Win2019 Sim RelWithDebInfo Cross Compile LVI ":                     { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'RelWithDebInfo', 'ControlFlow', '1', 'ON') },
-                "Win2019 Debug Cross Compile DCAP LVI":                              { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'Debug',          'ControlFlow', '0', 'ON') },
-                "Win2019 RelWithDebInfo Cross Compile DCAP LVI FULL Tests":          { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'RelWithDebInfo', 'ControlFlow') },
-                "Win2019 RelWithDebInfo Cross Compile DCAP LVI FULL Tests snmalloc": { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'RelWithDebInfo', 'ControlFlow', '0', 'OFF', ['-DUSE_SNMALLOC=ON']) }
+                "Win2019 Ubuntu1804 clang-11 RelWithDebInfo Linux-Elf-build LVI":    { tests.windowsLinuxElfBuild(params.WS2019_DCAP_CFL_LABEL, params.UBUNTU_1804_NONSGX_LABEL, 'clang-11', 'RelWithDebInfo', 'ControlFlow', 'ON') },
+                "Win2019 Sim RelWithDebInfo Cross Compile LVI ":                     { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'clang-11', 'RelWithDebInfo', 'ControlFlow', '1', 'ON') },
+                "Win2019 Debug Cross Compile DCAP LVI":                              { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'clang-11', 'Debug',          'ControlFlow', '0', 'ON') },
+                "Win2019 RelWithDebInfo Cross Compile DCAP LVI FULL Tests":          { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'clang-11', 'RelWithDebInfo', 'ControlFlow') },
+                "Win2019 RelWithDebInfo Cross Compile DCAP LVI FULL Tests snmalloc": { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'clang-11', 'RelWithDebInfo', 'ControlFlow', '0', 'OFF', ['-DUSE_SNMALLOC=ON']) }
             ]
             parallel testing_stages
         }

@@ -38,16 +38,18 @@ commands.
 ```
 cflags=`pkg-config oeenclave-clang --cflags`
 libs=`pkg-config oeenclave-clang --libs`
-$ clang-10 ${cflags} -o enc enc.c ${libs}
+$ clang-11 ${cflags} -o enc enc.c ${libs}
 ```
+**Note**:  While `clang-11` is our supported and recommended version, enclave applications may be built with `clang-10` as well.
 
 To build an enclave application with the Clang C++ compiler, use these commands.
 
 ```
 cxxflags=`pkg-config oeenclave-clang++ --cflags`
 libs=`pkg-config oeenclave-clang++ --libs`
-$ clang++-10 ${cxxflags} -o enc enc.cpp ${libs}
+$ clang++-11 ${cxxflags} -o enc enc.cpp ${libs}
 ```
+**Note**:  While `clang++-11` is our supported and recommended version, enclave applications may be built with `clang++-10` as well.
 
 Building host applications:
 ---------------------------
@@ -58,7 +60,7 @@ commands.
 ```
 cflags=`pkg-config oehost-clang --cflags`
 libs=`pkg-config oehost-clang --libs`
-$ clang-10 ${cflags} -o host host.c ${libs}
+$ clang-11 ${cflags} -o host host.c ${libs}
 ```
 
 To build a host application with the Clang C++ compiler, use these commands.
@@ -66,5 +68,5 @@ To build a host application with the Clang C++ compiler, use these commands.
 ```
 cflags=`pkg-config oehost-clang++ --cflags`
 libs=`pkg-config oehost-clang++ --libs`
-$ clang++-10 ${cflags} -o host host.c ${libs}
+$ clang++-11 ${cflags} -o host host.c ${libs}
 ```

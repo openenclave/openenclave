@@ -5,9 +5,9 @@ include(FetchContent)
 FetchContent_Declare(
   compiler-rt-sources
   SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/compiler-rt
-  URL https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.1/compiler-rt-10.0.1.src.tar.xz
+  URL https://github.com/llvm/llvm-project/releases/download/llvmorg-11.1.0/compiler-rt-11.1.0.src.tar.xz
   URL_HASH
-    SHA256=d90dc8e121ca0271f0fd3d639d135bfaa4b6ed41e67bd6eb77808f72629658fa)
+    SHA256=def1fc00c764cd3abbba925c712ac38860a756a43b696b291f46fee09e453274)
 
 FetchContent_GetProperties(compiler-rt-sources)
 if (NOT compiler-rt-sources_POPULATED)

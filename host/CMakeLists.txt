@@ -477,9 +477,22 @@ macro (add_library_oehost_wrapper)
     # for ocall stack-stitching by using the -fno-omit-frame-pointer flag.
     # It is compiled with -O2 flag to retain the same generated assembly
     # code in both debug and release builds.
-    set_source_files_properties(
-      ${PARA_LIB_NAME} sgx/linux/enter.c
-      PROPERTIES COMPILE_FLAGS "-O2 -fno-omit-frame-pointer")
+
+    # Adding "-Wno-frame-address" because, for clang-11 and above, usage of
+    # __builtin_frame_address() with a non-zero argument is triggering 
+    # -Wframe-address.
+    # -Wno-frame-address is not used for clang-10 as it does not emit such 
+    # an error, and does not support the option.
+    if (CMAKE_C_COMPILER_VERSION VERSION_EQUAL 10)
+      set_source_files_properties(
+        oehost sgx/linux/enter.c PROPERTIES COMPILE_FLAGS
+                                            "-O2 -fno-omit-frame-pointer")
+    else ()
+      set_source_files_properties(
+        oehost sgx/linux/enter.c
+        PROPERTIES COMPILE_FLAGS "-O2 -fno-omit-frame-pointer -Wno-frame-address")
+    endif ()
+
   endif ()
 
   if (UNIX)
