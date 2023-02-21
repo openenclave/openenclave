@@ -133,6 +133,10 @@ typedef struct _oe_report
 
     /** Contains the IDs and attributes that are part of oe_identity_t */
     oe_identity_t identity;
+
+    /** Contains the result reported by quote verification logic. The size is
+     * determined based on OE_ENUM_MAX. */
+    uint32_t verification_result;
 } oe_report_t;
 /**< typedef struct _oe_report oe_report_t*/
 

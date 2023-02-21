@@ -444,12 +444,14 @@ oe_result_t oe_verify_sgx_quote(
     size_t quote_size,
     const uint8_t* endorsements,
     size_t endorsements_size,
-    oe_datetime_t* input_validation_time)
+    oe_datetime_t* input_validation_time,
+    uint32_t* verification_result)
 {
     oe_result_t result = OE_UNEXPECTED;
     uint8_t* local_endorsements = NULL;
     size_t local_endorsements_size = 0;
     oe_sgx_endorsements_t sgx_endorsements;
+    oe_tcb_info_tcb_level_t tcb_level = {0};
 
     if (quote == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -483,16 +485,18 @@ oe_result_t oe_verify_sgx_quote(
         oe_result_str(result));
 
     // Endorsements verification
-    OE_CHECK(oe_verify_quote_with_sgx_endorsements(
+    result = oe_verify_quote_with_sgx_endorsements(
         quote,
         quote_size,
         &sgx_endorsements,
         input_validation_time,
+        &tcb_level,
         NULL,
-        NULL,
-        NULL));
+        NULL);
 
-    result = OE_OK;
+    if (verification_result)
+        *verification_result =
+            oe_tcb_level_status_to_sgx_tcb_status(tcb_level.status);
 
 done:
     if (local_endorsements)

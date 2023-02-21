@@ -36,6 +36,7 @@ else
     exit 1
 fi
 
+pip install --upgrade pip
 pip3 install -U -r "$DIR/requirements.txt"
 
 ansible-galaxy collection install community.general

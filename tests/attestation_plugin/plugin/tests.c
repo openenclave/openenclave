@@ -696,25 +696,45 @@ static void _test_time(
     oe_datetime_t tmp;
 
     result = oe_verify_sgx_quote(
-        report_body, report_body_size, collaterals, collaterals_size, from);
+        report_body,
+        report_body_size,
+        collaterals,
+        collaterals_size,
+        from,
+        NULL);
     OE_TEST(result == OE_OK || result == OE_TCB_LEVEL_INVALID);
 
     result = oe_verify_sgx_quote(
-        report_body, report_body_size, collaterals, collaterals_size, until);
+        report_body,
+        report_body_size,
+        collaterals,
+        collaterals_size,
+        until,
+        NULL);
     OE_TEST(result == OE_OK || result == OE_TCB_LEVEL_INVALID);
 
     tmp = *from;
     tmp.year--;
     OE_TEST_CODE(
         oe_verify_sgx_quote(
-            report_body, report_body_size, collaterals, collaterals_size, &tmp),
+            report_body,
+            report_body_size,
+            collaterals,
+            collaterals_size,
+            &tmp,
+            NULL),
         OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD);
 
     tmp = *until;
     tmp.year++;
     OE_TEST_CODE(
         oe_verify_sgx_quote(
-            report_body, report_body_size, collaterals, collaterals_size, &tmp),
+            report_body,
+            report_body_size,
+            collaterals,
+            collaterals_size,
+            &tmp,
+            NULL),
         OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD);
 }
 
