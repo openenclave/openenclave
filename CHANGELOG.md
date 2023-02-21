@@ -18,6 +18,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - This API can be used only after enclave creation and before enclave termination for an enclave. An application can call this API any number of times, for any number of enclaves. There is no limit on the number of calls and is thread safe.
   - This is an host API. To modify verbosity of enclave log level from within enclaves, consider using enclave logging callbacks.
   - Updated the mbedTLS from 2.28.0 to 2.28.1
+
+- OE SDK can now be built with Clang-11 and it is recommended to upgrade the compiler to Clang-11 if you are building the SDK from source. Building with Clang-10 is still supported until the next Clang upgrade, but is not recommended.
+
+- Building OE SDK now includes the following LVI mitigation options:
+  - `ControlFlow-GNU` - enables LVI mitigation using the existing GNU-based mitigation specified by `LVI_MITIGATION_BINDIR`. This option is recommended when building OE SDK with Clang-10.
+  - `ControlFlow-Clang` - enables Clang-based LVI mitigations. Choosing this option requires Clang-11.
+  - `ControlFlow` - enables LVI mitigation but default to the recommended method, which is currently ControlFlow-GNU.
+  - `None` - no LVI mitigations are enabled.
+
 ## Changed
 - Fix the incorrect behavior of pthread_mutex_init() and std::mutex such that they no longer create a recursive lock by default.
 
