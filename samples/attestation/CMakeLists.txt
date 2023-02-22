@@ -12,7 +12,7 @@ if (UNIX)
     find_program(CMAKE_C_COMPILER clang-11 clang-10 clang)
   endif ()
   if (NOT DEFINED ENV{CXX} AND NOT DEFINED CMAKE_CXX_COMPILER)
-    find_program(CMAKE_CXX_COMPILER clang++-11 clang-10 clang++)
+    find_program(CMAKE_CXX_COMPILER clang++-11 clang++-10 clang++)
   endif ()
 endif ()
 
