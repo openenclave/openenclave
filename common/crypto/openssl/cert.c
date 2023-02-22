@@ -802,7 +802,7 @@ oe_result_t oe_cert_get_ec_public_key(
     if (!(pkey = X509_get_pubkey(impl->x509)))
         OE_RAISE(OE_CRYPTO_ERROR);
 
-    /* If this is not an EC key */
+        /* If this is not an EC key */
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
     EC_KEY* ec;
     if (!(ec = EVP_PKEY_get1_EC_KEY(pkey)))

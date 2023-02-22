@@ -48,4 +48,6 @@ if (BUILD_OPENSSL)
 
   enclave_compile_features(sealKey_openssl_enc PRIVATE
                            cxx_generalized_initializers)
+  
+  target_compile_options(sealKey_openssl_enc PRIVATE -Wno-deprecated-declarations)
 endif ()

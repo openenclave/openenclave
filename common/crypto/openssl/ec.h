@@ -10,9 +10,9 @@
 #include <openssl/evp.h>
 
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#include <openssl/core_names.h>
 #include <openssl/encoder.h>
 #include <openssl/param_build.h>
-#include <openssl/core_names.h>
 #endif
 
 /* Caller is responsible for validating parameters */

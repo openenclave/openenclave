@@ -18,10 +18,9 @@ add_enclave_library(
   ${OPENSSL_DIR}/test/testutil/driver.c
   ${OPENSSL_DIR}/test/testutil/format_output.c
   ${OPENSSL_DIR}/test/testutil/main.c
-  ${OPENSSL_DIR}/test/testutil/output_helpers.c
+  ${OPENSSL_DIR}/test/testutil/output.c
   ${OPENSSL_DIR}/test/testutil/random.c
   ${OPENSSL_DIR}/test/testutil/stanza.c
-  ${OPENSSL_DIR}/test/testutil/tap_bio.c
   ${OPENSSL_DIR}/test/testutil/test_cleanup.c
   ${OPENSSL_DIR}/test/testutil/tests.c
   ${OPENSSL_DIR}/test/testutil/testutil_init.c
@@ -35,7 +34,8 @@ enclave_compile_options(
 
 enclave_link_libraries(openssl-support PRIVATE oelibcxx oelibc oe_includes)
 enclave_include_directories(
-  openssl-support PRIVATE ${OPENSSL_DIR}/include
+  openssl-support PRIVATE ${OPENSSL_DIR} ${OPENSSL_DIR}/include 
+  ${OPENSSL_DIR}/apps/include
   ${CMAKE_BINARY_DIR}/3rdparty/openssl/build/include
   ${CMAKE_CURRENT_BINARY_DIR})
 
@@ -49,6 +49,7 @@ add_enclave_dependencies(openssl-common openssl_generated)
 enclave_link_libraries(openssl-common PRIVATE oelibc oe_includes)
 enclave_include_directories(
   openssl-common PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${OPENSSL_DIR}/include
+  ${OPENSSL_DIR}/apps/include
   ${OPENSSL_DIR}/test/testutil
   ${CMAKE_BINARY_DIR}/3rdparty/openssl/build/include)
 
@@ -111,7 +112,7 @@ function (add_openssl_test_enc NAME BUILDTEST CRYPTO_LIB)
   endif ()
 
   if ("${NAME}" IN_LIST SSL_TEST_LIST)
-    list(APPEND TEST_SRC ${OPENSSL_DIR}/test/ssltestlib.c)
+    list(APPEND TEST_SRC ${OPENSSL_DIR}/test/helpers/ssltestlib.c)
   endif ()
 
   if ("${NAME}" STREQUAL "drbg_cavs_test")
@@ -119,12 +120,12 @@ function (add_openssl_test_enc NAME BUILDTEST CRYPTO_LIB)
   endif ()
 
   if ("${NAME}" STREQUAL "ssl_test")
-    list(APPEND TEST_SRC ${OPENSSL_DIR}/test/handshake_helper.c
-         ${OPENSSL_DIR}/test/ssl_test_ctx.c)
+    list(APPEND TEST_SRC ${OPENSSL_DIR}/test/helpers/handshake.c
+         ${OPENSSL_DIR}/test/helpers/ssl_test_ctx.c)
   endif ()
 
   if ("${NAME}" STREQUAL "ssl_test_ctx_test")
-    list(APPEND TEST_SRC ${OPENSSL_DIR}/test/ssl_test_ctx.c)
+    list(APPEND TEST_SRC ${OPENSSL_DIR}/test/helpers/ssl_test_ctx.c)
   endif ()
 
   add_enclave(

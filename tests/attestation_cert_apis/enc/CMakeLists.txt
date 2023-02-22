@@ -43,4 +43,6 @@ if (BUILD_OPENSSL)
   enclave_include_directories(
     tls_openssl_enc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR})
+
+  target_compile_options(tls_openssl_enc PRIVATE -Wno-deprecated-declarations)
 endif ()

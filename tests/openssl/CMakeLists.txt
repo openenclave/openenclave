@@ -32,28 +32,142 @@ endmacro (copy_test_data)
 # parsing API (test_readstanza) has a special logic to handle a blank line and
 # assumes it ends with only `\n` (LF). Therefore, the API fails when the blank
 # line ends with `\r\n` (CRLF).
-copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpcase.txt
-               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpcase.txt)
-copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpccmcavs.txt
-               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpccmcavs.txt)
-copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph.txt
-               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph.txt)
-copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpdigest.txt
-               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpdigest.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_kdf_tls1_prf.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey_kdf_tls1_prf.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpkdf_x942_des.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpkdf_x942_des.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpencod.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpencod.txt)
-copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpkdf.txt
-               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpkdf.txt)
-copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpccmcavs.txt
-               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpccmcavs.txt)
-copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpmac.txt
-               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpmac.txt)
-copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppbe.txt
-               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppbe.txt)
-copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey.txt
-               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_rsa_common.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey_rsa_common.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_aes_ocb.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_aes_ocb.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_rc2.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_rc2.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpmd_sha.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpmd_sha.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpmac_common.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpmac_common.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_kdf_hkdf.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey_kdf_hkdf.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpkdf_krb5.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpkdf_krb5.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpkdf_scrypt.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpkdf_scrypt.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_ecdh.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey_ecdh.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_sm4.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_sm4.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_mismatch.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey_mismatch.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpmd_sm3.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpmd_sm3.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppbe_pkcs12.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppbe_pkcs12.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpmd_md.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpmd_md.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpkdf_tls13_kdf.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpkdf_tls13_kdf.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_aes_wrap.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_aes_wrap.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppbe_scrypt.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppbe_scrypt.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_cast5.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_cast5.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_rc5.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_rc5.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_chacha.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_chacha.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpkdf_ssh.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpkdf_ssh.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_camellia.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_camellia.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_ecx.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey_ecx.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_dh.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey_dh.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpmd_whirlpool.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpmd_whirlpool.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_sm2.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey_sm2.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpmd_blake.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpmd_blake.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_rc4_stitched.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_rc4_stitched.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_seed.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_seed.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_rsa.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey_rsa.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_aes_cts.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_aes_cts.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_aes_common.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_aes_common.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evprand.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evprand.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpmac_blake.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpmac_blake.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_aes_ccm_cavs.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_aes_ccm_cavs.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_brainpool.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey_brainpool.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppbe_pbkdf2.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppbe_pbkdf2.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpmac_poly1305.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpmac_poly1305.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpmac_siphash.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpmac_siphash.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_idea.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_idea.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_aes_siv.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_aes_siv.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_camellia_cts.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_camellia_cts.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_bf.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_bf.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_dsa.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey_dsa.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpkdf_x963.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpkdf_x963.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_rc4.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_rc4.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpkdf_tls12_prf.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpkdf_tls12_prf.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpkdf_ss.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpkdf_ss.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpkdf_x942.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpkdf_x942.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_ffdhe.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey_ffdhe.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpkdf_pbkdf2.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpkdf_pbkdf2.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpkdf_pbkdf1.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpkdf_pbkdf1.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_ecdsa.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey_ecdsa.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_des3_common.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_des3_common.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_kdf_scrypt.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey_kdf_scrypt.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_kas.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey_kas.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpkdf_tls11_prf.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpkdf_tls11_prf.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpkdf_hkdf.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpkdf_hkdf.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpmac_cmac_des.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpmac_cmac_des.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_aes_stitched.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_aes_stitched.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpmd_ripemd.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpmd_ripemd.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpmd_mdc2.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpmd_mdc2.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_ecc.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey_ecc.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_des.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_des.txt)
+copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_aria.txt
+               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_aria.txt)
 
 # The following files are required by the ct_test. The test compares the in-memory
 # string generated by the X509V3_EXT_print and SCT_LIST_print APIs against the

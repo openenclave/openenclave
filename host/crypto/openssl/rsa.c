@@ -163,7 +163,8 @@ oe_result_t oe_rsa_get_public_key_from_private(
         OE_RAISE(OE_CRYPTO_ERROR);
     if (EVP_PKEY_fromdata_init(ctx) <= 0)
         OE_RAISE(OE_CRYPTO_ERROR);
-    if (EVP_PKEY_fromdata(ctx, &rsa_public_pkey, EVP_PKEY_PUBLIC_KEY, params) <= 0)
+    if (EVP_PKEY_fromdata(ctx, &rsa_public_pkey, EVP_PKEY_PUBLIC_KEY, params) <=
+        0)
         OE_RAISE(OE_CRYPTO_ERROR);
     oe_rsa_public_key_init(public_key, rsa_public_pkey);
 

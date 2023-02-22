@@ -426,7 +426,8 @@ oe_result_t oe_ec_generate_key_pair_from_private(
         OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Convert private key to BIGNUM */
-    if (!(private_key_bn = BN_bin2bn(private_key_buf, (int)private_key_buf_size, NULL)))
+    if (!(private_key_bn =
+              BN_bin2bn(private_key_buf, (int)private_key_buf_size, NULL)))
         OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Get public point by multiplying with base generator */

@@ -26,5 +26,6 @@ if (BUILD_OPENSSL)
                                  ${CMAKE_CURRENT_SOURCE_DIR})
 
   enclave_compile_definitions(openssl_tls_e2e_host PRIVATE OE_USE_OPENSSL)
+  target_compile_options(openssl_tls_e2e_host PRIVATE -Wno-deprecated-declarations)
   target_link_libraries(openssl_tls_e2e_host oehost)
 endif ()

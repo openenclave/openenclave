@@ -48,5 +48,6 @@ if (BUILD_OPENSSL)
   enclave_include_directories(openssl_tls_client_enc PRIVATE
                               ${CMAKE_CURRENT_BINARY_DIR})
 
+  target_compile_options(openssl_tls_client_enc PRIVATE -Wno-deprecated-declarations)
   enclave_link_libraries(openssl_tls_client_enc oehostsock oehostresolver)
 endif ()

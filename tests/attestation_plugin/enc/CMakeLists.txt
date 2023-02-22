@@ -40,4 +40,6 @@ if (BUILD_OPENSSL)
 
   enclave_include_directories(plugin_openssl_enc PRIVATE
                               ${CMAKE_CURRENT_BINARY_DIR})
+
+  target_compile_options(plugin_openssl_enc PRIVATE -Wno-deprecated-declarations)
 endif ()

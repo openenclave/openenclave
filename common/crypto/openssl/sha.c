@@ -5,8 +5,8 @@
 #include <openenclave/internal/crypto/sha.h>
 #include <openenclave/internal/defs.h>
 #include <openenclave/internal/raise.h>
-#include <openssl/sha.h>
 #include <openssl/evp.h>
+#include <openssl/sha.h>
 #include <stdio.h>
 #include <string.h>
 

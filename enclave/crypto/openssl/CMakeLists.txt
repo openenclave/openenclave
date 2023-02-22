@@ -23,6 +23,12 @@ add_enclave_library(
   init.c
   symcrypt_engine.c)
 
+set_source_files_properties(
+  ${PROJECT_SOURCE_DIR}/common/crypto/openssl/cmac.c
+  ${PROJECT_SOURCE_DIR}/common/crypto/openssl/key.c
+  init.c
+  PROPERTIES COMPILE_FLAGS "-Wno-deprecated-declarations")
+
 maybe_build_using_clangw(oecryptoopenssl)
 
 enclave_enable_code_coverage(oecryptoopenssl)

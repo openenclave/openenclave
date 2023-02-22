@@ -28,7 +28,6 @@
 ../../3rdparty/openssl/openssl/test/danetest.c
 ../../3rdparty/openssl/openssl/test/destest.c
 ../../3rdparty/openssl/openssl/test/dhtest.c
-../../3rdparty/openssl/openssl/test/drbg_cavs_test.c
 ../../3rdparty/openssl/openssl/test/dsa_no_digest_size_test.c
 ../../3rdparty/openssl/openssl/test/dsatest.c
 ../../3rdparty/openssl/openssl/test/dtlstest.c
@@ -47,7 +46,6 @@
 ../../3rdparty/openssl/openssl/test/hmactest.c
 ../../3rdparty/openssl/openssl/test/ideatest.c
 ../../3rdparty/openssl/openssl/test/igetest.c
-../../3rdparty/openssl/openssl/test/md2test.c
 ../../3rdparty/openssl/openssl/test/mdc2test.c
 ../../3rdparty/openssl/openssl/test/memleaktest.c
 ../../3rdparty/openssl/openssl/test/modes_internal_test.c
