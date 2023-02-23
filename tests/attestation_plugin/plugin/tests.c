@@ -629,8 +629,7 @@ static void _test_claims(
         if (!is_local)
         {
             /* Verify the fmspc value returned is as expected */
-            oe_parsed_tcb_info_t parsed_tcb_info;
-            const size_t fmspc_size = sizeof(parsed_tcb_info.fmspc);
+            const size_t fmspc_size = OE_SGX_FMSPC_SIZE;
             uint8_t* fmspc = (uint8_t*)malloc(fmspc_size);
             OE_TEST(fmspc != NULL);
 

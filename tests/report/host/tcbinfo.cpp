@@ -41,19 +41,25 @@ void AssertParsedValues(oe_parsed_tcb_info_t& parsed_info, uint32_t version)
     OE_TEST(parsed_info.version == version);
 
     oe_datetime_t expected_issue_date = {2018, 6, 6, 10, 12, 17};
-    OE_TEST(
-        oe_datetime_compare(&parsed_info.issue_date, &expected_issue_date) ==
-        0);
+    oe_datetime_t* parsed_issue_date =
+        parsed_info.version == 3 ? &parsed_info.tcb_info_v3.issue_date
+                                 : &parsed_info.tcb_info_v2.issue_date;
+
+    OE_TEST(oe_datetime_compare(parsed_issue_date, &expected_issue_date) == 0);
 
     uint8_t expected_fm_spc[6] = {0x00, 0x90, 0x6E, 0xA1, 0x00, 0x00};
     OE_TEST(
-        memcmp(parsed_info.fmspc, expected_fm_spc, sizeof(expected_fm_spc)) ==
-        0);
+        memcmp(
+            OE_TCB_INFO_GET(&parsed_info, fmspc),
+            expected_fm_spc,
+            sizeof(expected_fm_spc)) == 0);
 
     uint8_t expected_pce_id[2] = {0x00, 0x00};
     OE_TEST(
-        memcmp(parsed_info.pceid, expected_pce_id, sizeof(expected_pce_id)) ==
-        0);
+        memcmp(
+            OE_TCB_INFO_GET(&parsed_info, pceid),
+            expected_pce_id,
+            sizeof(expected_pce_id)) == 0);
 
     const uint8_t expected_signature[] = {
         0x62, 0xd1, 0x81, 0xc4, 0xba, 0x86, 0x32, 0x13, 0xb8, 0x25, 0xd1,
@@ -68,13 +74,16 @@ void AssertParsedValues(oe_parsed_tcb_info_t& parsed_info, uint32_t version)
             expected_signature,
             sizeof(expected_signature)) == 0);
 
-    if (version == 2)
+    if (parsed_info.version != 1)
     {
+        oe_datetime_t* parsed_tcb_date =
+            parsed_info.version == 3
+                ? &parsed_info.tcb_info_v3.tcb_level.tcb_date
+                : &parsed_info.tcb_info_v2.tcb_level.tcb_date;
+
         //"tcbDate":"2018-01-04T01:02:03Z",
         oe_datetime_t expected_tcb_date = {2018, 1, 4, 1, 2, 3};
-        OE_TEST(
-            oe_datetime_compare(
-                &parsed_info.tcb_level.tcb_date, &expected_tcb_date) == 0);
+        OE_TEST(oe_datetime_compare(parsed_tcb_date, &expected_tcb_date) == 0);
     }
 }
 
@@ -106,7 +115,11 @@ void TestVerifyTCBInfo(
     AssertParsedValues(*parsed_info, version);
 
     oe_datetime_t nextUpdate = {2019, 6, 6, 10, 12, 17};
-    OE_TEST(oe_datetime_compare(&parsed_info->next_update, &nextUpdate) == 0);
+    oe_datetime_t* parsed_next_date =
+        parsed_info->version == 3 ? &parsed_info->tcb_info_v3.next_update
+                                  : &parsed_info->tcb_info_v2.next_update;
+
+    OE_TEST(oe_datetime_compare(parsed_next_date, &nextUpdate) == 0);
 }
 
 void TestVerifyTCBInfo(oe_enclave_t* enclave, const char* test_filename)
@@ -200,6 +213,7 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave, const char* test_filename)
 
     printf("TestVerifyTCBInfo: Positive Tests passed\n");
 }
+
 void TestVerifyTCBInfo_Negative(
     oe_enclave_t* enclave,
     const char* file_names[],
@@ -256,7 +270,7 @@ void TestVerifyTCBInfoV2(oe_enclave_t* enclave, const char* test_filename)
     OE_TEST(
         oe_tcb_level_status_to_sgx_tcb_status(platform_tcb_level.status) ==
         OE_SGX_TCB_STATUS_UP_TO_DATE);
-    printf("UptoDate TCB Level determination test passed.\n");
+    printf("UptoDate TCB V2 Level determination test passed.\n");
 
     // Set platform pce svn to 7 and assert that
     // the determined status is SWHardeningNeeded.
@@ -272,7 +286,7 @@ void TestVerifyTCBInfoV2(oe_enclave_t* enclave, const char* test_filename)
     OE_TEST(
         oe_tcb_level_status_to_sgx_tcb_status(platform_tcb_level.status) ==
         OE_SGX_TCB_STATUS_SW_HARDENING_NEEDED);
-    printf("SWHardeningNeeded TCB Level determination test passed.\n");
+    printf("SWHardeningNeeded TCB V2 Level determination test passed.\n");
 
     // Set platform pce svn to 6 and assert that
     // the determined status is ConfigurationAndSWHardeningNeeded.
@@ -288,7 +302,8 @@ void TestVerifyTCBInfoV2(oe_enclave_t* enclave, const char* test_filename)
     OE_TEST(
         oe_tcb_level_status_to_sgx_tcb_status(platform_tcb_level.status) ==
         OE_SGX_TCB_STATUS_CONFIGURATION_AND_SW_HARDENING_NEEDED);
-    printf("ConfigurationAndSWHardeningNeeded TCB Level determination test "
+
+    printf("ConfigurationAndSWHardeningNeeded TCB V2 Level determination test "
            "passed.\n");
 
     // Set platform pce svn to 5 and assert that
@@ -305,8 +320,8 @@ void TestVerifyTCBInfoV2(oe_enclave_t* enclave, const char* test_filename)
     OE_TEST(
         oe_tcb_level_status_to_sgx_tcb_status(platform_tcb_level.status) ==
         OE_SGX_TCB_STATUS_OUT_OF_DATE_CONFIGURATION_NEEDED);
-    printf(
-        "OutOfDateConfigurationNeeded TCB Level determination test passed.\n");
+    printf("OutOfDateConfigurationNeeded TCB V2 Level determination test "
+           "passed.\n");
 
     // Set platform pce svn to 4 and assert that
     // the determined status is configuration needed.
@@ -322,7 +337,7 @@ void TestVerifyTCBInfoV2(oe_enclave_t* enclave, const char* test_filename)
     OE_TEST(
         oe_tcb_level_status_to_sgx_tcb_status(platform_tcb_level.status) ==
         OE_SGX_TCB_STATUS_CONFIGURATION_NEEDED);
-    printf("ConfigurationNeeded TCB Level determination test passed.\n");
+    printf("ConfigurationNeeded TCB V2 Level determination test passed.\n");
 
     // Set platform pce svn to 3 and assert that
     // the determined status is out of date.
@@ -338,7 +353,7 @@ void TestVerifyTCBInfoV2(oe_enclave_t* enclave, const char* test_filename)
     OE_TEST(
         oe_tcb_level_status_to_sgx_tcb_status(platform_tcb_level.status) ==
         OE_SGX_TCB_STATUS_OUT_OF_DATE);
-    printf("OutOfDate TCB Level determination test passed.\n");
+    printf("OutOfDate TCB V2 Level determination test passed.\n");
 
     // Set platform pce svn to 2 and assert that
     // the determined status is revoked.
@@ -354,7 +369,7 @@ void TestVerifyTCBInfoV2(oe_enclave_t* enclave, const char* test_filename)
     OE_TEST(
         oe_tcb_level_status_to_sgx_tcb_status(platform_tcb_level.status) ==
         OE_SGX_TCB_STATUS_REVOKED);
-    printf("Revoked TCB Level determination test passed.\n");
+    printf("Revoked TCB V2 Level determination test passed.\n");
 
     // Set each of the fields to a value not listed in the json and
     // test that the determined status is OE_TCB_LEVEL_INVALID
@@ -378,6 +393,127 @@ void TestVerifyTCBInfoV2(oe_enclave_t* enclave, const char* test_filename)
     printf("Unknown TCB Level determination test passed.\n");
 
     printf("TestVerifyTCBInfo V2: Positive Tests passed\n");
+}
+
+void TestVerifyTCBInfoV3(oe_enclave_t* enclave, const char* test_filename)
+{
+    const uint32_t version = 3;
+    oe_tcb_info_tcb_level_t platform_tcb_level = {
+        {7, 9, 3, 3, 255, 255, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 8};
+    oe_parsed_tcb_info_t parsed_info = {0};
+
+    printf("TCB Info Version 3 tests with %s\n", test_filename);
+    // ./data_v3/tcbInfo_sgx.json contains 5 tcb levels.
+    // The first level with pce svn = 8 is UpToDate.
+    // The second level with pce svn = 7 is SWHardeningNeeded.
+    // The third level with pce svn = 6 is ConfigurationAndSWHardeningNeeded.
+    // The fourth level with pce svn = 5 is OutOfDateConfigurationNeeded
+    // The fifth level with pce svn = 4 needs OutOfDate.
+
+    // Set platform pce svn to 9 and assert that
+    // the determined status is up to date.
+    platform_tcb_level.status.AsUINT32 = OE_TCB_LEVEL_STATUS_UNKNOWN;
+    platform_tcb_level.pce_svn = 9;
+    TestVerifyTCBInfo(
+        enclave,
+        test_filename,
+        &platform_tcb_level,
+        &parsed_info,
+        OE_OK,
+        version);
+    OE_TEST(
+        oe_tcb_level_status_to_sgx_tcb_status(platform_tcb_level.status) ==
+        OE_SGX_TCB_STATUS_UP_TO_DATE);
+    printf("UptoDate TCB V3 Level determination test passed.\n");
+
+    // Set platform pce svn to 7 and assert that
+    // the determined status is SWHardeningNeeded.
+    platform_tcb_level.status.AsUINT32 = OE_TCB_LEVEL_STATUS_UNKNOWN;
+    platform_tcb_level.pce_svn = 7;
+    TestVerifyTCBInfo(
+        enclave,
+        test_filename,
+        &platform_tcb_level,
+        &parsed_info,
+        OE_OK,
+        version);
+    OE_TEST(
+        oe_tcb_level_status_to_sgx_tcb_status(platform_tcb_level.status) ==
+        OE_SGX_TCB_STATUS_SW_HARDENING_NEEDED);
+    printf("SWHardeningNeeded TCB V3 Level determination test passed.\n");
+
+    // Set platform pce svn to 6 and assert that
+    // the determined status is ConfigurationAndSWHardeningNeeded.
+    platform_tcb_level.status.AsUINT32 = OE_TCB_LEVEL_STATUS_UNKNOWN;
+    platform_tcb_level.pce_svn = 6;
+    TestVerifyTCBInfo(
+        enclave,
+        test_filename,
+        &platform_tcb_level,
+        &parsed_info,
+        OE_TCB_LEVEL_INVALID,
+        version);
+    OE_TEST(
+        oe_tcb_level_status_to_sgx_tcb_status(platform_tcb_level.status) ==
+        OE_SGX_TCB_STATUS_CONFIGURATION_AND_SW_HARDENING_NEEDED);
+    printf("ConfigurationAndSWHardeningNeeded TCB V3 Level determination test "
+           "passed.\n");
+
+    // Set platform pce svn to 5 and assert that
+    // the determined status is out of date configuration needed.
+    platform_tcb_level.status.AsUINT32 = OE_TCB_LEVEL_STATUS_UNKNOWN;
+    platform_tcb_level.pce_svn = 5;
+    TestVerifyTCBInfo(
+        enclave,
+        test_filename,
+        &platform_tcb_level,
+        &parsed_info,
+        OE_TCB_LEVEL_INVALID,
+        version);
+    OE_TEST(
+        oe_tcb_level_status_to_sgx_tcb_status(platform_tcb_level.status) ==
+        OE_SGX_TCB_STATUS_OUT_OF_DATE_CONFIGURATION_NEEDED);
+    printf("OutOfDateConfigurationNeeded TCB V3 Level determination test "
+           "passed.\n");
+
+    // Set platform pce svn to 4 and assert that
+    // the determined status is configuration needed.
+    platform_tcb_level.status.AsUINT32 = OE_TCB_LEVEL_STATUS_UNKNOWN;
+    platform_tcb_level.pce_svn = 4;
+    TestVerifyTCBInfo(
+        enclave,
+        test_filename,
+        &platform_tcb_level,
+        &parsed_info,
+        OE_TCB_LEVEL_INVALID,
+        version);
+    OE_TEST(
+        oe_tcb_level_status_to_sgx_tcb_status(platform_tcb_level.status) ==
+        OE_SGX_TCB_STATUS_OUT_OF_DATE);
+    printf("ConfigurationNeeded TCB V3 Level determination test passed.\n");
+
+    // Set each of the fields to a value not listed in the json and
+    // test that the determined status is OE_TCB_LEVEL_INVALID
+    for (uint32_t i = 0; i < OE_COUNTOF(platform_tcb_level.sgx_tcb_comp_svn);
+         ++i)
+    {
+        platform_tcb_level.status.AsUINT32 = OE_TCB_LEVEL_STATUS_UNKNOWN;
+        platform_tcb_level.sgx_tcb_comp_svn[i] = 0;
+        TestVerifyTCBInfo(
+            enclave,
+            test_filename,
+            &platform_tcb_level,
+            &parsed_info,
+            OE_TCB_LEVEL_INVALID,
+            version);
+        OE_TEST(
+            oe_tcb_level_status_to_sgx_tcb_status(platform_tcb_level.status) ==
+            OE_SGX_TCB_STATUS_INVALID);
+        platform_tcb_level.sgx_tcb_comp_svn[i] = 2;
+    }
+    printf("Unknown TCB Level determination test passed.\n");
+
+    printf("TestVerifyTCBInfo V3: Positive Tests passed\n");
 }
 
 void TestVerifyTCBInfo_AdvisoryIDs(
@@ -413,14 +549,23 @@ void TestVerifyTCBInfo_AdvisoryIDs(
 
     AssertParsedValues(parsed_info, version);
     oe_datetime_t nextUpdate = {2019, 6, 6, 10, 12, 17};
-    OE_TEST(oe_datetime_compare(&parsed_info.next_update, &nextUpdate) == 0);
+    oe_datetime_t* parsed_next_date =
+        parsed_info.version == 3 ? &parsed_info.tcb_info_v3.next_update
+                                 : &parsed_info.tcb_info_v2.next_update;
+    OE_TEST(oe_datetime_compare(parsed_next_date, &nextUpdate) == 0);
 
-    OE_TEST(parsed_info.tcb_level.status.fields.up_to_date == 1);
-    OE_TEST(parsed_info.tcb_level.advisory_ids_size > 0);
-    OE_TEST(parsed_info.tcb_level.advisory_ids_offset < tcbInfo.size());
+    if (version == 2)
+    {
+        OE_TEST(
+            parsed_info.tcb_info_v2.tcb_level.status.fields.up_to_date == 1);
+        OE_TEST(parsed_info.tcb_info_v2.tcb_level.advisory_ids_size > 0);
+        OE_TEST(
+            parsed_info.tcb_info_v2.tcb_level.advisory_ids_offset <
+            tcbInfo.size());
+    }
 
-    const char* ptr =
-        (const char*)&tcbInfo[parsed_info.tcb_level.advisory_ids_offset];
+    const char* ptr = (const char*)&tcbInfo[parsed_info.tcb_info_v2.tcb_level
+                                                .advisory_ids_offset];
     const uint8_t* advisoryIDs[2] = {0};
     size_t advisoryIDs_length[2] = {0};
     const char* expectedAdvisoryIDs[2] = {"INTEL-SA-00079", "INTEL-SA-00076"};
@@ -428,7 +573,7 @@ void TestVerifyTCBInfo_AdvisoryIDs(
     OE_TEST(
         oe_parse_advisoryids_json(
             (const uint8_t*)ptr,
-            parsed_info.tcb_level.advisory_ids_size,
+            parsed_info.tcb_info_v2.tcb_level.advisory_ids_size,
             (const uint8_t**)&advisoryIDs,
             2,
             (size_t*)&advisoryIDs_length,
