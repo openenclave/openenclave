@@ -47,6 +47,9 @@ extern void TestVerifyTCBInfo_Negative(
 extern void TestVerifyTCBInfoV2(
     oe_enclave_t* enclave,
     const char* test_filename);
+extern void TestVerifyTCBInfoV3(
+    oe_enclave_t* enclave,
+    const char* test_filename);
 extern void TestVerifyTCBInfo_AdvisoryIDs(
     oe_enclave_t* enclave,
     const char* test_filename,
@@ -194,6 +197,7 @@ int main(int argc, const char* argv[])
         }
 
         test_local_report(&target_info);
+
         test_remote_report();
         test_parse_report_negative();
         test_local_verify_report();
@@ -338,6 +342,9 @@ int main(int argc, const char* argv[])
                 test_minimum_issue_date(enclave, now);
             }
         }
+
+        TestVerifyTCBInfoV3(enclave, "./data_v3/tcbinfo_sgx.json");
+        TestVerifyTCBInfoV3(enclave, "./data_v3/tcbinfo_tdx.json");
 
         generate_and_save_report(enclave);
     }

@@ -20,7 +20,10 @@ add_custom_command(
           ${CMAKE_CURRENT_BINARY_DIR}/../data
   COMMAND
     ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/../data_v2
-    ${CMAKE_CURRENT_BINARY_DIR}/../data_v2)
+    ${CMAKE_CURRENT_BINARY_DIR}/../data_v2
+  COMMAND
+    ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/../data_v3
+    ${CMAKE_CURRENT_BINARY_DIR}/../data_v3)
 
 target_include_directories(
   report_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR}

@@ -15,6 +15,14 @@
 OE_EXTERNC_BEGIN
 
 #define OE_TCB_LEVEL_STATUS_UNKNOWN (0)
+// Info should be of type oe_parsed_tcb_info_t, field should be one of common
+// fields among oe_parsed_tcb_info_v2_t and oe_parsed_tcb_info_v3_t Valid fields
+// are: version, issue_date, next_update, fmspc, pceid, tcb_type,
+// tcb_evaluation_data_number If version is not 3, defaults to return v2 (which
+// also handles v1)
+#define OE_TCB_INFO_GET(info, field)                  \
+    ((info)->version == 3 ? (info)->tcb_info_v3.field \
+                          : (info)->tcb_info_v2.field)
 
 /*! \struct oe_tcb_level_status_t
  */
@@ -33,6 +41,29 @@ typedef union _oe_tcb_level_status
 
 } oe_tcb_level_status_t;
 
+#define OE_TDX_MRSIGNER_SIZE 48
+#define OE_TDX_ATTR_SIZE 8
+
+/*! \struct oe_tcb_info_tdx_module_t
+ *  \brief TDX Module info in the TCB Info V3.
+ */
+typedef struct _oe_tcb_info_tdx_module
+{
+    // Base 16-encoded string representation of the measurement of a TDX SEAM
+    // module’s signer
+    uint8_t mrsigner[OE_TDX_MRSIGNER_SIZE];
+
+    // Hex-encoded byte array (8 bytes) representing attributes "golden" value.
+    uint8_t attributes[OE_TDX_ATTR_SIZE];
+
+    // Hex-encoded byte array (8 bytes) representing mask
+    // to be applied to TDX SEAM module’s attributes value retrieved from the
+    // platform.
+    uint8_t attributes_mask[OE_TDX_ATTR_SIZE];
+} oe_tcb_info_tdx_module_t;
+
+#define OE_TCB_COMPONENT_SIZE 16
+
 /*! \struct oe_tcb_info_tcb_level_t
  *  \brief TCB level field in the SGX TCB Info.
  *
@@ -41,12 +72,15 @@ typedef union _oe_tcb_level_status
  */
 typedef struct _oe_tcb_info_tcb_level
 {
-    uint8_t sgx_tcb_comp_svn[16];
+    uint8_t sgx_tcb_comp_svn[OE_TCB_COMPONENT_SIZE];
     uint16_t pce_svn;
     oe_tcb_level_status_t status;
 
-    // V2 fields
+    // V2, V3 fields
     oe_datetime_t tcb_date;
+
+    // V3 fields
+    uint8_t tdx_tcb_comp_svn[OE_TCB_COMPONENT_SIZE];
 
     /*! Offset into the json QE Identity info where
      * the advisoryIDs fields start.
@@ -58,31 +92,57 @@ typedef struct _oe_tcb_info_tcb_level
 } oe_tcb_info_tcb_level_t;
 
 #define OE_SGX_FMSPC_SIZE 6
+#define OE_SGX_PCEID_SIZE 2
 
-/*! \struct oe_parsed_tcb_info_t
+/*! \struct oe_parsed_tcb_info_v2_t
  *  \brief TCB info excluding the TCB levels field.
  */
-typedef struct _oe_parsed_tcb_info
+typedef struct _oe_parsed_tcb_info_v2
 {
     uint32_t version;
     oe_datetime_t issue_date;
     oe_datetime_t next_update;
     uint8_t fmspc[OE_SGX_FMSPC_SIZE];
-    uint8_t pceid[2];
-    uint8_t signature[64];
+    uint8_t pceid[OE_SGX_PCEID_SIZE];
 
-    // V2 fields
-    // HW representation of CPUSVN for a given FMSPC is not architecturally
-    // defined to provide designers more flexibility. SW needs "tcbType" to
-    // determine how to decompose the CPUSVN. Each FMSPC has its own
-    // tcbType. For now, there is only one tcbType(0) has been defined.
     uint32_t tcb_type;
     uint32_t tcb_evaluation_data_number;
     oe_tcb_info_tcb_level_t tcb_level;
 
+} oe_parsed_tcb_info_v2_t;
+
+#define OE_TCB_ID_SIZE 4
+
+/*! \struct oe_parsed_tcb_info_v3_t
+ *  \brief TCB info excluding the TCB levels field.
+ */
+typedef struct _oe_parsed_tcb_info_v3
+{
+    uint8_t id[OE_TCB_ID_SIZE];
+    uint32_t version;
+    oe_datetime_t issue_date;
+    oe_datetime_t next_update;
+    uint8_t fmspc[OE_SGX_FMSPC_SIZE];
+    uint8_t pceid[OE_SGX_PCEID_SIZE];
+
+    uint32_t tcb_type;
+    uint32_t tcb_evaluation_data_number;
+    oe_tcb_info_tdx_module_t tdx_module;
+    oe_tcb_info_tcb_level_t tcb_level;
+} oe_parsed_tcb_info_v3_t;
+
+typedef struct _oe_parsed_tcb_info
+{
+    uint32_t version;
+    uint8_t signature[64];
+    union
+    {
+        oe_parsed_tcb_info_v2_t tcb_info_v2;
+        oe_parsed_tcb_info_v3_t tcb_info_v3;
+    };
+
     const uint8_t* tcb_info_start;
     size_t tcb_info_size;
-
 } oe_parsed_tcb_info_t;
 
 /*!
