@@ -16,6 +16,10 @@ macro (get_glibc_version)
 endmacro ()
 
 function (apply_lvi_mitigation NAME)
+  # alias ControlFlow to ControlFlow-GNU
+  if (LVI_MITIGATION STREQUAL "ControlFlow")
+    set(LVI_MITIGATION "ControlFlow-GNU")
+  endif ()
   # Add LVI mitigation compliation options.
   if (UNIX)
     if (LVI_MITIGATION STREQUAL ControlFlow-Clang)
