@@ -2,13 +2,11 @@
 # Licensed under the MIT License.
 
 ---
-gcc_target_version: "9.4.0"
+gcc_target_version: "11.3.0"
 # For specifying distribution-specific packages
 apt_distribution_packages:
-  - "python"
-  - "clang-10"
-  - "clang-format-10"
+  - "python3"
   - "clang-11"
   - "clang-format-11"
 apt_arm_distribution_packages:
-  - "python-crypto"
+  - "python3-cryptography"

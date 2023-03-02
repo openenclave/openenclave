@@ -35,3 +35,13 @@
     state: latest
     update_cache: yes
     install_recommends: no
+
+- name: Install the additional distribution-specific Open Enclave prerequisites APT packages for ARM development
+  ansible.builtin.apt:
+    name: "{{ apt_arm_distribution_packages }}"
+    state: latest
+    update_cache: yes
+    install_recommends: no
+  when:
+    - apt_arm_distribution_packages is defined
+    - apt_arm_distribution_packages | length > 0
