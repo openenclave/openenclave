@@ -7,10 +7,10 @@
 # https://rix0r.nl/blog/2015/08/13/cmake-guide/
 cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
-if(${CMAKE_VERSION} GREATER_EQUAL "3.24.0") 
-    # Suppress error when using FetchContent_Declare in subprojects
-    cmake_policy(SET CMP0135 NEW)
-endif()
+if (${CMAKE_VERSION} GREATER_EQUAL "3.24.0")
+  # Suppress error when using FetchContent_Declare in subprojects
+  cmake_policy(SET CMP0135 NEW)
+endif ()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -74,23 +74,25 @@ if (UNIX)
     # the CMAKE_C_COMPILER cmake variable has been passed to cmake, use the C compiler
     # that has been specified. Otherwise, prefer clang. Same for C++ compiler.
     if (NOT DEFINED ENV{CC} AND NOT DEFINED CMAKE_C_COMPILER)
-      find_program(CMAKE_C_COMPILER clang-11 clang-10 clang)
+      find_program(CMAKE_C_COMPILER NAMES clang-11 clang-10 clang)
     endif ()
     if (NOT DEFINED ENV{CXX} AND NOT DEFINED CMAKE_CXX_COMPILER)
-      find_program(CMAKE_CXX_COMPILER clang++-11 clang++-10 clang++)
+      find_program(CMAKE_CXX_COMPILER NAMES clang++-11 clang++-10 clang++)
     endif ()
   endif ()
-# On Windows, find if Clang is available and determine the version
+  # On Windows, find if Clang is available and determine the version
 elseif (WIN32)
-  find_program(CLANG_C_COMPILER
-               NAMES clang
-               PATHS "C:/Program Files/LLVM/bin")
+  find_program(
+    CLANG_C_COMPILER
+    NAMES clang
+    PATHS "C:/Program Files/LLVM/bin")
   if (CLANG_C_COMPILER)
     execute_process(
       COMMAND ${CLANG_C_COMPILER} --version
       OUTPUT_VARIABLE CLANG_C_COMPILER_VERSION
       OUTPUT_STRIP_TRAILING_WHITESPACE)
-    if (CLANG_C_COMPILER_VERSION MATCHES "clang version ([0-9]+\.[0-9]+\.[0-9]+)")
+    if (CLANG_C_COMPILER_VERSION MATCHES
+        "clang version ([0-9]+\.[0-9]+\.[0-9]+)")
       set(CLANG_C_COMPILER_VERSION ${CMAKE_MATCH_1})
     else ()
       message(WARNING "Could not determine the version of ${CLANG_C_COMPILER}.")
@@ -112,22 +114,22 @@ if (LVI_MITIGATION STREQUAL ControlFlow-Clang)
     if (NOT CMAKE_C_COMPILER_ID MATCHES Clang)
       message(
         FATAL_ERROR
-        "ControlFlow-Clang requires Clang but got ${CMAKE_C_COMPILER_ID}.")
+          "ControlFlow-Clang requires Clang but got ${CMAKE_C_COMPILER_ID}.")
     elseif (CMAKE_C_COMPILER_VERSION VERSION_LESS 11)
       message(
         FATAL_ERROR
-        "ControlFlow-Clang requires Clang version >= 11 but got ${CMAKE_C_COMPILER_VERSION}.")
+          "ControlFlow-Clang requires Clang version >= 11 but got ${CMAKE_C_COMPILER_VERSION}."
+      )
     endif ()
   elseif (WIN32)
-      if (NOT CLANG_C_COMPILER)
-        message(
-          FATAL_ERROR
-          "ControlFlow-Clang requires Clang to be installed.")
-      elseif (CLANG_C_COMPILER_VERSION VERSION_LESS 11)
-        message(
-          FATAL_ERROR
-          "ControlFlow-Clang only works with Clang version >= 11. But got ${CLANG_C_COMPILER_VERSION}")
-      endif ()
+    if (NOT CLANG_C_COMPILER)
+      message(FATAL_ERROR "ControlFlow-Clang requires Clang to be installed.")
+    elseif (CLANG_C_COMPILER_VERSION VERSION_LESS 11)
+      message(
+        FATAL_ERROR
+          "ControlFlow-Clang only works with Clang version >= 11. But got ${CLANG_C_COMPILER_VERSION}"
+      )
+    endif ()
   endif ()
 endif ()
 
@@ -136,14 +138,14 @@ if (IS_DIRECTORY "${PROJECT_SOURCE_DIR}/.git")
   execute_process(
     COMMAND git rev-parse HEAD
     OUTPUT_VARIABLE GIT_COMMIT
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-    ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} ERROR_QUIET
+                      OUTPUT_STRIP_TRAILING_WHITESPACE)
 
   execute_process(
     COMMAND git symbolic-ref HEAD
     OUTPUT_VARIABLE GIT_BRANCH
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-    ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} ERROR_QUIET
+                      OUTPUT_STRIP_TRAILING_WHITESPACE)
 
   # Install Git pre-commit hook
   file(COPY scripts/pre-commit scripts/commit-msg
@@ -223,12 +225,12 @@ if (OE_SGX)
     string(REPLACE " " ";" CONFIG_OUTPUT ${CONFIG_OUTPUT})
     # Get the major version for clang
     list(GET CONFIG_OUTPUT 2 MAJOR_VERSION)
-    if (MAJOR_VERSION VERSION_LESS 10
-        OR MAJOR_VERSION VERSION_GREATER 11)
-      message(FATAL_ERROR
-        "Building ELF enclaves with Clang version ${CLANG_C_COMPILER_VERSION} is not supported.
+    if (MAJOR_VERSION VERSION_LESS 10 OR MAJOR_VERSION VERSION_GREATER 11)
+      message(
+        FATAL_ERROR
+          "Building ELF enclaves with Clang version ${CLANG_C_COMPILER_VERSION} is not supported.
         Only Clang version 10 and 11 is supported")
-    endif()
+    endif ()
 
     set(USE_CLANGW ON)
   endif ()
@@ -269,9 +271,8 @@ if (WIN32)
   find_program(GIT git)
   get_filename_component(GIT_DIR ${GIT} DIRECTORY)
   find_program(
-    OE_BASH bash
-    PATHS "C:/Program Files/Git/bin" "${GIT_DIR}/../bin"
-    NO_DEFAULT_PATH) # Do not find WSL bash.
+    OE_BASH bash PATHS "C:/Program Files/Git/bin" "${GIT_DIR}/../bin"
+                       NO_DEFAULT_PATH) # Do not find WSL bash.
 
   if (NOT OE_BASH)
     message(FATAL_ERROR "Git Bash not found!")
@@ -283,8 +284,7 @@ if (WIN32)
     find_program(
       OE_PERL perl
       PATHS "C:/Program Files/Git/bin" "C:/Program Files/Git/usr/bin"
-            "${GIT_DIR}/../usr/bin"
-      NO_DEFAULT_PATH)
+            "${GIT_DIR}/../usr/bin" NO_DEFAULT_PATH)
     if (NOT OE_PERL)
       message(FATAL_ERROR "Perl not found!")
     endif ()
@@ -294,8 +294,7 @@ if (WIN32)
     find_program(
       OE_DOS2UNIX dos2unix
       PATHS "C:/Program Files/Git/bin" "C:/Program Files/Git/usr/bin"
-            "${GIT_DIR}/../usr/bin"
-      NO_DEFAULT_PATH)
+            "${GIT_DIR}/../usr/bin" NO_DEFAULT_PATH)
     if (NOT OE_DOS2UNIX)
       message(FATAL_ERROR "Dos2unix not found!")
     endif ()
