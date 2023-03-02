@@ -12,3 +12,5 @@
   with_items: "{{ validation_distribution_files }}"
   register: file
   failed_when: not file.stat.exists
+  # az-dcap-client is not available for Ubuntu 22.04
+  when: ansible_distribution_release != 'jammy'
