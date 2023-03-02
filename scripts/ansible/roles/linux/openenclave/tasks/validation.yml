@@ -13,9 +13,19 @@
 - name: Check for existing required binaries
   ansible.builtin.stat:
     path: "{{ item }}"
-  with_items: "{{ validation_binaries | union(validation_distribution_binaries) }}"
+  with_items: "{{ validation_binaries }}"
   register: binary
   failed_when: not binary.stat.executable
+
+- name: Check for existing required distribution-specific binaries
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  with_items: "{{ validation_distribution_binaries }}"
+  register: binary
+  failed_when: not binary.stat.executable
+  when:
+    - validation_distribution_binaries is defined
+    - validation_distribution_binaries | length > 0
 
 - name: Check for existing required directories
   ansible.builtin.stat:
@@ -27,9 +37,22 @@
 - name: Check for existing required files
   ansible.builtin.stat:
     path: "{{ item }}"
-  with_items: "{{ validation_distribution_files }}"
+  with_items: "{{ validation_files }}"
   register: file
   failed_when: not file.stat.exists
+  when:
+    - validation_files is defined
+    - validation_files | length > 0
+
+- name: Check for existing required distribution-specific files
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  with_items: "{{ validation_distribution_files }}"
+  register: distfile
+  failed_when: not distfile.stat.exists
+  when:
+    - validation_distribution_files is defined
+    - validation_distribution_files | length > 0
 
 - name: Cmake version check
   ansible.builtin.command: "cmake --version"

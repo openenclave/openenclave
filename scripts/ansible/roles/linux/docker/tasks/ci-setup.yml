@@ -38,10 +38,12 @@
     name: linux/intel
     tasks_from: sgx-packages.yml
 
+# az-dcap-client is not available for Ubuntu 22.04
 - name: Import Az DCAP Client Tasks
   ansible.builtin.import_role:
     name: linux/az-dcap-client
     tasks_from: stable-install.yml
+  when: ansible_distribution_release != 'jammy'
 
 - name: Install Azure CLI
   ansible.builtin.import_role:

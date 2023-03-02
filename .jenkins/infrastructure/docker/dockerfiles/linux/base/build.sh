@@ -77,6 +77,8 @@ case "${UBUNTU_VERSION}" in
            ;;
     20.04) UBUNTU_CODENAME="focal"
            ;;
+    22.04) UBUNTU_CODENAME="jammy"
+           ;;
 esac
 
 # Default image tag
