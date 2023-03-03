@@ -7,10 +7,10 @@
 # https://rix0r.nl/blog/2015/08/13/cmake-guide/
 cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
-if(${CMAKE_VERSION} GREATER_EQUAL "3.24.0") 
-    # Suppress error when using FetchContent_Declare in subprojects
-    cmake_policy(SET CMP0135 NEW)
-endif()
+if (${CMAKE_VERSION} GREATER_EQUAL "3.24.0")
+  # Suppress error when using FetchContent_Declare in subprojects
+  cmake_policy(SET CMP0135 NEW)
+endif ()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -47,7 +47,7 @@ set(LVI_MITIGATION
     "None"
     CACHE
       STRING
-      "Build with LVI mitigation. Options: [None, ControlFlow-GNU, ControlFlow-Clang, ControlFlow]"
+      "Build with LVI mitigation. Options: [None, ControlFlow, ControlFlow-GNU, ControlFlow-Clang]"
 )
 set(LVI_MITIGATION_BINDIR
     "None"
@@ -80,17 +80,19 @@ if (UNIX)
       find_program(CMAKE_CXX_COMPILER clang++-11 clang++-10 clang++)
     endif ()
   endif ()
-# On Windows, find if Clang is available and determine the version
+  # On Windows, find if Clang is available and determine the version
 elseif (WIN32)
-  find_program(CLANG_C_COMPILER
-               NAMES clang
-               PATHS "C:/Program Files/LLVM/bin")
+  find_program(
+    CLANG_C_COMPILER
+    NAMES clang
+    PATHS "C:/Program Files/LLVM/bin")
   if (CLANG_C_COMPILER)
     execute_process(
       COMMAND ${CLANG_C_COMPILER} --version
       OUTPUT_VARIABLE CLANG_C_COMPILER_VERSION
       OUTPUT_STRIP_TRAILING_WHITESPACE)
-    if (CLANG_C_COMPILER_VERSION MATCHES "clang version ([0-9]+\.[0-9]+\.[0-9]+)")
+    if (CLANG_C_COMPILER_VERSION MATCHES
+        "clang version ([0-9]+\.[0-9]+\.[0-9]+)")
       set(CLANG_C_COMPILER_VERSION ${CMAKE_MATCH_1})
     else ()
       message(WARNING "Could not determine the version of ${CLANG_C_COMPILER}.")
@@ -112,22 +114,22 @@ if (LVI_MITIGATION STREQUAL ControlFlow-Clang)
     if (NOT CMAKE_C_COMPILER_ID MATCHES Clang)
       message(
         FATAL_ERROR
-        "ControlFlow-Clang requires Clang but got ${CMAKE_C_COMPILER_ID}.")
+          "ControlFlow-Clang requires Clang but got ${CMAKE_C_COMPILER_ID}.")
     elseif (CMAKE_C_COMPILER_VERSION VERSION_LESS 11)
       message(
         FATAL_ERROR
-        "ControlFlow-Clang requires Clang version >= 11 but got ${CMAKE_C_COMPILER_VERSION}.")
+          "ControlFlow-Clang requires Clang version >= 11 but got ${CMAKE_C_COMPILER_VERSION}."
+      )
     endif ()
   elseif (WIN32)
-      if (NOT CLANG_C_COMPILER)
-        message(
-          FATAL_ERROR
-          "ControlFlow-Clang requires Clang to be installed.")
-      elseif (CLANG_C_COMPILER_VERSION VERSION_LESS 11)
-        message(
-          FATAL_ERROR
-          "ControlFlow-Clang only works with Clang version >= 11. But got ${CLANG_C_COMPILER_VERSION}")
-      endif ()
+    if (NOT CLANG_C_COMPILER)
+      message(FATAL_ERROR "ControlFlow-Clang requires Clang to be installed.")
+    elseif (CLANG_C_COMPILER_VERSION VERSION_LESS 11)
+      message(
+        FATAL_ERROR
+          "ControlFlow-Clang only works with Clang version >= 11. But got ${CLANG_C_COMPILER_VERSION}"
+      )
+    endif ()
   endif ()
 endif ()
 
@@ -223,12 +225,12 @@ if (OE_SGX)
     string(REPLACE " " ";" CONFIG_OUTPUT ${CONFIG_OUTPUT})
     # Get the major version for clang
     list(GET CONFIG_OUTPUT 2 MAJOR_VERSION)
-    if (MAJOR_VERSION VERSION_LESS 10
-        OR MAJOR_VERSION VERSION_GREATER 11)
-      message(FATAL_ERROR
-        "Building ELF enclaves with Clang version ${CLANG_C_COMPILER_VERSION} is not supported.
+    if (MAJOR_VERSION VERSION_LESS 10 OR MAJOR_VERSION VERSION_GREATER 11)
+      message(
+        FATAL_ERROR
+          "Building ELF enclaves with Clang version ${CLANG_C_COMPILER_VERSION} is not supported.
         Only Clang version 10 and 11 is supported")
-    endif()
+    endif ()
 
     set(USE_CLANGW ON)
   endif ()
@@ -554,8 +556,6 @@ if (LVI_MITIGATION MATCHES ControlFlow)
     install(FILES ./scripts/lvi-mitigation/lvi-mitigation.py
             DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/lvi-mitigation)
   endif ()
-  install(FILES ./cmake/apply_lvi_mitigation.cmake
-          DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
 endif ()
 
 install(FILES LICENSE THIRD_PARTY_NOTICES

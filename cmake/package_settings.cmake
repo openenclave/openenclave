@@ -51,13 +51,9 @@ include(CMakePackageConfigHelpers)
 configure_package_config_file(
   ${PROJECT_SOURCE_DIR}/cmake/openenclave-config.cmake.in
   ${CMAKE_BINARY_DIR}/cmake/openenclave-config.cmake
-  INSTALL_DESTINATION
-  ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
-  PATH_VARS
-  CMAKE_INSTALL_LIBDIR
-  CMAKE_INSTALL_BINDIR
-  CMAKE_INSTALL_DATADIR
-  CMAKE_INSTALL_INCLUDEDIR)
+  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
+  PATH_VARS CMAKE_INSTALL_LIBDIR CMAKE_INSTALL_BINDIR CMAKE_INSTALL_DATADIR
+            CMAKE_INSTALL_INCLUDEDIR)
 write_basic_package_version_file(
   ${CMAKE_BINARY_DIR}/cmake/openenclave-config-version.cmake
   COMPATIBILITY SameMajorVersion)
@@ -91,13 +87,9 @@ install(
 configure_package_config_file(
   ${PROJECT_SOURCE_DIR}/cmake/openenclave-lvi-mitigation-config.cmake.in
   ${CMAKE_BINARY_DIR}/cmake/openenclave-lvi-mitigation-config.cmake
-  INSTALL_DESTINATION
-  ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
-  PATH_VARS
-  CMAKE_INSTALL_LIBDIR
-  CMAKE_INSTALL_BINDIR
-  CMAKE_INSTALL_DATADIR
-  CMAKE_INSTALL_INCLUDEDIR)
+  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
+  PATH_VARS CMAKE_INSTALL_LIBDIR CMAKE_INSTALL_BINDIR CMAKE_INSTALL_DATADIR
+            CMAKE_INSTALL_INCLUDEDIR)
 write_basic_package_version_file(
   ${CMAKE_BINARY_DIR}/cmake/openenclave-lvi-mitigation-config-version.cmake
   COMPATIBILITY SameMajorVersion)
@@ -106,6 +98,15 @@ install(
     ${CMAKE_BINARY_DIR}/cmake/openenclave-lvi-mitigation-config.cmake
     ${CMAKE_BINARY_DIR}/cmake/openenclave-lvi-mitigation-config-version.cmake
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
+
+# Configure apply_lvi_mitigation for client
+configure_file(
+  ${PROJECT_SOURCE_DIR}/cmake/apply_lvi_mitigation.cmake.in
+  ${CMAKE_BINARY_DIR}/cmake/apply_lvi_mitigation_client.cmake @ONLY)
+install(
+  FILES ${CMAKE_BINARY_DIR}/cmake/apply_lvi_mitigation_client.cmake
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
+  RENAME apply_lvi_mitigation.cmake)
 
 if (UNIX)
   # Generate the openenclaverc script.
