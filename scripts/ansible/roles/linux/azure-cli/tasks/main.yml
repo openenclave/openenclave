@@ -1,0 +1,34 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+---
+
+- name: Install via APT
+  block:
+    - name: Install prerequisite APT packages
+      ansible.builtin.apt:
+        name: "{{ prerequisite_apt_packages }}"
+        state: latest
+
+    - name: Create keyring directory
+      ansible.builtin.file:
+        path: /etc/apt/keyrings/
+        owner: root
+        mode: '0744'
+        state: directory
+
+    - name: Import APT repository key
+      ansible.builtin.apt_key:
+        url: "{{ apt_key_url }}"
+        state: present
+    
+    - name: Add APT repository
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ {{ ansible_distribution_release }} main"
+        state: present
+        update_cache: yes
+    
+    - name: Install AzCLI
+      ansible.builtin.apt:
+        name: "azure-cli"
+        state: present

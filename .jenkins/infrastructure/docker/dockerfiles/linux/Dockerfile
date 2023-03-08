@@ -75,12 +75,6 @@ RUN echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ bioni
     wget https://packages.microsoft.com/keys/microsoft.asc && \
     apt-key add microsoft.asc
 
-# Install Azure CLI
-RUN apt-get update && \
-    apt-get -y install azure-cli && \
-    apt-get clean && \
-    rm -rf rm /var/lib/apt/lists/*
-
 # Install packer
 RUN wget https://releases.hashicorp.com/packer/1.5.5/packer_1.5.5_linux_amd64.zip && \
     unzip packer_1.5.5_linux_amd64.zip -d /usr/sbin && \
