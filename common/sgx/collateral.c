@@ -65,8 +65,8 @@ static oe_result_t _get_tcb_info_validity(
     oe_datetime_t* from,
     oe_datetime_t* until)
 {
-    *from = parsed_tcb_info->issue_date;
-    *until = parsed_tcb_info->next_update;
+    *from = OE_TCB_INFO_GET(parsed_tcb_info, issue_date);
+    *until = OE_TCB_INFO_GET(parsed_tcb_info, next_update);
 
     return OE_OK;
 }
@@ -431,7 +431,7 @@ oe_result_t oe_validate_revocation_list(
 
     if (memcmp(
             parsed_extension_info.fmspc,
-            parsed_tcb_info.fmspc,
+            OE_TCB_INFO_GET(&parsed_tcb_info, fmspc),
             sizeof(parsed_extension_info.fmspc)) != 0)
     {
         OE_RAISE_MSG(
@@ -442,7 +442,7 @@ oe_result_t oe_validate_revocation_list(
 
     if (memcmp(
             parsed_extension_info.pce_id,
-            parsed_tcb_info.pceid,
+            OE_TCB_INFO_GET(&parsed_tcb_info, pceid),
             sizeof(parsed_extension_info.pce_id)) != 0)
     {
         OE_RAISE_MSG(

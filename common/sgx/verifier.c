@@ -461,7 +461,7 @@ static oe_result_t _fill_with_known_claims(
             &claims[claims_index++],
             OE_CLAIM_HARDWARE_MODEL,
             sizeof(OE_CLAIM_HARDWARE_MODEL),
-            parsed_tcb_info.fmspc,
+            OE_TCB_INFO_GET(&parsed_tcb_info, fmspc),
             OE_SGX_FMSPC_SIZE));
 
         /* SGX specific optional claims */
