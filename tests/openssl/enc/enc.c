@@ -68,7 +68,7 @@ int enc_test(int argc, char** argv, char** env)
      * framework such that we can free it (which the framework does not do
      * that). Without doing this, DEBUG_MALLOC will report memory leaks.
      */
-    tap = BIO_f_tap();
+    // tap = BIO_f_tap();
 
     /* Perform the test. */
     ret = main(argc, argv);
