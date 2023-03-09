@@ -1,0 +1,11 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+---
+
+prerequisite_apt_packages:
+  - ca-certificates
+  - apt-transport-https
+  - gnupg
+
+apt_key_url: https://packages.microsoft.com/keys/microsoft.asc
