@@ -26,6 +26,9 @@ intel_dcap_packages:
   - "libsgx-aesm-pce-plugin"
   - "libsgx-aesm-quote-ex-plugin"
 
+intel_tdx_packages:
+  - "libsgx-dcap-quote-verify"
+
 packages_validation_distribution_files:
   - "/usr/lib/x86_64-linux-gnu/libsgx_enclave_common.so.1"
   - "/usr/lib/x86_64-linux-gnu/libsgx_pce_logic.so"
