@@ -134,15 +134,13 @@ if (OE_SGX)
   # -Wframe-address.
   # -Wno-frame-address is not used for clang-10 as it does not emit such 
   # an error, and does not support the option.
-  if (CMAKE_C_COMPILER_VERSION VERSION_EQUAL 10)
-    set(C_COMPILER_FLAGS "-O2;-fno-omit-frame-pointer;-fno-stack-protector")
-  else ()
-    set(C_COMPILER_FLAGS "-O2;-fno-omit-frame-pointer;-fno-stack-protector;-Wno-frame-address")
+  if (CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL 11)
+    set(C_CALLS_CFLAGS "-Wno-frame-address")
   endif ()
   set_source_files_properties(
     sgx/calls.c
     PROPERTIES
-      COMPILE_OPTIONS "${C_COMPILER_FLAGS}")
+      COMPILE_OPTIONS "${C_CALLS_CFLAGS}")
 
   # To avoid the `unused-command-line-argument` warning, which we treat as an
   # error, we explicitly turn off the warning when compiling these assembly
@@ -362,21 +360,8 @@ if (CODE_COVERAGE)
   set_source_files_properties(once.c sgx/init.c PROPERTIES COMPILE_FLAGS
                                                            "-fno-profile-arcs")
   # Adding "-fno-profile-arcs" for Code Coverage, in addition to existing flags
-  # Don't add -Wno-frame-address for clang-10 as it's not supported
-  if (CMAKE_C_COMPILER_VERSION VERSION_EQUAL 10)
-    set_source_files_properties(
-      sgx/calls.c
-      PROPERTIES
-        COMPILE_FLAGS
-        "-O2 -fno-omit-frame-pointer -fno-stack-protector -fno-profile-arcs")
-  else ()
-    set_source_files_properties(
-      sgx/calls.c
-      PROPERTIES
-        COMPILE_FLAGS
-        "-O2 -fno-omit-frame-pointer -fno-stack-protector -Wno-frame-address -fno-profile-arcs"
-    )
-  endif ()
+  set_source_files_properties(
+    sgx/calls.c PROPERTIES COMPILE_FLAGS "${C_CALLS_CFLAGS} -fno-profile-arcs")
 
 endif ()
 

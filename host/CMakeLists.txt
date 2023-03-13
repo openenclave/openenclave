@@ -485,11 +485,11 @@ macro (add_library_oehost_wrapper)
     # an error, and does not support the option.
     if (CMAKE_C_COMPILER_VERSION VERSION_EQUAL 10)
       set_source_files_properties(
-        oehost sgx/linux/enter.c PROPERTIES COMPILE_FLAGS
+        ${PARA_LIB_NAME} sgx/linux/enter.c PROPERTIES COMPILE_FLAGS
                                             "-O2 -fno-omit-frame-pointer")
     else ()
       set_source_files_properties(
-        oehost sgx/linux/enter.c
+        ${PARA_LIB_NAME} sgx/linux/enter.c
         PROPERTIES COMPILE_FLAGS "-O2 -fno-omit-frame-pointer -Wno-frame-address")
     endif ()
 
