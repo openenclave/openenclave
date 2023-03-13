@@ -147,28 +147,29 @@ oe_result_t generate_rsa_pair(
         OE_RAISE_MSG(OE_FAILURE, "EVP_PKEY_CTX_new_id failed\n");
     
     res = EVP_PKEY_keygen_init(ctx);
-    if (!res)
-        OE_RAISE_MSG(OE_FAILURE, "EVP_PKEY_keygen_init failed\n");
+    if (res <= 0)
+        OE_RAISE_MSG(OE_FAILURE, "EVP_PKEY_keygen_init failed(%d)\n", res);
     
     res = EVP_PKEY_CTX_set_rsa_keygen_bits(ctx, 2048);
-    if (!res)
-        OE_RAISE_MSG(OE_FAILURE, "EVP_PKEY_CTX_set_rsa_keygen_bits failed\n");
+    if (res <= 0)
+        OE_RAISE_MSG(OE_FAILURE, "EVP_PKEY_CTX_set_rsa_keygen_bits failed(%d)\n", res);
     
     e = BN_new();
     if (!e)
         OE_RAISE_MSG(OE_FAILURE, "BN_new failed\n");
     
     res = BN_set_word(e, (BN_ULONG)RSA_F4);
-    if (!res)
-        OE_RAISE_MSG(OE_FAILURE, "BN_set_word failed\n");
+    if (res <= 0)
+        OE_RAISE_MSG(OE_FAILURE, "BN_set_word failed(%d)\n", res);
     
-    res = EVP_PKEY_CTX_set_rsa_keygen_pubexp(ctx, e);
-    if (!res)
-        OE_RAISE_MSG(OE_FAILURE, "EVP_PKEY_CTX_set_rsa_keygen_pubexp failed\n");
-    
+    res = EVP_PKEY_CTX_set1_rsa_keygen_pubexp(ctx, e);
+    if (res <= 0)
+        OE_RAISE_MSG(OE_FAILURE, "EVP_PKEY_CTX_set_rsa_keygen_pubexp failed(%d)\n", res);
+
     res = EVP_PKEY_keygen(ctx, &pkey);
-    if (!res)
-        OE_RAISE_MSG(OE_FAILURE, "EVP_PKEY_keygen failed\n");
+    if (res <= 0) {
+        OE_RAISE_MSG(OE_FAILURE, "EVP_PKEY_keygen failed (%d)\n", res);
+    }
     
     local_public_key = (uint8_t*)calloc(1, OE_RSA_PUBLIC_KEY_SIZE);
     if (local_public_key == nullptr)

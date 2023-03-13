@@ -35,6 +35,7 @@ update-openssl-headers:
 	perl "-I." -Mconfigdata "openssl/util/dofile.pl" "-oMakefile" "openssl/include/openssl/pkcs12.h.in" > include/pkcs12.h;
 	perl "-I." -Mconfigdata "openssl/util/dofile.pl" "-oMakefile" "openssl/include/openssl/ocsp.h.in" > include/ocsp.h;
 	perl "-I." -Mconfigdata "openssl/util/dofile.pl" "-oMakefile" "openssl/include/openssl/opensslconf.h.in" > include/opensslconf.h;
+	perl "-I." -Mconfigdata "openssl/util/dofile.pl" "-oMakefile" "openssl/include/openssl/opensslv.h.in" > include/opensslv.h;
 	perl "-I." -Mconfigdata "openssl/util/dofile.pl" "-oMakefile" "openssl/include/openssl/configuration.h.in" > include/configuration.h;
 	perl "-I." -Mconfigdata "openssl/util/dofile.pl" "-oMakefile" "openssl/include/openssl/safestack.h.in" > include/safestack.h;
 	cd openssl

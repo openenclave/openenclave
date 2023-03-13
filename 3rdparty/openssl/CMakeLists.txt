@@ -88,6 +88,9 @@ ExternalProject_Add(
     ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/include/dso_conf.h
     ${OPENSSL_BUILD_INCLUDES}/crypto/dso_conf.h
   COMMAND
+    ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/include/opensslv.h
+    ${OPENSSL_BUILD_INCLUDES}/openssl/opensslv.h
+  COMMAND
     ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/include/opensslconf.h
     ${OPENSSL_BUILD_INCLUDES}/openssl/opensslconf.h
   COMMAND
@@ -198,6 +201,9 @@ ExternalProject_Add(
   CONFIGURE_COMMAND
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${OPENSSL_DIR}/include/openssl
           ${OPENSSL_INSTALL_INCLUDES}
+  COMMAND
+    ${CMAKE_COMMAND} -E copy ${OPENSSL_BUILD_INCLUDES}/openssl/opensslv.h
+    ${OPENSSL_INSTALL_INCLUDES}/opensslv.h
   COMMAND
     ${CMAKE_COMMAND} -E copy ${OPENSSL_BUILD_INCLUDES}/openssl/opensslconf.h
     ${OPENSSL_INSTALL_INCLUDES}/opensslconf.h
