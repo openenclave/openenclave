@@ -3,8 +3,8 @@
 
 # The Hash parameter defaults below are calculated using Get-FileHash with the default SHA256 hashing algorithm
 Param(
-    [string]$GitURL = 'https://github.com/git-for-windows/git/releases/download/v2.37.1.windows.1/Git-2.37.1-64-bit.exe',
-    [string]$GitHash = '1966761AD2C9E4CBD38F9E583B1125949B011A5A250A99D65E9BB21958E6EF8B',
+    [string]$GitURL = 'https://github.com/git-for-windows/git/releases/download/v2.39.2.windows.1/Git-2.39.2-64-bit.exe',
+    [string]$GitHash = 'D7608FBD854B3689102FF48B03C8CC77B35138F9F7350D134306DA0BA5751464',
     [string]$OpenSSLURL = 'https://oejenkinspublicstorage.blob.core.windows.net/dependencies/openssl.1.1.1579.74.nupkg',
     [string]$OpenSSLHash = '82678FC7C71CBACA420BC869A1938BC80F2876148A5870D46B4C9A746F6BCEB6',
     [string]$SevenZipURL = 'https://www.7-zip.org/a/7z2201-x64.msi',
