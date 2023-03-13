@@ -25,6 +25,9 @@ function (apply_lvi_mitigation TARGET)
     set(LVI_MITIGATION "ControlFlow-GNU")
   endif ()
 
+  # OE_LVI_MITIGATION holds the value of LVI_MITIGATION from the configuration of OE SDK.
+  set(OE_LVI_MITIGATION "@LVI_MITIGATION@")
+
   # Add LVI mitigation compliation options.
   if (UNIX)
     if (LVI_MITIGATION STREQUAL ControlFlow-Clang)
@@ -38,6 +41,13 @@ function (apply_lvi_mitigation TARGET)
 
       # Enable clang-11 built-in LVI mitigation
       target_compile_options(${TARGET} PRIVATE -mlvi-cfi)
+
+      if (OE_LVI_MITIGATION STREQUAL "ControlFlow-GNU")
+        # If installed OE is built with ControlFlow-GNU, and client uses ControlFlow-Clang
+        # Then client must use custom toolchain
+        target_link_options(${TARGET} PRIVATE -link-lvi-mitigation)
+      endif ()
+
     elseif (LVI_MITIGATION STREQUAL ControlFlow-GNU)
       # Enable custom LVI mitigation
       if (CMAKE_C_COMPILER_ID MATCHES Clang)

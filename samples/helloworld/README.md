@@ -459,6 +459,8 @@ With this support, you can build the sample with LVI mitigation, which ensures:
 - All the enclave code is compiled with the mitigation.
 - All the enclave code is linked against the mitigated version of Open Enclave libraries.
 
+> If you wish to enable LVI mitigation, it is preferred that you use the same LVI mitigation method as the one used to build Open Enclave. Mixing them, for instance, building Open Enclave with ControlFlow-GNU and your app with ControlFlow-Clang would work, and vice versa, but will require additional configuration at compile time (see [#Mixing-LVI-Mitigation](#Mixing-LVI-Mitigation))
+
 ### Linux
 
 #### Prerequisites
@@ -507,6 +509,20 @@ cmake .. -G Ninja -DNUGET_PACKAGE_PATH=C:\oe_prereqs -DLVI_MITIGATION=ControlFlo
 ninja
 ninja run
 ```
+
+### Mixing LVI Mitigation
+
+You can use a different LVI mitigation method to build your app than Open Enclave, however additional cmake configuration may be required. See the table below for all possible combinations.
+
+> Currently, Open Enclave is built with `ControlFlow-GNU` by default, which means `ControlFlow` is an alias to `ControlFlow-GNU`.
+> So for following commands, you can just specify `-DLVI_MITIGATION=ControlFlow` instead of `-DLVI_MITIGATION=ControlFlow-GNU`
+
+| OE    | client | Example cmake command                                                                                   |
+|-------|--------|---------------------------------------------------------------------------------------------------------|
+| GNU   | GNU    | cmake .. -DLVI_MITIGATION=ControlFlow-GNU -DLVI_MITIGATION_BINDIR=/path/to/lvi_mitigation_bin           |
+| GNU   | Clang  | cmake .. -DLVI_MITIGATION=ControlFlow-Clang -DLVI_MITIGATION_BINDIR=/path/to/lvi_mitigation_bin         |
+| Clang | GNU    | cmake .. -DLVI_MITIGATION=ControlFlow-GNU -DLVI_MITIGATION_BINDIR=/path/to/lvi_mitigation_bin           |
+| Clang | Clang  | cmake .. -DLVI_MITIGATION=ControlFlow-Clang -DCMAKE_C_COMPILER=clang-11 -DCMAKE_CXX_COMPILER=clang++-11 |
 
 #### Note
 

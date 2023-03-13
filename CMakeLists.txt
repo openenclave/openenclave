@@ -47,7 +47,7 @@ set(LVI_MITIGATION
     "None"
     CACHE
       STRING
-      "Build with LVI mitigation. Options: [None, ControlFlow-GNU, ControlFlow-Clang, ControlFlow]"
+      "Build with LVI mitigation. Options: [None, ControlFlow, ControlFlow-GNU, ControlFlow-Clang]"
 )
 set(LVI_MITIGATION_BINDIR
     "None"
@@ -553,8 +553,6 @@ if (LVI_MITIGATION MATCHES ControlFlow)
     install(FILES ./scripts/lvi-mitigation/lvi-mitigation.py
             DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/lvi-mitigation)
   endif ()
-  install(FILES ./cmake/apply_lvi_mitigation.cmake
-          DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
 endif ()
 
 install(FILES LICENSE THIRD_PARTY_NOTICES
