@@ -76,7 +76,7 @@ set_source_files_properties(
   ${SYMCRYPT_ENGINE_DIR}/src/scossl_rsa.c
   ${SYMCRYPT_ENGINE_DIR}/src/scossl_rsapss.c
   ${SYMCRYPT_ENGINE_DIR}/src/scossl_tls1prf.c
-  PROPERTIES COMPILE_FLAGS "-Wno-deprecated-declarations")
+  PROPERTIES COMPILE_FLAGS "-Wno-deprecated-declarations -Wno-incompatible-pointer-types-discards-qualifiers")
 
 enclave_compile_definitions(oesymcryptengine PRIVATE -D_AMD64_)
 
