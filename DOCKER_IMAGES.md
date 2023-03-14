@@ -1,5 +1,6 @@
 | Docker Image | Version | Open Enclave version* | Intel SGX PSW version | Intel SGX DCAP version |
 | ------------ | ------- | --------------------- | --------------------- | ---------------------- |
+| Windows Server 2019 | openenclavedockerregistry.azurecr.io/oetools-ws2019:2023.03.1388 | v0.18.1 | None | None |
 | Windows Server 2019 | openenclavedockerregistry.azurecr.io/oetools-ws2019:2023.03.1365 | v0.18.1 | None | None |
 | Windows Server 2019 | openenclavedockerregistry.azurecr.io/oetools-ws2019:2023.03.0863 | v0.18.5 | None | None |
 | Base Ubuntu 20.04 | openenclavedockerregistry.azurecr.io/openenclave-base-ubuntu-20.04:2023.03.0863 | v0.18.5 | 2.18.101.1-focal1 | 1.15.100.3-focal1 |
