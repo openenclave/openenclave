@@ -170,7 +170,7 @@ oe_result_t oe_get_sgx_quote_verification_collateral_from_certs(
     oe_get_sgx_quote_verification_collateral_args_t* args)
 {
     oe_result_t result = OE_FAILURE;
-    ParsedExtensionInfo parsed_extension_info = {{0}};
+    oe_parsed_extension_info_t parsed_extension_info = {{0}};
 
     if (leaf_cert == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -246,7 +246,7 @@ oe_result_t oe_validate_revocation_list(
     oe_result_t result = OE_UNEXPECTED;
     oe_result_t parse_tcb_info_json_result = OE_UNEXPECTED;
 
-    ParsedExtensionInfo parsed_extension_info = {{0}};
+    oe_parsed_extension_info_t parsed_extension_info = {{0}};
     oe_tcb_info_tcb_level_t local_platform_tcb_level = {{0}};
     oe_cert_chain_t tcb_issuer_chain = {0};
     oe_cert_chain_t crl_issuer_chain = {0};

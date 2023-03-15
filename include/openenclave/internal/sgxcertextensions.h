@@ -11,7 +11,7 @@
 
 OE_EXTERNC_BEGIN
 
-typedef struct _parsed_extension_info
+typedef struct _oe_parsed_extension_info
 {
     uint8_t ppid[16];
     uint8_t comp_svn[16];
@@ -24,11 +24,11 @@ typedef struct _parsed_extension_info
     bool opt_dynamic_platform;
     bool opt_cached_keys;
     bool opt_smt_enabled;
-} ParsedExtensionInfo;
+} oe_parsed_extension_info_t;
 
 oe_result_t oe_parse_sgx_extensions(
     oe_cert_t* cert,
-    ParsedExtensionInfo* parsed_info);
+    oe_parsed_extension_info_t* parsed_info);
 
 OE_EXTERNC_END
 

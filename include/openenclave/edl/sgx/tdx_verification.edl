@@ -1,0 +1,37 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+/*
+**==============================================================================
+**
+** sgx/tdx_verification.edl:
+**
+**     Internal OCALLs to be used by liboeenclave for TDX quote verification.
+**
+**==============================================================================
+*/
+
+enclave
+{
+    include "openenclave/bits/types.h"
+
+    untrusted
+    {
+        oe_result_t oe_verify_tdx_quote_ocall(
+            [in] const oe_uuid_t* format_id,
+            [in, size=opt_params_size] const void* opt_params,
+            size_t opt_params_size,
+            [in, size=quote_size] const void* p_quote,
+            uint32_t quote_size,
+            [in, size=endorsements_size] const void* p_endorsements,
+            size_t endorsements_size,
+            const time_t expiration_check_date,
+            [out] uint32_t* p_collateral_expiration_status,
+            [out] uint32_t* p_quote_verification_result,
+            [in, out, size=qve_report_info_size] void* p_qve_report_info,
+            uint32_t qve_report_info_size,
+            [out, size=supplemental_data_size] void* p_supplemental_data,
+            uint32_t supplemental_data_size,
+            [out] uint32_t* p_supplemental_data_size_out);
+    };
+};

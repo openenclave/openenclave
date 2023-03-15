@@ -28,6 +28,7 @@
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
+#include "../../tdx/quote.h"
 #include "../enclave.h"
 #include "../quote.h"
 #include "../sgxquoteprovider.h"
@@ -366,9 +367,7 @@ oe_result_t oe_verify_quote_ocall(
     const void* p_qe_identity_issuer_chain,
     uint32_t qe_identity_issuer_chain_size)
 {
-    oe_result_t result;
-
-    result = sgx_verify_quote(
+    return sgx_verify_quote(
         format_id,
         opt_params,
         opt_params_size,
@@ -397,8 +396,41 @@ oe_result_t oe_verify_quote_ocall(
         qe_identity_size,
         p_qe_identity_issuer_chain,
         qe_identity_issuer_chain_size);
+}
 
-    return result;
+oe_result_t oe_verify_tdx_quote_ocall(
+    const oe_uuid_t* format_id,
+    const void* opt_params,
+    size_t opt_params_size,
+    const void* p_quote,
+    uint32_t quote_size,
+    const void* p_endorsements,
+    size_t endorsements_size,
+    const time_t expiration_check_date,
+    uint32_t* p_collateral_expiration_status,
+    uint32_t* p_quote_verification_result,
+    void* p_qve_report_info,
+    uint32_t qve_report_size,
+    void* p_supplemental_data,
+    uint32_t supplemental_data_size,
+    uint32_t* p_supplemental_data_size_out)
+{
+    return tdx_verify_quote(
+        format_id,
+        opt_params,
+        opt_params_size,
+        p_quote,
+        quote_size,
+        p_endorsements,
+        endorsements_size,
+        expiration_check_date,
+        p_collateral_expiration_status,
+        p_quote_verification_result,
+        p_qve_report_info,
+        qve_report_size,
+        p_supplemental_data,
+        supplemental_data_size,
+        p_supplemental_data_size_out);
 }
 
 oe_result_t oe_sgx_get_additional_host_entropy_ocall(uint8_t* data, size_t size)
