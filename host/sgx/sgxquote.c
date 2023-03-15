@@ -3,6 +3,7 @@
 
 #include "sgxquote.h"
 #include <openenclave/attestation/sgx/evidence.h>
+#include <openenclave/attestation/tdx/evidence.h>
 #include <openenclave/internal/defs.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/raise.h>
@@ -16,7 +17,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../../common/oe_host_stdlib.h"
-#include "../../common/sgx/endorsements.h"
 #include "../hostthread.h"
 #include "sgxquote_ex.h"
 
@@ -24,7 +24,8 @@
 OE_STATIC_ASSERT(sizeof(sgx_target_info_t) == 512);
 OE_STATIC_ASSERT(sizeof(sgx_report_t) == 432);
 
-static const oe_uuid_t _ecdsa_p256_uuid = {OE_FORMAT_UUID_SGX_ECDSA};
+static const oe_uuid_t _sgx_ecdsa_p256_uuid = {OE_FORMAT_UUID_SGX_ECDSA};
+static const oe_uuid_t _tdx_ecdsa_p256_uuid = {OE_FORMAT_UUID_TDX_QUOTE_ECDSA};
 
 OE_STATIC_ASSERT(sizeof(sgx_att_key_id_ext_t) == sizeof(sgx_att_key_id_t));
 
@@ -84,6 +85,28 @@ static quote3_error_t (*_sgx_qv_verify_quote)(
     sgx_ql_qe_report_info_t* p_qve_report_info,
     uint32_t supplemental_data_size,
     uint8_t* p_supplemental_data);
+
+static quote3_error_t (*_tee_get_supplemental_data_version_and_size)(
+    const uint8_t* p_quote,
+    uint32_t quote_size,
+    uint32_t* p_version,
+    uint32_t* p_data_size);
+
+static quote3_error_t (*_tee_verify_quote)(
+    const uint8_t* p_quote,
+    uint32_t quote_size,
+    const tdx_ql_qve_collateral_t* p_quote_collateral,
+    const time_t expiration_check_date,
+    uint32_t* p_collateral_expiration_status,
+    sgx_ql_qv_result_t* p_quote_verification_result,
+    sgx_ql_qe_report_info_t* p_qve_report_info,
+    uint8_t* p_supp_data_descriptor);
+
+typedef struct _supp_ver_t
+{
+    uint16_t major_version;
+    uint16_t minor_version;
+} supp_ver_t;
 
 #ifdef _WIN32
 
@@ -408,6 +431,45 @@ static bool _load_sgx_dcap_ql(void)
     return (_ql_module != NULL);
 }
 
+/* Load QVL functions for TDX separately so that
+ * we can still make QVL optional for SGX */
+static void _load_tdx_dcap_qvl_impl(void)
+{
+    oe_result_t result = OE_FAILURE;
+    OE_TRACE_INFO("Loading %s for TDX\n", SGX_DCAP_QVL_NAME);
+    _qvl_module = LOAD_SGX_DCAP_LIB(SGX_DCAP_QVL_NAME);
+
+    if (_qvl_module)
+    {
+        OE_CHECK(_lookup_function(
+            _qvl_module,
+            "tee_get_supplemental_data_version_and_size",
+            (void**)&_tee_get_supplemental_data_version_and_size));
+        OE_CHECK(_lookup_function(
+            _qvl_module, "tee_verify_quote", (void**)&_tee_verify_quote));
+        result = OE_OK;
+    }
+    else
+    {
+        OE_TRACE_WARNING("Failed to load %s\n", SGX_DCAP_QVL_NAME);
+        goto done;
+    }
+
+done:
+    if (result != OE_OK)
+    {
+        OE_TRACE_WARNING(
+            "Alternative TDX quote verification library will be needed.");
+    }
+}
+
+static bool _load_tdx_dcap_qvl(void)
+{
+    static oe_once_type _once;
+    oe_once(&_once, _load_tdx_dcap_qvl_impl);
+    return (_qvl_module != NULL);
+}
+
 static void _load_sgx_dcap_qvl_impl(void)
 {
     oe_result_t result = OE_FAILURE;
@@ -437,7 +499,7 @@ done:
     if (result != OE_OK)
     {
         OE_TRACE_WARNING(
-            "Alternative quote verification library will be needed.");
+            "Alternative SGX quote verification library will be needed.");
     }
 }
 
@@ -536,7 +598,7 @@ static void _load_quote_ex_library_once(void)
                     mapped_key_id_count++;
                     break;
                 case SGX_QL_ALG_ECDSA_P256:
-                    uuid = &_ecdsa_p256_uuid;
+                    uuid = &_sgx_ecdsa_p256_uuid;
                     local_mapped[i] = true;
                     mapped_key_id_count++;
                     break;
@@ -972,7 +1034,7 @@ oe_result_t oe_sgx_get_supported_attester_format_ids(
         if (!data)
             OE_RAISE(OE_OUT_OF_MEMORY);
 
-        memcpy(data, &_ecdsa_p256_uuid, sizeof(oe_uuid_t));
+        memcpy(data, &_sgx_ecdsa_p256_uuid, sizeof(oe_uuid_t));
         *format_ids_size = sizeof(oe_uuid_t);
 
         OE_TRACE_INFO("DCAP only supports ECDSA_P256\n");
@@ -999,7 +1061,9 @@ oe_result_t oe_sgx_get_supplemental_data_size(
 
     // Add format_id for forward compatibility
     // Only support ECDSA-p256 now
-    if (memcmp(format_id, &_ecdsa_p256_uuid, sizeof(_ecdsa_p256_uuid)) != 0)
+    if (memcmp(
+            format_id, &_sgx_ecdsa_p256_uuid, sizeof(_sgx_ecdsa_p256_uuid)) !=
+        0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     if (!supplemental_data_size || (!opt_params && opt_params_size > 0))
@@ -1113,7 +1177,9 @@ oe_result_t oe_sgx_verify_quote(
 
     // Add format_id for forward compatibility
     // Only support ECDSA-p256 now
-    if (memcmp(format_id, &_ecdsa_p256_uuid, sizeof(_ecdsa_p256_uuid)) != 0)
+    if (memcmp(
+            format_id, &_sgx_ecdsa_p256_uuid, sizeof(_sgx_ecdsa_p256_uuid)) !=
+        0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     if (!p_quote || quote_size > OE_MAX_UINT32 ||
@@ -1202,18 +1268,145 @@ oe_result_t oe_sgx_verify_quote(
         {
             OE_RAISE_MSG(
                 result,
-                "SGX ECDSA QVL-based quote verificaton error "
+                "SGX ECDSA QVL-based SGX quote verification error "
                 "quote3_error_t=%s\n",
                 get_quote3_error_t_string(error));
         }
 
-        OE_TRACE_INFO("verfication status=%d", *p_quote_verification_result);
+        OE_TRACE_INFO("verification status=%d", *p_quote_verification_result);
     }
     else
     {
         // SGX_DCAP_QVL env isn't set or QVL doesn't exist
         result = OE_PLATFORM_ERROR;
     }
+
+done:
+    return result;
+}
+
+oe_result_t oe_tdx_get_supplemental_data_size(
+    const uint8_t* p_quote,
+    uint32_t quote_size,
+    uint32_t* p_version,
+    uint32_t* p_data_size)
+{
+    quote3_error_t error = SGX_QL_ERROR_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
+
+    if (!p_quote || !quote_size || !p_version || !p_data_size)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (!_load_tdx_dcap_qvl())
+        OE_RAISE(OE_PLATFORM_ERROR);
+
+    error = _tee_get_supplemental_data_version_and_size(
+        p_quote, quote_size, p_version, p_data_size);
+
+    result = sgx_qvl_error_to_oe(error);
+
+    if (result != OE_OK)
+    {
+        OE_RAISE_MSG(
+            result,
+            "Fail to get TDX quote supplemental data size "
+            "quote3_error_t=%s\n",
+            get_quote3_error_t_string(error));
+    }
+
+    if (*p_data_size != sizeof(sgx_ql_qv_supplemental_t))
+        OE_RAISE(OE_UNEXPECTED);
+
+    OE_TRACE_INFO(
+        "tdx supplemental data size=%u, major version=%u, minor version=%u",
+        *p_data_size,
+        ((supp_ver_t*)p_version)->major_version,
+        ((supp_ver_t*)p_version)->minor_version);
+
+done:
+    return result;
+}
+
+oe_result_t oe_tdx_verify_quote(
+    const oe_uuid_t* format_id,
+    const void* opt_params,
+    size_t opt_params_size,
+    const uint8_t* p_quote,
+    uint32_t quote_size,
+    const uint8_t* p_endorsements,
+    size_t endorsements_size,
+    time_t expiration_check_date,
+    uint32_t* p_collateral_expiration_status,
+    uint32_t* p_quote_verification_result,
+    void* p_qve_report_info,
+    uint32_t qve_report_info_size,
+    void* p_supplemental_data,
+    uint32_t supplemental_data_size)
+{
+    quote3_error_t error = SGX_QL_ERROR_UNEXPECTED;
+    tee_supp_data_descriptor_t supp_data = {0};
+    oe_result_t result = OE_UNEXPECTED;
+
+    // Only support ECDSA-p256 now
+    if (memcmp(
+            format_id, &_tdx_ecdsa_p256_uuid, sizeof(_tdx_ecdsa_p256_uuid)) !=
+        0)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (!p_quote || quote_size > OE_MAX_UINT32 ||
+        (!p_endorsements && endorsements_size > 0) ||
+        !p_collateral_expiration_status || !p_quote_verification_result ||
+        (!p_supplemental_data && supplemental_data_size > 0) ||
+        (!opt_params && opt_params_size > 0))
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if ((p_qve_report_info &&
+         qve_report_info_size != sizeof(sgx_ql_qe_report_info_t)) ||
+        (!p_qve_report_info && qve_report_info_size > 0))
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (quote_size > OE_MAX_UINT32)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    // Always use QvE/QVL for TDX verification
+    if (!_load_tdx_dcap_qvl())
+        OE_RAISE(OE_PLATFORM_ERROR);
+
+    supp_data.p_data = p_supplemental_data;
+    supp_data.data_size = supplemental_data_size;
+
+    error = _tee_verify_quote(
+        p_quote,
+        (uint32_t)quote_size,
+        (const tdx_ql_qve_collateral_t*)p_endorsements,
+        expiration_check_date,
+        (uint32_t*)p_collateral_expiration_status,
+        (sgx_ql_qv_result_t*)p_quote_verification_result,
+        (sgx_ql_qe_report_info_t*)p_qve_report_info,
+        (uint8_t*)&supp_data);
+
+    // Only accept TCB status with UpToUpdate for now
+    if (error != SGX_QL_SUCCESS)
+    {
+        /* Manually check the following two error codes so that
+         * we do not map them to OE_OK for TDX verification */
+        if (error == SGX_QL_TCB_SW_HARDENING_NEEDED)
+            result = OE_TCB_LEVEL_INVALID;
+        else if (error == SGX_QL_SGX_TCB_INFO_EXPIRED)
+            result = OE_INVALID_ENDORSEMENT;
+        else
+            result = sgx_qvl_error_to_oe(error);
+
+        OE_RAISE_MSG(
+            result,
+            "SGX ECDSA QVL-based TDX quote verificaton error "
+            "quote3_error_t=%s\n",
+            get_quote3_error_t_string(error));
+    }
+
+    OE_TRACE_INFO("verfication status=%d", *p_quote_verification_result);
+
+    result = OE_OK;
 
 done:
     return result;

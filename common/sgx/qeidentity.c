@@ -40,8 +40,8 @@ oe_result_t oe_validate_qe_identity(
 
     OE_TRACE_INFO("Calling %s\n", __FUNCTION__);
 
-    if ((sgx_endorsements == NULL) || (validity_from == NULL) ||
-        (validity_until == NULL))
+    if ((qe_report_body == NULL) || (sgx_endorsements == NULL) ||
+        (validity_from == NULL) || (validity_until == NULL))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // Use QE Identity info to validate QE

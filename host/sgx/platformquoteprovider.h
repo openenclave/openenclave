@@ -71,7 +71,7 @@ typedef sgx_plat_error_t (
     const uint16_t custom_parameters_length,
     sgx_ql_qve_collateral_t** pp_quote_collateral);
 
-typedef void (*sgx_free_quote_verification_collateral_t)(
+typedef sgx_plat_error_t (*sgx_free_quote_verification_collateral_t)(
     sgx_ql_qve_collateral_t* p_qve_collateral);
 
 /*****************************************************************************

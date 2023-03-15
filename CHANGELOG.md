@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+<<<<<<< HEAD
 [v0.18.2][v0.18.2_log]
 --------------
 ### Changed
@@ -35,6 +36,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 	- If you are running on a processor that is not affected by the CVE, you can turn off oeedger8r introduced mitigations by setting
 `bool oe_edger8r_secure_unserialize = false;` in enclave side code.
 =======
+=======
+- Added a TDX verifier plugin based on Intel QVL/QvE
+  - Added two public APIs to initialize and shut down
+    the plugin defined in the `openenclave/attestation/tdx/evidence.h`
+    - `oe_tdx_verifier_initialize()`
+    - `oe_tdx_verifier_shutdown()`
+  - Added a new format uuid for TDX quote `OE_FORMAT_UUID_TDX_QUOTE_ECDSA`
+  - Added a new OCALL `oe_verify_tdx_quote_ocall` that is
+    used by the plugin internally (see `openenclave/edl/sgx/tdx_verification.edl`)
+  - Steps for verify a TDX quote
+    1. Initialize the plugin via `oe_tdx_verifier_initialize`
+    2. Invoke `oe_verify_evidence` by specifying the quote and
+      format id as `OE_FORMAT_UUID_TDX_QUOTE_ECDSA`
+    3. Parse the claims (refer the definitions of TDX claims
+       to `openenclave/attestation/evidence.h`)
+  - Note that the `oe_verify_evidence` with the plugin currently
+    does not support input endorsements (must be `NULL`)
+
+## Changed
+>>>>>>> 416ce1964... TDX quote verification
 - Fix the incorrect behavior of pthread_mutex_init() and std::mutex such that they no longer create a recursive lock by default.
 - `oe_verify_report` now reports the verification result in the `parsed_report` output (only valid when the API returns OE_OK or OE_TCB_LEVEL_INVALID). For the SGX case, the definition of the result is based on `oe_sgx_tcb_status_t`.
 
