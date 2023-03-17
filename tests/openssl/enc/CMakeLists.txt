@@ -20,14 +20,14 @@ add_enclave_library(
   ${OPENSSL_DIR}/apps/lib/app_x509.c
   ${OPENSSL_DIR}/apps/lib/apps.c
   ${OPENSSL_DIR}/apps/lib/apps_ui.c
-  ${OPENSSL_DIR}/apps/lib/columns.c 
+  ${OPENSSL_DIR}/apps/lib/columns.c
   ${OPENSSL_DIR}/apps/lib/engine.c
   ${OPENSSL_DIR}/apps/lib/engine_loader.c
   ${OPENSSL_DIR}/apps/lib/fmt.c
   ${OPENSSL_DIR}/apps/lib/http_server.c
-  ${OPENSSL_DIR}/apps/lib/names.c 
+  ${OPENSSL_DIR}/apps/lib/names.c
   ${OPENSSL_DIR}/apps/lib/opt.c
-  ${OPENSSL_DIR}/apps/lib/s_cb.c 
+  ${OPENSSL_DIR}/apps/lib/s_cb.c
   ${OPENSSL_DIR}/apps/lib/s_socket.c
   ${OPENSSL_DIR}/test/testutil/tests.c
   ${OPENSSL_DIR}/test/testutil/tu_local.h
@@ -60,8 +60,8 @@ enclave_compile_options(
 
 enclave_link_libraries(openssl-support PRIVATE oelibcxx oelibc oe_includes)
 enclave_include_directories(
-  openssl-support 
-  PRIVATE 
+  openssl-support
+  PRIVATE
   ${OPENSSL_DIR}
   ${OPENSSL_DIR}/include
   ${OPENSSL_DIR}/apps/include
@@ -77,7 +77,10 @@ add_enclave_dependencies(openssl-common openssl_generated)
 
 enclave_link_libraries(openssl-common PRIVATE oelibc oe_includes)
 enclave_include_directories(
-  openssl-common PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${OPENSSL_DIR}/include
+  openssl-common
+  PRIVATE
+  ${CMAKE_CURRENT_BINARY_DIR}
+  ${OPENSSL_DIR}/include
   ${OPENSSL_DIR}/apps/include
   ${OPENSSL_DIR}/test/testutil
   ${CMAKE_BINARY_DIR}/3rdparty/openssl/build/include)
@@ -116,6 +119,10 @@ set(SSL_TEST_LIST
     "sslcorrupttest"
     "tls13ccstest")
 
+# List the tests that require cmp_testlib.c.
+set(CMP_TEST_LIST "cmp_msg_test" "cmp_protect_test" "cmp_server_test"
+                  "cmp_vfy_test")
+
 function (generate_buildtest TESTNAME)
   set(GEN_BUILDTEST_PL ${OPENSSL_DIR}/test/generate_buildtest.pl)
   string(REPLACE "buildtest_" "" NAME "${TESTNAME}")
@@ -140,12 +147,24 @@ function (add_openssl_test_enc NAME BUILDTEST CRYPTO_LIB)
     message(FATAL_ERROR "${CRYPTO_LIB} is unsupported for OpenSSL tests")
   endif ()
 
+  if ("${NAME}" IN_LIST CMP_TEST_LIST)
+    list(APPEND TEST_SRC ${OPENSSL_DIR}/test/helpers/cmp_testlib.c)
+  endif ()
+
   if ("${NAME}" IN_LIST SSL_TEST_LIST)
     list(APPEND TEST_SRC ${OPENSSL_DIR}/test/helpers/ssltestlib.c)
   endif ()
 
   if ("${NAME}" STREQUAL "drbg_cavs_test")
     list(APPEND TEST_SRC ${OPENSSL_DIR}/test/drbg_cavs_data.c)
+  endif ()
+
+  if ("${NAME}" STREQUAL "endecode_test")
+    list(APPEND TEST_SRC ${OPENSSL_DIR}/test/helpers/predefined_dhparams.c)
+  endif ()
+
+  if ("${NAME}" STREQUAL "pkcs12_format_test")
+    list(APPEND TEST_SRC ${OPENSSL_DIR}/test/helpers/pkcs12.c)
   endif ()
 
   if ("${NAME}" STREQUAL "ssl_test")
@@ -158,7 +177,8 @@ function (add_openssl_test_enc NAME BUILDTEST CRYPTO_LIB)
   endif ()
 
   if ("${NAME}" STREQUAL "sslapitest")
-    list(APPEND TEST_SRC ${OPENSSL_DIR}/test/filterprov.c ${OPENSSL_DIR}/test/tls-provider.c)
+    list(APPEND TEST_SRC ${OPENSSL_DIR}/test/filterprov.c
+         ${OPENSSL_DIR}/test/tls-provider.c)
   endif ()
 
   add_enclave(
@@ -185,14 +205,12 @@ function (add_openssl_test_enc NAME BUILDTEST CRYPTO_LIB)
     -Wno-unused-parameter
     -Wno-deprecated-declarations)
 
-  enclave_compile_definitions(openssl-${TEST_NAME}_enc PRIVATE
-                              OPENSSL_NO_AFALGENG __STDC_NO_ATOMICS__ OPENSSL_NO_RAND_DRBG)
+  enclave_compile_definitions(
+    openssl-${TEST_NAME}_enc PRIVATE OPENSSL_NO_AFALGENG __STDC_NO_ATOMICS__
+    OPENSSL_NO_RAND_DRBG)
 
-  list(APPEND INCLUDE_PATHS 
-       ${CMAKE_CURRENT_BINARY_DIR}
-       ${OPENSSL_DIR}/test 
-       ${OPENSSL_DIR}/test/testutil 
-       ${OPENSSL_DIR}/apps/include)
+  list(APPEND INCLUDE_PATHS ${CMAKE_CURRENT_BINARY_DIR} ${OPENSSL_DIR}/test
+       ${OPENSSL_DIR}/test/testutil ${OPENSSL_DIR}/apps/include)
 
   if ("${NAME}" STREQUAL "curve448_internal_test")
     list(APPEND INCLUDE_PATHS ${OPENSSL_DIR}/crypto/ec/curve448)
