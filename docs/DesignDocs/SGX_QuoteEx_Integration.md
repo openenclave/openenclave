@@ -232,6 +232,26 @@ The proposal is to implement option 1. With runtime detection and loading of
 both the SGX DCAP and quote-ex libraries, it's possible for the OE SDK to be
 built on a non-SGX platform.
 
+### Locating the SGX DCAP and quote-ex Libraries
+
+* To load QL (`libsgx-dcap-ql`), the dynamic loader must be able to locate
+  `libsgx_dcap_ql.so` or `sgx_dcap_ql.dll`.
+
+* To load quote-ex library (`libsgx-quote-ex`), the dynamic loader must be able
+  to locate `libsgx_quote_ex.so.1` or `sgx_quote_ex.dll`.
+
+* To load QPL, the dynamic loader must be able to locate at least one QPL.
+  * There can be several QPL implementations. For instance in Ubuntu 18.04,
+    * Azure QPL (`az-dcap-client`) can be installed at
+      `/usr/lib/libdcap_quoteprov.so`
+    * Intel QPL (`libsgx-dcap-default-qpl`) can be installed at
+      `/usr/lib/x86_64-linux-gnu/libdcap_quoteprov.so.1`
+  * QPL loading path depends on the environment variable `OE_SGX_DCAP_QPL`.
+    * If `OE_SGX_DCAP_QPL` is not defined, the dynamic loader must be able to
+      locate `libdcap_quoteprov.so` or `dcap_quoteprov.dll`.
+    * If `OE_SGX_DCAP_QPL` is defined, the value is used as absolute path to
+      the QPL library.
+
 ### Support of SGX Evidence Formats Enumeration
 
 The SGX plugin code file `enclave/sgx/attester.c` implements the OE SDK API

@@ -24,9 +24,14 @@ void oe_load_quote_provider()
 {
     if (provider.handle == 0)
     {
-        OE_TRACE_INFO("oe_load_quote_provider libdcap_quoteprov.so\n");
-        provider.handle =
-            dlopen("libdcap_quoteprov.so", RTLD_LAZY | RTLD_LOCAL);
+        const char* qpl_path = getenv("OE_SGX_DCAP_QPL");
+        if (qpl_path == NULL)
+        {
+            qpl_path = "libdcap_quoteprov.so";
+        }
+
+        OE_TRACE_INFO("oe_load_quote_provider %s\n", qpl_path);
+        provider.handle = dlopen(qpl_path, RTLD_NOW | RTLD_LOCAL);
         if (provider.handle != 0)
         {
             if (oe_sgx_set_quote_provider_logger(oe_quote_provider_log) ==
@@ -89,8 +94,7 @@ void oe_load_quote_provider()
         }
         else
         {
-            OE_TRACE_ERROR(
-                "sgxquoteprovider: libdcap_quoteprov.so %s\n", dlerror());
+            OE_TRACE_ERROR("sgxquoteprovider: %s %s\n", qpl_path, dlerror());
         }
     }
 }
