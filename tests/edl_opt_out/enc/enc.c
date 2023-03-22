@@ -143,6 +143,11 @@ void enc_edl_opt_out()
                 0,
                 NULL) == OE_UNSUPPORTED);
         OE_TEST(result == OE_UNSUPPORTED);
+        result = OE_OK;
+        OE_TEST(
+            oe_get_tdx_quote_verification_collateral_ocall(
+                &result, NULL, 0, NULL) == OE_UNSUPPORTED);
+        OE_TEST(result == OE_UNSUPPORTED);
     }
 
     /* sgx/entropy.edl */

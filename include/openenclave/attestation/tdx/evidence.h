@@ -76,6 +76,35 @@ oe_result_t oe_tdx_verifier_initialize(void);
  */
 oe_result_t oe_tdx_verifier_shutdown(void);
 
+/**
+ * oe_get_tdx_endorsements
+ *
+ * Fetch serialized endorsements for the given evidence.
+ *
+ * @param[in] evidence_buffer Input evidence.
+ * @param[in] evidence_buffer_size The size of evidence.
+ * @param[out] endorsements_buffer Output endorsements.
+ * @param[out] endorsements_buffer The size of output endorsements.
+ *
+ * @retval OE_OK on success.
+ * @retval other appropriate error code.
+ */
+oe_result_t oe_get_tdx_endorsements(
+    const uint8_t* evidence_buffer,
+    uint32_t evidence_buffer_size,
+    uint8_t** endorsements_buffer,
+    uint32_t* endorsements_buffer_size);
+
+/**
+ * oe_free_tdx_endorsements
+ *
+ * Free the endorsements obtained from oe_get_tdx_endorsements
+ *
+ * @param[in] endorsements_buffer Input endorsements.
+ *
+ */
+void oe_free_tdx_endorsements(uint8_t* endorsements_buffer);
+
 OE_EXTERNC_END
 
 #endif /* _OE_ATTESTATION_TDX_EVIDENCE_H */

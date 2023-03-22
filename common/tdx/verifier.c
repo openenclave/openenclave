@@ -10,6 +10,7 @@
 #include <openenclave/internal/safemath.h>
 #include "../common.h"
 #include "../sgx/quote.h"
+#include "collateral.h"
 #include "quote.h"
 
 static const oe_uuid_t _uuid_tdx_quote_ecdsa = {OE_FORMAT_UUID_TDX_QUOTE_ECDSA};
@@ -522,11 +523,6 @@ static oe_result_t _verify_evidence(
         (!policies != !policies_size) || (!claims != !claims_length))
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Currently we do not support taking endorsements inputs.
-     * QVL/QvE will fetch the endorsements on our behalf. */
-    if (endorsements_buffer && endorsements_buffer_size)
-        OE_RAISE(OE_UNSUPPORTED);
-
     format_id = &context->base.format_id;
 
     OE_CHECK(_get_input_time(policies, policies_size, &time));
@@ -598,4 +594,22 @@ oe_result_t oe_tdx_verifier_initialize(void)
 oe_result_t oe_tdx_verifier_shutdown(void)
 {
     return oe_unregister_verifier_plugin(&_verifier);
+}
+
+oe_result_t oe_get_tdx_endorsements(
+    const uint8_t* evidence_buffer,
+    uint32_t evidence_buffer_size,
+    uint8_t** endorsements_buffer,
+    uint32_t* endorsements_buffer_size)
+{
+    return oe_get_tdx_quote_verification_collateral(
+        evidence_buffer,
+        evidence_buffer_size,
+        endorsements_buffer,
+        endorsements_buffer_size);
+}
+
+void oe_free_tdx_endorsements(uint8_t* endorsements_buffer)
+{
+    oe_free_tdx_quote_verification_collateral(endorsements_buffer);
 }

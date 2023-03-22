@@ -31,6 +31,7 @@
 #include "../../tdx/quote.h"
 #include "../enclave.h"
 #include "../quote.h"
+#include "../sgxquote.h"
 #include "../sgxquoteprovider.h"
 #include "ocalls.h"
 #include "platform_u.h"
@@ -405,7 +406,7 @@ oe_result_t oe_verify_tdx_quote_ocall(
     const void* p_quote,
     uint32_t quote_size,
     const void* p_endorsements,
-    size_t endorsements_size,
+    uint32_t endorsements_size,
     const time_t expiration_check_date,
     uint32_t* p_collateral_expiration_status,
     uint32_t* p_quote_verification_result,
@@ -431,6 +432,27 @@ oe_result_t oe_verify_tdx_quote_ocall(
         p_supplemental_data,
         supplemental_data_size,
         p_supplemental_data_size_out);
+}
+
+oe_result_t oe_get_tdx_quote_verification_collateral_ocall(
+    const void* p_quote,
+    uint32_t quote_size,
+    tdx_quote_collateral_t* collateral)
+{
+    oe_result_t result = OE_FAILURE;
+
+    /* p_quote and quote_size will be checked by
+     * oe_get_tdx_quote_verification_collateral */
+    if (!collateral)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    OE_CHECK(oe_get_tdx_quote_verification_collateral(
+        p_quote, quote_size, &collateral->data, &collateral->size));
+
+    result = OE_OK;
+
+done:
+    return result;
 }
 
 oe_result_t oe_sgx_get_additional_host_entropy_ocall(uint8_t* data, size_t size)
