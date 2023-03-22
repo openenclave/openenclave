@@ -5,9 +5,9 @@ include(FetchContent)
 FetchContent_Declare(
   libcxx_sources
   SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libcxx"
-  URL https://github.com/llvm/llvm-project/releases/download/llvmorg-11.1.0/libcxx-11.1.0.src.tar.xz
+  URL https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.1/libcxx-10.0.1.src.tar.xz
   URL_HASH
-    SHA256=bb233d250ed7eaa05c73eaf81ef0f9ee3fac9d8fc0c3d38a7a7383f82ed6f8e5)
+    SHA256=def674535f22f83131353b3c382ccebfef4ba6a35c488bdb76f10b68b25be86c)
 
 FetchContent_GetProperties(libcxx_sources)
 if (NOT libcxx_sources_POPULATED)
