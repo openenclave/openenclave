@@ -15,8 +15,19 @@ enclave
 {
     include "openenclave/bits/types.h"
 
+    struct tdx_quote_collateral_t
+    {
+        [size=size] uint8_t* data;
+        uint32_t size;
+    };
+
     untrusted
     {
+        oe_result_t oe_get_tdx_quote_verification_collateral_ocall(
+            [in, size=quote_size] const void* p_quote,
+            uint32_t quote_size,
+            [out] tdx_quote_collateral_t* collateral);
+
         oe_result_t oe_verify_tdx_quote_ocall(
             [in] const oe_uuid_t* format_id,
             [in, size=opt_params_size] const void* opt_params,
@@ -24,7 +35,7 @@ enclave
             [in, size=quote_size] const void* p_quote,
             uint32_t quote_size,
             [in, size=endorsements_size] const void* p_endorsements,
-            size_t endorsements_size,
+            uint32_t endorsements_size,
             const time_t expiration_check_date,
             [out] uint32_t* p_collateral_expiration_status,
             [out] uint32_t* p_quote_verification_result,

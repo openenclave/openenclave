@@ -39,7 +39,7 @@ oe_result_t oe_verify_quote_with_tdx_endorsements(
     time_t expiration_check_date = 0;
 
     // quote size should fit into uint32 required by QVL/QvE
-    if (quote_size > OE_UINT32_MAX)
+    if (quote_size > OE_UINT32_MAX || endorsements_size > OE_UINT32_MAX)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     if (input_validation_time)
@@ -65,7 +65,7 @@ oe_result_t oe_verify_quote_with_tdx_endorsements(
         quote,
         (uint32_t)quote_size,
         endorsements,
-        endorsements_size,
+        (uint32_t)endorsements_size,
         expiration_check_date,
         &collateral_expiration_status,
         &quote_verification_result,

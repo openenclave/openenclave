@@ -8,7 +8,7 @@
 #include "verifier.h"
 
 /**
- * Declare the prototype of the following function to avoid the
+ * Declare the prototypes of the following functions to avoid the
  * missing-prototypes warning.
  */
 
@@ -20,7 +20,7 @@ oe_result_t _oe_verify_tdx_quote_ocall(
     const void* p_quote,
     uint32_t quote_size,
     const void* p_endorsements,
-    size_t endorsements_size,
+    uint32_t endorsements_size,
     const time_t expiration_check_date,
     uint32_t* p_collateral_expiration_status,
     uint32_t* p_quote_verification_result,
@@ -30,6 +30,12 @@ oe_result_t _oe_verify_tdx_quote_ocall(
     uint32_t supplemental_data_size,
     uint32_t* p_supplemental_data_size_out);
 
+oe_result_t _oe_get_tdx_quote_verification_collateral_ocall(
+    oe_result_t* _retval,
+    const void* p_quote,
+    uint32_t quote_size,
+    tdx_quote_collateral_t* collateral);
+
 oe_result_t _oe_verify_tdx_quote_ocall(
     oe_result_t* _retval,
     const oe_uuid_t* format_id,
@@ -38,7 +44,7 @@ oe_result_t _oe_verify_tdx_quote_ocall(
     const void* p_quote,
     uint32_t quote_size,
     const void* p_endorsements,
-    size_t endorsements_size,
+    uint32_t endorsements_size,
     const time_t expiration_check_date,
     uint32_t* p_collateral_expiration_status,
     uint32_t* p_quote_verification_result,
@@ -71,6 +77,25 @@ oe_result_t _oe_verify_tdx_quote_ocall(
 }
 OE_WEAK_ALIAS(_oe_verify_tdx_quote_ocall, oe_verify_tdx_quote_ocall);
 
+oe_result_t _oe_get_tdx_quote_verification_collateral_ocall(
+    oe_result_t* _retval,
+    const void* p_quote,
+    uint32_t quote_size,
+    tdx_quote_collateral_t* collateral)
+{
+    OE_UNUSED(p_quote);
+    OE_UNUSED(quote_size);
+    OE_UNUSED(collateral);
+
+    if (_retval)
+        *_retval = OE_UNSUPPORTED;
+
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(
+    _oe_get_tdx_quote_verification_collateral_ocall,
+    oe_get_tdx_quote_verification_collateral_ocall);
+
 oe_result_t tdx_verify_quote(
     const oe_uuid_t* format_id,
     const void* opt_params,
@@ -78,7 +103,7 @@ oe_result_t tdx_verify_quote(
     const uint8_t* p_quote,
     uint32_t quote_size,
     const uint8_t* p_endorsements,
-    size_t endorsements_size,
+    uint32_t endorsements_size,
     time_t expiration_check_date,
     uint32_t* p_collateral_expiration_status,
     uint32_t* p_quote_verification_result,
@@ -172,4 +197,36 @@ oe_result_t tdx_verify_quote(
 done:
     oe_free(p_qve_report_info_internal);
     return result;
+}
+
+oe_result_t oe_get_tdx_quote_verification_collateral(
+    const uint8_t* p_quote,
+    uint32_t quote_size,
+    uint8_t** pp_quote_collateral,
+    uint32_t* p_collateral_size)
+{
+    tdx_quote_collateral_t collateral = {0};
+    oe_result_t result = OE_FAILURE;
+
+    if (!p_quote || !quote_size || !pp_quote_collateral || !p_collateral_size)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    OE_CHECK(oe_get_tdx_quote_verification_collateral_ocall(
+        &result, p_quote, quote_size, &collateral));
+
+    OE_CHECK(result);
+
+    *pp_quote_collateral = collateral.data;
+    *p_collateral_size = collateral.size;
+
+done:
+    return result;
+}
+
+oe_result_t oe_free_tdx_quote_verification_collateral(
+    uint8_t* p_quote_collateral)
+{
+    oe_free(p_quote_collateral);
+
+    return OE_OK;
 }

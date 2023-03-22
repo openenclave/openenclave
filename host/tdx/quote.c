@@ -12,7 +12,7 @@ oe_result_t tdx_verify_quote(
     const uint8_t* p_quote,
     uint32_t quote_size,
     const uint8_t* p_endorsements,
-    size_t endorsements_size,
+    uint32_t endorsements_size,
     time_t expiration_check_date,
     uint32_t* p_collateral_expiration_status,
     uint32_t* p_quote_verification_result,
