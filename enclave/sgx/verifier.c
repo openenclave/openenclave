@@ -377,6 +377,7 @@ oe_result_t sgx_verify_quote(
     const void* p_qe_identity_issuer_chain,
     uint32_t qe_identity_issuer_chain_size)
 {
+    // delegate input validation to host/sgx/sgxquote.c:oe_sgx_verify_quote
     oe_result_t result = OE_UNEXPECTED;
     sgx_nonce_t nonce = {0};
     uint8_t* p_self_report = NULL;
@@ -387,16 +388,6 @@ oe_result_t sgx_verify_quote(
     oe_result_t retval = OE_UNEXPECTED;
 
     sgx_ql_qe_report_info_t* p_qve_report_info_internal = p_qve_report_info;
-
-    // Add format_id for forward compatibility
-    if (!format_id || !supplemental_data_size ||
-        (!opt_params && opt_params_size > 0))
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    if ((p_qve_report_info &&
-         (qve_report_info_size != sizeof(sgx_ql_qe_report_info_t))) ||
-        (!p_qve_report_info && qve_report_info_size != 0))
-        OE_RAISE(OE_INVALID_PARAMETER);
 
     if (!p_qve_report_info)
     {
@@ -444,8 +435,8 @@ oe_result_t sgx_verify_quote(
     OE_CHECK(oe_verify_quote_ocall(
         &retval,
         format_id,
-        NULL,
-        0,
+        opt_params,
+        opt_params_size,
         p_quote,
         quote_size,
         expiration_check_date,
