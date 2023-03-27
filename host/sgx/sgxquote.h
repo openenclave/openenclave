@@ -69,4 +69,35 @@ oe_result_t oe_sgx_verify_quote(
     const void* p_qe_identity_issuer_chain,
     uint32_t qe_identity_issuer_chain_size);
 
+oe_result_t oe_tdx_get_supplemental_data_size(
+    const uint8_t* p_quote,
+    uint32_t quote_size,
+    uint32_t* p_version,
+    uint32_t* p_data_size);
+
+oe_result_t oe_tdx_verify_quote(
+    const oe_uuid_t* format_id,
+    const void* opt_params,
+    size_t opt_params_size,
+    const uint8_t* p_quote,
+    uint32_t quote_size,
+    const uint8_t* p_endorsements,
+    uint32_t endorsements_size,
+    time_t expiration_check_date,
+    uint32_t* p_collateral_expiration_status,
+    uint32_t* p_quote_verification_result,
+    void* p_qve_report_info,
+    uint32_t qve_report_info_size,
+    void* p_supplemental_data,
+    uint32_t supplemental_data_size);
+
+oe_result_t oe_get_tdx_quote_verification_collateral(
+    const uint8_t* p_quote,
+    uint32_t quote_size,
+    uint8_t** pp_quote_collateral,
+    uint32_t* p_collateral_size);
+
+oe_result_t oe_free_tdx_quote_verification_collateral(
+    uint8_t* p_quote_collateral);
+
 #endif // _OE_SGXQUOTE_H

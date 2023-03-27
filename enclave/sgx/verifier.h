@@ -16,6 +16,11 @@ typedef struct _sgx_ql_qe_report_info_t
 } sgx_ql_qe_report_info_t;
 #endif
 
+oe_result_t oe_create_qve_report_info(
+    sgx_ql_qe_report_info_t** qve_report_info,
+    uint32_t* qve_report_info_size,
+    sgx_nonce_t* nonce);
+
 oe_result_t oe_verify_qve_report_and_identity(
     const uint8_t* p_quote,
     uint32_t quote_size,

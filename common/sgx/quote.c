@@ -1,8 +1,10 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
+
 #include "quote.h"
 #include <openenclave/attestation/sgx/evidence.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
+#include <openenclave/bits/tdx/tdxquote.h>
 #include <openenclave/internal/crypto/cert.h>
 #include <openenclave/internal/crypto/ec.h>
 #include <openenclave/internal/crypto/sha.h>
@@ -19,10 +21,10 @@
 #include <time.h>
 
 #ifdef OE_BUILD_ENCLAVE
-#include "../enclave/sgx/verifier.h"
+#include "../../enclave/sgx/verifier.h"
 #include "platform_t.h"
 #else
-#include "../host/sgx/quote.h"
+#include "../../host/sgx/quote.h"
 #endif
 
 // Public key of Intel's root certificate.
@@ -101,6 +103,7 @@ static oe_result_t _parse_quote(
     oe_result_t result = OE_UNEXPECTED;
 
     const uint8_t* p = quote;
+    sgx_quote_t* _sgx_quote = (sgx_quote_t*)p;
     const uint8_t* const quote_end = quote + quote_size;
 
     if (quote_end < p)
@@ -110,23 +113,23 @@ static oe_result_t _parse_quote(
             "Parsing error.  Pointer wrapper around.",
             NULL);
 
-    *sgx_quote = NULL;
-
-    *sgx_quote = (sgx_quote_t*)p;
     p += sizeof(sgx_quote_t);
+
     if (p > quote_end)
         OE_RAISE_MSG(
             OE_REPORT_PARSE_ERROR,
             "Parse error after parsing SGX quote, before signature.",
             NULL);
 
-    if (p + (*sgx_quote)->signature_len != quote_end)
+    if (p + _sgx_quote->signature_len != quote_end)
         OE_RAISE_MSG(
             OE_REPORT_PARSE_ERROR,
             "Parse error after parsing SGX signature.",
             NULL);
 
-    *quote_auth_data = (sgx_quote_auth_data_t*)(*sgx_quote)->signature;
+    if (quote_auth_data)
+        *quote_auth_data = (sgx_quote_auth_data_t*)p;
+
     p += sizeof(sgx_quote_auth_data_t);
 
     qe_auth_data->size = ReadUint16(p);
@@ -157,12 +160,15 @@ static oe_result_t _parse_quote(
     // Validation
     //
     OE_CHECK_MSG(
-        _validate_sgx_quote(*sgx_quote), "SGX quote validation failed.", NULL);
+        _validate_sgx_quote(_sgx_quote), "SGX quote validation failed.", NULL);
 
     OE_CHECK_MSG(
         _validate_qe_cert_data(qe_cert_data),
         "Failed to validate QE certificate data.",
         NULL);
+
+    if (sgx_quote)
+        *sgx_quote = _sgx_quote;
 
     result = OE_OK;
 done:
@@ -387,8 +393,6 @@ oe_result_t oe_get_quote_cert_chain_internal(
     oe_cert_chain_t* pck_cert_chain)
 {
     oe_result_t result = OE_UNEXPECTED;
-    sgx_quote_t* sgx_quote = NULL;
-    sgx_quote_auth_data_t* quote_auth_data = NULL;
     sgx_qe_auth_data_t qe_auth_data = {0};
     sgx_qe_cert_data_t qe_cert_data = {0};
 
@@ -399,12 +403,7 @@ oe_result_t oe_get_quote_cert_chain_internal(
 
     OE_CHECK_MSG(
         _parse_quote(
-            quote,
-            quote_size,
-            &sgx_quote,
-            &quote_auth_data,
-            &qe_auth_data,
-            &qe_cert_data),
+            quote, quote_size, NULL, NULL, &qe_auth_data, &qe_cert_data),
         "Failed to parse quote. %s",
         oe_result_str(result));
 
@@ -525,6 +524,10 @@ oe_result_t oe_verify_quote_with_sgx_endorsements(
     uint8_t supplemental_data[MAX_SUPPLEMENTAL_DATA_SIZE] = {0};
     uint32_t supplemental_data_size_out = 0;
     time_t expiration_check_date;
+
+    // quote size should fit into uint32 required by QVL/QvE
+    if (quote_size > OE_UINT32_MAX)
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     // Verify quote/endorsements for the given time.  Use endorsements
     // creation time if one was not provided.
@@ -691,10 +694,9 @@ oe_result_t oe_get_sgx_quote_validity(
     oe_result_t result = OE_UNEXPECTED;
     oe_result_t validate_revocation_list_result = OE_UNEXPECTED;
 
-    sgx_quote_t* sgx_quote = NULL;
-    sgx_quote_auth_data_t* quote_auth_data = NULL;
     sgx_qe_auth_data_t qe_auth_data = {0};
     sgx_qe_cert_data_t qe_cert_data = {0};
+    sgx_quote_auth_data_t* quote_auth_data = NULL;
 
     const uint8_t* pem_pck_certificate = NULL;
     size_t pem_pck_certificate_size = 0;
@@ -719,7 +721,7 @@ oe_result_t oe_get_sgx_quote_validity(
         _parse_quote(
             quote,
             quote_size,
-            &sgx_quote,
+            NULL,
             &quote_auth_data,
             &qe_auth_data,
             &qe_cert_data),

@@ -219,11 +219,14 @@ if (OE_SGX)
     ${PROJECT_SOURCE_DIR}/common/sgx/tcbinfo.c
     ${PROJECT_SOURCE_DIR}/common/sgx/tlsverifier.c
     ${PROJECT_SOURCE_DIR}/common/sgx/verifier.c
+    ${PROJECT_SOURCE_DIR}/common/tdx/quote.c
+    ${PROJECT_SOURCE_DIR}/common/tdx/verifier.c
     sgx/hostverify_report.c
     sgx/report_common.c
     sgx/sgxquoteprovider.c
     sgx/quote.c
-    sgx/sgxquote.c)
+    sgx/sgxquote.c
+    tdx/quote.c)
 
   if (WITH_EEID)
     list(APPEND PLATFORM_HOST_ONLY_SRC
@@ -252,7 +255,6 @@ if (OE_SGX)
     sgx/report.c
     sgx/sgx_enclave_common_wrapper.c
     sgx/sgxload.c
-    sgx/sgxquote.c
     sgx/sgxsign.c
     sgx/sgxtypes.c
     sgx/switchless.c
@@ -479,18 +481,19 @@ macro (add_library_oehost_wrapper)
     # code in both debug and release builds.
 
     # Adding "-Wno-frame-address" because, for clang-11 and above, usage of
-    # __builtin_frame_address() with a non-zero argument is triggering 
+    # __builtin_frame_address() with a non-zero argument is triggering
     # -Wframe-address.
-    # -Wno-frame-address is not used for clang-10 as it does not emit such 
+    # -Wno-frame-address is not used for clang-10 as it does not emit such
     # an error, and does not support the option.
     if (CMAKE_C_COMPILER_VERSION VERSION_EQUAL 10)
       set_source_files_properties(
-        ${PARA_LIB_NAME} sgx/linux/enter.c PROPERTIES COMPILE_FLAGS
-                                            "-O2 -fno-omit-frame-pointer")
+        ${PARA_LIB_NAME} sgx/linux/enter.c
+        PROPERTIES COMPILE_FLAGS "-O2 -fno-omit-frame-pointer")
     else ()
       set_source_files_properties(
         ${PARA_LIB_NAME} sgx/linux/enter.c
-        PROPERTIES COMPILE_FLAGS "-O2 -fno-omit-frame-pointer -Wno-frame-address")
+        PROPERTIES COMPILE_FLAGS
+                   "-O2 -fno-omit-frame-pointer -Wno-frame-address")
     endif ()
 
   endif ()

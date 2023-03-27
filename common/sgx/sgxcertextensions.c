@@ -63,7 +63,7 @@ static const char* _tcb_comp_svn_oids[16] = {
 #define SGX_SEQUENCE_TAG (0x30)
 
 OE_STATIC_ASSERT(
-    OE_COUNTOF(((ParsedExtensionInfo*)0)->comp_svn) ==
+    OE_COUNTOF(((oe_parsed_extension_info_t*)0)->comp_svn) ==
     OE_COUNTOF(_tcb_comp_svn_oids));
 
 /**
@@ -398,7 +398,7 @@ done:
 
 oe_result_t oe_parse_sgx_extensions(
     oe_cert_t* cert,
-    ParsedExtensionInfo* parsed_info)
+    oe_parsed_extension_info_t* parsed_info)
 {
     oe_result_t result = OE_INVALID_SGX_CERTIFICATE_EXTENSIONS;
     uint8_t* itr = NULL;

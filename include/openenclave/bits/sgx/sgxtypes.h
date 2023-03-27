@@ -679,7 +679,7 @@ typedef struct _sgx_quote
     uint16_t sign_type;
 
     /* (4) */
-    uint8_t reserved[4];
+    uint32_t tee_type;
 
     /* (8) */
     uint16_t qe_svn;
@@ -726,10 +726,16 @@ typedef enum
 
 // The required "version" value in sgx_quote_t for ECDSA quotes
 #define SGX_QE3_QUOTE_VERSION 3
+#define SGX_QE4_QUOTE_VERSION 4
 
 // Size of actual data within the quote excluding authentication information.
 // This data is signed for quote verification.
 #define SGX_QUOTE_SIGNED_DATA_SIZE OE_OFFSETOF(sgx_quote_t, signature_len)
+
+// Based on Intel's definition
+// https://github.com/intel/SGXDataCenterAttestationPrimitives/blob/dcap_1.15_reproducible/QuoteVerification/dcap_quoteverify/inc/sgx_dcap_qv_internal.h#L48
+#define SGX_QUOTE_TYPE 0x0
+#define TDX_QUOTE_TYPE 0x81
 
 /*
 **==============================================================================
@@ -801,11 +807,13 @@ OE_STATIC_ASSERT(sizeof(sgx_quote_auth_data_t) == 576);
 **==============================================================================
 */
 
+OE_PACK_BEGIN
 typedef struct _sgx_qe_auth_data
 {
     uint16_t size;
     uint8_t* data;
 } sgx_qe_auth_data_t;
+OE_PACK_END
 
 /*
 **==============================================================================
@@ -815,12 +823,14 @@ typedef struct _sgx_qe_auth_data
 **==============================================================================
 */
 
+OE_PACK_BEGIN
 typedef struct _sgx_qe_cert_data
 {
     uint16_t type;
     uint32_t size;
     uint8_t* data;
 } sgx_qe_cert_data_t;
+OE_PACK_END
 
 /*
 **==============================================================================

@@ -154,6 +154,75 @@ oe_result_t _oe_verify_quote_ocall(
 }
 OE_WEAK_ALIAS(_oe_verify_quote_ocall, oe_verify_quote_ocall);
 
+oe_result_t oe_create_qve_report_info(
+    sgx_ql_qe_report_info_t** qve_report_info,
+    uint32_t* qve_report_info_size,
+    sgx_nonce_t* nonce)
+{
+    sgx_ql_qe_report_info_t* _qve_report_info = NULL;
+    sgx_target_info_t* p_self_target_info = NULL;
+    uint32_t _qve_report_info_size = 0;
+    oe_result_t result = OE_UNEXPECTED;
+    uint8_t* p_self_report = NULL;
+    size_t target_info_size = 0;
+    sgx_nonce_t _nonce = {0};
+    size_t report_size = 0;
+
+    if (!qve_report_info || !qve_report_info_size || !nonce)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    _qve_report_info =
+        (sgx_ql_qe_report_info_t*)oe_malloc(sizeof(sgx_ql_qe_report_info_t));
+    if (_qve_report_info == NULL)
+        OE_RAISE(OE_OUT_OF_MEMORY);
+
+    oe_memset_s(
+        _qve_report_info,
+        sizeof(sgx_ql_qe_report_info_t),
+        0,
+        sizeof(sgx_ql_qe_report_info_t));
+
+    _qve_report_info_size = sizeof(sgx_ql_qe_report_info_t);
+
+    // Generate nonce
+    OE_CHECK(oe_random(&_nonce, 16));
+    OE_CHECK(oe_memcpy_s(
+        &_qve_report_info->nonce,
+        sizeof(sgx_nonce_t),
+        &_nonce,
+        sizeof(sgx_nonce_t)));
+
+    // Try to get self target info
+    OE_CHECK(oe_get_report(0, NULL, 0, NULL, 0, &p_self_report, &report_size));
+
+    OE_CHECK(oe_get_target_info(
+        p_self_report,
+        report_size,
+        (void**)(&p_self_target_info),
+        &target_info_size));
+
+    OE_CHECK(oe_memcpy_s(
+        &_qve_report_info->app_enclave_target_info,
+        sizeof(sgx_target_info_t),
+        p_self_target_info,
+        target_info_size));
+
+    *qve_report_info = _qve_report_info;
+    *qve_report_info_size = _qve_report_info_size;
+    *nonce = _nonce;
+
+    result = OE_OK;
+
+done:
+    if (result != OE_OK)
+        oe_free(_qve_report_info);
+
+    oe_free_target_info(p_self_target_info);
+    oe_free_report(p_self_report);
+
+    return result;
+}
+
 oe_result_t oe_verify_qve_report_and_identity(
     const uint8_t* p_quote,
     uint32_t quote_size,
@@ -379,10 +448,6 @@ oe_result_t sgx_verify_quote(
 {
     oe_result_t result = OE_UNEXPECTED;
     sgx_nonce_t nonce = {0};
-    uint8_t* p_self_report = NULL;
-    size_t report_size = 0;
-    sgx_target_info_t* p_self_target_info = NULL;
-    size_t target_info_size = 0;
     uint16_t qve_isvsvn_threshold = 3;
     oe_result_t retval = OE_UNEXPECTED;
 
@@ -399,47 +464,8 @@ oe_result_t sgx_verify_quote(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     if (!p_qve_report_info)
-    {
-        p_qve_report_info_internal = (sgx_ql_qe_report_info_t*)oe_malloc(
-            sizeof(sgx_ql_qe_report_info_t));
-        if (p_qve_report_info_internal == NULL)
-        {
-            result = OE_OUT_OF_MEMORY;
-            goto done;
-        }
-
-        oe_memset_s(
-            p_qve_report_info_internal,
-            sizeof(sgx_ql_qe_report_info_t),
-            0,
-            sizeof(sgx_ql_qe_report_info_t));
-
-        qve_report_info_size = sizeof(sgx_ql_qe_report_info_t);
-
-        // Generate nonce
-        OE_CHECK(oe_random(&nonce, 16));
-        OE_CHECK(oe_memcpy_s(
-            &p_qve_report_info_internal->nonce,
-            sizeof(sgx_nonce_t),
-            &nonce,
-            sizeof(sgx_nonce_t)));
-
-        // Try to get self target info
-        OE_CHECK(
-            oe_get_report(0, NULL, 0, NULL, 0, &p_self_report, &report_size));
-
-        OE_CHECK(oe_get_target_info(
-            p_self_report,
-            report_size,
-            (void**)(&p_self_target_info),
-            &target_info_size));
-
-        OE_CHECK(oe_memcpy_s(
-            &p_qve_report_info_internal->app_enclave_target_info,
-            sizeof(sgx_target_info_t),
-            p_self_target_info,
-            target_info_size));
-    }
+        OE_CHECK(oe_create_qve_report_info(
+            &p_qve_report_info_internal, &qve_report_info_size, &nonce));
 
     OE_CHECK(oe_verify_quote_ocall(
         &retval,
@@ -515,8 +541,6 @@ oe_result_t sgx_verify_quote(
     }
 
 done:
-    oe_free_target_info(p_self_target_info);
-    oe_free_report(p_self_report);
     oe_free(p_qve_report_info_internal);
     return result;
 }

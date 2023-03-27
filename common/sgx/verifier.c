@@ -787,7 +787,8 @@ oe_result_t oe_sgx_verify_evidence(
 
         if (evidence_buffer_size < sizeof(*quote) + quote->signature_len ||
             quote->version != SGX_QE3_QUOTE_VERSION ||
-            quote->sign_type != SGX_QL_ALG_ECDSA_P256)
+            quote->sign_type != SGX_QL_ALG_ECDSA_P256 ||
+            quote->tee_type != SGX_QUOTE_TYPE)
             OE_RAISE(OE_INVALID_PARAMETER);
 
         format_type = SGX_FORMAT_TYPE_REMOTE;
@@ -814,7 +815,8 @@ oe_result_t oe_sgx_verify_evidence(
 
         if (evidence_buffer_size < sizeof(*quote) + quote->signature_len ||
             quote->version != SGX_QE3_QUOTE_VERSION ||
-            quote->sign_type != SGX_QL_ALG_ECDSA_P256)
+            quote->sign_type != SGX_QL_ALG_ECDSA_P256 ||
+            quote->tee_type != SGX_QUOTE_TYPE)
             OE_RAISE(OE_INVALID_PARAMETER);
 
         format_type = SGX_FORMAT_TYPE_RAW_QUOTE;
@@ -844,6 +846,7 @@ oe_result_t oe_sgx_verify_evidence(
 
             report_body = evidence_buffer;
             report_body_size = sizeof(*quote) + quote->signature_len;
+
             if (evidence_buffer_size > report_body_size)
             {
                 custom_claims_buffer = report_body + report_body_size;

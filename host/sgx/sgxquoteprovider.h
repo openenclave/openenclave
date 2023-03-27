@@ -8,6 +8,7 @@
 #include <openenclave/bits/result.h>
 #include <openenclave/internal/report.h>
 #include "../../common/sgx/collateral.h"
+#include "../../common/tdx/collateral.h"
 #include "platformquoteprovider.h"
 
 OE_EXTERNC_BEGIN

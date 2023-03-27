@@ -90,8 +90,63 @@ void enc_edl_opt_out()
         OE_TEST(result == OE_UNSUPPORTED);
         result = OE_OK;
         OE_TEST(
+            oe_get_quote_verification_collateral_with_baseline_ocall(
+                &result,
+                NULL,
+                0,
+                NULL,
+                0,
+                NULL,
+                0,
+                NULL,
+                NULL,
+                0,
+                NULL,
+                NULL,
+                0,
+                NULL,
+                NULL,
+                0,
+                NULL,
+                NULL,
+                0,
+                NULL,
+                NULL,
+                0,
+                NULL,
+                NULL,
+                0,
+                NULL) == OE_UNSUPPORTED);
+        OE_TEST(result == OE_UNSUPPORTED);
+        result = OE_OK;
+        OE_TEST(
             oe_get_qetarget_info_ocall(&result, NULL, NULL, 0, NULL) ==
             OE_UNSUPPORTED);
+        OE_TEST(result == OE_UNSUPPORTED);
+        result = OE_OK;
+        OE_TEST(
+            oe_verify_tdx_quote_ocall(
+                &result,
+                NULL,
+                NULL,
+                0,
+                NULL,
+                0,
+                NULL,
+                0,
+                0,
+                NULL,
+                NULL,
+                NULL,
+                0,
+                NULL,
+                0,
+                NULL) == OE_UNSUPPORTED);
+        OE_TEST(result == OE_UNSUPPORTED);
+        result = OE_OK;
+        OE_TEST(
+            oe_get_tdx_quote_verification_collateral_ocall(
+                &result, NULL, 0, NULL) == OE_UNSUPPORTED);
         OE_TEST(result == OE_UNSUPPORTED);
     }
 

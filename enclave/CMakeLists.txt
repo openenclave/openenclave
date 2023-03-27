@@ -7,20 +7,23 @@ add_subdirectory(sealing)
 
 if (OE_SGX)
   set(PLATFORM_SRC
-      ../common/sgx/endorsements.c
-      ../common/sgx/qeidentity.c
-      ../common/sgx/quote.c
-      ../common/sgx/report.c
-      ../common/sgx/report_helper.c
-      ../common/sgx/collateral.c
-      ../common/sgx/sgxcertextensions.c
-      ../common/sgx/sgxmeasure.c
-      ../common/sgx/tcbinfo.c
-      ../common/sgx/tlsverifier.c
-      ../common/sgx/verifier.c
+      ${PROJECT_SOURCE_DIR}/common/sgx/endorsements.c
+      ${PROJECT_SOURCE_DIR}/common/sgx/qeidentity.c
+      ${PROJECT_SOURCE_DIR}/common/sgx/quote.c
+      ${PROJECT_SOURCE_DIR}/common/sgx/report.c
+      ${PROJECT_SOURCE_DIR}/common/sgx/report_helper.c
+      ${PROJECT_SOURCE_DIR}/common/sgx/collateral.c
+      ${PROJECT_SOURCE_DIR}/common/sgx/sgxcertextensions.c
+      ${PROJECT_SOURCE_DIR}/common/sgx/sgxmeasure.c
+      ${PROJECT_SOURCE_DIR}/common/sgx/tcbinfo.c
+      ${PROJECT_SOURCE_DIR}/common/sgx/tlsverifier.c
+      ${PROJECT_SOURCE_DIR}/common/sgx/verifier.c
+      ${PROJECT_SOURCE_DIR}/common/tdx/quote.c
+      ${PROJECT_SOURCE_DIR}/common/tdx/verifier.c
       sgx/attester.c
       sgx/report.c
       sgx/verifier.c
+      sgx/tdx_verifier.c
       sgx/collateralinfo.c
       sgx/start.S)
   if (WITH_EEID)

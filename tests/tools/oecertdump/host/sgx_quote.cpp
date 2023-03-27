@@ -108,7 +108,7 @@ void parse_certificate_extension(const uint8_t* data, size_t data_len)
     oe_result_t result = OE_FAILURE;
     oe_cert_chain_t cert_chain = {0};
     oe_cert_t leaf_cert = {0};
-    ParsedExtensionInfo extension_info = {{0}};
+    oe_parsed_extension_info_t extension_info = {{0}};
 
     // get leaf cert to parse sgx extension
     oe_cert_chain_read_pem(&cert_chain, data, data_len);
