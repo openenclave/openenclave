@@ -306,7 +306,23 @@ quote3_error_t tee_verify_quote(
     sgx_ql_qe_report_info_t *p_qve_report_info,
     tee_supp_data_descriptor_t *p_supp_data_descriptor);
 
-
+/**
+ * Extrace FMSPC from a given quote 
+ * @param p_quote[IN] - Pointer to a quote buffer.
+ * @param quote_size[IN] - Size of input quote buffer.
+ * @param p_fmspc_from_quote[IN/OUT] - Pointer to a buffer to write fmspc to.
+ * @param fmspc_from_quote_size[IN] - Size of fmspc buffer.
+ * 
+ * @return Status code of the operation, one of:
+ *      - SGX_QL_SUCCESS
+ *      - SGX_QL_ERROR_INVALID_PARAMETER
+ *      - SGX_QL_ERROR_UNEXPECTED
+ *      - SGX_QL_PCK_CERT_CHAIN_ERROR
+ *      - SGX_QL_QUOTE_CERTIFICATION_DATA_UNSUPPORTED
+ */
+quote3_error_t tee_get_fmspc_from_quote(const uint8_t* p_quote, uint32_t quote_size,
+    uint8_t* p_fmspc_from_quote, uint32_t fmspc_from_quote_size);
+    
 #if defined(__cplusplus)
 }
 #endif

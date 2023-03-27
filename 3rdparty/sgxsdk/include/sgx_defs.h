@@ -46,6 +46,7 @@
 # define SGX_FASTCALL
 
 # define SGX_DLLIMPORT
+// Comment out this so it compiles on Windows
 // # define SGX_UBRIDGE(attr, fname, args...) attr fname args
 
 # define SGX_DEPRECATED __attribute__((deprecated))

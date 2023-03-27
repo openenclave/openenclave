@@ -264,6 +264,7 @@ static const char* get_quote3_error_t_string(quote3_error_t error)
         CASE_ERROR_RETURN_ERROR_STRING(
             SGX_QL_SUPPLEMENTAL_DATA_VERSION_NOT_SUPPORTED);
         CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ROOT_CA_UNTRUSTED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_TCB_NOT_SUPPORTED);
 
         // return the error number as is in the default case
         default:
@@ -362,6 +363,61 @@ static const char* get_sgx_status_t_string(sgx_status_t status)
                 sgx_status_t_hex, sizeof(sgx_status_t_hex), "0x%x", status);
             return sgx_status_t_hex;
         }
+    }
+}
+
+static oe_result_t get_oe_result_t(quote3_error_t error)
+{
+    switch (error)
+    {
+        case SGX_QL_SUCCESS:
+        case SGX_QL_TCB_SW_HARDENING_NEEDED:
+        case SGX_QL_SGX_TCB_INFO_EXPIRED:
+            return OE_OK;
+
+        case SGX_QL_ERROR_INVALID_PARAMETER:
+            return OE_INVALID_PARAMETER;
+
+        case SGX_QL_PCK_CERT_UNSUPPORTED_FORMAT:
+        case SGX_QL_PCK_CERT_CHAIN_ERROR:
+        case SGX_QL_TCBINFO_UNSUPPORTED_FORMAT:
+        case SGX_QL_TCBINFO_CHAIN_ERROR:
+        case SGX_QL_TCBINFO_MISMATCH:
+        case SGX_QL_QEIDENTITY_UNSUPPORTED_FORMAT:
+        case SGX_QL_QEIDENTITY_CHAIN_ERROR:
+        case SGX_QL_TCB_OUT_OF_DATE:
+        case SGX_QL_SGX_ENCLAVE_IDENTITY_OUT_OF_DATE:
+        case SGX_QL_SGX_ENCLAVE_REPORT_ISVSVN_OUT_OF_DATE:
+        case SGX_QL_QE_IDENTITY_OUT_OF_DATE:
+        case SGX_QL_SGX_PCK_CERT_CHAIN_EXPIRED:
+        case SGX_QL_SGX_SIGNING_CERT_CHAIN_EXPIRED:
+        case SGX_QL_SGX_ENCLAVE_IDENTITY_EXPIRED:
+        case SGX_QL_QEIDENTITY_NOT_FOUND:
+        case SGX_QL_NO_QVE_IDENTITY_DATA:
+            return OE_INVALID_ENDORSEMENT;
+
+        case SGX_QL_QUOTE_FORMAT_UNSUPPORTED:
+        case SGX_QL_QE_REPORT_INVALID_SIGNATURE:
+        case SGX_QL_QE_REPORT_UNSUPPORTED_FORMAT:
+        case SGX_QL_QUOTE_CERTIFICATION_DATA_UNSUPPORTED:
+            return OE_QUOTE_VERIFICATION_ERROR;
+
+        case SGX_QL_SGX_CRL_EXPIRED:
+            return OE_VERIFY_CRL_EXPIRED;
+
+        case SGX_QL_PCK_REVOKED:
+        case SGX_QL_TCB_REVOKED:
+            return OE_VERIFY_REVOKED;
+
+        case SGX_QL_TCB_CONFIGURATION_NEEDED:
+        case SGX_QL_TCB_OUT_OF_DATE_CONFIGURATION_NEEDED:
+        case SGX_QL_TCB_CONFIGURATION_AND_SW_HARDENING_NEEDED:
+        case SGX_QL_TCBINFO_NOT_FOUND:
+        case SGX_QL_TCB_NOT_SUPPORTED:
+            return OE_TCB_LEVEL_INVALID;
+
+        default:
+            return OE_UNEXPECTED;
     }
 }
 
@@ -791,8 +847,8 @@ oe_result_t oe_sgx_qe_get_target_info(
         error = _sgx_qe_get_target_info((sgx_target_info_t*)target_info);
         if (error != SGX_QL_SUCCESS)
             OE_RAISE_MSG(
-                OE_PLATFORM_ERROR,
-                "quote3_error_t=%s\n",
+                get_oe_result_t(error),
+                "_sgx_qe_get_target_info failed with quote3_error_t=%s\n",
                 get_quote3_error_t_string(error));
 
         result = OE_OK;
@@ -873,8 +929,8 @@ oe_result_t oe_sgx_qe_get_quote_size(
 
         if (error != SGX_QL_SUCCESS)
             OE_RAISE_MSG(
-                OE_PLATFORM_ERROR,
-                "quote3_error_t=%s\n",
+                get_oe_result_t(error),
+                "_sgx_qe_get_quote_size failed with quote3_error_t=%s\n",
                 get_quote3_error_t_string(error));
 
         *quote_size = local_quote_size;
@@ -987,8 +1043,8 @@ oe_result_t oe_sgx_qe_get_quote(
                 (sgx_report_t*)report, local_quote_size, quote);
             if (error != SGX_QL_SUCCESS)
                 OE_RAISE_MSG(
-                    OE_PLATFORM_ERROR,
-                    "quote3_error_t=%s\n",
+                    get_oe_result_t(error),
+                    "_sgx_qe_get_quote failed quote3_error_t=%s\n",
                     get_quote3_error_t_string(error));
             OE_TRACE_INFO("quote_size=%d", local_quote_size);
 
@@ -1094,9 +1150,10 @@ oe_result_t oe_sgx_get_supplemental_data_size(
         error = _sgx_qv_get_quote_supplemental_data_size(&local_data_size);
         if (error != SGX_QL_SUCCESS)
             OE_RAISE_MSG(
-                OE_PLATFORM_ERROR,
-                "Get SGX QVL/QvE supplemental data size quote3_error_t=0x%x\n",
-                error);
+                get_oe_result_t(error),
+                "_sgx_qv_get_quote_supplemental_data_size failed with "
+                "quote3_error_t=%s\n",
+                get_quote3_error_t_string(error));
 
         *supplemental_data_size = local_data_size;
         result = OE_OK;
@@ -1107,60 +1164,6 @@ oe_result_t oe_sgx_get_supplemental_data_size(
 
 done:
     return result;
-}
-
-static oe_result_t sgx_qvl_error_to_oe(quote3_error_t error)
-{
-    switch (error)
-    {
-        case SGX_QL_SUCCESS:
-        case SGX_QL_TCB_SW_HARDENING_NEEDED:
-        case SGX_QL_SGX_TCB_INFO_EXPIRED:
-            return OE_OK;
-
-        case SGX_QL_ERROR_INVALID_PARAMETER:
-            return OE_INVALID_PARAMETER;
-
-        case SGX_QL_PCK_CERT_UNSUPPORTED_FORMAT:
-        case SGX_QL_PCK_CERT_CHAIN_ERROR:
-        case SGX_QL_TCBINFO_UNSUPPORTED_FORMAT:
-        case SGX_QL_TCBINFO_CHAIN_ERROR:
-        case SGX_QL_TCBINFO_MISMATCH:
-        case SGX_QL_QEIDENTITY_UNSUPPORTED_FORMAT:
-        case SGX_QL_QEIDENTITY_CHAIN_ERROR:
-        case SGX_QL_TCB_OUT_OF_DATE:
-        case SGX_QL_SGX_ENCLAVE_IDENTITY_OUT_OF_DATE:
-        case SGX_QL_SGX_ENCLAVE_REPORT_ISVSVN_OUT_OF_DATE:
-        case SGX_QL_QE_IDENTITY_OUT_OF_DATE:
-        case SGX_QL_SGX_PCK_CERT_CHAIN_EXPIRED:
-        case SGX_QL_SGX_SIGNING_CERT_CHAIN_EXPIRED:
-        case SGX_QL_SGX_ENCLAVE_IDENTITY_EXPIRED:
-        case SGX_QL_QEIDENTITY_NOT_FOUND:
-        case SGX_QL_NO_QVE_IDENTITY_DATA:
-            return OE_INVALID_ENDORSEMENT;
-
-        case SGX_QL_QUOTE_FORMAT_UNSUPPORTED:
-        case SGX_QL_QE_REPORT_INVALID_SIGNATURE:
-        case SGX_QL_QE_REPORT_UNSUPPORTED_FORMAT:
-        case SGX_QL_QUOTE_CERTIFICATION_DATA_UNSUPPORTED:
-            return OE_QUOTE_VERIFICATION_ERROR;
-
-        case SGX_QL_SGX_CRL_EXPIRED:
-            return OE_VERIFY_CRL_EXPIRED;
-
-        case SGX_QL_PCK_REVOKED:
-        case SGX_QL_TCB_REVOKED:
-            return OE_VERIFY_REVOKED;
-
-        case SGX_QL_TCB_CONFIGURATION_NEEDED:
-        case SGX_QL_TCB_OUT_OF_DATE_CONFIGURATION_NEEDED:
-        case SGX_QL_TCB_CONFIGURATION_AND_SW_HARDENING_NEEDED:
-        case SGX_QL_TCBINFO_NOT_FOUND:
-            return OE_TCB_LEVEL_INVALID;
-
-        default:
-            return OE_UNEXPECTED;
-    }
 }
 
 oe_result_t oe_sgx_verify_quote(
@@ -1282,14 +1285,13 @@ oe_result_t oe_sgx_verify_quote(
         // status
         // - UpToDate
         // - SW Hardening needed
-        result = sgx_qvl_error_to_oe(error);
-
+        result = get_oe_result_t(error);
         if (result != OE_OK)
         {
             OE_RAISE_MSG(
                 result,
-                "SGX ECDSA QVL-based SGX quote verification error "
-                "quote3_error_t=%s\n",
+                "SGX ECDSA QVL-based SGX quote verification error: "
+                "_sgx_qv_verify_quote failed with quote3_error_t=%s\n",
                 get_quote3_error_t_string(error));
         }
 
@@ -1323,7 +1325,7 @@ oe_result_t oe_tdx_get_supplemental_data_size(
     error = _tee_get_supplemental_data_version_and_size(
         p_quote, quote_size, p_version, p_data_size);
 
-    result = sgx_qvl_error_to_oe(error);
+    result = get_oe_result_t(error);
 
     if (result != OE_OK)
     {
@@ -1504,7 +1506,7 @@ oe_result_t oe_tdx_verify_quote(
         else if (error == SGX_QL_SGX_TCB_INFO_EXPIRED)
             result = OE_INVALID_ENDORSEMENT;
         else
-            result = sgx_qvl_error_to_oe(error);
+            result = get_oe_result_t(error);
 
         OE_RAISE_MSG(
             result,
