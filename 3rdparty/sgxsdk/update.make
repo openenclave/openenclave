@@ -3,8 +3,8 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-SDK_VERSION=sgx_2.10_reproducible
-DCAP_VERSION=DCAP_1.15
+SDK_VERSION=sgx_2.10
+DCAP_VERSION=DCAP_1.16
 
 all: update-sgxsdk-headers
 	echo "All done - please review changes"
