@@ -1198,6 +1198,7 @@ oe_result_t oe_sgx_verify_quote(
     oe_result_t result = OE_UNEXPECTED;
     quote3_error_t error = SGX_QL_ERROR_UNEXPECTED;
 
+    // Input validation
     // Add format_id for forward compatibility
     // Only support ECDSA-p256 now
     if (memcmp(
@@ -1206,18 +1207,18 @@ oe_result_t oe_sgx_verify_quote(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     if (!p_quote || quote_size > OE_MAX_UINT32 ||
-        !p_collateral_expiration_status || !p_quote_verification_result ||
-        (!p_supplemental_data && supplemental_data_size > 0) ||
-        (!opt_params && opt_params_size > 0))
+        !p_collateral_expiration_status || !p_quote_verification_result)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if ((p_qve_report_info &&
-         qve_report_info_size != sizeof(sgx_ql_qe_report_info_t)) ||
-        (!p_qve_report_info && qve_report_info_size > 0))
+    if ((!opt_params && opt_params_size > 0) ||
+        (!p_qve_report_info && qve_report_info_size > 0) ||
+        (!p_supplemental_data && supplemental_data_size > 0))
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (quote_size > OE_MAX_UINT32)
+    if (p_qve_report_info &&
+        qve_report_info_size != sizeof(sgx_ql_qe_report_info_t))
         OE_RAISE(OE_INVALID_PARAMETER);
+    // End of Input validation
 
     if (TRY_TO_USE_SGX_DCAP_QVL() && _load_sgx_dcap_qvl())
     {
