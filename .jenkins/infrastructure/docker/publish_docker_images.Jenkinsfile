@@ -99,10 +99,10 @@ pipeline {
                                 script {
                                     docker.withRegistry(params.INTERNAL_REPO, params.INTERNAL_REPO_CRED_ID) {
                                         sh """
-                                            docker tag ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.PUBLIC_LINUX_TAG} ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.PUBLIC_LINUX_TAG}
-                                            docker tag ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-18.04:${params.PUBLIC_LINUX_TAG} ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-18.04:${params.PUBLIC_LINUX_TAG}
-                                            docker tag ${INTERNAL_REPO_NAME}/oetools-20.04:${params.PUBLIC_LINUX_TAG} ${INTERNAL_REPO_NAME}/oetools-20.04:${params.PUBLIC_LINUX_TAG}
-                                            docker tag ${INTERNAL_REPO_NAME}/oetools-18.04:${params.PUBLIC_LINUX_TAG} ${INTERNAL_REPO_NAME}/oetools-18.04:${params.PUBLIC_LINUX_TAG}
+                                            docker tag ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.INTERNAL_LINUX_TAG} ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.PUBLIC_LINUX_TAG}
+                                            docker tag ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-18.04:${params.INTERNAL_LINUX_TAG} ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-18.04:${params.PUBLIC_LINUX_TAG}
+                                            docker tag ${INTERNAL_REPO_NAME}/oetools-20.04:${params.INTERNAL_LINUX_TAG} ${INTERNAL_REPO_NAME}/oetools-20.04:${params.PUBLIC_LINUX_TAG}
+                                            docker tag ${INTERNAL_REPO_NAME}/oetools-18.04:${params.INTERNAL_LINUX_TAG} ${INTERNAL_REPO_NAME}/oetools-18.04:${params.PUBLIC_LINUX_TAG}
                                             docker push ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.PUBLIC_LINUX_TAG}
                                             docker push ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-18.04:${params.PUBLIC_LINUX_TAG}
                                             docker push ${INTERNAL_REPO_NAME}/oetools-20.04:${params.PUBLIC_LINUX_TAG}
