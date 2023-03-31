@@ -18,25 +18,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - This API can be used only after enclave creation and before enclave termination for an enclave. An application can call this API any number of times, for any number of enclaves. There is no limit on the number of calls and is thread safe.
   - This is an host API. To modify verbosity of enclave log level from within enclaves, consider using enclave logging callbacks.
   - Updated the mbedTLS from 2.28.0 to 2.28.1
-## Changed
- - Propagate verification result for oe_verify_report
-
-
-
-<<<<<<< HEAD
-[v0.18.2][v0.18.2_log]
---------------
-### Changed
-- Fixed the incorrect behavior of pthread_mutex_init() and std::mutex such that they no longer create a recursive lock by default. Please see issue #4555 for more details.
-
-
-### Security
-- Mitigated CVE-2022-21233. Please refer to the [security advisory](https://github.com/openenclave/openenclave/security/advisories/GHSA-v3vm-9h66-wm76) for the same.
-	- The mitigations require an extra copy for ocalls in oeedger8r generated code.
-	- If you are running on a processor that is not affected by the CVE, you can turn off oeedger8r introduced mitigations by setting
-`bool oe_edger8r_secure_unserialize = false;` in enclave side code.
-=======
-=======
 - Added a TDX verifier plugin based on Intel QVL/QvE
   - Added two public APIs to initialize and shut down
     the plugin defined in the `openenclave/attestation/tdx/evidence.h`
@@ -60,6 +41,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   existing caching mechanisms (e.g., supported by DCAP).
   See `openenclave/attestation/tdx/evidence.h` for more detail of the APIs.
 
+
+## Changed
+ - Propagate verification result for oe_verify_report
+
+
+
+
+[v0.18.2][v0.18.2_log]
+--------------
+### Changed
+- Fixed the incorrect behavior of pthread_mutex_init() and std::mutex such that they no longer create a recursive lock by default. Please see issue #4555 for more details.
+
+
+### Security
+- Mitigated CVE-2022-21233. Please refer to the [security advisory](https://github.com/openenclave/openenclave/security/advisories/GHSA-v3vm-9h66-wm76) for the same.
+	- The mitigations require an extra copy for ocalls in oeedger8r generated code.
+	- If you are running on a processor that is not affected by the CVE, you can turn off oeedger8r introduced mitigations by setting
+`bool oe_edger8r_secure_unserialize = false;` in enclave side code.
 ## Changed
 >>>>>>> 416ce1964... TDX quote verification
 - Fix the incorrect behavior of pthread_mutex_init() and std::mutex such that they no longer create a recursive lock by default.
