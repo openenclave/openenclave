@@ -651,3 +651,19 @@ def dockerGetAptPackageVersion(String docker_image, String apt_package) {
     if ( !version ) { version = "N/A" }
     return version
 }
+
+/**
+ * Checks if a retry should be attempted. Returns bool
+ * @param max_try_count  Maximum number of tries
+ * @param try_count      Current try count
+ */
+def check_if_retry(int max_try_count, int try_count) {
+    if (try_count <= max_try_count) {
+        println("Retrying build (Try #${try_count}/3)")
+        return true
+    }
+    else {
+        println("Max retries reached. Aborting build.")
+        return false
+    }
+}
