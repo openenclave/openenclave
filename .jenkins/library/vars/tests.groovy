@@ -505,11 +505,58 @@ def windowsLinuxElfBuild(String windows_label, String ubuntu_label, String compi
 }
 
 def windowsCrossCompile(String label, String compiler, String build_type, String lvi_mitigation = 'None', String OE_SIMULATION = "0", String lvi_mitigation_skip_tests = 'OFF', List extra_cmake_args = []) {
-    stage("Windows ${label}-${compiler} ${build_type} with SGX LVI_MITIGATION=${lvi_mitigation}") {
-        node("${label}-${compiler}") {
-            withEnv(["OE_SIMULATION=${OE_SIMULATION}"]) {
-                timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
-                    common.WinCompilePackageTest("build/X64-${build_type}", build_type, 'OFF', globalvars.CTEST_TIMEOUT_SECONDS, lvi_mitigation, lvi_mitigation_skip_tests, extra_cmake_args)
+    stage("Windows ${label} ${build_type} with SGX LVI_MITIGATION=${lvi_mitigation}") {
+        // fail fast and retry if Windows agent goes offline
+        // exceptions seen in the wild:
+        // 1. java.io.IOException
+        // 2. org.jenkinsci.plugins.workflow.steps.FlowInterruptedException
+        // 3. java.org.InterruptedException
+        int max_try_count = 3
+        int try_count = 1
+        retry(count: max_try_count) {
+            try {
+                node("${label}-${compiler}") {
+                    // Interrupt build if no output received from node for 15 minutes
+                    timeout(time: 15, activity: true, unit: 'MINUTES') {
+                        withEnv(["OE_SIMULATION=${OE_SIMULATION}"]) {
+                            common.WinCompilePackageTest("build/X64-${build_type}", build_type, 'OFF', globalvars.CTEST_TIMEOUT_SECONDS, lvi_mitigation, lvi_mitigation_skip_tests, extra_cmake_args)
+                        }
+                    }
+                }
+            }
+            catch(org.jenkinsci.plugins.workflow.steps.FlowInterruptedException e) {
+                println("Caught FlowInterruptedException")
+                // FlowInterruptedException can be caused by timeouts, aborts, or 
+                // graceful agent disconnections. We only want to retry on timeouts
+                // all other FlowInterruptionException causes should abort the stage.
+                if(e.getCauses()[0].toString() ==~ /.*(t|T)imeout.*/) {
+                    println("An abort was caused by a known agent issue.")
+                    try_count = try_count + 1
+                    helpers.check_if_retry(max_try_count, try_count)
+                    throw e
+                }
+            }
+            catch(InterruptedException e) {
+                println("Caught InterruptedException")
+                // Thread interruptions caused by unexpected or abrupt agent disconnection
+                // will cause this exception. This case should be retried.
+                println("An abort was caused by a known agent issue.")
+                try_count = try_count + 1
+                helpers.check_if_retry(max_try_count, try_count)
+                throw e
+            }
+            catch(IOException e) {
+                println("Caught IOException")
+                // Unexpected termination of the channel with the agent will cause
+                // this exception. This case should be retried.
+                println("An abort was caused by a known agent issue.")
+                try_count = try_count + 1
+                helpers.check_if_retry(max_try_count, try_count)
+                throw e
+            }
+            catch(e) {
+                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                    error("Caught exception: ${e}")
                 }
             }
         }
