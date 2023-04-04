@@ -91,8 +91,9 @@ static const oe_uuid_t _sgx_epid_unlinkable_uuid = {
     OE_FORMAT_UUID_SGX_EPID_UNLINKABLE};
 
 #ifdef OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
-// Override weak variable in common/sgx/tcbinfo.c
-const char* _trusted_root_key_pem =
+// Override the root key used in
+// common/sgx/tcbinfo.c:_trusted_root_key_pem
+OE_EXTERNC const char* _trusted_root_key_pem =
     "-----BEGIN PUBLIC KEY-----\n"
     "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEC6nEwMDIYZOj/iPWsCzaEKi71OiO\n"
     "SLRFhWGjbnBVJfVnkY4u3IjkDYYL0MxO4mqsyYjlBalTVYxFP2sJBK5zlA==\n"
