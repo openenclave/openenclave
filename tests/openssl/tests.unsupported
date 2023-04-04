@@ -61,3 +61,8 @@
 ../../3rdparty/openssl/openssl/test/provider_test.c
 # TODO: needs musl?
 ../../3rdparty/openssl/openssl/test/http_test.c
+# TODO: exceeded max number of enclave threads supported 15
+../../3rdparty/openssl/openssl/test/threadstest_fips.c
+../../3rdparty/openssl/openssl/test/threadstest.c
+# TODO: we don't support fips, which is the module this tests loading
+../../3rdparty/openssl/openssl/test/moduleloadtest.c

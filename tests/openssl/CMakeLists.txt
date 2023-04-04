@@ -278,83 +278,83 @@ foreach (testcase ${openssltests})
     continue()
   endif ()
 
+  if ("${name}" STREQUAL bio_readbuffer_test)
+    add_openssl_test("${name}-pem" "${name}" ${OPENSSL_APPS_DIR}/server.pem)
+    add_openssl_test("${name}-der" "${name}" ${OPENSSL_RECIPE_DIR}/65-test_cmp_msg_data/pkcs10.der)
+    continue()
+  endif ()
+
   if ("${name}" STREQUAL clienthellotest)
     add_openssl_test("${name}" "${name}" ${OPENSSL_TEST_DIR}/session.pem)
     continue()
   endif ()
 
   if ("${name}" STREQUAL cmp_ctx_test)
-    # 65-test_cmp_ctx
     add_openssl_test("${name}" "${name}" ${OPENSSL_TEST_DIR}/certs/ee-cert.pem)
     continue()
   endif ()
 
   if ("${name}" STREQUAL cmp_msg_test)
-    # 65-test_cmp_msg
     add_openssl_test(
       "${name}"
       "${name}"
-      ${OPENSSL_TEST_DIR}/recipes/65-test_cmp_msg_data/new.key
-      ${OPENSSL_TEST_DIR}/recipes/65-test_cmp_msg_data/server.crt
-      ${OPENSSL_TEST_DIR}/recipes/65-test_cmp_msg_data/pkcs10.der
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_msg_data/new.key
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_msg_data/server.crt
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_msg_data/pkcs10.der
       "default"
       ${OPENSSL_TEST_DIR}/default.cnf)
     continue()
   endif ()
 
   if ("${name}" STREQUAL cmp_protect_test)
-    # 65-test_cmp_protect
     add_openssl_test(
       "${name}"
       "${name}"
-      ${OPENSSL_TEST_DIR}/recipes/65-test_cmp_protect_data/server.pem
-      ${OPENSSL_TEST_DIR}/recipes/65-test_cmp_protect_data/IR_protected.der
-      ${OPENSSL_TEST_DIR}/recipes/65-test_cmp_protect_data/IR_unprotected.der
-      ${OPENSSL_TEST_DIR}/recipes/65-test_cmp_protect_data/IP_PBM.der
-      ${OPENSSL_TEST_DIR}/recipes/65-test_cmp_protect_data/server.crt
-      ${OPENSSL_TEST_DIR}/recipes/65-test_cmp_protect_data/server.pem
-      ${OPENSSL_TEST_DIR}/recipes/65-test_cmp_protect_data/EndEntity1.crt
-      ${OPENSSL_TEST_DIR}/recipes/65-test_cmp_protect_data/EndEntity2.crt
-      ${OPENSSL_TEST_DIR}/recipes/65-test_cmp_protect_data/Root_CA.crt
-      ${OPENSSL_TEST_DIR}/recipes/65-test_cmp_protect_data/Intermediate_CA.crt
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_protect_data/server.pem
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_protect_data/IR_protected.der
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_protect_data/IR_unprotected.der
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_protect_data/IP_PBM.der
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_protect_data/server.crt
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_protect_data/server.pem
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_protect_data/EndEntity1.crt
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_protect_data/EndEntity2.crt
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_protect_data/Root_CA.crt
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_protect_data/Intermediate_CA.crt
       "default"
       ${OPENSSL_TEST_DIR}/default.cnf)
     continue()
   endif ()
 
   if ("${name}" STREQUAL cmp_server_test)
-    # 65-test_server_test
     add_openssl_test(
       "${name}"
       "${name}"
-      ${OPENSSL_TEST_DIR}/recipes/65-test_cmp_server_data/CR_protected_PBM_1234.der
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_server_data/CR_protected_PBM_1234.der
       "default"
       ${OPENSSL_TEST_DIR}/default.cnf)
     continue()
   endif ()
 
   if ("${name}" STREQUAL cmp_vfy_test)
-    # 65-test_vfy_test
     add_openssl_test(
       "${name}"
       "${name}"
-      ${OPENSSL_TEST_DIR}/recipes/65-test_cmp_vfy_data/server.crt
-      ${OPENSSL_TEST_DIR}/recipes/65-test_cmp_vfy_data/client.crt
-      ${OPENSSL_TEST_DIR}/recipes/65-test_cmp_vfy_data/EndEntity1.crt
-      ${OPENSSL_TEST_DIR}/recipes/65-test_cmp_vfy_data/EndEntity2.crt
-      ${OPENSSL_TEST_DIR}/recipes/65-test_cmp_vfy_data/Root_CA.crt
-      ${OPENSSL_TEST_DIR}/recipes/65-test_cmp_vfy_data/Intermediate_CA.crt
-      ${OPENSSL_TEST_DIR}/recipes/65-test_cmp_vfy_data/IR_protected.der
-      ${OPENSSL_TEST_DIR}/recipes/65-test_cmp_vfy_data/IR_unprotected.der
-      ${OPENSSL_TEST_DIR}/recipes/65-test_cmp_vfy_data/IP_waitingStatus_PBM.der
-      ${OPENSSL_TEST_DIR}/recipes/65-test_cmp_vfy_data/IR_rmprotection.der
-      ${OPENSSL_TEST_DIR}/recipes/65-test_cmp_vfy_data/insta.cert.pem
-      ${OPENSSL_TEST_DIR}/recipes/65-test_cmp_vfy_data/insta_ca.cert.pem
-      ${OPENSSL_TEST_DIR}/recipes/65-test_cmp_vfy_data/IR_protected_0_extraCerts.der
-      ${OPENSSL_TEST_DIR}/recipes/65-test_cmp_vfy_data/IR_protected_2_extraCerts.der
-      "none")
-    #"default"
-    #${OPENSSL_TEST_DIR}/default.cnf)
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/server.crt
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/client.crt
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/EndEntity1.crt
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/EndEntity2.crt
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/Root_CA.crt
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/Intermediate_CA.crt
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/IR_protected.der
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/IR_unprotected.der
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/IP_waitingStatus_PBM.der
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/IR_rmprotection.der
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/insta.cert.pem
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/insta_ca.cert.pem
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/IR_protected_0_extraCerts.der
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/IR_protected_2_extraCerts.der
+      "default"
+      ${OPENSSL_TEST_DIR}/default.cnf)
     continue()
   endif ()
 
@@ -368,12 +368,12 @@ foreach (testcase ${openssltests})
   if ("${name}" STREQUAL confdump)
     add_openssl_test(
       "${name}-dollarid_on" "${name}"
-      ${OPENSSL_TEST_DIR}/recipes/04-test_conf_data/dollarid_on.cnf
-      ${OPENSSL_TEST_DIR}/recipes/04-test_conf_data/dollarid_on.txt)
+      ${OPENSSL_RECIPE_DIR}/04-test_conf_data/dollarid_on.cnf
+      ${OPENSSL_RECIPE_DIR}/04-test_conf_data/dollarid_on.txt)
     add_openssl_test(
       "${name}-dollarid_off" "${name}"
-      ${OPENSSL_TEST_DIR}/recipes/04-test_conf_data/dollarid_off.cnf
-      ${OPENSSL_TEST_DIR}/recipes/04-test_conf_data/dollarid_off.txt)
+      ${OPENSSL_RECIPE_DIR}/04-test_conf_data/dollarid_off.cnf
+      ${OPENSSL_RECIPE_DIR}/04-test_conf_data/dollarid_off.txt)
     continue()
   endif ()
 
@@ -382,19 +382,19 @@ foreach (testcase ${openssltests})
     if (NOT USE_DEBUG_MALLOC)
       add_openssl_test(
         "${name}-includes" "${name}"
-        ${OPENSSL_TEST_DIR}/recipes/90-test_includes_data/includes.cnf)
+        ${OPENSSL_RECIPE_DIR}/90-test_includes_data/includes.cnf)
       add_openssl_test(
         "${name}-includes-file" "${name}"
-        ${OPENSSL_TEST_DIR}/recipes/90-test_includes_data/includes-file.cnf)
+        ${OPENSSL_RECIPE_DIR}/90-test_includes_data/includes-file.cnf)
       add_openssl_test(
         "${name}-includes-eq" "${name}"
-        ${OPENSSL_TEST_DIR}/recipes/90-test_includes_data/includes-eq.cnf)
+        ${OPENSSL_RECIPE_DIR}/90-test_includes_data/includes-eq.cnf)
       add_openssl_test(
         "${name}-includes-eq-ws" "${name}"
-        ${OPENSSL_TEST_DIR}/recipes/90-test_includes_data/includes-eq-ws.cnf)
+        ${OPENSSL_RECIPE_DIR}/90-test_includes_data/includes-eq-ws.cnf)
       add_openssl_test(
         "${name}-includes-broken" "${name}"
-        ${OPENSSL_TEST_DIR}/recipes/90-test_includes_data/includes-broken.cnf
+        ${OPENSSL_RECIPE_DIR}/90-test_includes_data/includes-broken.cnf
         "f")
     endif ()
     continue()
@@ -489,7 +489,7 @@ foreach (testcase ${openssltests})
                       evpciph_aes_ocb       evpciph_des           evpkdf_hkdf    evpkdf_x942       evpmd_mdc2       evppkey_dsa        evppkey_mismatch
                       evpciph_aes_siv       evpciph_des3_common   evpkdf_krb5    evpkdf_x942_des   evpmd_ripemd     evppkey_ecc        evppkey_rsa
                       evpciph_aes_stitched  evpciph_idea          evpkdf_pbkdf1  evpkdf_x963       evpmd_sha        evppkey_ecdh       evppkey_rsa_common
-                      evpciph_aes_wrap      evpciph_rc2           evpkdf_pbkdf2  evpmac_blake      evpmd_sm3        evppkey_ecdsa      evppkey_sm2
+                      evpciph_aes_wrap      evpciph_rc2           evpkdf_pbkdf2  evpmac_blake      evpmd_sm3        evppkey_ecdsa      # evppkey_sm2
                       evpciph_aria          evpciph_rc4           evpkdf_scrypt  evpmac_cmac_des   evpmd_whirlpool  evppkey_ecx        evprand
                       evpciph_bf            evpciph_rc4_stitched  evpkdf_ss      evpmac_common     evppbe_pbkdf2    evppkey_ffdhe
                       evpciph_camellia      evpciph_rc5           evpkdf_ssh     evpmac_poly1305   evppbe_pkcs12    evppkey_kas)
@@ -510,7 +510,7 @@ foreach (testcase ${openssltests})
   endif ()
 
   if ("${name}" STREQUAL evp_pkey_provided_test)
-    add_openssl_test("${name}" "${name}" ${OPENSSL_TEST_DIR}/recipes/30-test_evp_pkey_provided)
+    add_openssl_test("${name}" "${name}" ${OPENSSL_RECIPE_DIR}/30-test_evp_pkey_provided)
     continue ()
   endif ()
 
@@ -525,11 +525,16 @@ foreach (testcase ${openssltests})
     continue()
   endif ()
 
+  if ("${name}" STREQUAL memleaktest)
+    add_openssl_test("${name}" "${name}" "freeit")
+    continue()
+  endif ()
+
   if ("${name}" STREQUAL ocspapitest)
     add_openssl_test(
       "${name}" "${name}"
-      ${OPENSSL_TEST_DIR}/recipes/80-test_ocsp_data/cert.pem
-      ${OPENSSL_TEST_DIR}/recipes/80-test_ocsp_data/key.pem)
+      ${OPENSSL_RECIPE_DIR}/80-test_ocsp_data/cert.pem
+      ${OPENSSL_RECIPE_DIR}/80-test_ocsp_data/key.pem)
     continue()
   endif ()
 

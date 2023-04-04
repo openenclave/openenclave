@@ -79,7 +79,6 @@
 ../../3rdparty/openssl/openssl/test/mdc2test.c
 ../../3rdparty/openssl/openssl/test/memleaktest.c
 ../../3rdparty/openssl/openssl/test/modes_internal_test.c
-../../3rdparty/openssl/openssl/test/moduleloadtest.c
 ../../3rdparty/openssl/openssl/test/namemap_internal_test.c
 ../../3rdparty/openssl/openssl/test/ocspapitest.c
 ../../3rdparty/openssl/openssl/test/ossl_store_test.c
@@ -110,7 +109,6 @@
 ../../3rdparty/openssl/openssl/test/rsa_mp_test.c
 ../../3rdparty/openssl/openssl/test/rsa_test.c
 ../../3rdparty/openssl/openssl/test/sanitytest.c
-../../3rdparty/openssl/openssl/test/secmemtest.c
 ../../3rdparty/openssl/openssl/test/servername_test.c
 ../../3rdparty/openssl/openssl/test/sha_test.c
 ../../3rdparty/openssl/openssl/test/shlibloadtest.c
@@ -127,8 +125,6 @@
 ../../3rdparty/openssl/openssl/test/stack_test.c
 ../../3rdparty/openssl/openssl/test/sysdefaulttest.c
 ../../3rdparty/openssl/openssl/test/test_test.c
-../../3rdparty/openssl/openssl/test/threadstest_fips.c
-../../3rdparty/openssl/openssl/test/threadstest.c
 ../../3rdparty/openssl/openssl/test/time_offset_test.c
 ../../3rdparty/openssl/openssl/test/tls13ccstest.c
 ../../3rdparty/openssl/openssl/test/tls13encryptiontest.c
