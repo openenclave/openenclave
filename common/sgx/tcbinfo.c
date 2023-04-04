@@ -20,15 +20,16 @@
 #define SGX_TCB_STATUS_INVALID "Invalid"
 
 #ifdef OEUTIL_TCB_ALLOW_ANY_ROOT_KEY // allow overrode by oeutil
-const char* _trusted_root_key_pem OE_WEAK = NULL;
-#else  // use hard-coded value
+// Defined by tools/oeutil/host/generate_evidence.cpp
+extern const char* _trusted_root_key_pem;
+#else // use hard-coded value
 // Public key of Intel's root certificate.
 static const char* _trusted_root_key_pem =
     "-----BEGIN PUBLIC KEY-----\n"
     "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEC6nEwMDIYZOj/iPWsCzaEKi71OiO\n"
     "SLRFhWGjbnBVJfVnkY4u3IjkDYYL0MxO4mqsyYjlBalTVYxFP2sJBK5zlA==\n"
     "-----END PUBLIC KEY-----\n";
-#endif // end of OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
+#endif
 
 OE_INLINE uint8_t _is_space(uint8_t c)
 {
