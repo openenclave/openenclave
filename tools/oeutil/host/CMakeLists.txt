@@ -26,7 +26,8 @@ target_include_directories(oeutil PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
 target_link_libraries(oeutil oehost_prerelease_test OpenSSL::SSL)
 
 # To enable oeutil to load any public key
-target_compile_definitions(oeutil PUBLIC OEUTIL_TCB_ALLOW_ANY_ROOT_KEY)
+target_compile_definitions(oeutil PUBLIC OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
+                                         OEUTIL_QUOTE_BYPASS_DATE_CHECK)
 
 if (WIN32)
   # The X509_print_ex_fp function in OpenSSL requires to include applink.c, which
