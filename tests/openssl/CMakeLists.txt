@@ -32,14 +32,16 @@ endmacro (copy_test_data)
 # parsing API (test_readstanza) has a special logic to handle a blank line and
 # assumes it ends with only `\n` (LF). Therefore, the API fails when the blank
 # line ends with `\r\n` (CRLF).
-copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_kdf_tls1_prf.txt
-               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey_kdf_tls1_prf.txt)
+copy_test_data(
+  ${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_kdf_tls1_prf.txt
+  ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey_kdf_tls1_prf.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpkdf_x942_des.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpkdf_x942_des.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpencod.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpencod.txt)
-copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_rsa_common.txt
-               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey_rsa_common.txt)
+copy_test_data(
+  ${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_rsa_common.txt
+  ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey_rsa_common.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_aes_ocb.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_aes_ocb.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_rc2.txt
@@ -48,8 +50,9 @@ copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpmd_sha.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpmd_sha.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpmac_common.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpmac_common.txt)
-copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_kdf_hkdf.txt
-               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey_kdf_hkdf.txt)
+copy_test_data(
+  ${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_kdf_hkdf.txt
+  ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey_kdf_hkdf.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpkdf_krb5.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpkdf_krb5.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpkdf_scrypt.txt
@@ -58,18 +61,21 @@ copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_ecdh.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey_ecdh.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_sm4.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_sm4.txt)
-copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_mismatch.txt
-               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey_mismatch.txt)
+copy_test_data(
+  ${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_mismatch.txt
+  ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey_mismatch.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpmd_sm3.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpmd_sm3.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppbe_pkcs12.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppbe_pkcs12.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpmd_md.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpmd_md.txt)
-copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpkdf_tls13_kdf.txt
-               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpkdf_tls13_kdf.txt)
-copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_aes_wrap.txt
-               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_aes_wrap.txt)
+copy_test_data(
+  ${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpkdf_tls13_kdf.txt
+  ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpkdf_tls13_kdf.txt)
+copy_test_data(
+  ${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_aes_wrap.txt
+  ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_aes_wrap.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppbe_scrypt.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppbe_scrypt.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_cast5.txt
@@ -80,8 +86,9 @@ copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_chacha.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_chacha.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpkdf_ssh.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpkdf_ssh.txt)
-copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_camellia.txt
-               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_camellia.txt)
+copy_test_data(
+  ${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_camellia.txt
+  ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_camellia.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_ecx.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey_ecx.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_dh.txt
@@ -92,24 +99,28 @@ copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_sm2.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey_sm2.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpmd_blake.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpmd_blake.txt)
-copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_rc4_stitched.txt
-               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_rc4_stitched.txt)
+copy_test_data(
+  ${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_rc4_stitched.txt
+  ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_rc4_stitched.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_seed.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_seed.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_rsa.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey_rsa.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_aes_cts.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_aes_cts.txt)
-copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_aes_common.txt
-               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_aes_common.txt)
+copy_test_data(
+  ${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_aes_common.txt
+  ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_aes_common.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evprand.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evprand.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpmac_blake.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpmac_blake.txt)
-copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_aes_ccm_cavs.txt
-               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_aes_ccm_cavs.txt)
-copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_brainpool.txt
-               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey_brainpool.txt)
+copy_test_data(
+  ${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_aes_ccm_cavs.txt
+  ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_aes_ccm_cavs.txt)
+copy_test_data(
+  ${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_brainpool.txt
+  ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey_brainpool.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppbe_pbkdf2.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppbe_pbkdf2.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpmac_poly1305.txt
@@ -120,8 +131,9 @@ copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_idea.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_idea.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_aes_siv.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_aes_siv.txt)
-copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_camellia_cts.txt
-               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_camellia_cts.txt)
+copy_test_data(
+  ${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_camellia_cts.txt
+  ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_camellia_cts.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_bf.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_bf.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_dsa.txt
@@ -130,8 +142,9 @@ copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpkdf_x963.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpkdf_x963.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_rc4.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_rc4.txt)
-copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpkdf_tls12_prf.txt
-               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpkdf_tls12_prf.txt)
+copy_test_data(
+  ${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpkdf_tls12_prf.txt
+  ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpkdf_tls12_prf.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpkdf_ss.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpkdf_ss.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpkdf_x942.txt
@@ -144,20 +157,24 @@ copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpkdf_pbkdf1.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpkdf_pbkdf1.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_ecdsa.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey_ecdsa.txt)
-copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_des3_common.txt
-               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_des3_common.txt)
-copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_kdf_scrypt.txt
-               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey_kdf_scrypt.txt)
+copy_test_data(
+  ${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_des3_common.txt
+  ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_des3_common.txt)
+copy_test_data(
+  ${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_kdf_scrypt.txt
+  ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey_kdf_scrypt.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evppkey_kas.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evppkey_kas.txt)
-copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpkdf_tls11_prf.txt
-               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpkdf_tls11_prf.txt)
+copy_test_data(
+  ${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpkdf_tls11_prf.txt
+  ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpkdf_tls11_prf.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpkdf_hkdf.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpkdf_hkdf.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpmac_cmac_des.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpmac_cmac_des.txt)
-copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_aes_stitched.txt
-               ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_aes_stitched.txt)
+copy_test_data(
+  ${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpciph_aes_stitched.txt
+  ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpciph_aes_stitched.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpmd_ripemd.txt
                ${CMAKE_CURRENT_BINARY_DIR}/30-test_evp_data/evpmd_ripemd.txt)
 copy_test_data(${OPENSSL_DIR}/test/recipes/30-test_evp_data/evpmd_mdc2.txt
@@ -215,6 +232,7 @@ add_custom_target(openssl_test_data ALL DEPENDS ${test_data_list})
 # The paths to the arguments used by the tests.
 set(OPENSSL_APPS_DIR ${OPENSSL_DIR}/apps)
 set(OPENSSL_TEST_DIR ${OPENSSL_DIR}/test)
+set(OPENSSL_RECIPE_DIR ${OPENSSL_DIR}/test/recipes)
 set(TEST_DATA_DIR ${CMAKE_CURRENT_BINARY_DIR})
 if (WIN32)
   # Convert the "C:/" to "C/" so that the path can be used by hostfs on Windows.
@@ -260,8 +278,83 @@ foreach (testcase ${openssltests})
     continue()
   endif ()
 
+  if ("${name}" STREQUAL bio_readbuffer_test)
+    add_openssl_test("${name}-pem" "${name}" ${OPENSSL_APPS_DIR}/server.pem)
+    add_openssl_test("${name}-der" "${name}" ${OPENSSL_RECIPE_DIR}/65-test_cmp_msg_data/pkcs10.der)
+    continue()
+  endif ()
+
   if ("${name}" STREQUAL clienthellotest)
     add_openssl_test("${name}" "${name}" ${OPENSSL_TEST_DIR}/session.pem)
+    continue()
+  endif ()
+
+  if ("${name}" STREQUAL cmp_ctx_test)
+    add_openssl_test("${name}" "${name}" ${OPENSSL_TEST_DIR}/certs/ee-cert.pem)
+    continue()
+  endif ()
+
+  if ("${name}" STREQUAL cmp_msg_test)
+    add_openssl_test(
+      "${name}"
+      "${name}"
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_msg_data/new.key
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_msg_data/server.crt
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_msg_data/pkcs10.der
+      "default"
+      ${OPENSSL_TEST_DIR}/default.cnf)
+    continue()
+  endif ()
+
+  if ("${name}" STREQUAL cmp_protect_test)
+    add_openssl_test(
+      "${name}"
+      "${name}"
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_protect_data/server.pem
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_protect_data/IR_protected.der
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_protect_data/IR_unprotected.der
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_protect_data/IP_PBM.der
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_protect_data/server.crt
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_protect_data/server.pem
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_protect_data/EndEntity1.crt
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_protect_data/EndEntity2.crt
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_protect_data/Root_CA.crt
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_protect_data/Intermediate_CA.crt
+      "default"
+      ${OPENSSL_TEST_DIR}/default.cnf)
+    continue()
+  endif ()
+
+  if ("${name}" STREQUAL cmp_server_test)
+    add_openssl_test(
+      "${name}"
+      "${name}"
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_server_data/CR_protected_PBM_1234.der
+      "default"
+      ${OPENSSL_TEST_DIR}/default.cnf)
+    continue()
+  endif ()
+
+  if ("${name}" STREQUAL cmp_vfy_test)
+    add_openssl_test(
+      "${name}"
+      "${name}"
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/server.crt
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/client.crt
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/EndEntity1.crt
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/EndEntity2.crt
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/Root_CA.crt
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/Intermediate_CA.crt
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/IR_protected.der
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/IR_unprotected.der
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/IP_waitingStatus_PBM.der
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/IR_rmprotection.der
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/insta.cert.pem
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/insta_ca.cert.pem
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/IR_protected_0_extraCerts.der
+      ${OPENSSL_RECIPE_DIR}/65-test_cmp_vfy_data/IR_protected_2_extraCerts.der
+      "default"
+      ${OPENSSL_TEST_DIR}/default.cnf)
     continue()
   endif ()
 
@@ -272,24 +365,36 @@ foreach (testcase ${openssltests})
     continue()
   endif ()
 
+  if ("${name}" STREQUAL confdump)
+    add_openssl_test(
+      "${name}-dollarid_on" "${name}"
+      ${OPENSSL_RECIPE_DIR}/04-test_conf_data/dollarid_on.cnf
+      ${OPENSSL_RECIPE_DIR}/04-test_conf_data/dollarid_on.txt)
+    add_openssl_test(
+      "${name}-dollarid_off" "${name}"
+      ${OPENSSL_RECIPE_DIR}/04-test_conf_data/dollarid_off.cnf
+      ${OPENSSL_RECIPE_DIR}/04-test_conf_data/dollarid_off.txt)
+    continue()
+  endif ()
+
   # The following tests fail with DEBUG_MALLOC because of the use of setenv.
   if ("${name}" STREQUAL conf_include_test)
     if (NOT USE_DEBUG_MALLOC)
       add_openssl_test(
         "${name}-includes" "${name}"
-        ${OPENSSL_TEST_DIR}/recipes/90-test_includes_data/includes.cnf)
+        ${OPENSSL_RECIPE_DIR}/90-test_includes_data/includes.cnf)
       add_openssl_test(
         "${name}-includes-file" "${name}"
-        ${OPENSSL_TEST_DIR}/recipes/90-test_includes_data/includes-file.cnf)
+        ${OPENSSL_RECIPE_DIR}/90-test_includes_data/includes-file.cnf)
       add_openssl_test(
         "${name}-includes-eq" "${name}"
-        ${OPENSSL_TEST_DIR}/recipes/90-test_includes_data/includes-eq.cnf)
+        ${OPENSSL_RECIPE_DIR}/90-test_includes_data/includes-eq.cnf)
       add_openssl_test(
         "${name}-includes-eq-ws" "${name}"
-        ${OPENSSL_TEST_DIR}/recipes/90-test_includes_data/includes-eq-ws.cnf)
+        ${OPENSSL_RECIPE_DIR}/90-test_includes_data/includes-eq-ws.cnf)
       add_openssl_test(
         "${name}-includes-broken" "${name}"
-        ${OPENSSL_TEST_DIR}/recipes/90-test_includes_data/includes-broken.cnf
+        ${OPENSSL_RECIPE_DIR}/90-test_includes_data/includes-broken.cnf
         "f")
     endif ()
     continue()
@@ -365,31 +470,48 @@ foreach (testcase ${openssltests})
     continue()
   endif ()
 
-  if ("${name}" STREQUAL evp_test)
-    add_openssl_test("${name}-evpciph" "${name}"
-                     ${TEST_DATA_DIR}/30-test_evp_data/evpciph.txt)
-    add_openssl_test("${name}-evpdigest" "${name}"
-                     ${TEST_DATA_DIR}/30-test_evp_data/evpdigest.txt)
-    add_openssl_test("${name}-evpencod" "${name}"
-                     ${TEST_DATA_DIR}/30-test_evp_data/evpencod.txt)
-    add_openssl_test("${name}-evpmac" "${name}"
-                     ${TEST_DATA_DIR}/30-test_evp_data/evpmac.txt)
-    add_openssl_test("${name}-evpcase" "${name}"
-                     ${TEST_DATA_DIR}/30-test_evp_data/evpcase.txt)
-    add_openssl_test("${name}-evpccmcavs" "${name}"
-                     ${TEST_DATA_DIR}/30-test_evp_data/evpccmcavs.txt)
-    # The following two tests require sufficient heap memory (e.g., 6144 pages).
-    add_openssl_test("${name}-evpkdf" "${name}"
-                     ${TEST_DATA_DIR}/30-test_evp_data/evpkdf.txt)
-    add_openssl_test("${name}-evppbe" "${name}"
-                     ${TEST_DATA_DIR}/30-test_evp_data/evppbe.txt)
-    # This test requires sufficient heap memory (e.g., 6144 pages) with DEBUG MALLOC.
-    add_openssl_test("${name}-evppkey" "${name}"
-                     ${TEST_DATA_DIR}/30-test_evp_data/evppkey.txt)
-    # This test requires sufficient heap memory (e.g., 2048 pages) with DEBUG MALLOC.
-    add_openssl_test("${name}-evppkey_ecc" "${name}"
-                     ${TEST_DATA_DIR}/30-test_evp_data/evppkey_ecc.txt)
+  if ("${name}" STREQUAL endecoder_legacy_test)
+    add_openssl_test("${name}" "${name}" ${OPENSSL_TEST_DIR}/certs/ee-key.pem
+                     ${OPENSSL_TEST_DIR}/certs/dhk2048.pem)
     continue()
+  endif ()
+
+  if ("${name}" STREQUAL enginetest)
+    add_openssl_test("${name}" "${name}"
+                     ${OPENSSL_TEST_DIR}/certs/root-cert.pem)
+    continue()
+  endif ()
+
+  if ("${name}" STREQUAL evp_test)
+    set(EVP_TEST_LIST evpciph_aes_ccm_cavs  evpciph_camellia_cts  evpciph_seed   evpkdf_tls11_prf  evpmac_siphash   evppbe_scrypt      evppkey_kdf_hkdf
+                      evpciph_aes_common    evpciph_cast5         evpciph_sm4    evpkdf_tls12_prf  evpmd_blake      evppkey_brainpool  evppkey_kdf_scrypt
+                      evpciph_aes_cts       evpciph_chacha        evpencod       evpkdf_tls13_kdf  evpmd_md         evppkey_dh         evppkey_kdf_tls1_prf
+                      evpciph_aes_ocb       evpciph_des           evpkdf_hkdf    evpkdf_x942       evpmd_mdc2       evppkey_dsa        evppkey_mismatch
+                      evpciph_aes_siv       evpciph_des3_common   evpkdf_krb5    evpkdf_x942_des   evpmd_ripemd     evppkey_ecc        evppkey_rsa
+                      evpciph_aes_stitched  evpciph_idea          evpkdf_pbkdf1  evpkdf_x963       evpmd_sha        evppkey_ecdh       evppkey_rsa_common
+                      evpciph_aes_wrap      evpciph_rc2           evpkdf_pbkdf2  evpmac_blake      evpmd_sm3        evppkey_ecdsa      # evppkey_sm2
+                      evpciph_aria          evpciph_rc4           evpkdf_scrypt  evpmac_cmac_des   evpmd_whirlpool  evppkey_ecx        evprand
+                      evpciph_bf            evpciph_rc4_stitched  evpkdf_ss      evpmac_common     evppbe_pbkdf2    evppkey_ffdhe
+                      evpciph_camellia      evpciph_rc5           evpkdf_ssh     evpmac_poly1305   evppbe_pkcs12    evppkey_kas)
+    foreach (subtestname ${EVP_TEST_LIST})
+      add_openssl_test("${name}-${subtestname}" "${name}"
+                       ${OPENSSL_RECIPE_DIR}/30-test_evp_data/${subtestname}.txt)
+    endforeach()
+    continue()
+  endif ()
+
+  if ("${name}" STREQUAL evp_fetch_prov_test)
+    add_openssl_test("${name}" "${name}")
+    set_enclave_tests_properties(
+      tests/openssl/${name} PROPERTIES ENVIRONMENT
+      OPENSSL_CONF=${OPENSSL_APPS_DIR}/openssl.cnf)
+
+    continue ()
+  endif ()
+
+  if ("${name}" STREQUAL evp_pkey_provided_test)
+    add_openssl_test("${name}" "${name}" ${OPENSSL_RECIPE_DIR}/30-test_evp_pkey_provided)
+    continue ()
   endif ()
 
   if ("${name}" STREQUAL fatalerrtest)
@@ -398,11 +520,53 @@ foreach (testcase ${openssltests})
     continue()
   endif ()
 
+  if ("${name}" STREQUAL keymgmt_internal_test)
+    add_openssl_test("${name}" "${name}" ${OPENSSL_TEST_DIR}/certs/ee-cert.pem)
+    continue()
+  endif ()
+
+  if ("${name}" STREQUAL memleaktest)
+    add_openssl_test("${name}" "${name}" "freeit")
+    continue()
+  endif ()
+
   if ("${name}" STREQUAL ocspapitest)
     add_openssl_test(
       "${name}" "${name}"
-      ${OPENSSL_TEST_DIR}/recipes/80-test_ocsp_data/cert.pem
-      ${OPENSSL_TEST_DIR}/recipes/80-test_ocsp_data/key.pem)
+      ${OPENSSL_RECIPE_DIR}/80-test_ocsp_data/cert.pem
+      ${OPENSSL_RECIPE_DIR}/80-test_ocsp_data/key.pem)
+    continue()
+  endif ()
+
+  if ("${name}" STREQUAL ossl_store_test)
+    add_openssl_test("${name}" "${name}"
+      "-dir" ${OPENSSL_TEST_DIR}
+      "-in" "testrsa.pem"
+      "-sm2" "certs/sm2-root.crt"
+      "-data" ${OPENSSL_RECIPE_DIR}/66-test_ossl_store_data)
+    continue()
+  endif ()
+
+  if ("${name}" STREQUAL params_conversion_test)
+    add_openssl_test(
+      "${name}" "${name}" ${OPENSSL_RECIPE_DIR}/04-test_params_conversion_data/native_types.txt)
+    continue()
+  endif ()
+
+  if ("${name}" STREQUAL pemtest)
+    add_openssl_test("${name}" "${name}" ${OPENSSL_APPS_DIR}/server.pem)
+    continue()
+  endif ()
+
+  if ("${name}" STREQUAL pem_read_depr_test)
+    add_openssl_test(
+      "${name}" "${name}" ${OPENSSL_RECIPE_DIR}/04-test_pem_read_depr_data)
+    continue()
+  endif ()
+
+  if ("${name}" STREQUAL prov_config_test)
+    add_openssl_test(
+      "${name}" "${name}" ${OPENSSL_TEST_DIR}/default.cnf)
     continue()
   endif ()
 
@@ -418,290 +582,64 @@ foreach (testcase ${openssltests})
     continue()
   endif ()
 
+  if ("${name}" STREQUAL shlibloadtest)
+    add_openssl_test("${name}-cryptofirst" "${name}"
+      "-crypto_first" "libcrypto" "libssl" "atexit-cryptofirst.txt")
+    add_openssl_test("${name}-sslfirst" "${name}"
+      "-ssl_first" "libcrypto" "libssl" "atexit-sslfirst.txt")
+    add_openssl_test("${name}-justcrypto" "${name}"
+      "-just_crypto" "libcrypto" "libssl" "atexit-libssl.txt")
+    add_openssl_test("${name}-dsoref" "${name}"
+      "-dso_ref" "libcrypto" "libssl" "atexit-dsoref.txt")
+    add_openssl_test("${name}-noatexit" "${name}"
+      "-no_atexit" "libcrypto" "libssl" "atexit-noatexit.txt")
+    continue()
+  endif ()
+
   if ("${name}" STREQUAL ssl_test)
-    set(subtest_name "${name}-simple")
-    add_openssl_test("${subtest_name}" "${name}"
-                     ${OPENSSL_TEST_DIR}/ssl-tests/01-simple.conf)
-    set_enclave_tests_properties(
-      tests/openssl/${subtest_name}
-      PROPERTIES
-      ENVIRONMENT
-      "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
-    )
-    if ((NOT "${subtest_name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
-        AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
+    set(SSL_TEST_LIST 01-simple 02-protocol-version 03-custom_verify 04-client_auth 05-sni
+        06-sni-ticket 07-dtls-protocol-version 08-npn 09-alpn 10-resumption
+        11-dtls_resumption 12-ct 13-fragmentation 14-curves 15-certstatus
+        16-dtls-certstatus 17-renegotiate 18-dtls-renegotiate 19-mac-then-encrypt 20-cert-select
+        21-key-update 22-compression 23-srp 24-padding 25-cipher
+        26-tls13_client_auth 27-ticket-appdata 28-seclevel 29-dtls-sctp-label-bug 30-extended-master-secret)
+    foreach (cnffilename ${SSL_TEST_LIST})
+      set(subtest_name "${name}-${cnffilename}")
+      add_openssl_test("${subtest_name}" "${name}"
+                      ${OPENSSL_TEST_DIR}/ssl-tests/${cnffilename}.cnf
+                      "default" ${OPENSSL_TEST_DIR}/default.cnf)
       set_enclave_tests_properties(
-        tests/openssl/${subtest_name}_symcrypt
+        tests/openssl/${subtest_name}
         PROPERTIES
         ENVIRONMENT
         "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
       )
-    endif ()
-
-    set(subtest_name "${name}-client_auth")
-    add_openssl_test("${subtest_name}" "${name}"
-                     ${OPENSSL_TEST_DIR}/ssl-tests/04-client_auth.conf)
-    set_enclave_tests_properties(
-      tests/openssl/${subtest_name}
-      PROPERTIES
-      ENVIRONMENT
-      "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
-    )
-    if ((NOT "${subtest_name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
+      if ((NOT "${subtest_name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
         AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
-      set_enclave_tests_properties(
-        tests/openssl/${subtest_name}_symcrypt
-        PROPERTIES
-        ENVIRONMENT
-        "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
-      )
-    endif ()
-
-    set(subtest_name "${name}-sni")
-    add_openssl_test("${subtest_name}" "${name}"
-                     ${OPENSSL_TEST_DIR}/ssl-tests/05-sni.conf)
-    set_enclave_tests_properties(
-      tests/openssl/${subtest_name}
-      PROPERTIES
-      ENVIRONMENT
-      "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
-    )
-    if ((NOT "${subtest_name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
-        AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
-      set_enclave_tests_properties(
-        tests/openssl/${subtest_name}_symcrypt
-        PROPERTIES
-        ENVIRONMENT
-        "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
-      )
-    endif ()
-
-    set(subtest_name "${name}-dtls_resumption")
-    add_openssl_test("${subtest_name}" "${name}"
-                     ${OPENSSL_TEST_DIR}/ssl-tests/11-dtls_resumption.conf)
-    set_enclave_tests_properties(
-      tests/openssl/${subtest_name}
-      PROPERTIES
-      ENVIRONMENT
-      "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
-    )
-    if ((NOT "${subtest_name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
-        AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
-      set_enclave_tests_properties(
-        tests/openssl/${subtest_name}_symcrypt
-        PROPERTIES
-        ENVIRONMENT
-        "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
-      )
-    endif ()
-
-    set(subtest_name "${name}-dtls-certstatus")
-    add_openssl_test("${subtest_name}" "${name}"
-                     ${OPENSSL_TEST_DIR}/ssl-tests/16-dtls-certstatus.conf)
-    set_enclave_tests_properties(
-      tests/openssl/${subtest_name}
-      PROPERTIES
-      ENVIRONMENT
-      "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
-    )
-    if ((NOT "${subtest_name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
-        AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
-      set_enclave_tests_properties(
-        tests/openssl/${subtest_name}_symcrypt
-        PROPERTIES
-        ENVIRONMENT
-        "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
-      )
-    endif ()
-
-    set(subtest_name "${name}-renegotiate")
-    add_openssl_test("${subtest_name}" "${name}"
-                     ${OPENSSL_TEST_DIR}/ssl-tests/17-renegotiate.conf)
-    set_enclave_tests_properties(
-      tests/openssl/${subtest_name}
-      PROPERTIES
-      ENVIRONMENT
-      "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
-    )
-    if ((NOT "${subtest_name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
-        AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
-      set_enclave_tests_properties(
-        tests/openssl/${subtest_name}_symcrypt
-        PROPERTIES
-        ENVIRONMENT
-        "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
-      )
-    endif ()
-
-    set(subtest_name "${name}-dtls-renegotiate")
-    add_openssl_test("${subtest_name}" "${name}"
-                     ${OPENSSL_TEST_DIR}/ssl-tests/18-dtls-renegotiate.conf)
-    set_enclave_tests_properties(
-      tests/openssl/${subtest_name}
-      PROPERTIES
-      ENVIRONMENT
-      "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
-    )
-    if ((NOT "${subtest_name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
-        AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
-      set_enclave_tests_properties(
-        tests/openssl/${subtest_name}_symcrypt
-        PROPERTIES
-        ENVIRONMENT
-        "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
-      )
-    endif ()
-
-    set(subtest_name "${name}-mac-then-encrypt")
-    add_openssl_test("${subtest_name}" "${name}"
-                     ${OPENSSL_TEST_DIR}/ssl-tests/19-mac-then-encrypt.conf)
-    set_enclave_tests_properties(
-      tests/openssl/${subtest_name}
-      PROPERTIES
-      ENVIRONMENT
-      "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
-    )
-    if ((NOT "${subtest_name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
-        AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
-      set_enclave_tests_properties(
-        tests/openssl/${subtest_name}_symcrypt
-        PROPERTIES
-        ENVIRONMENT
-        "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
-      )
-    endif ()
-
-    set(subtest_name "${name}-ticket-appdata")
-    add_openssl_test("${subtest_name}" "${name}"
-                     ${OPENSSL_TEST_DIR}/ssl-tests/27-ticket-appdata.conf)
-    set_enclave_tests_properties(
-      tests/openssl/${subtest_name}
-      PROPERTIES
-      ENVIRONMENT
-      "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
-    )
-    if ((NOT "${subtest_name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
-        AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
-      set_enclave_tests_properties(
-        tests/openssl/${subtest_name}_symcrypt
-        PROPERTIES
-        ENVIRONMENT
-        "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
-      )
-    endif ()
-
-    set(subtest_name "${name}-seclevel")
-    add_openssl_test("${subtest_name}" "${name}"
-                     ${OPENSSL_TEST_DIR}/ssl-tests/28-seclevel.conf)
-    set_enclave_tests_properties(
-      tests/openssl/${subtest_name}
-      PROPERTIES
-      ENVIRONMENT
-      "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
-    )
-    if ((NOT "${subtest_name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
-        AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
-      set_enclave_tests_properties(
-        tests/openssl/${subtest_name}_symcrypt
-        PROPERTIES
-        ENVIRONMENT
-        "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
-      )
-    endif ()
-
-    # Test following tests require sufficient heap memory (e.g., 6144 pages) with DEBUG MALLOC.
-    set(subtest_name "${name}-protocol-version")
-    add_openssl_test("${subtest_name}" "${name}"
-                     ${OPENSSL_TEST_DIR}/ssl-tests/02-protocol-version.conf)
-    set_enclave_tests_properties(
-      tests/openssl/${subtest_name}
-      PROPERTIES
-      ENVIRONMENT
-      "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
-    )
-    if ((NOT "${subtest_name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
-        AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
-      set_enclave_tests_properties(
-        tests/openssl/${subtest_name}_symcrypt
-        PROPERTIES
-        ENVIRONMENT
-        "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
-      )
-    endif ()
-
-    # Test following tests require sufficient heap memory (e.g., 2048 pages) with DEBUG MALLOC.
-    set(subtest_name "${name}-dtls-protocol-version")
-    add_openssl_test(
-      "${subtest_name}" "${name}"
-      ${OPENSSL_TEST_DIR}/ssl-tests/07-dtls-protocol-version.conf)
-    set_enclave_tests_properties(
-      tests/openssl/${subtest_name}
-      PROPERTIES
-      ENVIRONMENT
-      "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
-    )
-    if ((NOT "${subtest_name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
-        AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
-      set_enclave_tests_properties(
-        tests/openssl/${subtest_name}_symcrypt
-        PROPERTIES
-        ENVIRONMENT
-        "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
-      )
-    endif ()
-
-    set(subtest_name "${name}-resumption")
-    add_openssl_test("${subtest_name}" "${name}"
-                     ${OPENSSL_TEST_DIR}/ssl-tests/10-resumption.conf)
-    set_enclave_tests_properties(
-      tests/openssl/${subtest_name}
-      PROPERTIES
-      ENVIRONMENT
-      "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
-    )
-    if ((NOT "${subtest_name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
-        AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
-      set_enclave_tests_properties(
-        tests/openssl/${subtest_name}_symcrypt
-        PROPERTIES
-        ENVIRONMENT
-        "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
-      )
-    endif ()
-
-    set(subtest_name "${name}-cert-select")
-    add_openssl_test("${subtest_name}" "${name}"
-                     ${OPENSSL_TEST_DIR}/ssl-tests/20-cert-select.conf)
-    set_enclave_tests_properties(
-      tests/openssl/${subtest_name}
-      PROPERTIES
-      ENVIRONMENT
-      "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
-    )
-    if ((NOT "${subtest_name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
-        AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
-      set_enclave_tests_properties(
-        tests/openssl/${subtest_name}_symcrypt
-        PROPERTIES
-        ENVIRONMENT
-        "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
-      )
-    endif ()
-
+        set_enclave_tests_properties(
+          tests/openssl/${subtest_name}_symcrypt
+          PROPERTIES
+          ENVIRONMENT
+          "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
+        )
+      endif ()
+    endforeach()
     continue()
   endif ()
 
   if ("${name}" STREQUAL ssl_test_ctx_test)
     add_openssl_test("${name}" "${name}"
-                     ${OPENSSL_TEST_DIR}/ssl_test_ctx_test.conf)
+                     ${OPENSSL_TEST_DIR}/ssl_test_ctx_test.cnf)
     continue()
   endif ()
 
   if ("${name}" STREQUAL sslapitest)
     add_openssl_test(
       "${name}" "${name}" ${OPENSSL_TEST_DIR}/certs
-      ${OPENSSL_TEST_DIR}/recipes/90-test_sslapi_data/passwd.txt
-      ${TEST_DATA_DIR}/tmpfile)
+      ${OPENSSL_RECIPE_DIR}/90-test_sslapi_data/passwd.txt
+      ${TEST_DATA_DIR}/tmpfile
+      "default" ${OPENSSL_TEST_DIR}/default.cnf
+      ${OPENSSL_RECIPE_DIR}/90-test_sslapi_data/dhparams.pem)
     continue()
   endif ()
 
@@ -731,6 +669,14 @@ foreach (testcase ${openssltests})
 
     continue()
   endif ()
+
+  if ("${name}" STREQUAL threadstest)
+    add_openssl_test("${name}" "${name}"
+        "-config" "${OPENSSL_TEST_DIR}/default.cnf"
+        ${OPENSSL_RECIPE_DIR}/90-test_threads_data)
+    continue()
+  endif ()
+
 
   if ("${name}" STREQUAL tls13ccstest)
     add_openssl_test("${name}" "${name}" ${OPENSSL_APPS_DIR}/server.pem
