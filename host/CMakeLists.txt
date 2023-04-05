@@ -587,5 +587,6 @@ include(measure/CMakeLists.txt)
 add_library_oehost_wrapper(LIB_NAME oehost)
 # This lib is only used to build oeutil
 add_library_oehost_wrapper(LIB_NAME oehost_prerelease_test SKIP_INSTALL)
-target_compile_definitions(oehost_prerelease_test
-                           PUBLIC OEUTIL_TCB_ALLOW_ANY_ROOT_KEY)
+target_compile_definitions(
+  oehost_prerelease_test PUBLIC OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
+                                OEUTIL_QUOTE_BYPASS_DATE_CHECK)
