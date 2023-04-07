@@ -22,13 +22,10 @@ oe_result_t tdx_verify_quote(
     uint32_t supplemental_data_size,
     uint32_t* p_supplemental_data_size_out)
 {
+    // delegate input validation to host/sgx/sgxquote.c:oe_tdx_verify_quote
     oe_result_t result = OE_UNEXPECTED;
 
-    /* Reject null parameters */
-    if (!p_quote || !p_collateral_expiration_status ||
-        !p_quote_verification_result ||
-        (!p_endorsements && endorsements_size > 0) ||
-        (!p_supplemental_data && supplemental_data_size > 0))
+    if (p_supplemental_data && !p_supplemental_data_size_out)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Try to get supplemental data size if needed */

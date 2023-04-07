@@ -183,6 +183,9 @@ oe_result_t sgx_verify_quote(
     // delegate input validation to host/sgx/sgxquote.c:oe_sgx_verify_quote
     oe_result_t result = OE_UNEXPECTED;
 
+    if (p_supplemental_data && !p_supplemental_data_size_out)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
     /* Try to get supplemental data size if needed */
     if (p_supplemental_data)
     {
