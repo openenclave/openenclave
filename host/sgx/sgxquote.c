@@ -1451,26 +1451,25 @@ oe_result_t oe_tdx_verify_quote(
     uint8_t* endorsements_unserialized = NULL;
     oe_result_t result = OE_UNEXPECTED;
 
+    // Input validation
     // Only support ECDSA-p256 now
     if (memcmp(
             format_id, &_tdx_ecdsa_p256_uuid, sizeof(_tdx_ecdsa_p256_uuid)) !=
         0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (!p_quote || quote_size > OE_MAX_UINT32 ||
+    if (!p_collateral_expiration_status || !p_quote_verification_result ||
+        !p_quote || quote_size > OE_MAX_UINT32 ||
+        (!opt_params && opt_params_size > 0) ||
         (!p_endorsements && endorsements_size > 0) ||
-        !p_collateral_expiration_status || !p_quote_verification_result ||
-        (!p_supplemental_data && supplemental_data_size > 0) ||
-        (!opt_params && opt_params_size > 0))
+        (!p_qve_report_info && qve_report_info_size > 0) ||
+        (!p_supplemental_data && supplemental_data_size > 0))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     if ((p_qve_report_info &&
-         qve_report_info_size != sizeof(sgx_ql_qe_report_info_t)) ||
-        (!p_qve_report_info && qve_report_info_size > 0))
+         qve_report_info_size != sizeof(sgx_ql_qe_report_info_t)))
         OE_RAISE(OE_INVALID_PARAMETER);
-
-    if (quote_size > OE_MAX_UINT32)
-        OE_RAISE(OE_INVALID_PARAMETER);
+    // End of input validation
 
     // Always use QvE/QVL for TDX verification
     if (!_load_tdx_dcap_qvl() || !_tee_verify_quote)

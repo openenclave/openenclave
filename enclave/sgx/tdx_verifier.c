@@ -113,22 +113,14 @@ oe_result_t tdx_verify_quote(
     uint32_t supplemental_data_size,
     uint32_t* p_supplemental_data_size_out)
 {
+    // delegate input validation to host/sgx/sgxquote.c:oe_tdx_verify_quote
+
     oe_result_t result = OE_UNEXPECTED;
     sgx_nonce_t nonce = {0};
     uint16_t qve_isvsvn_threshold = 3;
     oe_result_t retval = OE_UNEXPECTED;
 
     sgx_ql_qe_report_info_t* p_qve_report_info_internal = p_qve_report_info;
-
-    // Add format_id for forward compatibility
-    if (!format_id || !supplemental_data_size ||
-        (!opt_params && opt_params_size > 0))
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    if ((p_qve_report_info &&
-         (qve_report_info_size != sizeof(sgx_ql_qe_report_info_t))) ||
-        (!p_qve_report_info && qve_report_info_size != 0))
-        OE_RAISE(OE_INVALID_PARAMETER);
 
     if (!p_qve_report_info)
         OE_CHECK(oe_create_qve_report_info(
@@ -137,8 +129,8 @@ oe_result_t tdx_verify_quote(
     OE_CHECK(oe_verify_tdx_quote_ocall(
         &retval,
         format_id,
-        NULL,
-        0,
+        opt_params,
+        opt_params_size,
         p_quote,
         quote_size,
         p_endorsements,
