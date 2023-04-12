@@ -1,5 +1,8 @@
 # Test aborts as expected, but the test harness does not currently support treating it as a pass.
 ../../3rdparty/openssl/openssl/test/aborttest.c
+# OpenSSL is not built with support for ACVP by default
+# https://github.com/openssl/openssl/blob/master/INSTALL.md#enable-acvp-tests
+../../3rdparty/openssl/openssl/test/acvp_test.c
 # Require localtime, which is not supported.
 ../../3rdparty/openssl/openssl/test/asn1_time_test.c
 # TODO: 'bn_prime.h' not found
@@ -27,7 +30,7 @@
 ../../3rdparty/openssl/openssl/test/ssl_old_test.c
 # Depend on the OPENSSL_NO_SECURE_MEMORY build flag that is not supported by OE.
 ../../3rdparty/openssl/openssl/test/secmemtest.c
-# TODO: duplicate definition?
+# TODO: duplicate definition? "skipped: test_tls13secrets is not supported in this build"
 ../../3rdparty/openssl/openssl/test/tls13secretstest.c
 # GOST engine is not supported by OE (require dynamic loading).
 ../../3rdparty/openssl/openssl/test/gosttest.c
@@ -66,3 +69,10 @@
 ../../3rdparty/openssl/openssl/test/threadstest.c
 # TODO: we don't support fips, which is the module this tests loading
 ../../3rdparty/openssl/openssl/test/moduleloadtest.c
+# TODO: OSSL_METHOD_STORE methods can call rdtsc directly (can't be overwritten with rand engine/behavior)
+../../3rdparty/openssl/openssl/test/property_test.c
+# Tests have memory leak. https://github.com/openssl/openssl/issues/20716
+../../3rdparty/openssl/openssl/test/cmp_ctx_test.c
+../../3rdparty/openssl/openssl/test/cmp_msg_test.c
+../../3rdparty/openssl/openssl/test/cmp_protect_test.c
+../../3rdparty/openssl/openssl/test/cmp_vfy_test.c

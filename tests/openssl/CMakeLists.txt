@@ -280,7 +280,8 @@ foreach (testcase ${openssltests})
 
   if ("${name}" STREQUAL bio_readbuffer_test)
     add_openssl_test("${name}-pem" "${name}" ${OPENSSL_APPS_DIR}/server.pem)
-    add_openssl_test("${name}-der" "${name}" ${OPENSSL_RECIPE_DIR}/65-test_cmp_msg_data/pkcs10.der)
+    add_openssl_test("${name}-der" "${name}"
+                     ${OPENSSL_RECIPE_DIR}/65-test_cmp_msg_data/pkcs10.der)
     continue()
   endif ()
 
@@ -327,11 +328,9 @@ foreach (testcase ${openssltests})
 
   if ("${name}" STREQUAL cmp_server_test)
     add_openssl_test(
-      "${name}"
-      "${name}"
+      "${name}" "${name}"
       ${OPENSSL_RECIPE_DIR}/65-test_cmp_server_data/CR_protected_PBM_1234.der
-      "default"
-      ${OPENSSL_TEST_DIR}/default.cnf)
+      "default" ${OPENSSL_TEST_DIR}/default.cnf)
     continue()
   endif ()
 
@@ -380,9 +379,8 @@ foreach (testcase ${openssltests})
   # The following tests fail with DEBUG_MALLOC because of the use of setenv.
   if ("${name}" STREQUAL conf_include_test)
     if (NOT USE_DEBUG_MALLOC)
-      add_openssl_test(
-        "${name}-includes" "${name}"
-        ${OPENSSL_RECIPE_DIR}/90-test_includes_data/includes.cnf)
+      add_openssl_test("${name}-includes" "${name}"
+                       ${OPENSSL_RECIPE_DIR}/90-test_includes_data/includes.cnf)
       add_openssl_test(
         "${name}-includes-file" "${name}"
         ${OPENSSL_RECIPE_DIR}/90-test_includes_data/includes-file.cnf)
@@ -394,8 +392,7 @@ foreach (testcase ${openssltests})
         ${OPENSSL_RECIPE_DIR}/90-test_includes_data/includes-eq-ws.cnf)
       add_openssl_test(
         "${name}-includes-broken" "${name}"
-        ${OPENSSL_RECIPE_DIR}/90-test_includes_data/includes-broken.cnf
-        "f")
+        ${OPENSSL_RECIPE_DIR}/90-test_includes_data/includes-broken.cnf "f")
     endif ()
     continue()
   endif ()
@@ -483,35 +480,94 @@ foreach (testcase ${openssltests})
   endif ()
 
   if ("${name}" STREQUAL evp_test)
-    set(EVP_TEST_LIST evpciph_aes_ccm_cavs  evpciph_camellia_cts  evpciph_seed   evpkdf_tls11_prf  evpmac_siphash   evppbe_scrypt      evppkey_kdf_hkdf
-                      evpciph_aes_common    evpciph_cast5         evpciph_sm4    evpkdf_tls12_prf  evpmd_blake      evppkey_brainpool  evppkey_kdf_scrypt
-                      evpciph_aes_cts       evpciph_chacha        evpencod       evpkdf_tls13_kdf  evpmd_md         evppkey_dh         evppkey_kdf_tls1_prf
-                      evpciph_aes_ocb       evpciph_des           evpkdf_hkdf    evpkdf_x942       evpmd_mdc2       evppkey_dsa        evppkey_mismatch
-                      evpciph_aes_siv       evpciph_des3_common   evpkdf_krb5    evpkdf_x942_des   evpmd_ripemd     evppkey_ecc        evppkey_rsa
-                      evpciph_aes_stitched  evpciph_idea          evpkdf_pbkdf1  evpkdf_x963       evpmd_sha        evppkey_ecdh       evppkey_rsa_common
-                      evpciph_aes_wrap      evpciph_rc2           evpkdf_pbkdf2  evpmac_blake      evpmd_sm3        evppkey_ecdsa      # evppkey_sm2
-                      evpciph_aria          evpciph_rc4           evpkdf_scrypt  evpmac_cmac_des   evpmd_whirlpool  evppkey_ecx        evprand
-                      evpciph_bf            evpciph_rc4_stitched  evpkdf_ss      evpmac_common     evppbe_pbkdf2    evppkey_ffdhe
-                      evpciph_camellia      evpciph_rc5           evpkdf_ssh     evpmac_poly1305   evppbe_pkcs12    evppkey_kas)
+    set(EVP_TEST_LIST
+        evpciph_aes_ccm_cavs
+        evpciph_camellia_cts
+        evpciph_seed
+        evpkdf_tls11_prf
+        evpmac_siphash
+        evppbe_scrypt
+        evppkey_kdf_hkdf
+        evpciph_aes_common
+        evpciph_cast5
+        evpciph_sm4
+        evpkdf_tls12_prf
+        evpmd_blake
+        evppkey_brainpool
+        evppkey_kdf_scrypt
+        evpciph_aes_cts
+        evpciph_chacha
+        evpencod
+        evpkdf_tls13_kdf
+        evpmd_md
+        evppkey_dh
+        evppkey_kdf_tls1_prf
+        evpciph_aes_ocb
+        evpciph_des
+        evpkdf_hkdf
+        evpkdf_x942
+        evpmd_mdc2
+        evppkey_dsa
+        evppkey_mismatch
+        evpciph_aes_siv
+        evpciph_des3_common
+        evpkdf_krb5
+        evpkdf_x942_des
+        evpmd_ripemd
+        evppkey_ecc
+        evppkey_rsa
+        evpciph_aes_stitched
+        evpciph_idea
+        evpkdf_pbkdf1
+        evpkdf_x963
+        evpmd_sha
+        evppkey_ecdh
+        evppkey_rsa_common
+        evpciph_aes_wrap
+        evpciph_rc2
+        evpkdf_pbkdf2
+        evpmac_blake
+        evpmd_sm3
+        evppkey_ecdsa # evppkey_sm2
+        evpciph_aria
+        evpciph_rc4
+        evpkdf_scrypt
+        evpmac_cmac_des
+        evpmd_whirlpool
+        evppkey_ecx
+        evprand
+        evpciph_bf
+        evpciph_rc4_stitched
+        evpkdf_ss
+        evpmac_common
+        evppbe_pbkdf2
+        evppkey_ffdhe
+        evpciph_camellia
+        evpciph_rc5
+        evpkdf_ssh
+        evpmac_poly1305
+        evppbe_pkcs12
+        evppkey_kas)
     foreach (subtestname ${EVP_TEST_LIST})
-      add_openssl_test("${name}-${subtestname}" "${name}"
-                       ${OPENSSL_RECIPE_DIR}/30-test_evp_data/${subtestname}.txt)
-    endforeach()
+      add_openssl_test(
+        "${name}-${subtestname}" "${name}"
+        ${OPENSSL_RECIPE_DIR}/30-test_evp_data/${subtestname}.txt)
+    endforeach ()
     continue()
   endif ()
 
   if ("${name}" STREQUAL evp_fetch_prov_test)
     add_openssl_test("${name}" "${name}")
-    set_enclave_tests_properties(
-      tests/openssl/${name} PROPERTIES ENVIRONMENT
-      OPENSSL_CONF=${OPENSSL_APPS_DIR}/openssl.cnf)
+    set_enclave_tests_properties(tests/openssl/${name} PROPERTIES ENVIRONMENT
+                                 OPENSSL_CONF=${OPENSSL_APPS_DIR}/openssl.cnf)
 
-    continue ()
+    continue()
   endif ()
 
   if ("${name}" STREQUAL evp_pkey_provided_test)
-    add_openssl_test("${name}" "${name}" ${OPENSSL_RECIPE_DIR}/30-test_evp_pkey_provided)
-    continue ()
+    add_openssl_test("${name}" "${name}"
+                     ${OPENSSL_RECIPE_DIR}/30-test_evp_pkey_provided)
+    continue()
   endif ()
 
   if ("${name}" STREQUAL fatalerrtest)
@@ -532,24 +588,30 @@ foreach (testcase ${openssltests})
 
   if ("${name}" STREQUAL ocspapitest)
     add_openssl_test(
-      "${name}" "${name}"
-      ${OPENSSL_RECIPE_DIR}/80-test_ocsp_data/cert.pem
+      "${name}" "${name}" ${OPENSSL_RECIPE_DIR}/80-test_ocsp_data/cert.pem
       ${OPENSSL_RECIPE_DIR}/80-test_ocsp_data/key.pem)
     continue()
   endif ()
 
   if ("${name}" STREQUAL ossl_store_test)
-    add_openssl_test("${name}" "${name}"
-      "-dir" ${OPENSSL_TEST_DIR}
-      "-in" "testrsa.pem"
-      "-sm2" "certs/sm2-root.crt"
-      "-data" ${OPENSSL_RECIPE_DIR}/66-test_ossl_store_data)
+    add_openssl_test(
+      "${name}"
+      "${name}"
+      "-dir"
+      ${OPENSSL_TEST_DIR}
+      "-in"
+      "testrsa.pem"
+      "-sm2"
+      "certs/sm2-root.crt"
+      "-data"
+      ${OPENSSL_RECIPE_DIR}/66-test_ossl_store_data)
     continue()
   endif ()
 
   if ("${name}" STREQUAL params_conversion_test)
     add_openssl_test(
-      "${name}" "${name}" ${OPENSSL_RECIPE_DIR}/04-test_params_conversion_data/native_types.txt)
+      "${name}" "${name}"
+      ${OPENSSL_RECIPE_DIR}/04-test_params_conversion_data/native_types.txt)
     continue()
   endif ()
 
@@ -559,14 +621,13 @@ foreach (testcase ${openssltests})
   endif ()
 
   if ("${name}" STREQUAL pem_read_depr_test)
-    add_openssl_test(
-      "${name}" "${name}" ${OPENSSL_RECIPE_DIR}/04-test_pem_read_depr_data)
+    add_openssl_test("${name}" "${name}"
+                     ${OPENSSL_RECIPE_DIR}/04-test_pem_read_depr_data)
     continue()
   endif ()
 
   if ("${name}" STREQUAL prov_config_test)
-    add_openssl_test(
-      "${name}" "${name}" ${OPENSSL_TEST_DIR}/default.cnf)
+    add_openssl_test("${name}" "${name}" ${OPENSSL_TEST_DIR}/default.cnf)
     continue()
   endif ()
 
@@ -583,31 +644,57 @@ foreach (testcase ${openssltests})
   endif ()
 
   if ("${name}" STREQUAL shlibloadtest)
-    add_openssl_test("${name}-cryptofirst" "${name}"
-      "-crypto_first" "libcrypto" "libssl" "atexit-cryptofirst.txt")
-    add_openssl_test("${name}-sslfirst" "${name}"
-      "-ssl_first" "libcrypto" "libssl" "atexit-sslfirst.txt")
-    add_openssl_test("${name}-justcrypto" "${name}"
-      "-just_crypto" "libcrypto" "libssl" "atexit-libssl.txt")
-    add_openssl_test("${name}-dsoref" "${name}"
-      "-dso_ref" "libcrypto" "libssl" "atexit-dsoref.txt")
-    add_openssl_test("${name}-noatexit" "${name}"
-      "-no_atexit" "libcrypto" "libssl" "atexit-noatexit.txt")
+    add_openssl_test("${name}-cryptofirst" "${name}" "-crypto_first"
+                     "libcrypto" "libssl" "atexit-cryptofirst.txt")
+    add_openssl_test("${name}-sslfirst" "${name}" "-ssl_first" "libcrypto"
+                     "libssl" "atexit-sslfirst.txt")
+    add_openssl_test("${name}-justcrypto" "${name}" "-just_crypto" "libcrypto"
+                     "libssl" "atexit-libssl.txt")
+    add_openssl_test("${name}-dsoref" "${name}" "-dso_ref" "libcrypto" "libssl"
+                     "atexit-dsoref.txt")
+    add_openssl_test("${name}-noatexit" "${name}" "-no_atexit" "libcrypto"
+                     "libssl" "atexit-noatexit.txt")
     continue()
   endif ()
 
   if ("${name}" STREQUAL ssl_test)
-    set(SSL_TEST_LIST 01-simple 02-protocol-version 03-custom_verify 04-client_auth 05-sni
-        06-sni-ticket 07-dtls-protocol-version 08-npn 09-alpn 10-resumption
-        11-dtls_resumption 12-ct 13-fragmentation 14-curves 15-certstatus
-        16-dtls-certstatus 17-renegotiate 18-dtls-renegotiate 19-mac-then-encrypt 20-cert-select
-        21-key-update 22-compression 23-srp 24-padding 25-cipher
-        26-tls13_client_auth 27-ticket-appdata 28-seclevel 29-dtls-sctp-label-bug 30-extended-master-secret)
+    set(SSL_TEST_LIST
+        01-simple
+        02-protocol-version
+        03-custom_verify
+        04-client_auth
+        05-sni
+        06-sni-ticket
+        07-dtls-protocol-version
+        08-npn
+        09-alpn
+        10-resumption
+        11-dtls_resumption
+        12-ct
+        13-fragmentation
+        14-curves
+        15-certstatus
+        16-dtls-certstatus
+        17-renegotiate
+        18-dtls-renegotiate
+        19-mac-then-encrypt
+        20-cert-select
+        21-key-update
+        22-compression
+        23-srp
+        24-padding
+        #25-cipher                  # NOTE: uses CHACHA and POLY1305
+        26-tls13_client_auth
+        27-ticket-appdata
+        28-seclevel
+        29-dtls-sctp-label-bug
+        30-extended-master-secret)
     foreach (cnffilename ${SSL_TEST_LIST})
       set(subtest_name "${name}-${cnffilename}")
-      add_openssl_test("${subtest_name}" "${name}"
-                      ${OPENSSL_TEST_DIR}/ssl-tests/${cnffilename}.cnf
-                      "default" ${OPENSSL_TEST_DIR}/default.cnf)
+      add_openssl_test(
+        "${subtest_name}" "${name}"
+        ${OPENSSL_TEST_DIR}/ssl-tests/${cnffilename}.cnf "default"
+        ${OPENSSL_TEST_DIR}/default.cnf)
       set_enclave_tests_properties(
         tests/openssl/${subtest_name}
         PROPERTIES
@@ -615,7 +702,7 @@ foreach (testcase ${openssltests})
         "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
       )
       if ((NOT "${subtest_name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
-        AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
+          AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
         set_enclave_tests_properties(
           tests/openssl/${subtest_name}_symcrypt
           PROPERTIES
@@ -623,7 +710,7 @@ foreach (testcase ${openssltests})
           "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
         )
       endif ()
-    endforeach()
+    endforeach ()
     continue()
   endif ()
 
@@ -635,10 +722,13 @@ foreach (testcase ${openssltests})
 
   if ("${name}" STREQUAL sslapitest)
     add_openssl_test(
-      "${name}" "${name}" ${OPENSSL_TEST_DIR}/certs
+      "${name}"
+      "${name}"
+      ${OPENSSL_TEST_DIR}/certs
       ${OPENSSL_RECIPE_DIR}/90-test_sslapi_data/passwd.txt
       ${TEST_DATA_DIR}/tmpfile
-      "default" ${OPENSSL_TEST_DIR}/default.cnf
+      "default"
+      ${OPENSSL_TEST_DIR}/default.cnf
       ${OPENSSL_RECIPE_DIR}/90-test_sslapi_data/dhparams.pem)
     continue()
   endif ()
@@ -671,12 +761,11 @@ foreach (testcase ${openssltests})
   endif ()
 
   if ("${name}" STREQUAL threadstest)
-    add_openssl_test("${name}" "${name}"
-        "-config" "${OPENSSL_TEST_DIR}/default.cnf"
-        ${OPENSSL_RECIPE_DIR}/90-test_threads_data)
+    add_openssl_test(
+      "${name}" "${name}" "-config" "${OPENSSL_TEST_DIR}/default.cnf"
+      ${OPENSSL_RECIPE_DIR}/90-test_threads_data)
     continue()
   endif ()
-
 
   if ("${name}" STREQUAL tls13ccstest)
     add_openssl_test("${name}" "${name}" ${OPENSSL_APPS_DIR}/server.pem
