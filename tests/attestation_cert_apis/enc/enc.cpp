@@ -211,12 +211,14 @@ oe_result_t get_tls_cert_signed_with_key(
     OE_TRACE_INFO("private key:[%s]\n", private_key);
     OE_TRACE_INFO("public key:[%s]\n", public_key);
 
-    result = oe_generate_attestation_certificate(
+    result = oe_generate_attestation_certificate_v2(
         (const unsigned char*)"CN=Open Enclave SDK,O=OESDK TLS,C=US",
         private_key,
         private_key_size,
         public_key,
         public_key_size,
+        "20190501000000",
+        "20501231235959",
         &output_certificate,
         &output_certificate_size);
     if (result != OE_OK)
