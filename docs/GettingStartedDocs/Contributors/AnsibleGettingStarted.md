@@ -8,7 +8,7 @@ If you are interested in the Open Enclave deployment options via Ansible, see [t
 
 The Ansible package works reliably (as tested) only on Unix platforms due to the various unix specific internal code.
 
-If you wish to run Ansible from a Windows machine, feel free to enable the [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10), install the Ubuntu (18.04 or 20.04) distribution from the Windows store, and open the Linux terminal.
+If you wish to run Ansible from a Windows machine, feel free to enable the [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10), install the Ubuntu 20.04 distribution from the Windows store, and open the Linux terminal.
 
 To get Ansible ready to use, simply run the [install-ansible.sh](/scripts/ansible/install-ansible.sh) script (this requires execution with sudo).
 

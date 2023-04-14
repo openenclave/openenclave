@@ -57,6 +57,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Updated openssl to version 1.1.1q. Please refer to release log to find list of CVEs addressed by this version.
 
+### Deprecated
+- Ubuntu 18.04 has reached end of support, and will no longer be supported.
+
 [v0.18.1][v0.18.1_log]
 --------------
 ### Changed

@@ -44,9 +44,7 @@ pipeline {
                                     docker.withRegistry(params.INTERNAL_REPO, params.INTERNAL_REPO_CRED_ID) {
                                         sh """
                                             docker pull ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.INTERNAL_LINUX_TAG}
-                                            docker pull ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-18.04:${params.INTERNAL_LINUX_TAG}
                                             docker pull ${INTERNAL_REPO_NAME}/oetools-20.04:${params.INTERNAL_LINUX_TAG}
-                                            docker pull ${INTERNAL_REPO_NAME}/oetools-18.04:${params.INTERNAL_LINUX_TAG}
                                         """
                                     }
                                 }
@@ -58,13 +56,9 @@ pipeline {
                                     docker.withRegistry(params.PUBLIC_REPO, params.PUBLIC_REPO_CRED_ID) {
                                         sh """
                                             docker tag ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.INTERNAL_LINUX_TAG} ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.PUBLIC_LINUX_TAG}
-                                            docker tag ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-18.04:${params.INTERNAL_LINUX_TAG} ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-18.04:${params.PUBLIC_LINUX_TAG}
                                             docker tag ${INTERNAL_REPO_NAME}/oetools-20.04:${params.INTERNAL_LINUX_TAG} ${PUBLIC_REPO_NAME}/oetools-20.04:${params.PUBLIC_LINUX_TAG}
-                                            docker tag ${INTERNAL_REPO_NAME}/oetools-18.04:${params.INTERNAL_LINUX_TAG} ${PUBLIC_REPO_NAME}/oetools-18.04:${params.PUBLIC_LINUX_TAG}
                                             docker push ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.PUBLIC_LINUX_TAG}
-                                            docker push ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-18.04:${params.PUBLIC_LINUX_TAG}
                                             docker push ${PUBLIC_REPO_NAME}/oetools-20.04:${params.PUBLIC_LINUX_TAG}
-                                            docker push ${PUBLIC_REPO_NAME}/oetools-18.04:${params.PUBLIC_LINUX_TAG}
                                         """
                                     }
                                 }
@@ -79,13 +73,9 @@ pipeline {
                                     docker.withRegistry(params.PUBLIC_REPO, params.PUBLIC_REPO_CRED_ID) {
                                         sh """
                                             docker tag ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.PUBLIC_LINUX_TAG} ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-20.04:latest
-                                            docker tag ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-18.04:${params.PUBLIC_LINUX_TAG} ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-18.04:latest
                                             docker tag ${PUBLIC_REPO_NAME}/oetools-20.04:${params.PUBLIC_LINUX_TAG} ${PUBLIC_REPO_NAME}/oetools-20.04:latest
-                                            docker tag ${PUBLIC_REPO_NAME}/oetools-18.04:${params.PUBLIC_LINUX_TAG} ${PUBLIC_REPO_NAME}/oetools-18.04:latest
                                             docker push ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-20.04:latest
-                                            docker push ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-18.04:latest
                                             docker push ${PUBLIC_REPO_NAME}/oetools-20.04:latest
-                                            docker push ${PUBLIC_REPO_NAME}/oetools-18.04:latest
                                         """
                                     }
                                 }
@@ -100,13 +90,9 @@ pipeline {
                                     docker.withRegistry(params.INTERNAL_REPO, params.INTERNAL_REPO_CRED_ID) {
                                         sh """
                                             docker tag ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.INTERNAL_LINUX_TAG} ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.PUBLIC_LINUX_TAG}
-                                            docker tag ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-18.04:${params.INTERNAL_LINUX_TAG} ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-18.04:${params.PUBLIC_LINUX_TAG}
                                             docker tag ${INTERNAL_REPO_NAME}/oetools-20.04:${params.INTERNAL_LINUX_TAG} ${INTERNAL_REPO_NAME}/oetools-20.04:${params.PUBLIC_LINUX_TAG}
-                                            docker tag ${INTERNAL_REPO_NAME}/oetools-18.04:${params.INTERNAL_LINUX_TAG} ${INTERNAL_REPO_NAME}/oetools-18.04:${params.PUBLIC_LINUX_TAG}
                                             docker push ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.PUBLIC_LINUX_TAG}
-                                            docker push ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-18.04:${params.PUBLIC_LINUX_TAG}
                                             docker push ${INTERNAL_REPO_NAME}/oetools-20.04:${params.PUBLIC_LINUX_TAG}
-                                            docker push ${INTERNAL_REPO_NAME}/oetools-18.04:${params.PUBLIC_LINUX_TAG}
                                         """
                                     }
                                 }
@@ -121,13 +107,9 @@ pipeline {
                                     docker.withRegistry(params.INTERNAL_REPO, params.INTERNAL_REPO_CRED_ID) {
                                         sh """
                                             docker tag ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.PUBLIC_LINUX_TAG} ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-20.04:latest
-                                            docker tag ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-18.04:${params.PUBLIC_LINUX_TAG} ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-18.04:latest
                                             docker tag ${INTERNAL_REPO_NAME}/oetools-20.04:${params.PUBLIC_LINUX_TAG} ${INTERNAL_REPO_NAME}/oetools-20.04:latest
-                                            docker tag ${INTERNAL_REPO_NAME}/oetools-18.04:${params.PUBLIC_LINUX_TAG} ${INTERNAL_REPO_NAME}/oetools-18.04:latest
                                             docker push ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-20.04:latest
-                                            docker push ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-18.04:latest
                                             docker push ${INTERNAL_REPO_NAME}/oetools-20.04:latest
-                                            docker push ${INTERNAL_REPO_NAME}/oetools-18.04:latest
                                         """
                                     }
                                 }
@@ -266,17 +248,11 @@ pipeline {
                             if (params.PUBLISH_LINUX) {
                                 BASE_2004_PSW  = helpers.dockerGetAptPackageVersion("${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.PUBLIC_LINUX_TAG}", "libsgx-enclave-common")
                                 BASE_2004_DCAP = helpers.dockerGetAptPackageVersion("${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.PUBLIC_LINUX_TAG}", "libsgx-ae-id-enclave")
-                                BASE_1804_PSW  = helpers.dockerGetAptPackageVersion("${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-18.04:${params.PUBLIC_LINUX_TAG}", "libsgx-enclave-common")
-                                BASE_1804_DCAP = helpers.dockerGetAptPackageVersion("${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-18.04:${params.PUBLIC_LINUX_TAG}", "libsgx-ae-id-enclave")
                                 FULL_2004_PSW  = helpers.dockerGetAptPackageVersion("${PUBLIC_REPO_NAME}/oetools-20.04:${params.PUBLIC_LINUX_TAG}", "libsgx-enclave-common")
                                 FULL_2004_DCAP = helpers.dockerGetAptPackageVersion("${PUBLIC_REPO_NAME}/oetools-20.04:${params.PUBLIC_LINUX_TAG}", "libsgx-ae-id-enclave")
-                                FULL_1804_PSW  = helpers.dockerGetAptPackageVersion("${PUBLIC_REPO_NAME}/oetools-18.04:${params.PUBLIC_LINUX_TAG}", "libsgx-enclave-common")
-                                FULL_1804_DCAP = helpers.dockerGetAptPackageVersion("${PUBLIC_REPO_NAME}/oetools-18.04:${params.PUBLIC_LINUX_TAG}", "libsgx-ae-id-enclave")
                                 sh """
                                     echo "| Base Ubuntu 20.04 | ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-20.04:${PUBLIC_LINUX_TAG} | ${OE_VERSION} | ${BASE_2004_PSW} | ${BASE_2004_DCAP} |" >> DOCKER_IMAGES_new.md
-                                    echo "| Base Ubuntu 18.04 | ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-18.04:${PUBLIC_LINUX_TAG} | ${OE_VERSION} | ${BASE_1804_PSW} | ${BASE_1804_DCAP} |" >> DOCKER_IMAGES_new.md
                                     echo "| Full Ubuntu 20.04 | ${PUBLIC_REPO_NAME}/oetools-20.04:${PUBLIC_LINUX_TAG} | ${OE_VERSION} | ${FULL_2004_PSW} | ${FULL_2004_DCAP} |" >> DOCKER_IMAGES_new.md
-                                    echo "| Full Ubuntu 18.04 | ${PUBLIC_REPO_NAME}/oetools-18.04:${PUBLIC_LINUX_TAG} | ${OE_VERSION} | ${FULL_1804_PSW} | ${FULL_1804_DCAP} |" >> DOCKER_IMAGES_new.md
                                 """
                             }
                         }

@@ -361,7 +361,6 @@ node(params.AGENTS_LABEL) {
                 "Build WS2019 - SGX1FLC DCAP - clang10" : { buildWindowsManagedImage("win2019", "SGX-DCAP", "SGX1FLC", "10.0.0", image_id, image_version) }
             ]
             def linux_images = [
-                "Build Ubuntu 18.04" : { buildLinuxManagedImage("ubuntu", "18.04", image_id, image_version) },
                 "Build Ubuntu 20.04" : { buildLinuxManagedImage("ubuntu", "20.04", image_id, image_version) }
             ]
             def images = [:]

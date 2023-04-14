@@ -7,9 +7,9 @@ set -o errexit
 
 DIR=$(dirname "$0")
 
-if which yum > /dev/null; then
+if command -v yum > /dev/null; then
     yum install python3-pip -y
-elif which apt-get > /dev/null; then
+elif command -v apt-get > /dev/null; then
     apt-get update
     apt-get install python3-pip -y
 else

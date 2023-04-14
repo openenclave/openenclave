@@ -44,10 +44,14 @@
 #   --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket
 #
 
-ARG ubuntu_version=18.04
+ARG ubuntu_version=20.04
 
 FROM ubuntu:${ubuntu_version}
 
+# TODO: Ansible should be used to install all packages, so that we can
+# remove any need for determining the Ubuntu codename here. Until then
+# this build arg is required.
+ARG ubuntu_codename=focal
 ARG UNAME=jenkins
 ARG GNAME=jenkins
 # This UID/GID needs to match Jenkins agent UID/GID
@@ -71,7 +75,7 @@ RUN curl ${devkits_uri} | tar xvz --no-same-permissions --no-same-owner
 RUN echo ${devkits_uri##*/} > /devkits/TARBALL
 
 # Add Microsoft repo
-RUN echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ bionic main" | tee /etc/apt/sources.list.d/azure-cli.list && \
+RUN echo deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ ${ubuntu_codename} main | tee /etc/apt/sources.list.d/azure-cli.list && \
     wget https://packages.microsoft.com/keys/microsoft.asc && \
     apt-key add microsoft.asc
 
