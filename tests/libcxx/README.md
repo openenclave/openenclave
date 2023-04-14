@@ -15,10 +15,9 @@ The unit tests are partitioned into three files:
 
 The tests are currently ran with the following configurations.
 
-| Compiler    | Environment          | Test set |
-|-------------|----------------------|----------|
-| clang 8.0.0 | Ubuntu 16.04 & 18.04 | Full     |
-| clang 8.0.1 | Red Hat 8            | Default  |
+| Compiler     | Environment  | Test set |
+|--------------|--------------|----------|
+| clang 11.1.0 | Ubuntu 20.04 | Full     |
 
 *Note*: For compatibility, some test cases are disabled on certain versions of compilers via [CMakeLists.txt](CMakeLists.txt).
 

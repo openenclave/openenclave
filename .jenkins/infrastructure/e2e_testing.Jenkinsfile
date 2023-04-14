@@ -32,7 +32,6 @@ pipeline {
          string(name: 'E2E_IMAGES_GALLERY_NAME', defaultValue: 'e2e_images', description: "E2E Azure images gallery name", trim: true)
          string(name: 'PRODUCTION_IMAGES_GALLERY_NAME', defaultValue: '', description: "[OPTIONAL]: Specify the Azure Shared Image Gallery for storing production images", trim: true)
          string(name: 'REPLICATION_REGIONS', defaultValue: 'westeurope,eastus,uksouth,eastus2,westus,canadacentral', description: '[OPTIONAL] Replication regions for the shared gallery images definitions (comma-separated)', trim: true)
-         string(name: 'UBUNTU_1804_LABEL', defaultValue: 'e2e-ACC-1804', description: 'Label to use for image testing and promotion', trim: true)
          string(name: 'UBUNTU_2004_LABEL', defaultValue: 'e2e-ACC-2004', description: 'Label to use for image testing and promotion', trim: true)
          string(name: 'UBUNTU_NONSGX_LABEL', defaultValue: 'e2e-nonSGX-ubuntu-2004', description: 'Label to use for image testing and promotion', trim: true)
          string(name: 'WINDOWS_2019_DCAP_LABEL', defaultValue: 'e2e-SGXFLC-Windows-2019-DCAP', description: 'Label to use for image testing and promotion', trim: true)
@@ -95,7 +94,6 @@ pipeline {
                     string(name: 'BRANCH_NAME', value: env.BRANCH),
                     string(name: 'DOCKER_TAG', value: DOCKER_TAG),
                     string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
-                    string(name: 'UBUNTU_1804_CUSTOM_LABEL', value: env.UBUNTU_1804_LABEL),
                     string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: env.UBUNTU_NONSGX_LABEL),
                     string(name: 'WINDOWS_2019_CUSTOM_LABEL', value: env.WINDOWS_2019_LABEL),
                     string(name: 'WINDOWS_2019_DCAP_CUSTOM_LABEL', value: env.WINDOWS_2019_DCAP_LABEL),
@@ -120,7 +118,7 @@ pipeline {
                         string(name: 'IMAGE_ID', value: IMAGE_ID),
                         string(name: 'IMAGE_VERSION', value: IMAGE_VERSION),
                         string(name: 'DOCKER_TAG', value: DOCKER_TAG),
-                        string(name: 'IMAGES_BUILD_LABEL', value: env.UBUNTU_1804_LABEL)
+                        string(name: 'IMAGES_BUILD_LABEL', value: env.UBUNTU_2004_LABEL)
                     ]
             }
         }

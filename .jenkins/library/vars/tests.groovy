@@ -7,9 +7,15 @@
 
 // Azure Linux
 
-def ACCCodeCoverageTest(String label, String compiler, String build_type) {
-    stage("${label} ${compiler} ${build_type} Code Coverage") {
-        node("${label}") {
+/* Builds and runs code coverage tests for OE on Ubuntu
+ *
+ *  @param version: The Ubuntu version to use
+ *  @param compiler: The compiler to use
+ *  @param build_type: The cmake build type to use. Choice of: Debug, Release, or RelWithDebInfo
+ */
+def ACCCodeCoverageTest(String version, String compiler, String build_type) {
+    stage("ACC ${version} ${compiler} ${build_type} Code Coverage") {
+        node(globalvars.AGENTS_LABELS["acc-ubuntu-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
@@ -36,8 +42,16 @@ def ACCCodeCoverageTest(String label, String compiler, String build_type) {
     }
 }
 
-def ACCTest(String label, String compiler, String build_type, List extra_cmake_args = [], List test_env = [], boolean fresh_install = false) {
-    stage("${label} ${compiler} ${build_type}, extra_cmake_args: ${extra_cmake_args}, test_env: ${test_env}${fresh_install ? ", e2e" : ""}") {
+/* Builds and runs ctest for OE on Ubuntu
+ *
+ *  @param label: the label of the Jenkins agent to use
+ *  @param compiler: The compiler to use
+ *  @param build_type: The cmake build type to use. Choice of: Debug, Release, or RelWithDebInfo
+ *  @param extra_cmake_args: Extra cmake args to pass to the build
+ *  @param fresh_install: whether to start with a plain VM and install OE dependencies
+ */
+def ACCTest(String label, String compiler, String build_type, List extra_cmake_args = [], boolean fresh_install = false) {
+    stage("${label} ${compiler} ${build_type} ${extra_cmake_args} ${fresh_install ? ", e2e" : ""}") {
         node(label) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
@@ -65,43 +79,54 @@ def ACCTest(String label, String compiler, String build_type, List extra_cmake_a
                            ${helpers.ninjaBuildCommand(cmakeArgs)}
                            ${helpers.TestCommand()}
                            """
-                withEnv(test_env) {
-                    common.Run(compiler, task)
-                }
+                common.Run(compiler, task)
             }
         }
     }
 }
 
-def ACCUpgradeTest(String label, String compiler, String version, List extra_cmake_args = [], List test_env = []) {
-    stage("${label} Container ${version} RelWithDebInfo, extra_cmake_args: ${extra_cmake_args}") {
-        node("${label}") {
+/* Tests upgrading OE on Ubuntu from the latest release to the current build
+ *  This is done by installing the latest release, building the current build,
+ *  and then installing the current build.
+ *
+ *  @param version: The Ubuntu version to use
+ *  @param compiler: The compiler to use
+ *  @param extra_cmake_args: Extra cmake args to pass to the build 
+ * 
+ */
+def ACCUpgradeTest(String version, String compiler, List extra_cmake_args = []) {
+    stage("ACC Upgrade ${version} RelWithDebInfo, extra_cmake_args: ${extra_cmake_args}") {
+        node(globalvars.AGENTS_LABELS["acc-ubuntu-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
                 def cmakeArgs = helpers.CmakeArgs("RelWithDebInfo","OFF","ON","-DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin",extra_cmake_args.join(' '))
-                withEnv(test_env) {
-                    common.Run(compiler, helpers.InstallReleaseCommand())
-                    helpers.TestSamplesCommand()
-                    common.Run(compiler, helpers.ninjaBuildCommand(cmakeArgs))
-                    common.Run(compiler, helpers.InstallBuildCommand())
-                    helpers.TestSamplesCommand()
-                }
+                common.Run(compiler, helpers.InstallReleaseCommand(version))
+                helpers.TestSamplesCommand()
+                common.Run(compiler, helpers.ninjaBuildCommand(cmakeArgs))
+                common.Run(compiler, helpers.InstallBuildCommand())
+                helpers.TestSamplesCommand()
             }
         }
     }
 }
 
-def ACCContainerTest(String label, String version, String compiler, List extra_cmake_args = []) {
-    stage("${label} Container ${version} RelWithDebInfo, extra_cmake_args: ${extra_cmake_args}") {
-        node("${label}") {
+/* Tests building and running OE in a container environment
+ *
+ *  @param version: The version of the container to use
+ *  @param compiler: The compiler to use
+ *  @param extra_cmake_args: Extra cmake args to pass to the build
+ */
+def ACCContainerTest(String version, String compiler, List extra_cmake_args = []) {
+    stage("ACC Container ${version} RelWithDebInfo, extra_cmake_args: ${extra_cmake_args}") {
+        node(globalvars.AGENTS_LABELS["acc-ubuntu-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
                 def cmakeArgs = helpers.CmakeArgs("RelWithDebInfo","OFF","ON","-DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin",extra_cmake_args.join(' '))
                 def devices = helpers.getDockerSGXDevices("ubuntu", helpers.getUbuntuReleaseVer())
                 def runArgs = "--user root:root --cap-add=SYS_PTRACE ${devices} --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket"
-                println("${label} running Docker container with ${devices}")
+                println("${globalvars.AGENTS_LABELS["acc-ubuntu-${version}"]} running Docker container with ${devices}")
                 def task = """
                            ${helpers.ninjaBuildCommand(cmakeArgs)}
                            ${helpers.TestCommand()}
@@ -112,15 +137,20 @@ def ACCContainerTest(String label, String version, String compiler, List extra_c
     }
 }
 
-def ACCPackageTest(String label, String version, List extra_cmake_args = []) {
-    stage("${label} PackageTest ${version} RelWithDebInfo, extra_cmake_args: ${extra_cmake_args}") {
-        node("${label}") {
+/* Tests building and packing OE in a container environment
+ *
+ *  @param version: The version of the container to use
+ *  @param extra_cmake_args: Extra cmake args to pass to the build
+ */
+def ACCPackageTest(String version, List extra_cmake_args = []) {
+    stage("ACC Package ${version} RelWithDebInfo ${extra_cmake_args}") {
+        node(globalvars.AGENTS_LABELS["acc-ubuntu-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
                 def cmakeArgs = helpers.CmakeArgs("RelWithDebInfo","OFF","ON","-DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin",extra_cmake_args.join(' '))
                 def devices = helpers.getDockerSGXDevices("ubuntu", helpers.getUbuntuReleaseVer())
-                println("${label} running Docker container with ${devices}")
+                println("Running Docker container with ${devices}")
                 common.ContainerTasks(
                     "oetools-${version}:${params.DOCKER_TAG}",
                     globalvars.COMPILER,
@@ -141,10 +171,15 @@ def ACCPackageTest(String label, String version, List extra_cmake_args = []) {
     }
 }
 
+/* Tests OE host verification.
+ * This will generate the necessary certs on Ubuntu and then
+ * verify on another Ubuntu and Windows node.
+ *
+ *  @param version: The version of the container to use
+ *  @param build_type: The build type to use
+ *  @param compiler: The compiler to use
+ */
 def ACCHostVerificationTest(String version, String build_type, String compiler) {
-    /* Compile tests in SGX machine.  This will generate the necessary certs for the
-    * host_verify test.
-    */
     stage("ACC ${version} Generate Quote") {
         node(globalvars.AGENTS_LABELS["acc-ubuntu-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
@@ -250,10 +285,16 @@ def ACCHostVerificationTest(String version, String build_type, String compiler) 
     }
 }
 
+/* Test OE host verification with an OE package installation.
+ * This will generate the necessary certs on Ubuntu and then
+ * verify on another Ubuntu and Windows node.
+ *
+ * @param version: The version of Ubuntu to use
+ * @param build_type: The build type to use. Choice of: Debug, Release, or RelWithDebInfo
+ * @param compiler: The compiler to use.
+*/
+
 def ACCHostVerificationPackageTest(String version, String build_type, String compiler) {
-    /* Generate an SGX report and two SGX certificates for the host_verify sample.
-    * Also generate and install the host_verify package. Then run the host_verify sample.
-    */
     stage("ACC-${version} Generate Quote") {
         node(globalvars.AGENTS_LABELS["acc-ubuntu-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
@@ -400,6 +441,16 @@ def ACCHostVerificationPackageTest(String version, String build_type, String com
     }
 }
 
+/* Tests OE Release packages
+ *
+ * @param label: Label of the node to run the test on
+ * @param release_version: Version of the OE release to test
+ * @param oe_package: Name of the OE package to test
+ * @param source: Source to obtain the OE package from
+ * @param storage_credentials_id: ID of the credentials to access the Azure storage account
+ * @param storage_blob: Name of the Azure storage blob to download the OE package from
+ * @param lvi_mitigation: Whether to test with LVI mitigation
+ */
 def OEReleaseTest(String label, String release_version, String oe_package = "open-enclave", String source = "Azure", String storage_credentials_id, String storage_blob, boolean lvi_mitigation = false) {
     stage("OE Release Test ${label}") {
         node(label) {
@@ -412,6 +463,17 @@ def OEReleaseTest(String label, String release_version, String oe_package = "ope
     }
 }
 
+/* Tests Intel RCs
+ *
+ * @param label: Label of the node to run the test on
+ * @param release_version: Version of the OE release to test
+ * @param oe_package: Name of the OE package to test
+ * @param source: Source to obtain the OE package from
+ * @param lvi_mitigation: Whether to test with LVI mitigation
+ * @param dcap_url: URL of the DCAP package to install
+ * @param local_repository_name: Name of the local repository to install
+ * @param install_flags: Flags to pass to the install script
+ */
 def TestIntelRCs(String label, String release_version, String oe_package = "open-enclave", String source = "GitHub", boolean lvi_mitigation = false, String dcap_url = "", String local_repository_name = "", String install_flags = "") {
     stage("Test Intel Drivers RCs ${label}") {
         node(label) {
@@ -472,9 +534,7 @@ def windowsLinuxElfBuild(String windows_label, String ubuntu_label, String compi
                                ${extra_cmake_args.join(' ')}
                            ninja -v
                            """
-                if (ubuntu_label.contains("1804")) {
-                    def imageName = "oetools-18.04"
-                } else if (! ubuntu_label.contains("2004")) {
+                if (! ubuntu_label.contains("2004")) {
                     println("Unable to determine version from Ubuntu agent label. Defaulting to Ubuntu 20.04")
                 }
                 def imageName = "oetools-20.04"
@@ -703,7 +763,7 @@ def checkCI(String compiler) {
                 """
                 // At the moment, the check-ci script assumes that it's executed from the
                 // root source code directory.
-                common.ContainerRun("oetools-18.04:${DOCKER_TAG}", compiler, task, runArgs)
+                common.ContainerRun("oetools-20.04:${DOCKER_TAG}", compiler, task, runArgs)
             }
         }
     }

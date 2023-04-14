@@ -68,7 +68,6 @@
     name: "{{ item }}"
     source: pull
   with_items:
-    - "{{ docker_registry }}/oetools-18.04:{{ docker_tag }}"
     - "{{ docker_registry }}/oetools-20.04:{{ docker_tag }}"
   retries: 10
   delay: 10

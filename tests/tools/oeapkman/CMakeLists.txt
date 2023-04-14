@@ -7,7 +7,7 @@ if (NOT UNIX)
 endif ()
 
 if (OE_SGX)
-  # oeapkman will work on Ubuntu 18.04 and Ubuntu 20.04 as is.
+  # oeapkman will work on Ubuntu 20.04 as is.
 else ()
   # For OPTEE cross-compilation workflow, oeapkman needs QEMU user-mode
   # emulation.

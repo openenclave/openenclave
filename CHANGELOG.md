@@ -84,6 +84,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         - If you are running on a processor that is not affected by the CVE, you can turn off oeedger8r introduced mitigations by defining a global C variable `bool oe_edger8r_secure_unserialize = false;` in enclave side code.
 
 
+### Deprecated
+- Ubuntu 18.04 has reached end of support, and will no longer be supported.
+
 [v0.18.1][v0.18.1_log]
 --------------
 ### Changed

@@ -8,7 +8,6 @@ GLOBAL_TIMEOUT_MINUTES = 240
 AZURE_IMAGES_MAP = [
     // Mapping between shared gallery image definition name and
     // generated Azure managed image name
-    "ubuntu-18.04":      "",
     "ubuntu-20.04":      "",
     "nonSGX-clang-11":   "",
     "nonSGX-clang-10":   "",
