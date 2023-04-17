@@ -5,4 +5,4 @@
 validation_distribution_files:
   - "/usr/lib/libdcap_quoteprov.so"
 
-az_dcap_client_version: "1.11.2"
+az_dcap_client_version: "1.12.0"
