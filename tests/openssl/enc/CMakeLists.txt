@@ -170,9 +170,10 @@ function (add_openssl_test_enc NAME BUILDTEST CRYPTO_LIB)
     list(APPEND TEST_SRC ${OPENSSL_DIR}/test/fake_rsaprov.c)
   endif ()
 
-  if ("${NAME}" STREQUAL "provider_test" OR
-      "${NAME}" STREQUAL "provider_internal_test")
-    add_definitions(-DNO_PROVIDER_MODULE -DPROVIDER_INIT_FUNCTION_NAME=p_test_init)
+  if ("${NAME}" STREQUAL "provider_test" OR "${NAME}" STREQUAL
+                                            "provider_internal_test")
+    add_definitions(-DNO_PROVIDER_MODULE
+                    -DPROVIDER_INIT_FUNCTION_NAME=p_test_init)
     list(APPEND TEST_SRC ${OPENSSL_DIR}/test/p_test.c)
   endif ()
 
