@@ -272,6 +272,14 @@ file(STRINGS "tests.supported" openssltests)
 foreach (testcase ${openssltests})
   get_testcase_name(${testcase} name "../../3rdparty/openssl/openssl/test/")
 
+  if ("${name}" STREQUAL algorithmid_test)
+    add_openssl_test("${name}-1" "${name}" "-x509"
+                    ${OPENSSL_TEST_DIR}/certs/ee-cert.pem ${OPENSSL_TEST_DIR}/certs/ca-cert.pem)
+    add_openssl_test("${name}-2" "${name}" "-x509"
+                    ${OPENSSL_TEST_DIR}/certs/ee-cert2.pem ${OPENSSL_TEST_DIR}/certs/ca-cert2.pem)
+    continue()
+  endif ()
+
   if ("${name}" STREQUAL asynciotest)
     add_openssl_test("${name}" "${name}" ${OPENSSL_APPS_DIR}/server.pem
                      ${OPENSSL_APPS_DIR}/server.pem)
@@ -628,6 +636,25 @@ foreach (testcase ${openssltests})
 
   if ("${name}" STREQUAL prov_config_test)
     add_openssl_test("${name}" "${name}" ${OPENSSL_TEST_DIR}/default.cnf)
+    continue()
+  endif ()
+
+  if ("${name}" STREQUAL provider_internal_test)
+    add_openssl_test("${name}" "${name}")
+    set_enclave_tests_properties(
+      tests/openssl/${name} PROPERTIES ENVIRONMENT
+      OPENSSL_CONF=${OPENSSL_TEST_DIR}/provider_internal_test.cnf)
+    if ((NOT "${subtest_name}" IN_LIST UNSUPPORTED_SYMCRYPT_TESTS)
+      AND (ENABLE_SYMCRYPT_OPENSSL_TESTS))
+      set_enclave_tests_properties(
+        tests/openssl/${name} PROPERTIES ENVIRONMENT
+        OPENSSL_CONF=${OPENSSL_TEST_DIR}/provider_internal_test.cnf)
+    endif ()
+    continue()
+  endif ()
+
+  if ("${name}" STREQUAL provider_status_test)
+    add_openssl_test("${name}" "${name}" "-provider_name" "default")
     continue()
   endif ()
 

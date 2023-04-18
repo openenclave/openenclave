@@ -18,7 +18,6 @@ add_enclave_library(
   ${OPENSSL_DIR}/apps/lib/app_provider.c
   ${OPENSSL_DIR}/apps/lib/app_rand.c
   ${OPENSSL_DIR}/apps/lib/app_x509.c
-  ${OPENSSL_DIR}/apps/lib/apps.c
   ${OPENSSL_DIR}/apps/lib/apps_ui.c
   ${OPENSSL_DIR}/apps/lib/columns.c
   ${OPENSSL_DIR}/apps/lib/engine.c
@@ -167,6 +166,16 @@ function (add_openssl_test_enc NAME BUILDTEST CRYPTO_LIB)
     list(APPEND TEST_SRC ${OPENSSL_DIR}/test/helpers/pkcs12.c)
   endif ()
 
+  if ("${NAME}" STREQUAL "provider_pkey_test")
+    list(APPEND TEST_SRC ${OPENSSL_DIR}/test/fake_rsaprov.c)
+  endif ()
+
+  if ("${NAME}" STREQUAL "provider_test" OR
+      "${NAME}" STREQUAL "provider_internal_test")
+    add_definitions(-DNO_PROVIDER_MODULE -DPROVIDER_INIT_FUNCTION_NAME=p_test_init)
+    list(APPEND TEST_SRC ${OPENSSL_DIR}/test/p_test.c)
+  endif ()
+
   if ("${NAME}" STREQUAL "ssl_test")
     list(APPEND TEST_SRC ${OPENSSL_DIR}/test/helpers/handshake.c
          ${OPENSSL_DIR}/test/helpers/ssl_test_ctx.c)
@@ -212,12 +221,20 @@ function (add_openssl_test_enc NAME BUILDTEST CRYPTO_LIB)
   list(APPEND INCLUDE_PATHS ${CMAKE_CURRENT_BINARY_DIR} ${OPENSSL_DIR}/test
        ${OPENSSL_DIR}/test/testutil ${OPENSSL_DIR}/apps/include)
 
+  if ("${NAME}" STREQUAL "bn_internal_test")
+    list(APPEND INCLUDE_PATHS ${OPENSSL_DIR}/crypto/bn)
+  endif ()
+
   if ("${NAME}" STREQUAL "curve448_internal_test")
     list(APPEND INCLUDE_PATHS ${OPENSSL_DIR}/crypto/ec/curve448)
   endif ()
 
   if ("${NAME}" STREQUAL "ec_internal_test")
     list(APPEND INCLUDE_PATHS ${OPENSSL_DIR}/crypto/ec)
+  endif ()
+
+  if ("${NAME}" STREQUAL "rsa_sp800_56b_test")
+    list(APPEND INCLUDE_PATHS ${OPENSSL_DIR}/crypto/rsa)
   endif ()
 
   enclave_include_directories(openssl-${TEST_NAME}_enc PRIVATE ${INCLUDE_PATHS})
