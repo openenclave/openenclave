@@ -129,7 +129,12 @@ def Run(String compiler, String task, String compiler_version = "") {
         cpp_compiler += "-${compiler_version}"
     }
     withEnv(["CC=${c_compiler}","CXX=${cpp_compiler}"]) {
-        runTask(task);
+        withCredentials([
+            string(credentialsId: 'thim-tdx-base-url', variable: 'AZDCAP_BASE_CERT_URL_TDX'),
+            string(credentialsId: 'thim-tdx-region-url', variable: 'AZDCAP_REGION_URL')
+        ]) {
+            runTask(task)
+        }
     }
 }
 
