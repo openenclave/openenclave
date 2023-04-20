@@ -25,7 +25,8 @@ void oe_load_quote_provider()
     if (provider.handle == 0)
     {
         OE_TRACE_INFO("oe_load_quote_provider dcap_quoteprov.dll\n");
-        HMODULE _handle = LoadLibraryEx("dcap_quoteprov.dll", NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+        HMODULE _handle = LoadLibraryEx(
+            "dcap_quoteprov.dll", NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
         if (_handle != 0)
         {
             provider.handle = _handle;

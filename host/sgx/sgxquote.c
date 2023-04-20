@@ -128,7 +128,8 @@ typedef struct _supp_ver_t
 #define SGX_DCAP_QVL_NAME "sgx_dcap_quoteverify.dll"
 
 #define LOAD_SGX_DCAP_LIB(libname) \
-    (void*)LoadLibraryEx((LPCSTR)libname, NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+    (void*)LoadLibraryEx(          \
+        (LPCSTR)libname, NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
 
 #define LOOKUP_FUNCTION(module, fcn) (void*)GetProcAddress((HANDLE)module, fcn)
 
