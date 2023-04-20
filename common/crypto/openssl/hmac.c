@@ -9,7 +9,7 @@
 #include <openssl/core_names.h>
 #endif
 
-#if OPENSSL_VERSION_NUMBER < 0x30000000L
+#if OPENSSL_VERSION_NUMBER < 0x30000000L || defined(OE_BUILD_ENCLAVE)
 typedef struct _oe_hmac_sha256_context_impl
 {
     HMAC_CTX* ctx;
@@ -24,7 +24,7 @@ typedef struct _oe_hmac_sha256_context_impl
 OE_STATIC_ASSERT(
     sizeof(oe_hmac_sha256_context_impl_t) <= sizeof(oe_hmac_sha256_context_t));
 
-#if OPENSSL_VERSION_NUMBER < 0x30000000L
+#if OPENSSL_VERSION_NUMBER < 0x30000000L || defined(OE_BUILD_ENCLAVE)
 static void _free_hmac_ctx(HMAC_CTX* ctx)
 {
     if (!ctx)
@@ -47,7 +47,7 @@ static void _free_hmac_ctx(EVP_MAC_CTX* ctx)
 }
 #endif
 
-#if OPENSSL_VERSION_NUMBER < 0x30000000L
+#if (OPENSSL_VERSION_NUMBER < 0x30000000L) || defined(OE_BUILD_ENCLAVE)
 oe_result_t oe_hmac_sha256_init(
     oe_hmac_sha256_context_t* context,
     const uint8_t* key,
@@ -56,6 +56,8 @@ oe_result_t oe_hmac_sha256_init(
     oe_result_t result = OE_UNEXPECTED;
     HMAC_CTX* ctx = NULL;
     int openssl_result;
+
+    OPENSSL_init_crypto(OPENSSL_INIT_NO_LOAD_CONFIG, NULL);
 
     if (!context || !key || keysize > OE_INT_MAX)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -99,6 +101,10 @@ oe_result_t oe_hmac_sha256_init(
     EVP_MAC* mac = NULL;
     OSSL_PARAM params[3];
 
+#if defined(OE_BUILD_ENCLAVE)
+    OPENSSL_init_crypto(OPENSSL_INIT_NO_LOAD_CONFIG, NULL);
+#endif
+
     if (!context || !key || keysize > OE_INT_MAX)
         OE_RAISE(OE_INVALID_PARAMETER);
     mac = EVP_MAC_fetch(NULL, OSSL_MAC_NAME_HMAC, NULL);
@@ -131,7 +137,7 @@ done:
     return result;
 }
 #endif
-#if OPENSSL_VERSION_NUMBER < 0x30000000L
+#if OPENSSL_VERSION_NUMBER < 0x30000000L || defined(OE_BUILD_ENCLAVE)
 oe_result_t oe_hmac_sha256_update(
     oe_hmac_sha256_context_t* context,
     const void* data,
@@ -175,7 +181,7 @@ done:
 }
 #endif
 
-#if OPENSSL_VERSION_NUMBER < 0x30000000L
+#if OPENSSL_VERSION_NUMBER < 0x30000000L || defined(OE_BUILD_ENCLAVE)
 oe_result_t oe_hmac_sha256_final(
     oe_hmac_sha256_context_t* context,
     OE_SHA256* sha256)

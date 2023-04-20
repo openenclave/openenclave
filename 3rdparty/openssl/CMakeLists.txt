@@ -90,9 +90,9 @@ ExternalProject_Add(
   COMMAND
     ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/include/opensslv.h
     ${OPENSSL_BUILD_INCLUDES}/openssl/opensslv.h
-  COMMAND
-    ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/include/opensslconf.h
-    ${OPENSSL_BUILD_INCLUDES}/openssl/opensslconf.h
+  # COMMAND
+  #   ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/include/opensslconf.h
+  #   ${OPENSSL_BUILD_INCLUDES}/openssl/opensslconf.h
   COMMAND
     ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/include/crypto.h
     ${OPENSSL_BUILD_INCLUDES}/openssl/crypto.h
@@ -204,9 +204,9 @@ ExternalProject_Add(
   COMMAND
     ${CMAKE_COMMAND} -E copy ${OPENSSL_BUILD_INCLUDES}/openssl/opensslv.h
     ${OPENSSL_INSTALL_INCLUDES}/opensslv.h
-  COMMAND
-    ${CMAKE_COMMAND} -E copy ${OPENSSL_BUILD_INCLUDES}/openssl/opensslconf.h
-    ${OPENSSL_INSTALL_INCLUDES}/opensslconf.h
+  # COMMAND
+  #   ${CMAKE_COMMAND} -E copy ${OPENSSL_BUILD_INCLUDES}/openssl/opensslconf.h
+  #   ${OPENSSL_INSTALL_INCLUDES}/opensslconf.h
   COMMAND
     ${CMAKE_COMMAND} -E copy ${OPENSSL_BUILD_INCLUDES}/openssl/configuration.h
     ${OPENSSL_INSTALL_INCLUDES}/configuration.h

@@ -154,7 +154,7 @@ our %config = (
         "OPENSSL_CONFIGURED_API=30000"
     ],
     "openssl_feature_defines" => [
-        "OPENSSL_RAND_SEED_NONE",
+        "OPENSSL_RAND_SEED_RDCPU",
         "OPENSSL_THREADS",
         "OPENSSL_NO_ACVP_TESTS",
         "OPENSSL_NO_AFALGENG",
@@ -220,14 +220,14 @@ our %config = (
     ],
     "openssl_sys_defines" => [],
     "openssldir" => "",
-    "options" => "--with-rand-seed=none no-acvp-tests no-afalgeng no-aria no-asan no-autoerrinit no-autoload-config no-bf no-blake2 no-buildtest-c++ no-camellia no-capieng no-cast no-chacha no-cms no-crypto-mdebug no-crypto-mdebug-backtrace no-ct no-devcryptoeng no-dso no-dynamic-engine no-ec_nistp_64_gcc_128 no-egd no-external-tests no-fips no-fips-securitychecks no-fuzz-afl no-fuzz-libfuzzer no-gost no-idea no-ktls no-loadereng no-md2 no-md4 no-mdc2 no-module no-msan no-nextprotoneg no-padlockeng no-poly1305 no-psk no-rc4 no-rc5 no-rfc3779 no-rmd160 no-scrypt no-sctp no-seed no-shared no-siphash no-sm2 no-sm3 no-sm4 no-srp no-ssl3 no-ssl3-method no-trace no-ubsan no-ui-console no-unit-test no-uplink no-weak-ssl-ciphers no-whirlpool no-zlib no-zlib-dynamic",
+    "options" => "--with-rand-seed=rdcpu no-acvp-tests no-afalgeng no-aria no-asan no-autoerrinit no-autoload-config no-bf no-blake2 no-buildtest-c++ no-camellia no-capieng no-cast no-chacha no-cms no-crypto-mdebug no-crypto-mdebug-backtrace no-ct no-devcryptoeng no-dso no-dynamic-engine no-ec_nistp_64_gcc_128 no-egd no-external-tests no-fips no-fips-securitychecks no-fuzz-afl no-fuzz-libfuzzer no-gost no-idea no-ktls no-loadereng no-md2 no-md4 no-mdc2 no-module no-msan no-nextprotoneg no-padlockeng no-poly1305 no-psk no-rc4 no-rc5 no-rfc3779 no-rmd160 no-scrypt no-sctp no-seed no-shared no-siphash no-sm2 no-sm3 no-sm4 no-srp no-ssl3 no-ssl3-method no-trace no-ubsan no-ui-console no-unit-test no-uplink no-weak-ssl-ciphers no-whirlpool no-zlib no-zlib-dynamic",
     "patch" => "5",
     "perl_archname" => "x86_64-linux-gnu-thread-multi",
     "perl_cmd" => "/usr/bin/perl",
     "perl_version" => "5.30.0",
     "perlargv" => [
         "linux-x86_64",
-        "--with-rand-seed=none",
+        "--with-rand-seed=rdcpu",
         "no-hw",
         "no-afalgeng",
         "no-aria",

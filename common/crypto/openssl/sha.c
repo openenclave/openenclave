@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#if OPENSSL_VERSION_NUMBER < 0x30000000L
+#if OPENSSL_VERSION_NUMBER < 0x30000000L || defined(OE_BUILD_ENCLAVE)
 typedef struct _oe_sha256_context_impl
 {
     SHA256_CTX ctx;
@@ -25,6 +25,7 @@ typedef struct _oe_sha256_context_impl
 OE_STATIC_ASSERT(
     sizeof(oe_sha256_context_impl_t) <= sizeof(oe_sha256_context_t));
 
+#if OPENSSL_VERSION_NUMBER < 0x30000000L || defined(OE_BUILD_ENCLAVE)
 oe_result_t oe_sha256_init(oe_sha256_context_t* context)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -33,23 +34,37 @@ oe_result_t oe_sha256_init(oe_sha256_context_t* context)
     if (!context)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-#if OPENSSL_VERSION_NUMBER < 0x30000000L
     if (!SHA256_Init(&impl->ctx))
         OE_RAISE(OE_CRYPTO_ERROR);
-#else
-    if (!(impl->ctx = EVP_MD_CTX_new()))
-        OE_RAISE(OE_CRYPTO_ERROR);
-
-    if (!EVP_DigestInit_ex(impl->ctx, EVP_sha256(), NULL))
-        OE_RAISE(OE_CRYPTO_ERROR);
-#endif
 
     result = OE_OK;
 
 done:
     return result;
 }
+#else
+oe_result_t oe_sha256_init(oe_sha256_context_t* context)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_sha256_context_impl_t* impl = (oe_sha256_context_impl_t*)context;
 
+    if (!context)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (!(impl->ctx = EVP_MD_CTX_new()))
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    if (!EVP_DigestInit_ex(impl->ctx, EVP_sha256(), NULL))
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+#endif
+
+#if OPENSSL_VERSION_NUMBER < 0x30000000L || defined(OE_BUILD_ENCLAVE)
 oe_result_t oe_sha256_update(
     oe_sha256_context_t* context,
     const void* data,
@@ -61,21 +76,37 @@ oe_result_t oe_sha256_update(
     if (!context)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-#if OPENSSL_VERSION_NUMBER < 0x30000000L
     if (!SHA256_Update(&impl->ctx, data, size))
         OE_RAISE(OE_CRYPTO_ERROR);
-#else
-    if (!EVP_DigestUpdate(impl->ctx, data, size))
-        OE_RAISE(OE_CRYPTO_ERROR);
-#endif
 
     result = OE_OK;
 
 done:
     return result;
 }
+#else
+oe_result_t oe_sha256_update(
+    oe_sha256_context_t* context,
+    const void* data,
+    size_t size)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_sha256_context_impl_t* impl = (oe_sha256_context_impl_t*)context;
 
-#if OPENSSL_VERSION_NUMBER < 0x30000000L
+    if (!context)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (!EVP_DigestUpdate(impl->ctx, data, size))
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+#endif
+
+#if OPENSSL_VERSION_NUMBER < 0x30000000L || defined(OE_BUILD_ENCLAVE)
 oe_result_t oe_sha256_final(oe_sha256_context_t* context, OE_SHA256* sha256)
 {
     oe_result_t result = OE_UNEXPECTED;

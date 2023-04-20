@@ -41,7 +41,7 @@ static int _get_nid(oe_ec_type_t ec_type)
     }
 }
 
-#if OPENSSL_VERSION_NUMBER < 0x30000000L
+#if OPENSSL_VERSION_NUMBER < 0x30000000L || defined(OE_BUILD_ENCLAVE)
 static oe_result_t _private_key_write_pem_callback(BIO* bio, EVP_PKEY* pkey)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -99,7 +99,7 @@ done:
 }
 #endif
 
-#if OPENSSL_VERSION_NUMBER < 0x30000000L
+#if OPENSSL_VERSION_NUMBER < 0x30000000L || defined(OE_BUILD_ENCLAVE)
 static oe_result_t _public_key_equal(
     const oe_public_key_t* public_key1,
     const oe_public_key_t* public_key2,
@@ -291,7 +291,7 @@ oe_result_t oe_ec_public_key_verify(
         OE_EC_PUBLIC_KEY_MAGIC);
 }
 
-#if OPENSSL_VERSION_NUMBER < 0x30000000L
+#if OPENSSL_VERSION_NUMBER < 0x30000000L || defined(OE_BUILD_ENCLAVE)
 oe_result_t oe_ec_generate_key_pair_from_private(
     oe_ec_type_t curve,
     const uint8_t* private_key_buf,
@@ -520,7 +520,7 @@ oe_result_t oe_ec_public_key_equal(
         (oe_public_key_t*)public_key1, (oe_public_key_t*)public_key2, equal);
 }
 
-#if OPENSSL_VERSION_NUMBER < 0x30000000L
+#if OPENSSL_VERSION_NUMBER < 0x30000000L || defined(OE_BUILD_ENCLAVE)
 oe_result_t oe_ec_public_key_from_coordinates(
     oe_ec_public_key_t* public_key,
     oe_ec_type_t ec_type,

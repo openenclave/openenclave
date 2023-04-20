@@ -803,7 +803,7 @@ oe_result_t oe_cert_get_ec_public_key(
         OE_RAISE(OE_CRYPTO_ERROR);
 
         /* If this is not an EC key */
-#if OPENSSL_VERSION_NUMBER < 0x30000000L
+#if OPENSSL_VERSION_NUMBER < 0x30000000L || defined(OE_BUILD_ENCLAVE)
     EC_KEY* ec;
     if (!(ec = EVP_PKEY_get1_EC_KEY(pkey)))
         OE_RAISE_NO_TRACE(OE_CRYPTO_ERROR);
