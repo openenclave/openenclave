@@ -114,5 +114,6 @@ endmacro ()
 add_library_oeenclave_wrapper(LIB_NAME oeenclave)
 # This lib should only be used to build oeutil
 add_library_oeenclave_wrapper(LIB_NAME oeenclave_prerelease_test SKIP_INSTALL)
-target_compile_definitions(oeenclave_prerelease_test
-                           PUBLIC OEUTIL_TCB_ALLOW_ANY_ROOT_KEY)
+target_compile_definitions(
+  oeenclave_prerelease_test PUBLIC OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
+                                   OEUTIL_QUOTE_BYPASS_DATE_CHECK)

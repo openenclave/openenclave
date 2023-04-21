@@ -36,6 +36,11 @@ static const char* g_expected_root_certificate_key =
 
 static const oe_uuid_t _ecdsa_uuid = {OE_FORMAT_UUID_SGX_ECDSA};
 
+#ifdef OEUTIL_QUOTE_BYPASS_DATE_CHECK
+// Defined in tools/oeutil/host/generate_evidence.cpp
+extern bool _should_skip_date_check;
+#endif
+
 // Max length of SGX DCAP QVL/QvE returned supplemental data
 #define MAX_SUPPLEMENTAL_DATA_SIZE 1000
 
@@ -647,12 +652,32 @@ oe_result_t oe_verify_quote_with_sgx_endorsements(
         oe_datetime_to_string(&validity_from, vfrom, &tsize);
 
         oe_datetime_log("Latest valid datetime: ", &validity_from);
+#ifdef OEUTIL_QUOTE_BYPASS_DATE_CHECK
+        if (_should_skip_date_check)
+        {
+            OE_TRACE_WARNING(
+                "(Suppressed error) Validation time %s is earlier than the "
+                "latest 'valid from' value %s.",
+                vtime,
+                vfrom);
+        }
+        else
+        {
+            OE_RAISE_MSG(
+                OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
+                "Validation time %s is earlier than the "
+                "latest 'valid from' value %s.",
+                vtime,
+                vfrom);
+        }
+#else
         OE_RAISE_MSG(
             OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
             "Validation time %s is earlier than the "
             "latest 'valid from' value %s.",
             vtime,
             vfrom);
+#endif
     }
     if (oe_datetime_compare(&validation_time, &validity_until) > 0)
     {
@@ -664,12 +689,32 @@ oe_result_t oe_verify_quote_with_sgx_endorsements(
         oe_datetime_to_string(&validity_until, vuntil, &tsize);
 
         oe_datetime_log("Earliest expiration datetime: ", &validity_until);
+#ifdef OEUTIL_QUOTE_BYPASS_DATE_CHECK
+        if (_should_skip_date_check)
+        {
+            OE_TRACE_WARNING(
+                "(suppressed error) Validation time %s is later than the "
+                "earliest 'valid to' value %s.",
+                vtime,
+                vuntil);
+        }
+        else
+        {
+            OE_RAISE_MSG(
+                OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
+                "Validation time %s is later than the "
+                "earliest 'valid to' value %s.",
+                vtime,
+                vuntil);
+        }
+#else
         OE_RAISE_MSG(
             OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
             "Validation time %s is later than the "
             "earliest 'valid to' value %s.",
             vtime,
             vuntil);
+#endif
     }
     if (valid_from && valid_until)
     {
@@ -794,10 +839,29 @@ oe_result_t oe_get_sgx_quote_validity(
     oe_datetime_log("Quote overall issue date: ", &latest_from);
     oe_datetime_log("Quote overall next update: ", &earliest_until);
     if (oe_datetime_compare(&latest_from, &earliest_until) > 0)
+    {
+#ifdef OEUTIL_QUOTE_BYPASS_DATE_CHECK
+        if (_should_skip_date_check)
+        {
+            OE_TRACE_WARNING(
+                "(Suppressed error) Failed to find an overall validity period "
+                "in quote.",
+                NULL);
+        }
+        else
+        {
+            OE_RAISE_MSG(
+                OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
+                "Failed to find an overall validity period in quote.",
+                NULL);
+        }
+#else
         OE_RAISE_MSG(
             OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
             "Failed to find an overall validity period in quote.",
             NULL);
+#endif
+    }
 
     *valid_from = latest_from;
     *valid_until = earliest_until;

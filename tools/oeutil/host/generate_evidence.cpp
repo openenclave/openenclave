@@ -67,6 +67,9 @@ extern FILE* log_file;
 #ifdef OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
 #define INPUT_PARAM_OPTION_ROOT_PUB_KEY "--rootkey"
 #endif
+#ifdef OEUTIL_QUOTE_BYPASS_DATE_CHECK
+#define INPUT_PARAM_OPTION_BYPASS_DATE "--bypass-date-check"
+#endif
 #define SHORT_INPUT_PARAM_OPTION_FORMAT "-f"
 #define SHORT_INPUT_PARAM_OPTION_ENDORSEMENTS_FILENAME "-e"
 #define SHORT_INPUT_PARAM_OPTION_QUOTE_PROC "-p"
@@ -98,6 +101,11 @@ OE_EXTERNC const char* _trusted_root_key_pem =
     "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEC6nEwMDIYZOj/iPWsCzaEKi71OiO\n"
     "SLRFhWGjbnBVJfVnkY4u3IjkDYYL0MxO4mqsyYjlBalTVYxFP2sJBK5zlA==\n"
     "-----END PUBLIC KEY-----\n";
+#endif
+
+#ifdef OEUTIL_QUOTE_BYPASS_DATE_CHECK
+// common/sgx/quote.c
+OE_EXTERNC bool _should_skip_date_check = false;
 #endif
 
 // Structure to store input parameters
@@ -320,6 +328,11 @@ static void _display_help(const char* command)
         "\t%s <pub key>: replace hard-coded Intel trusted public key with "
         "given one\n",
         INPUT_PARAM_OPTION_ROOT_PUB_KEY);
+#endif
+#ifdef OEUTIL_QUOTE_BYPASS_DATE_CHECK
+    printf(
+        "\t%s: bypass/ignore quote's date validity check\n",
+        INPUT_PARAM_OPTION_BYPASS_DATE);
 #endif
     printf("Examples:\n");
     printf("\t1. Show the verification results of evidence in SGX_ECDSA "
@@ -1586,6 +1599,13 @@ int _parse_args(int argc, const char* argv[])
 
             _parameters.override_pubkey_filename = argv[i + 1];
             i += 2;
+        }
+#endif
+#ifdef OEUTIL_QUOTE_BYPASS_DATE_CHECK
+        else if (strcasecmp(INPUT_PARAM_OPTION_BYPASS_DATE, argv[i]) == 0)
+        {
+            _should_skip_date_check = true;
+            i++;
         }
 #endif
         else if (
