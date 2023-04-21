@@ -18,7 +18,7 @@ add_custom_command(
 add_executable(secure_verify host.cpp evidence.cpp
                              ${CMAKE_CURRENT_BINARY_DIR}/secure_verify_u.c)
 
-# add_dependencies(secure_verify secure_verify_enclave_key_pair
+add_dependencies(secure_verify secure_verify_enclave_key_pair)
 #                  secure_verify_quote_binary)
 
 target_include_directories(secure_verify PRIVATE ${CMAKE_CURRENT_BINARY_DIR}

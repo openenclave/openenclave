@@ -18,11 +18,15 @@ if (BUILD_ENCLAVES)
   # included by the host
   add_custom_command(
     OUTPUT secure_verify_enc_private.pem secure_verify_enc_public.pem
-           secure_verify_enc_pubkey.h
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/gen_pubkey_header.sh
     COMMAND openssl genrsa -out secure_verify_enc_private.pem -3 3072
     COMMAND openssl rsa -in secure_verify_enc_private.pem -pubout -out
             secure_verify_enc_public.pem
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+
+  add_custom_command(
+    OUTPUT secure_verify_enc_pubkey.h
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/gen_pubkey_header.sh
+            secure_verify_enc_private.pem secure_verify_enc_public.pem
     COMMAND ${OE_BASH} -c ${gen_pubkey_header_command}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
