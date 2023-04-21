@@ -230,15 +230,20 @@ def ACCHostVerificationTest(String version, String build_type, String compiler) 
                 unstash "linux_host_verify-${version}-${build_type}-${BUILD_NUMBER}"
                 def cmakeArgs = "-G Ninja -DBUILD_ENCLAVES=OFF -DCMAKE_BUILD_TYPE=${build_type} -DNUGET_PACKAGE_PATH=C:/oe_prereqs -Wdev"
                 dir('build') {
-                    bat(
-                        returnStdout: false,
-                        returnStatus: false,
-                        script: """
-                            call vcvars64.bat x64
-                            ${helpers.ninjaBuildCommand(cmakeArgs)}
-                            ctest.exe -V -C ${build_type} -R host_verify --output-on-failure --timeout ${globalvars.CTEST_TIMEOUT_SECONDS} || exit !ERRORLEVEL!
-                        """
-                    )
+                    withCredentials([
+                        string(credentialsId: 'thim-tdx-base-url', variable: 'AZDCAP_BASE_CERT_URL_TDX'),
+                        string(credentialsId: 'thim-tdx-region-url', variable: 'AZDCAP_REGION_URL')
+                    ]) {
+                        bat(
+                            returnStdout: false,
+                            returnStatus: false,
+                            script: """
+                                call vcvars64.bat x64
+                                ${helpers.ninjaBuildCommand(cmakeArgs)}
+                                ctest.exe -V -C ${build_type} -R host_verify --output-on-failure --timeout ${globalvars.CTEST_TIMEOUT_SECONDS} || exit !ERRORLEVEL!
+                            """
+                        )
+                    }
                 }
             }
         }
