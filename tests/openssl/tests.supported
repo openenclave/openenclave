@@ -1,6 +1,6 @@
-../../3rdparty/openssl/openssl/test/acvp_test.c
 ../../3rdparty/openssl/openssl/test/aesgcmtest.c
 ../../3rdparty/openssl/openssl/test/afalgtest.c
+../../3rdparty/openssl/openssl/test/algorithmid_test.c
 ../../3rdparty/openssl/openssl/test/asn1_decode_test.c
 ../../3rdparty/openssl/openssl/test/asn1_dsa_internal_test.c
 ../../3rdparty/openssl/openssl/test/asn1_encode_test.c
@@ -16,6 +16,7 @@
 ../../3rdparty/openssl/openssl/test/bio_memleak_test.c
 ../../3rdparty/openssl/openssl/test/bio_readbuffer_test.c
 ../../3rdparty/openssl/openssl/test/bioprinttest.c
+../../3rdparty/openssl/openssl/test/bn_internal_test.c
 ../../3rdparty/openssl/openssl/test/bntest.c
 ../../3rdparty/openssl/openssl/test/casttest.c
 ../../3rdparty/openssl/openssl/test/cipher_overhead_test.c
@@ -25,13 +26,9 @@
 ../../3rdparty/openssl/openssl/test/clienthellotest.c
 ../../3rdparty/openssl/openssl/test/cmactest.c
 ../../3rdparty/openssl/openssl/test/cmp_asn_test.c
-../../3rdparty/openssl/openssl/test/cmp_ctx_test.c
 ../../3rdparty/openssl/openssl/test/cmp_hdr_test.c
-../../3rdparty/openssl/openssl/test/cmp_msg_test.c
-../../3rdparty/openssl/openssl/test/cmp_protect_test.c
 ../../3rdparty/openssl/openssl/test/cmp_server_test.c
 ../../3rdparty/openssl/openssl/test/cmp_status_test.c
-../../3rdparty/openssl/openssl/test/cmp_vfy_test.c
 ../../3rdparty/openssl/openssl/test/conf_include_test.c
 ../../3rdparty/openssl/openssl/test/confdump.c
 ../../3rdparty/openssl/openssl/test/constant_time_test.c
@@ -95,9 +92,13 @@
 ../../3rdparty/openssl/openssl/test/pkcs12_format_test.c
 ../../3rdparty/openssl/openssl/test/pkey_meth_kdf_test.c
 ../../3rdparty/openssl/openssl/test/pkey_meth_test.c
-../../3rdparty/openssl/openssl/test/property_test.c
 ../../3rdparty/openssl/openssl/test/prov_config_test.c
 ../../3rdparty/openssl/openssl/test/provfetchtest.c
+../../3rdparty/openssl/openssl/test/provider_fallback_test.c
+../../3rdparty/openssl/openssl/test/provider_internal_test.c
+../../3rdparty/openssl/openssl/test/provider_pkey_test.c
+../../3rdparty/openssl/openssl/test/provider_status_test.c
+../../3rdparty/openssl/openssl/test/provider_test.c
 ../../3rdparty/openssl/openssl/test/rand_status_test.c
 ../../3rdparty/openssl/openssl/test/rand_test.c
 ../../3rdparty/openssl/openssl/test/rc2test.c
@@ -107,6 +108,7 @@
 ../../3rdparty/openssl/openssl/test/recordlentest.c
 ../../3rdparty/openssl/openssl/test/rsa_complex.c
 ../../3rdparty/openssl/openssl/test/rsa_mp_test.c
+../../3rdparty/openssl/openssl/test/rsa_sp800_56b_test.c
 ../../3rdparty/openssl/openssl/test/rsa_test.c
 ../../3rdparty/openssl/openssl/test/sanitytest.c
 ../../3rdparty/openssl/openssl/test/servername_test.c
@@ -123,7 +125,6 @@
 ../../3rdparty/openssl/openssl/test/sslbuffertest.c
 ../../3rdparty/openssl/openssl/test/sslcorrupttest.c
 ../../3rdparty/openssl/openssl/test/stack_test.c
-../../3rdparty/openssl/openssl/test/sysdefaulttest.c
 ../../3rdparty/openssl/openssl/test/test_test.c
 ../../3rdparty/openssl/openssl/test/time_offset_test.c
 ../../3rdparty/openssl/openssl/test/tls13ccstest.c

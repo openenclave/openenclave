@@ -1,21 +1,18 @@
 # Test aborts as expected, but the test harness does not currently support treating it as a pass.
 ../../3rdparty/openssl/openssl/test/aborttest.c
+# OpenSSL is not built with support for ACVP by default
+# https://github.com/openssl/openssl/blob/master/INSTALL.md#enable-acvp-tests
+../../3rdparty/openssl/openssl/test/acvp_test.c
 # Require localtime, which is not supported.
 ../../3rdparty/openssl/openssl/test/asn1_time_test.c
-# TODO: 'bn_prime.h' not found
-../../3rdparty/openssl/openssl/test/bn_internal_test.c
 # The MS CryptoAPI engine (capieng) is disabled.
 ../../3rdparty/openssl/openssl/test/cmsapitest.c
-# TODO: Don't know
-../../3rdparty/openssl/openssl/test/cmp_client_test.c
-# TODO: Need to add -Wimplicit-function-declaration
+# PSK is disabled by OE.
 ../../3rdparty/openssl/openssl/test/dtls_mtu_test.c
 # Require fork, which is not supported.
 ../../3rdparty/openssl/openssl/test/drbgtest.c
 # Disable the stress test that takes too long to finish (e.g., ~70 second on both Linux and Windows).
 ../../3rdparty/openssl/openssl/test/ecstresstest.c
-# TODO: not a test?
-../../3rdparty/openssl/openssl/test/fake_rsaprov.c
 # Fail with the stress test because of insufficient heap size (still fail with 25600 pages/100 MB).
 # The memory usage peak of running the non-enclave version of the test is 171.69 MB.
 ../../3rdparty/openssl/openssl/test/lhash_test.c
@@ -23,17 +20,17 @@
 ../../3rdparty/openssl/openssl/test/uitest.c
 # Require getservbyname, which is not supported.
 ../../3rdparty/openssl/openssl/test/ssltest_old.c
-# TODO: rename of ssltest_old?
 ../../3rdparty/openssl/openssl/test/ssl_old_test.c
+../../3rdparty/openssl/openssl/test/http_test.c
 # Depend on the OPENSSL_NO_SECURE_MEMORY build flag that is not supported by OE.
 ../../3rdparty/openssl/openssl/test/secmemtest.c
-# TODO: duplicate definition?
+# Depends on shared libraries, OE builds OpenSSL as static library.
 ../../3rdparty/openssl/openssl/test/tls13secretstest.c
 # GOST engine is not supported by OE (require dynamic loading).
 ../../3rdparty/openssl/openssl/test/gosttest.c
 # Depend on PSK that is disabled by OE.
 ../../3rdparty/openssl/openssl/test/dtls_mtu_test.c
-# Poly1305 is disabled OE.
+# Poly1305 is disabled by OE.
 ../../3rdparty/openssl/openssl/test/poly1305_internal_test.c
 # Chacha is disabled by OE.
 ../../3rdparty/openssl/openssl/test/chacha_internal_test.c
@@ -41,7 +38,7 @@
 ../../3rdparty/openssl/openssl/test/siphash_internal_test.c
 # SM2 is disabled by OE.
 ../../3rdparty/openssl/openssl/test/sm2_internal_test.c
-# TODO: SM3 is disabled by OE?
+# SM3 is disabled by OE.
 ../../3rdparty/openssl/openssl/test/sm3_internal_test.c
 # SM4 is disabled by OE.
 ../../3rdparty/openssl/openssl/test/sm4_internal_test.c
@@ -51,18 +48,18 @@
 ../../3rdparty/openssl/openssl/test/cipher_overhead_test.c
 # The 25-cipher.conf depends on chacha and poly1305 that are disabled by OE.
 ../../3rdparty/openssl/openssl/test/ssl_test.c
-# TODO: rsa_local.h file not found?
-../../3rdparty/openssl/openssl/test/rsa_sp800_56b_test.c
-# TODO: need to define PROVIDER_INIT_FUNCTION_NAME=p_test_init
-../../3rdparty/openssl/openssl/test/provider_fallback_test.c
-../../3rdparty/openssl/openssl/test/provider_internal_test.c
-../../3rdparty/openssl/openssl/test/provider_pkey_test.c
-../../3rdparty/openssl/openssl/test/provider_status_test.c
-../../3rdparty/openssl/openssl/test/provider_test.c
-# TODO: needs musl?
-../../3rdparty/openssl/openssl/test/http_test.c
-# TODO: exceeded max number of enclave threads supported 15
+# Exceeds max number of enclave threads supported 15
 ../../3rdparty/openssl/openssl/test/threadstest_fips.c
 ../../3rdparty/openssl/openssl/test/threadstest.c
-# TODO: we don't support fips, which is the module this tests loading
+# fips is disabled, which is the module this tests loading
 ../../3rdparty/openssl/openssl/test/moduleloadtest.c
+# OSSL_METHOD_STORE methods can call rdtsc directly
+../../3rdparty/openssl/openssl/test/property_test.c
+# Tests have memory leak. https://github.com/openssl/openssl/issues/20716
+../../3rdparty/openssl/openssl/test/cmp_client_test.c
+../../3rdparty/openssl/openssl/test/cmp_ctx_test.c
+../../3rdparty/openssl/openssl/test/cmp_msg_test.c
+../../3rdparty/openssl/openssl/test/cmp_protect_test.c
+../../3rdparty/openssl/openssl/test/cmp_vfy_test.c
+# Test depends on calling openssl_init_load_config, that is overwritten in our init.c
+../../3rdparty/openssl/openssl/test/sysdefaulttest.c

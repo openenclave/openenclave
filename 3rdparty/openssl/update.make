@@ -52,4 +52,3 @@ update-openssl-headers:
 	perl "-I." -Mconfigdata -Moids_to_c "util/dofile.pl" "-oMakefile" "providers/common/include/prov/der_rsa.h.in" > ../include/prov/der_rsa.h;
 	perl "-I." -Mconfigdata -Moids_to_c "util/dofile.pl" "-oMakefile" "providers/common/include/prov/der_sm2.h.in" > ../include/prov/der_sm2.h;
 	perl "-I." -Mconfigdata -Moids_to_c "util/dofile.pl" "-oMakefile" "providers/common/include/prov/der_wrap.h.in" > ../include/prov/der_wrap.h;
-  
