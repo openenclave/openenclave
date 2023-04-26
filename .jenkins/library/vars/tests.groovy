@@ -492,19 +492,86 @@ def windowsLinuxElfBuild(String windows_label, String ubuntu_label, String compi
                 unstash "linux-${windows_label}-${compiler}-${build_type}-lvi_mitigation=${lvi_mitigation}-${ubuntu_label}-${BUILD_NUMBER}"
                 bat 'move build linuxbin'
                 dir('build') {
-                    bat(
-                        returnStdout: false,
-                        returnStatus: false,
-                        script: """
-                            call vcvars64.bat x64
-                            setlocal EnableDelayedExpansion
-                            cmake.exe ${WORKSPACE} -G Ninja -DADD_WINDOWS_ENCLAVE_TESTS=ON -DBUILD_ENCLAVES=OFF -DCMAKE_BUILD_TYPE=${build_type} -DLINUX_BIN_DIR=${WORKSPACE}\\linuxbin\\tests -DLVI_MITIGATION=${lvi_mitigation} -DLVI_MITIGATION_SKIP_TESTS=${lvi_mitigation_skip_tests} -DNUGET_PACKAGE_PATH=C:/oe_prereqs -Wdev || exit !ERRORLEVEL!
-                            ninja -v || exit !ERRORLEVEL!
-                            ctest.exe -V -C ${build_type} --timeout ${globalvars.CTEST_TIMEOUT_SECONDS} || exit !ERRORLEVEL!
-                        """
-                    )
+                    withCredentials([
+                        string(credentialsId: 'thim-tdx-base-url', variable: 'AZDCAP_BASE_CERT_URL_TDX'),
+                        string(credentialsId: 'thim-tdx-region-url', variable: 'AZDCAP_REGION_URL')
+                    ]) {
+                        bat(
+                            returnStdout: false,
+                            returnStatus: false,
+                            script: """
+                                call vcvars64.bat x64
+                                setlocal EnableDelayedExpansion
+                                cmake.exe ${WORKSPACE} -G Ninja -DADD_WINDOWS_ENCLAVE_TESTS=ON -DBUILD_ENCLAVES=OFF -DCMAKE_BUILD_TYPE=${build_type} -DLINUX_BIN_DIR=${WORKSPACE}\\linuxbin\\tests -DLVI_MITIGATION=${lvi_mitigation} -DLVI_MITIGATION_SKIP_TESTS=${lvi_mitigation_skip_tests} -DNUGET_PACKAGE_PATH=C:/oe_prereqs -Wdev || exit !ERRORLEVEL!
+                                ninja -v || exit !ERRORLEVEL!
+                                ctest.exe -V -C ${build_type} --timeout ${globalvars.CTEST_TIMEOUT_SECONDS} || exit !ERRORLEVEL!
+                            """
+                        )
+                    }
                 }
             }
+        }
+    }
+}
+
+/**
+ * Compile open-enclave on Windows platform, generate NuGet package out of it, 
+ * install the generated NuGet package, and run samples tests against the installation.
+ */
+def WinCompilePackageTest(String dirName, String buildType, String hasQuoteProvider, Integer timeoutSeconds, String lviMitigation = 'None', String lviMitigationSkipTests = 'ON', List extra_cmake_args = []) {
+    cleanWs()
+    checkout scm
+    dir(dirName) {
+        /*
+        In simulation mode, some samples should not be ran or should run simulation mode. 
+        For items that should be skipped, see items appended to SAMPLES_LIST under the IF statement with OE_SIMULATION in:
+        https://github.com/openenclave/openenclave/blob/master/samples/test-samples.cmake#L54
+        For items that should run in simulation mode, check sample Makefiles for target `simulate`
+        SIMULATION_SKIP is a "list" of samples to skip in simulation mode.
+        SIMULATION_TEST is a "list" of samples to run in simulation mode.
+        */
+        withCredentials([
+            string(credentialsId: 'thim-tdx-base-url', variable: 'AZDCAP_BASE_CERT_URL_TDX'),
+            string(credentialsId: 'thim-tdx-region-url', variable: 'AZDCAP_REGION_URL')
+        ]) {
+            bat(
+                returnStdout: false,
+                returnStatus: false,
+                script: """
+                    call vcvars64.bat x64
+                    setlocal EnableDelayedExpansion
+                    cmake.exe ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${buildType} -DBUILD_ENCLAVES=ON -DHAS_QUOTE_PROVIDER=${hasQuoteProvider} -DLVI_MITIGATION=${lviMitigation} -DLVI_MITIGATION_SKIP_TESTS=${lviMitigationSkipTests} -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCPACK_GENERATOR=NuGet -Wdev ${extra_cmake_args.join(' ')} || exit !ERRORLEVEL!
+                    ninja.exe || exit !ERRORLEVEL!
+                    ctest.exe -V -C ${buildType} --timeout ${timeoutSeconds} || exit !ERRORLEVEL!
+                    cpack.exe -D CPACK_NUGET_COMPONENT_INSTALL=ON -DCPACK_COMPONENTS_ALL=OEHOSTVERIFY || exit !ERRORLEVEL!
+                    cpack.exe || exit !ERRORLEVEL!
+                    if exist C:\\oe rmdir /s/q C:\\oe
+                    nuget.exe install open-enclave -Source %cd% -OutputDirectory C:\\oe -ExcludeVersion
+                    set CMAKE_PREFIX_PATH=C:\\oe\\open-enclave\\openenclave\\lib\\openenclave\\cmake
+                    set SIMULATION_SKIP="\\attested_tls\\attestation\\"
+                    set SIMULATION_TEST="\\debugmalloc\\helloworld\\switchless\\log_callback\\file-encryptor\\pluggable_allocator\\"
+                    cd C:\\oe\\open-enclave\\openenclave\\share\\openenclave\\samples
+                    for /d %%i in (*) do (
+                        set BUILD=1
+                        if ${OE_SIMULATION} equ 1 if "!SIMULATION_SKIP:%%~nxi=!" neq "%SIMULATION_SKIP%" set BUILD=
+                        if !BUILD! equ 1 (
+                            cd C:\\oe\\open-enclave\\openenclave\\share\\openenclave\\samples\\"%%i"
+                            mkdir build
+                            cd build
+                            cmake .. -G Ninja -DNUGET_PACKAGE_PATH=C:\\oe_prereqs -DLVI_MITIGATION=${lviMitigation} || exit !ERRORLEVEL!
+                            ninja || exit !ERRORLEVEL!
+                            if ${OE_SIMULATION} equ 1 if "!SIMULATION_TEST:%%~nxi=!" neq "%SIMULATION_TEST%" (
+                                echo "Running %%i with --simulation flag" 
+                                ninja simulate || exit !ERRORLEVEL!
+                            ) else (
+                                ninja run || exit !ERRORLEVEL!
+                            )
+                        ) else (
+                            echo "Skipping %%i as we are in simulation mode."
+                        )
+                    )
+                """
+            )
         }
     }
 }
@@ -524,7 +591,7 @@ def windowsCrossCompile(String label, String compiler, String build_type, String
                     // Interrupt build if no output received from node for 15 minutes
                     timeout(time: 15, activity: true, unit: 'MINUTES') {
                         withEnv(["OE_SIMULATION=${OE_SIMULATION}"]) {
-                            common.WinCompilePackageTest("build/X64-${build_type}", build_type, 'OFF', globalvars.CTEST_TIMEOUT_SECONDS, lvi_mitigation, lvi_mitigation_skip_tests, extra_cmake_args)
+                            WinCompilePackageTest("build/X64-${build_type}", build_type, 'OFF', globalvars.CTEST_TIMEOUT_SECONDS, lvi_mitigation, lvi_mitigation_skip_tests, extra_cmake_args)
                         }
                     }
                 }
@@ -741,7 +808,7 @@ def WindowsPackaging(String node_label, String compiler, String build_type, Stri
         node("${node_label}-${compiler}") {
             withEnv(["OE_SIMULATION=${simulation}"]) {
                 timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
-                    common.WinCompilePackageTest("build", build_type, "ON", globalvars.CTEST_TIMEOUT_SECONDS, lvi_mitigation)
+                    WinCompilePackageTest("build", build_type, "ON", globalvars.CTEST_TIMEOUT_SECONDS, lvi_mitigation)
                 }
             }
         }
