@@ -15,4 +15,7 @@ endif ()
 
 if (BUILD_OPENSSL)
   add_enclave_test(tests/crypto/enclave_openssl cryptohost crypto_openssl_enc)
+
+  add_enclave_test(tests/crypto/enclave_openssl_3 cryptohost
+                   crypto_openssl_3_enc)
 endif ()

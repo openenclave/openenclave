@@ -26,10 +26,6 @@ int enc_test(int argc, char** argv, char** env)
     /* Directly use environ from host. */
     __environ = env;
 
-#if OECRYPTO_OPENSSL_VER == 3
-    OPENSSL_init_crypto(OPENSSL_INIT_NO_LOAD_CONFIG, NULL);
-#endif
-
     /* Initialize socket and host fs. */
     if (oe_load_module_host_socket_interface() != OE_OK)
         goto done;

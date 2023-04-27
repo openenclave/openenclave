@@ -280,13 +280,6 @@ function (add_openssl_test_enc NAME BUILDTEST CRYPTO_LIB)
     # OpenSSL 1.0 doesn't require any additional files.
   endif ()
 
-  if ("${CRYPTO_LIB}" STREQUAL "OpenSSL_3")
-    # OpenSSL_3 doesn't have a crypto lib.
-    set(TEST_CRYPTO_LIB "mbedtls")
-  else ()
-    set(TEST_CRYPTO_LIB ${CRYPTO_LIB})
-  endif ()
-
   add_enclave(
     TARGET
     openssl-${TEST_NAME}_enc
@@ -294,7 +287,7 @@ function (add_openssl_test_enc NAME BUILDTEST CRYPTO_LIB)
     # test linking against LVI-mitigated libraries.
     ADD_LVI_MITIGATION
     CRYPTO_LIB
-    ${TEST_CRYPTO_LIB}
+    ${CRYPTO_LIB}
     SOURCES
     ${TEST_SRC})
 
@@ -338,15 +331,8 @@ function (add_openssl_test_enc NAME BUILDTEST CRYPTO_LIB)
   enclave_include_directories(openssl-${TEST_NAME}_enc PRIVATE ${INCLUDE_PATHS})
 
   if (CRYPTO_LIB STREQUAL "OpenSSL_3")
-    # OpenSSL_3 doesn't have an oecrypto lib, so we build directly with openssl_3 lib
-    enclave_link_libraries(
-      openssl-${TEST_NAME}_enc
-      openssl_3-support
-      openssl_3-common
-      oehostsock
-      oehostfs
-      oehostresolver
-      openssl_3)
+    enclave_link_libraries(openssl-${TEST_NAME}_enc openssl_3-support
+                           openssl_3-common oehostsock oehostfs oehostresolver)
   else ()
     enclave_link_libraries(openssl-${TEST_NAME}_enc openssl-support
                            openssl-common oehostsock oehostfs oehostresolver)

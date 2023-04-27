@@ -60,6 +60,10 @@ if (${OE_CRYPTO_LIB} STREQUAL "openssl")
   target_link_libraries(
     tls_client_enc openenclave::oeenclave openenclave::oecryptoopenssl
     openenclave::oelibcxx openenclave::oehostsock openenclave::oehostresolver)
+elseif (${OE_CRYPTO_LIB} STREQUAL "openssl_3")
+  target_link_libraries(
+    tls_client_enc openenclave::oeenclave openenclave::oecryptoopenssl_3
+    openenclave::oelibcxx openenclave::oehostsock openenclave::oehostresolver)
 elseif (${OE_CRYPTO_LIB} STREQUAL "mbedtls")
   target_link_libraries(
     tls_client_enc openenclave::oeenclave openenclave::oecryptombedtls

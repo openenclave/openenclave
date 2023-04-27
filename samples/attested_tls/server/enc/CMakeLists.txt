@@ -25,8 +25,9 @@ add_custom_command(
   COMMAND ${CMAKE_COMMAND} -E sleep 1
   COMMAND ${CMAKE_COMMAND} -E remove temp.dmp)
 
-if (${OE_CRYPTO_LIB} STREQUAL "openssl" OR ${OE_CRYPTO_LIB} STREQUAL
-                                           "openssl_symcrypt_fips")
+if (${OE_CRYPTO_LIB} STREQUAL "openssl" OR
+    ${OE_CRYPTO_LIB} STREQUAL "openssl_symcrypt_fips" OR
+    ${OE_CRYPTO_LIB} STREQUAL "openssl_3")
   add_executable(
     tls_server_enc
     ecalls.cpp
@@ -63,6 +64,10 @@ target_include_directories(
 if (${OE_CRYPTO_LIB} STREQUAL "openssl")
   target_link_libraries(
     tls_server_enc openenclave::oeenclave openenclave::oecryptoopenssl
+    openenclave::oelibcxx openenclave::oehostsock openenclave::oehostresolver)
+elseif (${OE_CRYPTO_LIB} STREQUAL "openssl_3")
+  target_link_libraries(
+    tls_server_enc openenclave::oeenclave openenclave::oecryptoopenssl_3
     openenclave::oelibcxx openenclave::oehostsock openenclave::oehostresolver)
 elseif (${OE_CRYPTO_LIB} STREQUAL "mbedtls")
   target_link_libraries(

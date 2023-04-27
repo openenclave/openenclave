@@ -32,7 +32,7 @@ headers=`find ${directory} -name '*.h'`
 ## Append the inclusion of *_unsupported.h
 for i in ${headers}
 do
-    if [[ "${i}" != *"crypto.h" ]] && [[ "${i}" != *"ssl.h" ]] && [[ "${i}" != *"x509_vfy.h" ]]; then
+    if ([[ "${i}" != *"crypto.h" ]] && [[ "${i}" != *"ssl.h" ]] && [[ "${i}" != *"x509_vfy.h" ]]) || [[ "${i}" == *"prov_ssl.h" ]]; then
         continue
     fi
     # Use basename + cut which is portable.
