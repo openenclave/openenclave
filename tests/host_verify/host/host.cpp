@@ -3,6 +3,8 @@
 
 #include <fcntl.h>
 #include <limits.h>
+#include <openenclave/attestation/sgx/evidence.h>
+#include <openenclave/attestation/tdx/evidence.h>
 #include <openenclave/attestation/verifier.h>
 #include <openenclave/host.h>
 #include <openenclave/host_verify.h>
@@ -38,6 +40,10 @@
 #define REPORT_BAD_FILENAME "sgx_report_bad.bin"
 #define EVIDENCE_FILENAME "sgx_evidence.bin"
 #define ENDORSEMENTS_FILENAME "sgx_endorsements.bin"
+#define TDX_QUOTE_FILENAME "tdx_quote.bin"
+
+static const oe_uuid_t _sgx_ecdsa_uuid = {OE_FORMAT_UUID_SGX_ECDSA};
+static const oe_uuid_t _tdx_quote_uuid = {OE_FORMAT_UUID_TDX_QUOTE_ECDSA};
 
 oe_result_t enclave_identity_verifier(oe_identity_t* identity, void* arg)
 {
@@ -273,6 +279,7 @@ static int _verify_report(
 }
 
 static int _verify_evidence(
+    const oe_uuid_t* format_id,
     const char* evidence_filename,
     const char* endorsements_filename,
     bool expect_failure)
@@ -284,7 +291,6 @@ static int _verify_evidence(
     oe_result_t result = OE_FAILURE;
     oe_claim_t* claims = NULL;
     size_t claims_length = 0;
-    static const oe_uuid_t _uuid_sgx_ecdsa = {OE_FORMAT_UUID_SGX_ECDSA};
 
     OE_TRACE_INFO(
         "\n\nVerifying evidence %s, endorsements: %s\n",
@@ -297,9 +303,10 @@ static int _verify_evidence(
             endorsements_filename, &endorsements, &endorsements_size);
 
     OE_TEST(oe_verifier_initialize() == OE_OK);
+    OE_TEST(oe_tdx_verifier_initialize() == OE_OK);
 
     result = oe_verify_evidence(
-        &_uuid_sgx_ecdsa,
+        format_id,
         evidence,
         evidence_size,
         NULL,
@@ -322,6 +329,7 @@ static int _verify_evidence(
     }
 
     OE_TEST(oe_verifier_shutdown() == OE_OK);
+    OE_TEST(oe_tdx_verifier_shutdown() == OE_OK);
 
     OE_TRACE_INFO("evidence %s verified successfully!\n\n", evidence_filename);
 
@@ -356,9 +364,13 @@ int main()
         if (_validate_file(ENDORSEMENTS_FILENAME, false))
         {
             endorsements_filename = ENDORSEMENTS_FILENAME;
-            _verify_evidence(EVIDENCE_FILENAME, endorsements_filename, false);
+            _verify_evidence(
+                &_sgx_ecdsa_uuid,
+                EVIDENCE_FILENAME,
+                endorsements_filename,
+                false);
         }
-        _verify_evidence(EVIDENCE_FILENAME, NULL, false);
+        _verify_evidence(&_sgx_ecdsa_uuid, EVIDENCE_FILENAME, NULL, false);
     }
 
     // These files are checked in and should always exist.
@@ -370,6 +382,9 @@ int main()
 
     if (_validate_file(REPORT_BAD_FILENAME, true))
         _verify_report(REPORT_BAD_FILENAME, NULL, false);
+
+    if (_validate_file(TDX_QUOTE_FILENAME, true))
+        _verify_evidence(&_tdx_quote_uuid, TDX_QUOTE_FILENAME, NULL, false);
 
     return 0;
 }

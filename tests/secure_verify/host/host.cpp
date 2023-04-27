@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/attestation/sgx/evidence.h>
+#include <openenclave/attestation/tdx/evidence.h>
 #include <openenclave/attestation/verifier.h>
 #include <openenclave/corelibc/limits.h>
 #include <openenclave/host.h>
@@ -29,10 +30,11 @@
 #define INPUT_PARAM_OPTION_LOG_FILE "-l"
 #define INPUT_PARAM_EVIDENCE_FILE "-i"
 #define INPUT_PARAM_EVIDENCE_FORMAT "-f"
-#define INPUT_PARAM_EVIDENCE_FORMAT_ECDSA "ecdsa"
-#define INPUT_PARAM_EVIDENCE_FORMAT_REPORT "report"
-#define INPUT_PARAM_EVIDENCE_FORMAT_QUOTE "quote"
-#define INPUT_PARAM_EVIDENCE_FORMAT_CERT "cert"
+#define INPUT_PARAM_EVIDENCE_FORMAT_SGX_ECDSA "sgx_ecdsa"
+#define INPUT_PARAM_EVIDENCE_FORMAT_SGX_REPORT "sgx_report"
+#define INPUT_PARAM_EVIDENCE_FORMAT_SGX_QUOTE "sgx_quote"
+#define INPUT_PARAM_EVIDENCE_FORMAT_SGX_CERT "sgx_cert"
+#define INPUT_PARAM_EVIDENCE_FORMAT_TDX_QUOTE "tdx_quote"
 #define INPUT_PARAM_OPTION_VERBOSE "--verbose"
 
 #define OE_FORMAT_UUID_CERT                                               \
@@ -41,12 +43,13 @@
             0x00, 0x00, 0x00, 0x00, 0x00                                  \
     }
 
-static const oe_uuid_t _legacy_report_remote = {
+static const oe_uuid_t _legacy_sgx_report_remote = {
     OE_FORMAT_UUID_LEGACY_REPORT_REMOTE};
 static const oe_uuid_t raw_sgx_ecdsa_quote_uuid = {
     OE_FORMAT_UUID_RAW_SGX_QUOTE_ECDSA};
-static const oe_uuid_t _ecdsa_quote_uuid = {OE_FORMAT_UUID_SGX_ECDSA};
-static const oe_uuid_t _cert_uuid = {OE_FORMAT_UUID_CERT};
+static const oe_uuid_t _sgx_ecdsa_quote_uuid = {OE_FORMAT_UUID_SGX_ECDSA};
+static const oe_uuid_t _sgx_cert_uuid = {OE_FORMAT_UUID_CERT};
+static const oe_uuid_t _tdx_quote_uuid = {OE_FORMAT_UUID_TDX_QUOTE_ECDSA};
 
 // Structure to store input parameters
 //
@@ -76,11 +79,12 @@ static void _display_help(const char* cmd)
         cmd,
         INPUT_PARAM_EVIDENCE_FORMAT);
     printf(
-        "evidence_format: {%s|%s|%s|%s}.\n",
-        INPUT_PARAM_EVIDENCE_FORMAT_ECDSA,
-        INPUT_PARAM_EVIDENCE_FORMAT_REPORT,
-        INPUT_PARAM_EVIDENCE_FORMAT_QUOTE,
-        INPUT_PARAM_EVIDENCE_FORMAT_CERT);
+        "evidence_format: {%s|%s|%s|%s|%s}.\n",
+        INPUT_PARAM_EVIDENCE_FORMAT_SGX_ECDSA,
+        INPUT_PARAM_EVIDENCE_FORMAT_SGX_REPORT,
+        INPUT_PARAM_EVIDENCE_FORMAT_SGX_QUOTE,
+        INPUT_PARAM_EVIDENCE_FORMAT_SGX_CERT,
+        INPUT_PARAM_EVIDENCE_FORMAT_TDX_QUOTE);
     printf("options:\n");
     printf(
         "\t%s <log filename> (default: %s)\n",
@@ -92,7 +96,7 @@ static void _display_help(const char* cmd)
         "\t%s <enclave_file> report.bin %s %s\n",
         cmd,
         INPUT_PARAM_EVIDENCE_FORMAT,
-        INPUT_PARAM_EVIDENCE_FORMAT_REPORT);
+        INPUT_PARAM_EVIDENCE_FORMAT_SGX_REPORT);
 }
 
 static int _parse_args(int argc, const char* argv[])
@@ -123,27 +127,33 @@ static int _parse_args(int argc, const char* argv[])
             const char* format = argv[i + 1];
             if (strncmp(
                     format,
-                    INPUT_PARAM_EVIDENCE_FORMAT_ECDSA,
-                    strlen(INPUT_PARAM_EVIDENCE_FORMAT_ECDSA)) == 0)
-                _params.evidence_format = &_ecdsa_quote_uuid;
+                    INPUT_PARAM_EVIDENCE_FORMAT_SGX_ECDSA,
+                    strlen(INPUT_PARAM_EVIDENCE_FORMAT_SGX_ECDSA)) == 0)
+                _params.evidence_format = &_sgx_ecdsa_quote_uuid;
             else if (
                 strncmp(
                     format,
-                    INPUT_PARAM_EVIDENCE_FORMAT_REPORT,
-                    strlen(INPUT_PARAM_EVIDENCE_FORMAT_REPORT)) == 0)
-                _params.evidence_format = &_legacy_report_remote;
+                    INPUT_PARAM_EVIDENCE_FORMAT_SGX_REPORT,
+                    strlen(INPUT_PARAM_EVIDENCE_FORMAT_SGX_REPORT)) == 0)
+                _params.evidence_format = &_legacy_sgx_report_remote;
             else if (
                 strncmp(
                     format,
-                    INPUT_PARAM_EVIDENCE_FORMAT_QUOTE,
-                    strlen(INPUT_PARAM_EVIDENCE_FORMAT_QUOTE)) == 0)
+                    INPUT_PARAM_EVIDENCE_FORMAT_SGX_QUOTE,
+                    strlen(INPUT_PARAM_EVIDENCE_FORMAT_SGX_QUOTE)) == 0)
                 _params.evidence_format = &raw_sgx_ecdsa_quote_uuid;
             else if (
                 strncmp(
                     format,
-                    INPUT_PARAM_EVIDENCE_FORMAT_CERT,
-                    strlen(INPUT_PARAM_EVIDENCE_FORMAT_CERT)) == 0)
-                _params.evidence_format = &_cert_uuid;
+                    INPUT_PARAM_EVIDENCE_FORMAT_SGX_CERT,
+                    strlen(INPUT_PARAM_EVIDENCE_FORMAT_SGX_CERT)) == 0)
+                _params.evidence_format = &_sgx_cert_uuid;
+            else if (
+                strncmp(
+                    format,
+                    INPUT_PARAM_EVIDENCE_FORMAT_TDX_QUOTE,
+                    strlen(INPUT_PARAM_EVIDENCE_FORMAT_TDX_QUOTE)) == 0)
+                _params.evidence_format = &_tdx_quote_uuid;
             else
             {
                 printf("Invalid format: %s\n", argv[i + 1]);
@@ -191,7 +201,7 @@ static oe_result_t _verify_evidence(oe_enclave_t* enclave)
 {
     oe_result_t result = OE_OK;
 
-    if (_params.evidence_format == &_cert_uuid)
+    if (_params.evidence_format == &_sgx_cert_uuid)
     {
         // TODO - verify certificate
         printf("Certificate format not supported.\n");

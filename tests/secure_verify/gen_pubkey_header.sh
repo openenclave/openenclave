@@ -3,7 +3,12 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-lock="/var/tmp/oecert_lock"
+# Set lock file depending on Windows or Linux OS
+if [[ "${OSTYPE}" == "msys" || "${OSTYPE}" == "cygwin" ]]; then
+    lock="${SYSTEMROOT}\Temp\secure_verify_lock"
+else
+    lock="/var/tmp/secure_verify_lock"
+fi
 destfile="$1"
 pubkey_file="$2"
 

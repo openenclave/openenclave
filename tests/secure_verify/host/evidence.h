@@ -7,7 +7,7 @@
 #include <openenclave/bits/evidence.h>
 #include <openenclave/host.h>
 
-#include "../../../../host/sgx/platformquoteprovider.h"
+#include "../../../host/sgx/platformquoteprovider.h"
 #include "../secure_verify_enc_pubkey.h"
 
 void log(const char* fmt, ...);
