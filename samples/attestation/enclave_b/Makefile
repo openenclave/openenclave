@@ -3,8 +3,13 @@
 
 include ../../config.mk
 
-CFLAGS=$(shell pkg-config oeenclave-$(C_COMPILER) --cflags)
-CXXFLAGS=$(shell pkg-config oeenclave-$(CXX_COMPILER) --cflags)
+ifeq ($(OE_CRYPTO_LIB),openssl_3)
+	CFLAGS=$(shell pkg-config oeenclave-$(C_COMPILER) --variable=${OE_CRYPTO_LIB}flags)
+	CXXFLAGS=$(shell pkg-config oeenclave-$(CXX_COMPILER) --variable=${OE_CRYPTO_LIB}flags)
+else
+	CFLAGS=$(shell pkg-config oeenclave-$(C_COMPILER) --cflags)
+	CXXFLAGS=$(shell pkg-config oeenclave-$(CXX_COMPILER) --cflags)
+endif
 LDFLAGS=$(shell pkg-config oeenclave-$(CXX_COMPILER) --libs)
 INCDIR=$(shell pkg-config oeenclave-$(COMPILER) --variable=includedir)
 CRYPTO_LDFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --variable=${OE_CRYPTO_LIB}libs)

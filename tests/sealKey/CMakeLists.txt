@@ -15,4 +15,8 @@ if (BUILD_OPENSSL)
   add_enclave_test(tests/sealKey_openssl sealKey_host sealKey_openssl_enc)
   set_enclave_tests_properties(tests/sealKey_openssl PROPERTIES
                                SKIP_RETURN_CODE 2)
+
+  add_enclave_test(tests/sealKey_openssl_3 sealKey_host sealKey_openssl_3_enc)
+  set_enclave_tests_properties(tests/sealKey_openssl_3 PROPERTIES
+                               SKIP_RETURN_CODE 2)
 endif ()

@@ -3,8 +3,13 @@
 
 include ../../config.mk
 
-CFLAGS=$(shell pkg-config oeenclave-$(C_COMPILER) --cflags)
-CXXFLAGS=$(shell pkg-config oeenclave-$(CXX_COMPILER) --cflags)
+ifeq ($(OE_CRYPTO_LIB),openssl_3)
+	CFLAGS=$(shell pkg-config oeenclave-$(C_COMPILER) --variable=${OE_CRYPTO_LIB}flags)
+	CXXFLAGS=$(shell pkg-config oeenclave-$(CXX_COMPILER) --variable=${OE_CRYPTO_LIB}flags)
+else
+	CFLAGS=$(shell pkg-config oeenclave-$(C_COMPILER) --cflags)
+	CXXFLAGS=$(shell pkg-config oeenclave-$(CXX_COMPILER) --cflags)
+endif
 LDFLAGS=$(shell pkg-config oeenclave-$(CXX_COMPILER) --libs)
 INCDIR=$(shell pkg-config oeenclave-$(C_COMPILER) --variable=includedir)
 CRYPTO_LDFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --variable=${OE_CRYPTO_LIB}libs)
@@ -12,8 +17,13 @@ CRYPTO_LDFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --variable=${OE_CRYPTO_L
 CRYPTO_SRC = $(OE_CRYPTO_LIB)_src
 CXXINCDIR = -I. -I../ -I../..
 CXXSRCS = common/ecalls.cpp \
-	  $(CRYPTO_SRC)/encryptor.cpp \
-	  $(CRYPTO_SRC)/keys.cpp \
+		$(CRYPTO_SRC)/encryptor.cpp \
+		$(CRYPTO_SRC)/keys.cpp
+
+# Cover openssl, openssl_symcrypt_fips, and openssl_3
+ifneq (,$(findstring openssl,$(OE_CRYPTO_LIB)))
+	CRYPTO_SRC = openssl_src
+endif
 
 all:
 	$(MAKE) build
