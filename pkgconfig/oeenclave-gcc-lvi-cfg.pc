@@ -5,9 +5,13 @@ prefix=${pcfiledir}/../..
 exec_prefix=${prefix}
 includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
 libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
+
 mbedtlslibslvicfg=@LVI_MITIGATION_MBEDTLS_CRYPTO_LIBS@
 openssllibslvicfg=@LVI_MITIGATION_OPENSSL_CRYPTO_LIBS@
+openssl_3libslvicfg=@LVI_MITIGATION_OPENSSL_3_CRYPTO_LIBS@
 openssl_symcrypt_fipslibslvicfg=@LVI_MITIGATION_OPENSSL_SYMCRYPT_FIPS_CRYPTO_LIBS@
+
+openssl_3flags=@ENCLAVE_OPENSSL_3_INCLUDES@
 
 Name: Open Enclave
 Description: Open Enclave gcc flags and libraries for building enclaves with LVI mitigation.

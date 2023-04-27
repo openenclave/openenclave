@@ -23,8 +23,10 @@ $(or $(shell pkg-config oe$(strip $1)),	\
 	$(error Have you sourced 'openenclaverc'?))
 endef
 
-ENCLAVE_CFLAGS:= $(call oe-config,enclave-$(C_COMPILER) --cflags)
-ENCLAVE_CXXFLAGS:= $(call oe-config,enclave-$(CXX_COMPILER) --cflags)
+ENCLAVE_CFLAGS:= $(shell pkg-config oeenclave-$(C_COMPILER) --variable=${OE_CRYPTO_LIB}flags)
+ENCLAVE_CFLAGS+= $(call oe-config,enclave-$(C_COMPILER) --cflags)
+ENCLAVE_CXXFLAGS:= $(shell pkg-config oeenclave-$(CXX_COMPILER) --variable=${OE_CRYPTO_LIB}flags)
+ENCLAVE_CXXFLAGS+= $(call oe-config,enclave-$(CXX_COMPILER) --cflags)
 ENCLAVE_LDFLAGS:= $(call oe-config,enclave-$(C_COMPILER) --libs)
 ENCLAVE_LDFLAGS+= $(call oe-config,enclave-$(C_COMPILER) --variable=$(OE_CRYPTO_LIB)libs)
 

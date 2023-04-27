@@ -8,6 +8,7 @@ CXXFLAGS=$(shell pkg-config oeenclave-$(CXX_COMPILER) --cflags)
 LDFLAGS=$(shell pkg-config oeenclave-$(CXX_COMPILER) --libs)
 INCDIR=$(shell pkg-config oeenclave-$(C_COMPILER) --variable=includedir)
 CRYPTO_LDFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --variable=${OE_CRYPTO_LIB}libs)
+CRYPTO_FLAGS=$(shell pkg-config oeenclave-$(COMPILER) --variable=${OE_CRYPTO_LIB}flags)
 
 all:
 	$(MAKE) genkey
@@ -37,8 +38,8 @@ build:
 	oeedger8r ../attestation.edl --trusted --trusted-dir ../common \
 		--search-path $(INCDIR) \
 		--search-path $(INCDIR)/openenclave/edl/sgx
-	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -I../../../include -I. -I.. -std=c++11 -DOE_API_VERSION=2 ecalls.cpp ../common/attestation.cpp ../common/crypto.cpp ../common/dispatcher.cpp
-	$(CC) -g -c $(CFLAGS) $(CINCLUDES) -I.. -DOE_API_VERSION=2 ../common/attestation_t.c
+	$(CXX) -g -c $(CRYPTO_FLAGS) $(CXXFLAGS) $(INCLUDES) -I../../../include -I. -I.. -std=c++11 -DOE_API_VERSION=2 ecalls.cpp ../common/attestation.cpp ../common/crypto.cpp ../common/dispatcher.cpp
+	$(CC) -g -c $(CRYPTO_FLAGS) $(CFLAGS) $(CINCLUDES) -I.. -DOE_API_VERSION=2 ../common/attestation_t.c
 	$(CXX) -o enclave_a attestation.o crypto.o ecalls.o dispatcher.o attestation_t.o $(LDFLAGS) $(CRYPTO_LDFLAGS)
 
 sign:

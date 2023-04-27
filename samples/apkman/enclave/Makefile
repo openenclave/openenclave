@@ -4,6 +4,7 @@
 include ../../config.mk
 
 CRYPTO_LDFLAGS := $(shell pkg-config oeenclave-$(COMPILER) --variable=${OE_CRYPTO_LIB}libs)
+CRYPTO_FLAGS := $(shell pkg-config oeenclave-$(COMPILER) --variable=${OE_CRYPTO_LIB}flags)
 
 APKMAN_INITIALIZE=$(shell oeapkman)
 APKMAN_ROOT=$(shell oeapkman root)
@@ -22,10 +23,10 @@ build:
 		--search-path $(INCDIR) \
 		--search-path $(INCDIR)/openenclave/edl/sgx
 	oeapkman add sqlite-dev sqlite-static
-	$(CC) -g -c $(CFLAGS) -DOE_API_VERSION=2 -I$(APKMAN_ROOT)/usr/include enc.c -o enc.o
-	$(CC) -g -c $(CFLAGS) -DOE_API_VERSION=2 -I$(APKMAN_ROOT)/usr/include main.c -o main.o
-	$(CC) -g -c $(CFLAGS) -DOE_API_VERSION=2 -I$(APKMAN_ROOT)/usr/include stubs.c -o stubs.o
-	$(CC) -g -c $(CFLAGS) -DOE_API_VERSION=2 sqlite_t.c -o sqlite_t.o
+	$(CC) -g -c $(CRYPTO_FLAGS) $(CFLAGS) -DOE_API_VERSION=2 -I$(APKMAN_ROOT)/usr/include enc.c -o enc.o
+	$(CC) -g -c $(CRYPTO_FLAGS) $(CFLAGS) -DOE_API_VERSION=2 -I$(APKMAN_ROOT)/usr/include main.c -o main.o
+	$(CC) -g -c $(CRYPTO_FLAGS) $(CFLAGS) -DOE_API_VERSION=2 -I$(APKMAN_ROOT)/usr/include stubs.c -o stubs.o
+	$(CC) -g -c $(CRYPTO_FLAGS) $(CFLAGS) -DOE_API_VERSION=2 sqlite_t.c -o sqlite_t.o
 	$(CC) -o enclave sqlite_t.o enc.o main.o stubs.o \
                  $(APKMAN_ROOT)/usr/lib/libsqlite3.a \
                  $(LDFLAGS) $(CRYPTO_LDFLAGS)

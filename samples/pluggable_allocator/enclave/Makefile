@@ -4,6 +4,7 @@
 include ../../config.mk
 
 CRYPTO_LDFLAGS := $(shell pkg-config oeenclave-$(COMPILER) --variable=${OE_CRYPTO_LIB}libs)
+CRYPTO_FLAGS := $(shell pkg-config oeenclave-$(COMPILER) --variable=${OE_CRYPTO_LIB}flags)
 
 ifeq ($(LVI_MITIGATION), ControlFlow)
 	ifeq ($(LVI_MITIGATION_BINDIR),)
@@ -33,8 +34,8 @@ build:
 	oeedger8r ../allocator_demo.edl --trusted \
 		--search-path $(INCDIR) \
 		--search-path $(INCDIR)/openenclave/edl/sgx
-	$(CXX) -g -c $(CXXFLAGS) -DOE_API_VERSION=2 enc.cpp -o enc.o
-	$(CC) -g -c $(CFLAGS) -DOE_API_VERSION=2 allocator_demo_t.c -o allocator_demo_t.o
+	$(CXX) -g -c $(CRYPTO_FLAGS) $(CXXFLAGS) -DOE_API_VERSION=2 enc.cpp -o enc.o
+	$(CC) -g -c $(CRYPTO_FLAGS) $(CFLAGS) -DOE_API_VERSION=2 allocator_demo_t.c -o allocator_demo_t.o
 	$(CC) -o enclave_default allocator_demo_t.o enc.o $(LDFLAGS) $(CRYPTO_LDFLAGS) -loelibcxx -loelibc -loecore
 	$(CC) -o enclave_custom allocator_demo_t.o enc.o $(LDFLAGS_CUSTOM) $(CRYPTO_LDFLAGS) -loelibcxx -loelibc -loecore
 
