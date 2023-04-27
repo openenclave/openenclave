@@ -6,54 +6,31 @@ GLOBAL_ERROR = globalvars.GLOBAL_ERROR
 
 try{
     def testing_stages = [
-        "Host verification 2004 RelWithDebInfo":           { tests.ACCHostVerificationTest('20.04', 'RelWithDebInfo', 'clang-11') },
-        "Host verification package 2004 RelWithDebInfo":   { tests.ACCHostVerificationPackageTest('20.04', 'RelWithDebInfo', 'clang-11') },
-        "ACC2004 clang-11 RelWithDebInfo":                 { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04"], 'clang-11', 'RelWithDebInfo', ['-DLVI_MITIGATION=None',        '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
-        "ACC2004 clang-11 RelWithDebInfo EEID LVI FULL":   { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04"], 'clang-11', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DWITH_EEID=ON']) },
-        "ACC2004 clang-11 Debug LVI e2e":                  { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04-vanilla"], 'clang-11', 'Debug',   ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON'], true) }
+        "Host verification 2004 RelWithDebInfo":                     { tests.ACCHostVerificationTest('20.04', 'RelWithDebInfo', 'clang-11') },
+        "Host verification package 2004 RelWithDebInfo":             { tests.ACCHostVerificationPackageTest('20.04', 'RelWithDebInfo', 'clang-11') },
+        "Package ACC2004 RelWithDebInfo ControlFlow":                { tests.ACCPackageTest('20.04', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
+        "Upgrade ACC2004 RelWithDebInfo":                            { tests.ACCUpgradeTest('20.04', 'clang-11', ['-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
+        "Container ACC2004 RelWithDebInfo ControlFlow":              { tests.ACCContainerTest('20.04', 'clang-11', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
+        "Code Coverage ACC2004":                                     { tests.ACCCodeCoverageTest('20.04', 'clang-11', 'Debug') },
+        "ACC2004 v2 clang-11 RelWithDebInfo ControlFlow e2e":        { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04-vanilla"], 'clang-11', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON', '-DUSE_SNMALLOC=OFF'], true) },
+        "ACC2004 v2 clang-11 RelWithDebInfo ControlFlow snmalloc":   { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04"],         'clang-11', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON', '-DUSE_SNMALLOC=ON'],  false) },
+        "ACC2004 v2 clang-11 Debug":                                 { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04"],         'clang-11', 'Debug',          ['-DLVI_MITIGATION=None',        '-DLVI_MITIGATION_SKIP_TESTS=ON', '-DUSE_SNMALLOC=OFF'], false) },
+        "ACC2004 v3 clang-11 RelWithDebInfo ControlFlow":            { tests.ACCTest(globalvars.AGENTS_LABELS["acc-v3-ubuntu-20.04"],      'clang-11', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON', '-DUSE_SNMALLOC=OFF'], false) }
     ]
     if(FULL_TEST_SUITE == "true") {
-        stage("Full Test Suite") {
-            testing_stages += [
-                "Host verification 2004 Debug": { tests.ACCHostVerificationTest('20.04', 'Debug', 'clang-11') },
-
-                "Host verification package 2004 Debug": { tests.ACCHostVerificationPackageTest('20.04', 'Debug', 'clang-11') },
-
-                "ACC2004 Package RelWithDebInfo LVI":          { tests.ACCPackageTest('20.04', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
-                "ACC2004 Package RelWithDebInfo LVI snmalloc": { tests.ACCPackageTest('20.04', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) },
-
-                "ACC2004 Container RelWithDebInfo LVI": { tests.ACCContainerTest('20.04', 'clang-11', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
-
-                "ACC2004 clang-11 Debug LVI":                            { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04"],         'clang-11', 'Debug',          ['-DLVI_MITIGATION=ControlFlow',       '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
-                "ACC2004 clang-11 RelWithDebInfo LVI":                   { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04"],         'clang-11', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow',       '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
-                "ACC2004 clang-11 RelWithDebInfo LVI e2e":               { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04-vanilla"], 'clang-11', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow',       '-DLVI_MITIGATION_SKIP_TESTS=OFF'], true) },
-                "ACC2004 clang-11 RelWithDebInfo LVI e2e snmalloc":      { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04-vanilla"], 'clang-11', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow',       '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON'], true) },
-                "ACC2004 clang-11 RelWithDebInfo LVI snmalloc":          { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04"],         'clang-11', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow',       '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) },
-                "ACC2004ICX clang-11 RelWithDebInfo LVI":                { tests.ACCTest(globalvars.AGENTS_LABELS["acc-v3-ubuntu-20.04"],      'clang-11', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow',       '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=OFF']) },
-                "ACC2004 clang-11 RelWithDebInfo LVI ControlFlow-Clang": { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04"],         'clang-11', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow-Clang', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
-                "ACC2004 clang-10 RelWithDebInfo LVI ControlFlow":       { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04"],         'clang-10', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow',       '-DLVI_MITIGATION_SKIP_TESTS=OFF']) }
-
-            ]
-            parallel testing_stages
-        }
-    } else {
-        stage("PR Testing") {
-            testing_stages += [
-                "ACC2004 Package RelWithDebInfo LVI": { tests.ACCPackageTest('20.04', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
-
-                "ACC2004 Container RelWithDebInfo LVI": { tests.ACCContainerTest('20.04', 'clang-11', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
-
-                "ACC2004 clang-11 Debug LVI":                        { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04"], 'clang-11', 'Debug',          ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
-                "ACC2004 clang-11 RelWithDebInfo LVI FULL Tests":    { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04"], 'clang-11', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
-                "ACC2004 clang-11 Debug":                            { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04"], 'clang-11', 'Debug',          ['-DLVI_MITIGATION=None',        '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
-                "ACC2004 clang-11 RelWithDebInfo LVI FULL snmalloc": { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04"], 'clang-11', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF',  '-DUSE_SNMALLOC=ON']) },
-
-                "ACC2004 Code Coverage Test": { tests.ACCCodeCoverageTest('20.04', 'clang-11', 'Debug') },
-
-                "ACC2004 Upgrade Package RelWithDebInfo LVI": { tests.ACCUpgradeTest('20.04', 'clang-11', ['-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON']) }
-                ]
-            parallel testing_stages
-        }
+        testing_stages += [
+            "Host verification 2004 Debug":                          { tests.ACCHostVerificationTest('20.04', 'Debug', 'clang-11') },
+            "Host verification package 2004 Debug":                  { tests.ACCHostVerificationPackageTest('20.04', 'Debug', 'clang-11') },
+            "ACC2004 Package RelWithDebInfo ControlFlow snmalloc":   { tests.ACCPackageTest('20.04', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) },
+            "ACC2004 clang-10 RelWithDebInfo ControlFlow":           { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04"], 'clang-10', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow',       '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
+            "ACC2004 clang-11 RelWithDebInfo ControlFlow":           { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04"], 'clang-11', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow',       '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
+            "ACC2004 clang-11 RelWithDebInfo ControlFlow EEID":      { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04"], 'clang-11', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow',       '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DWITH_EEID=ON']) },
+            "ACC2004 clang-11 RelWithDebInfo ControlFlow-Clang":     { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04"], 'clang-11', 'RelWithDebInfo', ['-DLVI_MITIGATION=ControlFlow-Clang', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
+            "ACC2004 clang-11 Debug ControlFlow":                    { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04"], 'clang-11', 'Debug',          ['-DLVI_MITIGATION=ControlFlow',       '-DLVI_MITIGATION_SKIP_TESTS=OFF']) }
+        ]
+    }
+    stage("Run tests") {
+        parallel testing_stages
     }
 } catch(Exception e) {
     println "Caught global pipeline exception: " + e
