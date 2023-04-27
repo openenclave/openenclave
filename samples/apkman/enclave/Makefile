@@ -7,7 +7,11 @@ CRYPTO_LDFLAGS := $(shell pkg-config oeenclave-$(COMPILER) --variable=${OE_CRYPT
 
 APKMAN_INITIALIZE=$(shell oeapkman)
 APKMAN_ROOT=$(shell oeapkman root)
-CFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --cflags)
+ifeq ($(OE_CRYPTO_LIB),openssl_3)
+	CFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --variable=${OE_CRYPTO_LIB}flags)
+else
+	CFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --cflags)
+endif
 LDFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --libs)
 INCDIR=$(shell pkg-config oeenclave-$(COMPILER) --variable=includedir)
 

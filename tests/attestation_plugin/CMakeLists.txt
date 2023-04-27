@@ -17,4 +17,9 @@ if (BUILD_OPENSSL)
                    plugin_openssl_enc)
   set_enclave_tests_properties(tests/attestation_plugin_openssl PROPERTIES
                                SKIP_RETURN_CODE 2)
+
+  add_enclave_test(tests/attestation_plugin_openssl_3 plugin_host
+                   plugin_openssl_3_enc)
+  set_enclave_tests_properties(tests/attestation_plugin_openssl_3 PROPERTIES
+                               SKIP_RETURN_CODE 2)
 endif ()

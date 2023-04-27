@@ -17,8 +17,13 @@ ifeq ($(LVI_MITIGATION), ControlFlow)
 	CRYPTO_LDFLAGS := $(shell pkg-config oeenclave-$(COMPILER) --variable=${OE_CRYPTO_LIB}libslvicfg)
 endif
 
-CFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --cflags)
-CXXFLAGS=$(shell pkg-config oeenclave-$(CXX_COMPILER) --cflags)
+ifeq ($(OE_CRYPTO_LIB),openssl_3)
+	CFLAGS=$(shell pkg-config oeenclave-$(C_COMPILER) --variable=${OE_CRYPTO_LIB}flags)
+	CXXFLAGS=$(shell pkg-config oeenclave-$(CXX_COMPILER) --variable=${OE_CRYPTO_LIB}flags)
+else
+	CFLAGS=$(shell pkg-config oeenclave-$(C_COMPILER) --cflags)
+	CXXFLAGS=$(shell pkg-config oeenclave-$(CXX_COMPILER) --cflags)
+endif
 LDFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --libs)
 LDFLAGS_CUSTOM=$(subst -loelibc,-loesnmalloc -loelibc, $(LDFLAGS))
 INCDIR=$(shell pkg-config oeenclave-$(COMPILER) --variable=includedir)
