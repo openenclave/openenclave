@@ -178,7 +178,7 @@ pipeline {
         // TODO: Use an unmodified image directly from Azure/Canonical instead of a base image
         // Building base images by using a base image is a cyclic dependency issue, but it will
         // work so long as a base image already exists.
-        label "vanilla-ubuntu-1804"
+        label "vanilla-ubuntu-2004"
     }
     options {
         timeout(time: 90, unit: 'MINUTES')
@@ -201,21 +201,10 @@ pipeline {
         GALLERY_IMAGE_VERSION = "${GALLERY_IMAGE_DATE}${BUILD_NUMBER}"
     }
     stages {
-        stage('Build') {
-            parallel {
-                stage("Ubuntu 18.04") {
-                    steps {
-                        script {
-                            buildLinuxVMBaseImage("Ubuntu", "18.04")
-                        }
-                    }
-                }
-                stage("Ubuntu 20.04") {
-                    steps {
-                        script {
-                            buildLinuxVMBaseImage("Ubuntu", "20.04")
-                        }
-                    }
+        stage("Ubuntu 20.04") {
+            steps {
+                script {
+                    buildLinuxVMBaseImage("Ubuntu", "20.04")
                 }
             }
         }

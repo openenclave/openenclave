@@ -17,7 +17,7 @@ library "OpenEnclaveJenkinsLibrary@${params.OECI_LIB_VERSION}"
  * Publish OpenEnclave Ubuntu packages to the Microsoft APT repository
  *
  * @param release_version  The version of the Open Enclave release to install
- * @param os_release       The distribution version without "." (e.g. 1804)
+ * @param os_release       The distribution version without "." (e.g. 2004)
  */
 
 def ubuntuPublishRelease(String release_version, String os_release) {
@@ -108,13 +108,8 @@ pipeline {
         string(name: "OECI_LIB_VERSION", defaultValue: 'master', description: 'Version of OE Libraries to use', trim: true)
     }
     stages {
-        stage('Publish Open Enclave Release') {
-            parallel {
-                stage('Publish Ubuntu 20.04') { steps { node('nonsgx-ubuntu-2004') { ubuntuPublishRelease(params.OE_RELEASE_VERSION, '2004') } }}
-                stage('Publish Ubuntu 18.04') { steps { node('nonsgx-ubuntu-1804') { ubuntuPublishRelease(params.OE_RELEASE_VERSION, '1804') } }}
-                // Todo: Add NuGet stage and function
-            }
-        }
+        stage('Publish Ubuntu 20.04') { steps { node('nonsgx-ubuntu-2004') { ubuntuPublishRelease(params.OE_RELEASE_VERSION, '2004') } }}
+        // Todo: Add NuGet stage and function
     }
     post {
         always {

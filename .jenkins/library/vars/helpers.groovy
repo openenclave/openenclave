@@ -54,16 +54,22 @@ def InstallBuildCommand() {
     return installCommand
 }
 
-def InstallReleaseCommand() {
+def InstallReleaseCommand(String version) {
+    String codename = ''
+    if (version == '20.04') {
+        codename = 'focal'
+    } else {
+        throw new Exception("Unsupported Ubuntu version: ${version}")
+    }
     def installCommand = """
         echo "Running Install Release Command"
-        echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu bionic main' | sudo tee /etc/apt/sources.list.d/intel-sgx.list
+        echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu ${codename} main' | sudo tee /etc/apt/sources.list.d/intel-sgx.list
         wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | sudo apt-key add -
 
-        echo "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-11 main" | sudo tee /etc/apt/sources.list.d/llvm-toolchain-bionic-11.list
+        echo "deb http://apt.llvm.org/${codename}/ llvm-toolchain-${codename}-11 main" | sudo tee /etc/apt/sources.list.d/llvm-toolchain-${codename}-11.list
         wget -qO - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
 
-        echo "deb [arch=amd64] https://packages.microsoft.com/ubuntu/18.04/prod bionic main" | sudo tee /etc/apt/sources.list.d/msprod.list
+        echo "deb [arch=amd64] https://packages.microsoft.com/ubuntu/${version}/prod ${codename} main" | sudo tee /etc/apt/sources.list.d/msprod.list
         wget -qO - https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
 
         ${WaitForAptLock()}
@@ -333,7 +339,7 @@ def dependenciesInstall(String dcap_url = "", local_repo_path = "", String insta
  *                          - "open-enclave" [Default]
  *                          - "open-enclave-hostverify"
  * @param os_id            The distribution name (e.g. Ubuntu)
- * @param os_release       The distribution version without "." (e.g. 1804)
+ * @param os_release       The distribution version without "." (e.g. 2004)
  */
 def releaseDownloadLinuxGitHub(String release_version, String oe_package, String os_id, String os_release) {
     sh(
@@ -382,7 +388,7 @@ def releaseDownloadLinuxGitHub(String release_version, String oe_package, String
  *                                 - "Azure" to download from the Azure blob storage [Default]
  *                                 - "GitHub" to download from the Open Enclave Repository
  * @param os_id                   The distribution name (e.g. Ubuntu)
- * @param os_release              The distribution version without "." (e.g. 1804)
+ * @param os_release              The distribution version without "." (e.g. 2004)
  * @param storage_credentials_id  [Optional] Jenkins storage account credential id
  * @param storage_blob            [Optional] The name of the blob in the Azure storage account
  */

@@ -23,7 +23,7 @@ pipeline {
         string(name: "INTERNAL_REPO_CRED_ID", defaultValue: "oejenkinscidockerregistry", description: "Credential ID for internal Docker repository")
         string(name: "OECI_LIB_VERSION", defaultValue: 'master', description: 'Version of OE Libraries to use')
         string(name: "DEVKITS_URI", defaultValue: 'https://oejenkins.blob.core.windows.net/oejenkins/OE-CI-devkits-d1634ce8.tar.gz', description: "Uri for downloading the OECI Devkit")
-        string(name: "AGENTS_LABEL", defaultValue: 'acc-ubuntu-18.04', description: "Label of the agent to use to run this job")
+        string(name: "AGENTS_LABEL", defaultValue: 'acc-ubuntu-20.04', description: "Label of the agent to use to run this job")
         booleanParam(name: "TAG_LATEST", defaultValue: false, description: "Update the latest tag to the currently built DOCKER_TAG")
     }
     environment {
@@ -50,40 +50,21 @@ pipeline {
                                 chmod +x ./build.sh
                                 mkdir build
                                 cd build
-                                ../build.sh -v "${params.SGX_VERSION}" -u "18.04" -t "${TAG_BASE_IMAGE}"
                                 ../build.sh -v "${params.SGX_VERSION}" -u "20.04" -t "${TAG_BASE_IMAGE}"
                             """
                         }
                     }
                 }
-                stage('Test Base') {
-                    parallel {
-                        stage("Test Base - 18.04") {
-                            steps {
-                                script {
-                                    base_1804_image = docker.image("openenclave-base-ubuntu-18.04:${TAG_BASE_IMAGE}")
-                                    base_1804_image.inside("--user root:root --cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
-                                        sh """
-                                            apt update
-                                            apt install -y build-essential open-enclave libssl-dev curl
-                                        """
-                                        helpers.TestSamplesCommand(false, "open-enclave")
-                                    }
-                                }
-                            }
-                        }
-                        stage("Test Base - 20.04") {
-                            steps {
-                                script {
-                                    base_2004_image = docker.image("openenclave-base-ubuntu-20.04:${TAG_BASE_IMAGE}")
-                                    base_2004_image.inside("--user root:root --cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
-                                        sh """
-                                            apt update
-                                            apt install -y build-essential open-enclave libssl-dev curl
-                                        """
-                                        helpers.TestSamplesCommand(false, "open-enclave")
-                                    }
-                                }
+                stage("Test Base - 20.04") {
+                    steps {
+                        script {
+                            base_2004_image = docker.image("openenclave-base-ubuntu-20.04:${TAG_BASE_IMAGE}")
+                            base_2004_image.inside("--user root:root --cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
+                                sh """
+                                    apt update
+                                    apt install -y build-essential open-enclave libssl-dev curl
+                                """
+                                helpers.TestSamplesCommand(false, "open-enclave")
                             }
                         }
                     }
@@ -92,10 +73,8 @@ pipeline {
                     steps {
                         script {
                             docker.withRegistry(params.INTERNAL_REPO, params.INTERNAL_REPO_CRED_ID) {
-                                base_1804_image.push()
                                 base_2004_image.push()
                                 if ( params.TAG_LATEST ) {
-                                    base_1804_image.push('latest')
                                     base_2004_image.push('latest')
                                 }
                             }
@@ -107,60 +86,29 @@ pipeline {
         }
         stage("Full CI/CD Image") {
             stages {
-                stage("Build, Test, and Push") {
-                    parallel {
-                        stage("Ubuntu 18.04") {
-                            steps {
-                                script {
-                                    buildArgs = common.dockerBuildArgs(
-                                        "ubuntu_version=18.04",
-                                        "devkits_uri=${params.DEVKITS_URI}"
-                                    )
-                                    oe1804 = common.dockerImage("oetools-18.04:${TAG_FULL_IMAGE}", LINUX_DOCKERFILE, "${buildArgs}")
-                                    oe1804.inside("--user root:root \
-                                                   --cap-add=SYS_PTRACE \
-                                                   --device /dev/sgx:/dev/sgx \
-                                                   --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
-                                        sh """
-                                            apt update
-                                            apt install -y build-essential open-enclave libssl-dev
-                                        """
-                                        helpers.TestSamplesCommand(false, "open-enclave")
-                                    }
-                                    docker.withRegistry(params.INTERNAL_REPO, params.INTERNAL_REPO_CRED_ID) {
-                                        common.exec_with_retry { oe1804.push() }
-                                        if ( params.TAG_LATEST ) {
-                                            common.exec_with_retry { oe1804.push('latest') }
-                                        }
-                                    }
-                                }
+                stage("Ubuntu 20.04") {
+                    steps {
+                        script {
+                            buildArgs = common.dockerBuildArgs(
+                                "ubuntu_version=20.04",
+                                "devkits_uri=${params.DEVKITS_URI}"
+                            )
+                            oe2004 = common.dockerImage("oetools-20.04:${TAG_FULL_IMAGE}", LINUX_DOCKERFILE, "${buildArgs}")
+                            oe2004.inside("--user root:root \
+                                            --cap-add=SYS_PTRACE \
+                                            --device /dev/sgx/provision:/dev/sgx/provision \
+                                            --device /dev/sgx/enclave:/dev/sgx/enclave \
+                                            --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
+                                sh """
+                                    apt update
+                                    apt install -y build-essential open-enclave libssl-dev
+                                """
+                                helpers.TestSamplesCommand(false, "open-enclave")
                             }
-                        }
-                        stage("Ubuntu 20.04") {
-                            steps {
-                                script {
-                                    buildArgs = common.dockerBuildArgs(
-                                        "ubuntu_version=20.04",
-                                        "devkits_uri=${params.DEVKITS_URI}"
-                                    )
-                                    oe2004 = common.dockerImage("oetools-20.04:${TAG_FULL_IMAGE}", LINUX_DOCKERFILE, "${buildArgs}")
-                                    oe2004.inside("--user root:root \
-                                                   --cap-add=SYS_PTRACE \
-                                                   --device /dev/sgx/provision:/dev/sgx/provision \
-                                                   --device /dev/sgx/enclave:/dev/sgx/enclave \
-                                                   --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
-                                        sh """
-                                            apt update
-                                            apt install -y build-essential open-enclave libssl-dev
-                                        """
-                                        helpers.TestSamplesCommand(false, "open-enclave")
-                                    }
-                                    docker.withRegistry(params.INTERNAL_REPO, params.INTERNAL_REPO_CRED_ID) {
-                                        common.exec_with_retry { oe2004.push() }
-                                        if ( params.TAG_LATEST ) {
-                                            common.exec_with_retry { oe2004.push('latest') }
-                                        }
-                                    }
+                            docker.withRegistry(params.INTERNAL_REPO, params.INTERNAL_REPO_CRED_ID) {
+                                common.exec_with_retry { oe2004.push() }
+                                if ( params.TAG_LATEST ) {
+                                    common.exec_with_retry { oe2004.push('latest') }
                                 }
                             }
                         }

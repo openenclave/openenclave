@@ -37,7 +37,7 @@ Please refer to the following [documentation](/docs/GettingStartedDocs/SGXSuppor
    Choose an operating mode that is compatible with the SGX support level of your target system.
    The links below contain instructions on how to set up Open Enclave SDK environment for a given mode.
 
-On Ubuntu 18.04 or Ubuntu 20.04
+On Ubuntu 20.04
   - [Set up Open Enclave SDK for SGX1+FLC](SGX1FLCGettingStarted.md)
   - [Set up Open Enclave SDK for SGX1](SGX1GettingStarted.md)
   - [Set up Open Enclave SDK for simulation mode](SimulatorGettingStarted.md)

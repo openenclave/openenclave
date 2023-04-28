@@ -35,13 +35,11 @@ the hardware types below.
 If you would like to start developing apps with the preview Open Enclave SDK
 release, start here for instructions to install and use the SDK package:
 
-- [Ubuntu 18.04 with SGX hardware](install_oe_sdk-Ubuntu_18.04.md)
-- [Ubuntu 18.04 in simulation mode](install_oe_sdk-Simulation.md)
 - [Ubuntu 20.04 with SGX hardware](install_oe_sdk-Ubuntu_20.04.md)
 - [Ubuntu 20.04 in simulation mode](install_oe_sdk-Simulation.md)
 - [Windows 10(1709 or higher), or Windows Server 2019 on an Intel machine](install_oe_sdk-Windows.md)
 
-If you would like to run Ubuntu 18.04 or Ubuntu 20.04 in a Hyper-V VM on SGX
+If you would like to run Ubuntu 20.04 in a Hyper-V VM on SGX
 capable hardware, see
 [Setting up a Linux Hyper-V VM on Windows with SGX Support](HyperVLinuxVMSetup.md).
 

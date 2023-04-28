@@ -8,34 +8,25 @@ try{
     def testing_stages = [
         "Check CI":                                { tests.checkCI('clang-11') },
         "Check Developer Experience Ubuntu 20.04": { tests.checkDevFlows('20.04', 'clang-11') },
-        "Check Developer Experience Ubuntu 18.04": { tests.checkDevFlows('18.04', 'clang-11') },
         "AArch64 2004 GNU gcc Debug":              { tests.AArch64GNUTest('20.04', 'Debug') },
         "AArch64 2004 GNU gcc RelWithDebInfo":     { tests.AArch64GNUTest('20.04', 'RelWithDebInfo') },
-        "AArch64 1804 GNU gcc Debug":              { tests.AArch64GNUTest('18.04', 'Debug') },
-        "AArch64 1804 GNU gcc RelWithDebInfo":     { tests.AArch64GNUTest('18.04', 'RelWithDebInfo') }
+        "Ubuntu 2004 Cross Platform Build":        { tests.buildCrossPlatform("20.04", 'clang-11') }
     ]
     if(FULL_TEST_SUITE == "true") {
         stage("Full Test Suite") {
             testing_stages += [
-                "Sim 1804 clang-11 SGX1 Debug":                      { tests.simulationContainerTest('18.04', 'Debug',          'clang-11', ['-DHAS_QUOTE_PROVIDER=OFF', '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
-                "Sim 1804 clang-11 SGX1FLC RelWithDebInfo snmalloc": { tests.simulationContainerTest('18.04', 'RelWithDebInfo', 'clang-11', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) },
                 "Sim 2004 clang-11 SGX1 RelWithDebInfo":             { tests.simulationContainerTest('20.04', 'RelWithDebInfo', 'clang-11', ['-DHAS_QUOTE_PROVIDER=OFF', '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
                 "Sim 2004 clang-11 SGX1FLC RelWithDebInfo":          { tests.simulationContainerTest('20.04', 'RelWithDebInfo', 'clang-11', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
                 "Sim 2004 clang-11 SGX1FLC Debug snmalloc":          { tests.simulationContainerTest('20.04', 'Debug',          'clang-11', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) },
-                "Sim 2004 clang-11 SGX1FLC RelWithDebInfo snmalloc": { tests.simulationContainerTest('20.04', 'RelWithDebInfo', 'clang-11', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) },
-                "Ubuntu 1804 Cross Platform Build":                  { tests.buildCrossPlatform("18.04", 'clang-11') },
-                "Ubuntu 2004 Cross Platform Build":                  { tests.buildCrossPlatform("20.04", 'clang-11') }
+                "Sim 2004 clang-11 SGX1FLC RelWithDebInfo snmalloc": { tests.simulationContainerTest('20.04', 'RelWithDebInfo', 'clang-11', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) }
             ]
             parallel testing_stages
         }
     } else {
         stage("PR Testing") {
             testing_stages += [
-                "Sim 1804 clang-11 SGX1 RelWithDebInfo":             { tests.simulationContainerTest('18.04', 'RelWithDebInfo', 'clang-11', ['-DHAS_QUOTE_PROVIDER=OFF', '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
-                "Sim 1804 clang-11 SGX1FLC Debug":                   { tests.simulationContainerTest('18.04', 'Debug',          'clang-11', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
                 "Sim 2004 clang-11 SGX1FLC RelWithDebInfo":          { tests.simulationContainerTest('20.04', 'RelWithDebInfo', 'clang-11', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
-                "Sim 2004 clang-11 SGX1FLC RelWithDebInfo snmalloc": { tests.simulationContainerTest('20.04', 'RelWithDebInfo', 'clang-11', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON', '-DUSE_SNMALLOC=ON']) },
-                "Ubuntu 1804 Cross Platform Build":                  { tests.buildCrossPlatform("18.04", 'clang-11') }
+                "Sim 2004 clang-11 SGX1FLC RelWithDebInfo snmalloc": { tests.simulationContainerTest('20.04', 'RelWithDebInfo', 'clang-11', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON', '-DUSE_SNMALLOC=ON']) }
             ]
             parallel testing_stages
         }

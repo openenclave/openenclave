@@ -26,9 +26,9 @@ function wait-apt-get {
     apt-get "${@}"
 }
 
-if which yum > /dev/null; then
+if command -v yum > /dev/null; then
     yum install git python3-pip -y
-elif which apt-get > /dev/null; then
+elif command -v apt-get > /dev/null; then
     wait-apt-get update
     wait-apt-get install libssl-dev libffi-dev python3-pip -y
 else

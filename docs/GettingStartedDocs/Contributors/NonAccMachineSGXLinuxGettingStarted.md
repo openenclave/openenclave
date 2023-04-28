@@ -4,7 +4,7 @@
 This document is to provide a viable solution to enable Open Enclave SGX DCAP remote attestation to run on non-Azure Confidential Computing (ACC) machines. It relies on several Intel components and services which are subject to Intel's changes.
 
 ## 1. Platform requirements
-- Ubuntu 18.04-LTS or Ubuntu 20.04-LTS 64-bit.
+- Ubuntu 20.04-LTS 64-bit.
 - SGX1 capable system with Flexible Launch Control support. This feature is only available on Intel Coffee Lake processor (8th gen) or newer.
 - It is strongly recommended to update your BIOS to newest version before start. With the setup described by this document, all attestation will be against the most recent collateral. Old BIOS versions, which may have lower CPU SVN, will cause attestation to fail.
 
@@ -50,11 +50,6 @@ sudo apt install libsgx-dcap-default-qpl
 
 NOTE: In case the Intel SGX APT source repository is not added to your system. Run the following commands to add it.
 
-On Ubuntu 18.04:
-```bash
-echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu bionic main' | sudo tee /etc/apt/sources.list.d/intel-sgx.list
-```
-
 On Ubuntu 20.04:
 ```bash
 echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu focal main' | sudo tee /etc/apt/sources.list.d/intel-sgx.list
@@ -74,35 +69,37 @@ sudo apt-get update
 
 Intel DCAP Quote Provider package can be installed manually by finding the appropriate libsgx-dcap-default-qpl package in [the Intel SGX DCAP repository](https://download.01.org/intel-sgx/sgx-dcap/). As there are multiple different versions available, please download the version that matches Intel SGX version and your OS version. 
 
-For Ubuntu 18.04 (code name [Bionic Beaver](https://wiki.ubuntu.com/BionicBeaver)), please download the version `libsgx-dcap-default-qpl_{VERSION}-bionic1_amd64.deb`. Example: Ubuntu 18.04 with Intel SGX DCAP 1.10.3 would download [libsgx-dcap-default-qpl_1.10.103.1-bionic1_amd64.deb](https://download.01.org/intel-sgx/sgx-dcap/1.10.3/linux/distro/ubuntu18.04-server/debian_pkgs/libs/libsgx-dcap-default-qpl/libsgx-dcap-default-qpl_1.10.103.1-bionic1_amd64.deb).
+For Ubuntu 20.04 (code name [Focal Fossa](https://wiki.ubuntu.com/FocalFossa)), please download the sgx_debian_local_repo for the latest supported version of Intel DCAP. Afterwards, extract the tgz and install `sgx_debian_local_repo/pool/main/libs/libsgx-dcap-default-qpl/libsgx-dcap-default-qpl_{VERSION}-focal1_amd64.deb`.
 
-For Ubuntu 20.04 (code name [Focal Fossa](https://wiki.ubuntu.com/FocalFossa)), please download the version `libsgx-dcap-default-qpl_{VERSION}-focal1_amd64.deb`. For example: Ubuntu 20.04 with Intel SGX DCAP 1.10.3 would download [libsgx-dcap-default-qpl_1.10.103.1-focal1_amd64.deb](https://download.01.org/intel-sgx/sgx-dcap/1.10.3/linux/distro/ubuntu18.04-server/debian_pkgs/libs/libsgx-dcap-default-qpl/libsgx-dcap-default-qpl_1.10.103.1-focal1_amd64.deb).
+In this document, we use Ubuntu 20.04 and Intel DCAP 1.16 as an example, so we will use [sgx_debian_local_repo.tgz](https://download.01.org/intel-sgx/sgx-dcap/1.16/linux/distro/ubuntu20.04-server/sgx_debian_local_repo.tgz)
 
-In this document, we use libsgx-dcap-default-qpl_1.8.100.2-bionic1_amd64.deb as an example, run the command below to download the package
+1. Download the package
 ```bash
 cd ~
-wget https://download.01.org/intel-sgx/sgx-dcap/1.8/linux/distro/ubuntu18.04-server/debian_pkgs/libs/libsgx-dcap-default-qpl/libsgx-dcap-default-qpl_1.8.100.2-bionic1_amd64.deb
+wget https://download.01.org/intel-sgx/sgx-dcap/1.16/linux/distro/ubuntu20.04-server/sgx_debian_local_repo.tgz
+```
+2. Extract the package
+```bash
+tar xvzf sgx_debian_local_repo.tgz
 ```
 
-Then install the package
+3. Install the package
 ```bash
-sudo dpkg -i libsgx-dcap-default-qpl_1.8.100.2-bionic1_amd64.deb
+sudo dpkg -i sgx_debian_local_repo/pool/main/libs/libsgx-dcap-default-qpl/libsgx-dcap-default-qpl_1.16.100.2-focal1_amd64.deb
 ```
 
 ### 3.2 Create a soft link
-OE expects the file name of the qpl to be libdcap_quoteprov.so. But the Intel default qpl creates installed libdcap_quoteprov.so.1 and libdcap_quoteprov.so.1.8.100.2.  libdcap_quoteprov.so.1 is a soft link to libdcap_quoteprov.so.1.8.100.2. To allow OE works properly, we need to create the other soft link called libdcap_quoteprov.s linking to libdcap_quoteprov.so.1.8.100.2
+OE expects the file name of the QPL to be libdcap_quoteprov.so. But libsgx-dcap-default-qpl only creates libdcap_quoteprov.so.1 and libdcap_quoteprov.so.1.13.103.2 of which libdcap_quoteprov.so.1 is a soft link to libdcap_quoteprov.so.1.13.103.2. To allow OE to work properly, we need to create the other soft link called libdcap_quoteprov.so to link to libdcap_quoteprov.so.1.13.103.2
 
 Check where those files are installed.
 ```bash
 dpkg --listfiles libsgx-dcap-default-qpl
 ```
 
-In most cases, it should be in /usr/lib/x86_64-linux-gnu/
-
-Use /usr/lib/x86_64-linux-gnu/ as an example.
+In most cases, it should be in `/usr/lib/x86_64-linux-gnu/` so we use that path as an example.
 ```bash
 cd /usr/lib/x86_64-linux-gnu/
-sudo ln -s libdcap_quoteprov.so.1.8.100.2 libdcap_quoteprov.so
+sudo ln -s libdcap_quoteprov.so.1.13.103.2 libdcap_quoteprov.so
 ```
 
 NOTES TO USERS WHO HAVE ALREADY INSTALLED AZURE DCAP CLIENT:
@@ -124,7 +121,7 @@ sudo mv /usr/lib/libdcap_quoteprov.so /usr/lib/libdcap_quoteprov.so.azure
 
 Otherwise the Azure one might still get used because $PATH might have /usr/lib before the path /usr/lib/x86_64-linux-gnu with the Intel version.
 
-### 3.3 Configure the qpl
+### 3.3 Configure the QPL
 Edit the file /etc/sgx_default_qcnl.conf. To accept insecure HTTPS cert, set the option USE_SECURE_CERT to FALSE as we will use a local caching service which doesn't have a secure cert.
 
 ```bash
@@ -181,19 +178,24 @@ NOTE: In case the Intel SGX APT source repository is not added to your system. S
 
 PCCS can be installed manually by finding the appropriate sgx-dcap-pccs package in [the Intel SGX DCAP repository](https://download.01.org/intel-sgx/sgx-dcap/). As there are multiple different versions available, please download the version that matches Intel SGX version and your OS version. 
 
-For Ubuntu 18.04, please download the version `sgx-dcap-pccs_{VERSION}-bionic1_amd64.deb`. Example: Ubuntu 18.04 with Intel SGX DCAP 1.10.3 would download [sgx-dcap-pccs_1.10.103.1-bionic1_amd64.deb](https://download.01.org/intel-sgx/sgx-dcap/1.10.3/linux/distro/ubuntu18.04-server/debian_pkgs/web/sgx-dcap-pccs/sgx-dcap-pccs_1.10.103.1-bionic1_amd64.deb).
+For Ubuntu 20.04 (code name [Focal Fossa](https://wiki.ubuntu.com/FocalFossa)), please download the sgx_debian_local_repo.tgz for the latest supported version of Intel DCAP. Afterwards, extract the tgz and install `sgx_debian_local_repo/pool/main/s/sgx-dcap-pccs/sgx-dcap-pccs_{VERSION}-focal1_amd64.deb`. 
 
-For Ubuntu 20.04, please download the version `sgx-dcap-pccs_{VERSION}-focal1_amd64.deb`. For example: Ubuntu 20.04 with Intel SGX DCAP 1.10.3 would download [sgx-dcap-pccs_1.10.103.1-focal1_amd64.deb](https://download.01.org/intel-sgx/sgx-dcap/1.10.3/linux/distro/ubuntu20.04-server/debian_pkgs/web/sgx-dcap-pccs/sgx-dcap-pccs_1.10.103.1-focal1_amd64.deb).
+In this document, we use Ubuntu 20.04 and Intel DCAP 1.16 as an example so we will use [sgx_debian_local_repo.tgz](https://download.01.org/intel-sgx/sgx-dcap/1.16/linux/distro/ubuntu20.04-server/sgx_debian_local_repo.tgz)
 
-In this document, we use sgx-dcap-pccs_1.8.100.2-bionic1_amd64.deb as an example.  Run the command below to download the package
+1. Download the package
 ```bash
 cd ~
-wget https://download.01.org/intel-sgx/sgx-dcap/1.8/linux/distro/ubuntu18.04-server/debian_pkgs/web/sgx-dcap-pccs/sgx-dcap-pccs_1.8.100.2-bionic1_amd64.deb
+wget https://download.01.org/intel-sgx/sgx-dcap/1.16/linux/distro/ubuntu20.04-server/sgx_debian_local_repo.tgz
 ```
 
-Then install the package.
+2. Extract the package
 ```bash
-sudo dpkg -i sgx-dcap-pccs_1.8.100.2-bionic1_amd64.deb
+tar xvzf sgx_debian_local_repo.tgz
+```
+
+3. Install the package.
+```bash
+sudo dpkg -i sgx_debian_local_repo/pool/main/s/sgx-dcap-pccs/sgx-dcap-pccs_1.16.100.2-focal1_amd64.deb
 ```
 
 You will be asked to finish the configuration during the installation process.
