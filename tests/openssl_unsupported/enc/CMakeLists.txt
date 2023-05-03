@@ -10,27 +10,39 @@ add_custom_command(
     edger8r --trusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
     ${DEFINE_OE_SGX} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
-function (add_unsupported_test NAME)
+function (add_unsupported_test NAME OPENSSL3)
   set(DEFINE OE_${NAME})
   string(TOUPPER ${DEFINE} DEFINE)
   string(TOLOWER ${NAME} NAME)
 
-  add_enclave(TARGET openssl_unsupported_${NAME}_enc SOURCES enc.c
+  if (OPENSSL3)
+    set(TEST_NAME openssl_3_unsupported_${NAME})
+  else ()
+    set(TEST_NAME openssl_unsupported_${NAME})
+  endif ()
+  set(TARGET_NAME ${TEST_NAME}_enc)
+
+  add_enclave(TARGET ${TARGET_NAME} SOURCES enc.c
               ${CMAKE_CURRENT_BINARY_DIR}/openssl_unsupported_t.c)
 
   # Suppress Werror to verify that the compilation still fails as expected.
-  enclave_compile_options(openssl_unsupported_${NAME}_enc PRIVATE -Wno-error)
+  enclave_compile_options(${TARGET_NAME} PRIVATE -Wno-error)
 
-  enclave_compile_definitions(openssl_unsupported_${NAME}_enc PRIVATE ${DEFINE})
+  enclave_compile_definitions(${TARGET_NAME} PRIVATE ${DEFINE})
 
-  enclave_include_directories(openssl_unsupported_${NAME}_enc PRIVATE
+  enclave_include_directories(${TARGET_NAME} PRIVATE
                               ${CMAKE_CURRENT_BINARY_DIR})
 
-  enclave_link_libraries(openssl_unsupported_${NAME}_enc openssl oelibc
-                         oehostsock oehostfs oehostresolver)
+  if (OPENSSL3)
+    enclave_link_libraries(${TARGET_NAME} openssl_3 oelibc oehostsock oehostfs
+                           oehostresolver)
+  else ()
+    enclave_link_libraries(${TARGET_NAME} openssl oelibc oehostsock oehostfs
+                           oehostresolver)
+  endif ()
 
   if (WIN32)
-    maybe_build_using_clangw(openssl_unsupported_${NAME}_enc)
+    maybe_build_using_clangw(${TARGET_NAME})
 
     # maybe_build_using_clangw populates variables in its parent scope (ie current scope)
     # Propagate these variables back up to the caller.
@@ -79,11 +91,11 @@ function (add_unsupported_test NAME)
 
   # Exclude the enclave from build.
   # From: https://stackoverflow.com/questions/30155619/expected-build-failure-tests-in-cmake
-  set_enclave_properties(openssl_unsupported_${NAME}_enc PROPERTIES
-                         EXCLUDE_FROM_ALL TRUE EXCLUDE_FROM_DEFAULT_BUILD TRUE)
+  set_enclave_properties(${TARGET_NAME} PROPERTIES EXCLUDE_FROM_ALL TRUE
+                         EXCLUDE_FROM_DEFAULT_BUILD TRUE)
 
   add_test(
-    NAME openssl_unsupported_${NAME}
+    NAME ${TEST_NAME}
     COMMAND ${CMAKE_COMMAND} --build . --target openssl_unsupported_${NAME}_enc
             --config $<CONFIGURATION>
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
@@ -95,7 +107,7 @@ function (add_unsupported_test NAME)
     # the specific error message, which indicates the unsupported.h header is
     # correctly included.
     set_tests_properties(
-      openssl_unsupported_${NAME}
+      ${TEST_NAME}
       PROPERTIES
         WILL_FAIL
         TRUE
@@ -121,6 +133,12 @@ set(UNSUPPORTED_LIST
     X509_STORE_load_locations
     X509_STORE_set_default_paths)
 
+# Add tests for OpenSSL 1.1
 foreach (name ${UNSUPPORTED_LIST})
-  add_unsupported_test(${name})
+  add_unsupported_test(${name} FALSE)
+endforeach (name)
+
+# Add tests for OpenSSL 3.0
+foreach (name ${UNSUPPORTED_LIST})
+  add_unsupported_test(${name} TRUE)
 endforeach (name)
