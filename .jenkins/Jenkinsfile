@@ -5,7 +5,7 @@
 GLOBAL_BRANCH_NAME = env.BRANCH_NAME ?: params.BRANCH
 
 // Regex that includes directory you want to ignore for CI builds.
-String IGNORED_DIRS = "^(docs|\\.jenkins/infrastructure)|\\.md\$"
+String IGNORED_DIRS = "^docs|^\\.jenkins/infrastructure|\\.md\$|^VERSION\$|^OWNERS\$"
 
 // Load OpenEnclaveJenkinsLibrary version to use in this priority:
 //     1. If this is a bors run, use the bors branch
