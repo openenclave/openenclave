@@ -72,9 +72,9 @@ entity, typically for purposes of authorization.
         | Evidence                      |         |
         |                               |         |
         |                               v         v
-  .----------.                      .-----------------.
-  | Attester |                      | Relying Party   |
-  '----------'                      '-----------------'
+    .----------.                    .-----------------.
+    | Attester |                    | Relying Party   |
+    '----------'                    '-----------------'
 
                 Figure 1: Conceptual Data Flow
 
