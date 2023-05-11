@@ -64,6 +64,9 @@ done:
     return result;
 }
 
+// test_type can be one of the following:
+//  TEST_EC_KEY: test with EC key
+//  TEST_RSA_KEY: test with RSA key
 void run_test(oe_enclave_t* enclave, int test_type)
 {
     oe_result_t result = OE_FAILURE;
