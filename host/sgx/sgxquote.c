@@ -1318,7 +1318,7 @@ oe_result_t oe_tdx_get_supplemental_data_size(
     if (!p_quote || !quote_size || !p_version || !p_data_size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (!_load_tdx_dcap_qvl())
+    if (!_load_tdx_dcap_qvl() || !_tee_get_supplemental_data_version_and_size)
         OE_RAISE(OE_PLATFORM_ERROR);
 
     error = _tee_get_supplemental_data_version_and_size(
@@ -1473,7 +1473,7 @@ oe_result_t oe_tdx_verify_quote(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // Always use QvE/QVL for TDX verification
-    if (!_load_tdx_dcap_qvl())
+    if (!_load_tdx_dcap_qvl() || !_tee_verify_quote)
         OE_RAISE(OE_PLATFORM_ERROR);
 
     supp_data.p_data = p_supplemental_data;
@@ -1641,7 +1641,7 @@ oe_result_t oe_get_tdx_quote_verification_collateral(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // Always use QvE/QVL for TDX verification
-    if (!_load_tdx_dcap_qvl())
+    if (!_load_tdx_dcap_qvl() || !_tee_qv_get_collateral)
         OE_RAISE(OE_PLATFORM_ERROR);
 
     // Fetch collateral information
