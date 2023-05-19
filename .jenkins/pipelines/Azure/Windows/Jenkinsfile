@@ -3,7 +3,6 @@
 
 library "OpenEnclaveJenkinsLibrary@${params.OECI_LIB_VERSION}"
 GLOBAL_ERROR = globalvars.GLOBAL_ERROR
-globalvars.CTEST_TIMEOUT_SECONDS = 1800
 
 def testing_stages = [
     "Windows 2019 Install Prerequisites Verification" :                      { tests.windowsPrereqsVerify("acc-win2019-dcap") },
