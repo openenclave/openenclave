@@ -9,10 +9,10 @@ set(SYMCRYPT_ENGINE_DIR
 
 # Use CACHE so that the variables can be globally accessible
 set(SYMCRYPT_VERSION_MAJOR
-    "101"
+    "103"
     CACHE INTERNAL "")
 set(SYMCRYPT_VERSION_MINOR
-    "3"
+    "1"
     CACHE INTERNAL "")
 set(SYMCRYPT_VERSION_PATCH
     "0"
@@ -31,18 +31,18 @@ set(SYMCRYPT_LINK_NAME
 # Download the SymCrypt release package at config-time
 # The SymCrypt OpenSSL engine build requires the SymCrypt header
 include(FetchContent)
-FetchContent_Declare(
-  symcrypt_package
-  SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/SymCrypt
-  URL https://github.com/microsoft/SymCrypt/releases/download/v101.3.0/symcrypt_AMD64_oe_full_v101.3.0-31e06ae.tgz
-  URL_HASH
-    SHA256=53fcbdbae3925b82e880c102969dc4c646b36dffbca602d2f85f967d54e958e7)
+#FetchContent_Declare(
+#  symcrypt_package
+#  SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/SymCrypt
+#  URL https://github.com/radhikaj/grpcsample/blob/master/symcrypt-linux-oe_full-AMD64-103.1.0-4d3fd51.tar.gz 
+#  URL_HASH
+#    SHA256=b8d75adf522dc301c4b8785e8ab08422e701812c7621f6110baba18551764686)
 
 # Make the downloaded package globally available
-FetchContent_GetProperties(symcrypt_package)
-if (NOT symcrypt_package_POPULATED)
-  FetchContent_Populate(symcrypt_package)
-endif ()
+#FetchContent_GetProperties(symcrypt_package)
+#if (NOT symcrypt_package_POPULATED)
+#  FetchContent_Populate(symcrypt_package)
+#endif ()
 
 add_enclave_library(
   oesymcryptengine
