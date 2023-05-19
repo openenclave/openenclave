@@ -55,6 +55,7 @@ add_enclave_library(
   ${SYMCRYPT_ENGINE_DIR}/src/scossl_ecc.c
   ${SYMCRYPT_ENGINE_DIR}/src/scossl_helpers.c
   ${SYMCRYPT_ENGINE_DIR}/src/scossl_hkdf.c
+  ${SYMCRYPT_ENGINE_DIR}/src/scossl_hmac.c
   ${SYMCRYPT_ENGINE_DIR}/src/scossl_pkey_meths.c
   ${SYMCRYPT_ENGINE_DIR}/src/scossl_rand.c
   ${SYMCRYPT_ENGINE_DIR}/src/scossl_rsa.c
