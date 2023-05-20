@@ -67,7 +67,7 @@ Note: Both of them can run on the same machine or separate machines.
  - Send client payload and wait for server's payload
 
 ```
-../client/tls_non_enc_client -server:localhost -port:12341
+../non_enc_client/tls_non_enc_client -server:localhost -port:12341
 ```
 
 ## Build and run
