@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#if OPENSSL_VERSION_NUMBER < 0x30000000L || defined(OE_BUILD_ENCLAVE)
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 typedef struct _oe_sha256_context_impl
 {
     SHA256_CTX ctx;
@@ -25,7 +25,7 @@ typedef struct _oe_sha256_context_impl
 OE_STATIC_ASSERT(
     sizeof(oe_sha256_context_impl_t) <= sizeof(oe_sha256_context_t));
 
-#if OPENSSL_VERSION_NUMBER < 0x30000000L || defined(OE_BUILD_ENCLAVE)
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 oe_result_t oe_sha256_init(oe_sha256_context_t* context)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -64,7 +64,7 @@ done:
 }
 #endif
 
-#if OPENSSL_VERSION_NUMBER < 0x30000000L || defined(OE_BUILD_ENCLAVE)
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 oe_result_t oe_sha256_update(
     oe_sha256_context_t* context,
     const void* data,
@@ -106,7 +106,7 @@ done:
 }
 #endif
 
-#if OPENSSL_VERSION_NUMBER < 0x30000000L || defined(OE_BUILD_ENCLAVE)
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 oe_result_t oe_sha256_final(oe_sha256_context_t* context, OE_SHA256* sha256)
 {
     oe_result_t result = OE_UNEXPECTED;

@@ -136,9 +136,9 @@ if (UNIX)
   list(APPEND PLATFORM_SDK_ONLY_SRC ${PROJECT_SOURCE_DIR}/common/asn1.c
        ${PROJECT_SOURCE_DIR}/common/crypto/openssl/hmac.c
        crypto/openssl/random.c linux/syscall.c)
-  set_source_files_properties(
-    ${PROJECT_SOURCE_DIR}/common/crypto/openssl/key.c
-    PROPERTIES COMPILE_FLAGS "-Wno-deprecated-declarations")
+  # set_source_files_properties(
+  #   ${PROJECT_SOURCE_DIR}/common/crypto/openssl/key.c
+  #   PROPERTIES COMPILE_FLAGS "-Wno-deprecated-declarations")
   set_source_files_properties(linux/syscall.c PROPERTIES COMPILE_FLAGS
                                                          "-Wno-conversion")
 elseif (WIN32)

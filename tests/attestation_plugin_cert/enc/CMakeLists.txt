@@ -45,5 +45,5 @@ if (BUILD_OPENSSL)
     tls_cert_openssl_enc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR})
 
-  target_compile_options(tls_cert_openssl_enc PRIVATE -Wno-deprecated-declarations)
+  # target_compile_options(tls_cert_openssl_enc PRIVATE -Wno-deprecated-declarations)
 endif ()

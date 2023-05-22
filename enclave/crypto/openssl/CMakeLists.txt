@@ -24,19 +24,19 @@ add_enclave_library(
   symcrypt_engine.c)
 
 set_source_files_properties(
-  ${PROJECT_SOURCE_DIR}/common/asn1.c
-  ${PROJECT_SOURCE_DIR}/common/cert.c
-  ${PROJECT_SOURCE_DIR}/common/kdf.c
-  ${PROJECT_SOURCE_DIR}/common/crypto/openssl/asn1.c
-  ${PROJECT_SOURCE_DIR}/common/crypto/openssl/cert.c
-  ${PROJECT_SOURCE_DIR}/common/crypto/openssl/cmac.c
-  ${PROJECT_SOURCE_DIR}/common/crypto/openssl/crl.c
-  ${PROJECT_SOURCE_DIR}/common/crypto/openssl/ec.c
-  ${PROJECT_SOURCE_DIR}/common/crypto/openssl/hmac.c
+#   ${PROJECT_SOURCE_DIR}/common/asn1.c
+#   ${PROJECT_SOURCE_DIR}/common/cert.c
+#   ${PROJECT_SOURCE_DIR}/common/kdf.c
+#   ${PROJECT_SOURCE_DIR}/common/crypto/openssl/asn1.c
+#   ${PROJECT_SOURCE_DIR}/common/crypto/openssl/cert.c
+#   ${PROJECT_SOURCE_DIR}/common/crypto/openssl/cmac.c
+#   ${PROJECT_SOURCE_DIR}/common/crypto/openssl/crl.c
+#   ${PROJECT_SOURCE_DIR}/common/crypto/openssl/ec.c
+#   ${PROJECT_SOURCE_DIR}/common/crypto/openssl/hmac.c
   ${PROJECT_SOURCE_DIR}/common/crypto/openssl/key.c
-  ${PROJECT_SOURCE_DIR}/common/crypto/openssl/rsa.c
-  ${PROJECT_SOURCE_DIR}/common/crypto/openssl/sha.c
-  init.c
+#   ${PROJECT_SOURCE_DIR}/common/crypto/openssl/rsa.c
+#   ${PROJECT_SOURCE_DIR}/common/crypto/openssl/sha.c
+#   init.c
   PROPERTIES COMPILE_FLAGS "-Wno-deprecated-declarations")
 
 maybe_build_using_clangw(oecryptoopenssl)

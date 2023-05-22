@@ -39,7 +39,7 @@ The prototype for this support already exists in the [openenclave-openssl projec
 - Add OpenSSL as a git submodule to the OE SDK project.
 - Port the [build and code changes](https://github.com/openenclave/openenclave-openssl/blob/master/0001-Get-openssl-to-build-against-MUSL-headers.-Use-SGX-r.patch) necessary to build OpenSSL for use in an enclave to the OE SDK project.
 - Refactor the existing OE SDK enclave/crypto into enclave/crypto/mbedtls.
-- Port the prototype [oecrypto/src/crypto](https://github.com/openenclave/openenclave-openssl/tree/master/oecrypto/src/crypto) into OE SDK project enclave/crypto/openssl.
+- Port the prototype [oecrypto/src/crypto](https://github.com/openenclave/openenclave-openssl/tree/master/oecrypto/src/crypto) into OE SDK project 
   - The set of oecrypto methods used internally by the OE SDK that needs to be implemented in OpenSSL is expected to be at parity with enclave/crypto/mbedtls.
 - Port the prototype [tests](https://github.com/openenclave/openenclave-openssl/tree/master/test) for OpenSSL running in an enclave into OE SDK project as tests/openssl.
 - Integrate an OpenSSL variant into existing OE SDK tests that rely on crypto:

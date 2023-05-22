@@ -41,7 +41,7 @@ static int _get_nid(oe_ec_type_t ec_type)
     }
 }
 
-#if OPENSSL_VERSION_NUMBER < 0x30000000L || defined(OE_BUILD_ENCLAVE)
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 static oe_result_t _private_key_write_pem_callback(BIO* bio, EVP_PKEY* pkey)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -99,7 +99,7 @@ done:
 }
 #endif
 
-#if OPENSSL_VERSION_NUMBER < 0x30000000L || defined(OE_BUILD_ENCLAVE)
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 static oe_result_t _public_key_equal(
     const oe_public_key_t* public_key1,
     const oe_public_key_t* public_key2,
@@ -291,7 +291,7 @@ oe_result_t oe_ec_public_key_verify(
         OE_EC_PUBLIC_KEY_MAGIC);
 }
 
-#if OPENSSL_VERSION_NUMBER < 0x30000000L || defined(OE_BUILD_ENCLAVE)
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 oe_result_t oe_ec_generate_key_pair_from_private(
     oe_ec_type_t curve,
     const uint8_t* private_key_buf,
@@ -400,7 +400,8 @@ oe_result_t oe_ec_generate_key_pair_from_private(
 {
     oe_result_t result = OE_UNEXPECTED;
     EC_GROUP* group = NULL;
-    EVP_PKEY_CTX* ctx = NULL;
+    EVP_PKEY_CTX* public_ctx = NULL;
+    EVP_PKEY_CTX* private_ctx = NULL;
     EVP_PKEY* public_pkey = NULL;
     EVP_PKEY* private_pkey = NULL;
     BIGNUM* private_key_bn = NULL;
@@ -451,10 +452,10 @@ oe_result_t oe_ec_generate_key_pair_from_private(
             NULL) > 1024)
         OE_RAISE(OE_CRYPTO_ERROR);
 
-    if (!(ctx = EVP_PKEY_CTX_new_from_name(NULL, "EC", NULL)))
+    if (!(private_ctx = EVP_PKEY_CTX_new_from_name(NULL, "EC", NULL)))
         OE_RAISE(OE_CRYPTO_ERROR);
 
-    if (EVP_PKEY_fromdata_init(ctx) <= 0)
+    if (EVP_PKEY_fromdata_init(private_ctx) <= 0)
         OE_RAISE(OE_CRYPTO_ERROR);
 
     bld = OSSL_PARAM_BLD_new();
@@ -469,13 +470,13 @@ oe_result_t oe_ec_generate_key_pair_from_private(
         OE_RAISE(OE_CRYPTO_ERROR);
 
     params = OSSL_PARAM_BLD_to_param(bld);
-    if (EVP_PKEY_fromdata(ctx, &private_pkey, EVP_PKEY_KEYPAIR, params) <= 0)
+    if (EVP_PKEY_fromdata(private_ctx, &private_pkey, EVP_PKEY_KEYPAIR, params) <= 0)
         OE_RAISE(OE_CRYPTO_ERROR);
 
-    if (!(ctx = EVP_PKEY_CTX_new(private_pkey, NULL)))
+    if (!(public_ctx = EVP_PKEY_CTX_new(private_pkey, NULL)))
         OE_RAISE(OE_CRYPTO_ERROR);
 
-    if (EVP_PKEY_check(ctx) != 1)
+    if (EVP_PKEY_check(public_ctx) != 1)
         OE_RAISE(OE_CRYPTO_ERROR);
 
     if (!(public_pkey = EVP_PKEY_dup(private_pkey)))
@@ -485,7 +486,6 @@ oe_result_t oe_ec_generate_key_pair_from_private(
     oe_ec_private_key_init(private_key, private_pkey);
     public_pkey = NULL;
     private_pkey = NULL;
-    ctx = NULL;
     result = OE_OK;
 
 done:
@@ -501,8 +501,10 @@ done:
         EC_POINT_free(point);
     if (group)
         EC_GROUP_free(group);
-    if (ctx)
-        EVP_PKEY_CTX_free(ctx);
+    if (public_ctx)
+        EVP_PKEY_CTX_free(public_ctx);
+    if (private_ctx)
+        EVP_PKEY_CTX_free(private_ctx);
     if (public_pkey)
         EVP_PKEY_free(public_pkey);
     if (private_pkey)
@@ -520,7 +522,7 @@ oe_result_t oe_ec_public_key_equal(
         (oe_public_key_t*)public_key1, (oe_public_key_t*)public_key2, equal);
 }
 
-#if OPENSSL_VERSION_NUMBER < 0x30000000L || defined(OE_BUILD_ENCLAVE)
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 oe_result_t oe_ec_public_key_from_coordinates(
     oe_ec_public_key_t* public_key,
     oe_ec_type_t ec_type,

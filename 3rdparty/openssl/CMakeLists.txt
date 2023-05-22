@@ -1388,7 +1388,7 @@ list(
   -Wno-shorten-64-to-32
   -Wno-sign-conversion
   -Wno-conversion
-  -Wno-deprecated-declarations
+  # -Wno-deprecated-declarations
   )
 
 if (OPENSSL_C_COMPILER MATCHES clang)

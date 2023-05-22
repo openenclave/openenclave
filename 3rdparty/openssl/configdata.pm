@@ -996,9 +996,6 @@ our %unified_info = (
             "test/buildtest_c_conf_api" => {
                 "noinst" => "1"
             },
-            "test/buildtest_c_configuration" => {
-                "noinst" => "1"
-            },
             "test/buildtest_c_conftypes" => {
                 "noinst" => "1"
             },
@@ -1081,9 +1078,6 @@ our %unified_info = (
                 "noinst" => "1"
             },
             "test/buildtest_c_objects" => {
-                "noinst" => "1"
-            },
-            "test/buildtest_c_opensslv" => {
                 "noinst" => "1"
             },
             "test/buildtest_c_ossl_typ" => {
@@ -6875,57 +6869,31 @@ our %unified_info = (
             "configdata.pm",
             "openssl/util/perl/OpenSSL/Ordinals.pm"
         ],
-        "openssl/providers/common/der/der_dsa_gen.c" => [
-            "openssl/providers/common/der/DSA.asn1",
-            "openssl/providers/common/der/oids_to_c.pm"
-        ],
-        "openssl/providers/common/der/der_ec_gen.c" => [
-            "openssl/providers/common/der/EC.asn1",
-            "openssl/providers/common/der/oids_to_c.pm"
-        ],
-        "openssl/providers/common/der/der_ecx_gen.c" => [
-            "openssl/providers/common/der/ECX.asn1",
-            "openssl/providers/common/der/oids_to_c.pm"
-        ],
-        "openssl/providers/common/der/der_rsa_gen.c" => [
-            "openssl/providers/common/der/NIST.asn1",
-            "openssl/providers/common/der/RSA.asn1",
-            "openssl/providers/common/der/oids_to_c.pm"
-        ],
-        "openssl/providers/common/der/der_wrap_gen.c" => [
-            "openssl/providers/common/der/oids_to_c.pm",
-            "openssl/providers/common/der/wrap.asn1"
-        ],
-        "openssl/providers/common/include/prov/der_digests.h" => [
-            "openssl/providers/common/der/DIGESTS.asn1",
-            "openssl/providers/common/der/NIST.asn1",
-            "openssl/providers/common/der/oids_to_c.pm"
-        ],
-        "openssl/providers/common/include/prov/der_dsa.h" => [
-            "openssl/providers/common/der/DSA.asn1",
-            "openssl/providers/common/der/oids_to_c.pm"
-        ],
-        "openssl/providers/common/include/prov/der_ec.h" => [
-            "openssl/providers/common/der/EC.asn1",
-            "openssl/providers/common/der/oids_to_c.pm"
-        ],
-        "openssl/providers/common/include/prov/der_ecx.h" => [
-            "openssl/providers/common/der/ECX.asn1",
-            "openssl/providers/common/der/oids_to_c.pm"
-        ],
-        "openssl/providers/common/include/prov/der_rsa.h" => [
-            "openssl/providers/common/der/NIST.asn1",
-            "openssl/providers/common/der/RSA.asn1",
-            "openssl/providers/common/der/oids_to_c.pm"
-        ],
-        "openssl/providers/common/include/prov/der_wrap.h" => [
-            "openssl/providers/common/der/oids_to_c.pm",
-            "openssl/providers/common/der/wrap.asn1"
-        ],
         "providers/common/der/der_digests_gen.c" => [
             "openssl/providers/common/der/DIGESTS.asn1",
             "openssl/providers/common/der/NIST.asn1",
             "openssl/providers/common/der/oids_to_c.pm"
+        ],
+        "providers/common/der/der_dsa_gen.c" => [
+            "openssl/providers/common/der/DSA.asn1",
+            "openssl/providers/common/der/oids_to_c.pm"
+        ],
+        "providers/common/der/der_ec_gen.c" => [
+            "openssl/providers/common/der/EC.asn1",
+            "openssl/providers/common/der/oids_to_c.pm"
+        ],
+        "providers/common/der/der_ecx_gen.c" => [
+            "openssl/providers/common/der/ECX.asn1",
+            "openssl/providers/common/der/oids_to_c.pm"
+        ],
+        "providers/common/der/der_rsa_gen.c" => [
+            "openssl/providers/common/der/NIST.asn1",
+            "openssl/providers/common/der/RSA.asn1",
+            "openssl/providers/common/der/oids_to_c.pm"
+        ],
+        "providers/common/der/der_wrap_gen.c" => [
+            "openssl/providers/common/der/oids_to_c.pm",
+            "openssl/providers/common/der/wrap.asn1"
         ],
         "providers/common/der/libcommon-lib-der_digests_gen.o" => [
             "providers/common/include/prov/der_digests.h"
@@ -6972,6 +6940,32 @@ our %unified_info = (
             "providers/common/include/prov/der_digests.h",
             "providers/common/include/prov/der_rsa.h"
         ],
+        "providers/common/include/prov/der_digests.h" => [
+            "openssl/providers/common/der/DIGESTS.asn1",
+            "openssl/providers/common/der/NIST.asn1",
+            "openssl/providers/common/der/oids_to_c.pm"
+        ],
+        "providers/common/include/prov/der_dsa.h" => [
+            "openssl/providers/common/der/DSA.asn1",
+            "openssl/providers/common/der/oids_to_c.pm"
+        ],
+        "providers/common/include/prov/der_ec.h" => [
+            "openssl/providers/common/der/EC.asn1",
+            "openssl/providers/common/der/oids_to_c.pm"
+        ],
+        "providers/common/include/prov/der_ecx.h" => [
+            "openssl/providers/common/der/ECX.asn1",
+            "openssl/providers/common/der/oids_to_c.pm"
+        ],
+        "providers/common/include/prov/der_rsa.h" => [
+            "openssl/providers/common/der/NIST.asn1",
+            "openssl/providers/common/der/RSA.asn1",
+            "openssl/providers/common/der/oids_to_c.pm"
+        ],
+        "providers/common/include/prov/der_wrap.h" => [
+            "openssl/providers/common/der/oids_to_c.pm",
+            "openssl/providers/common/der/wrap.asn1"
+        ],
         "providers/implementations/encode_decode/libdefault-lib-encode_key2any.o" => [
             "providers/common/include/prov/der_rsa.h"
         ],
@@ -6991,7 +6985,7 @@ our %unified_info = (
             "providers/common/include/prov/der_rsa.h"
         ],
         "providers/implementations/signature/sm2_sig.o" => [
-            "openssl/providers/common/include/prov/der_sm2.h"
+            "providers/common/include/prov/der_sm2.h"
         ],
         "providers/libcommon.a" => [
             "libcrypto"
@@ -7130,10 +7124,6 @@ our %unified_info = (
             "libcrypto",
             "libssl"
         ],
-        "test/buildtest_c_configuration" => [
-            "libcrypto",
-            "libssl"
-        ],
         "test/buildtest_c_conftypes" => [
             "libcrypto",
             "libssl"
@@ -7243,10 +7233,6 @@ our %unified_info = (
             "libssl"
         ],
         "test/buildtest_c_objects" => [
-            "libcrypto",
-            "libssl"
-        ],
-        "test/buildtest_c_opensslv" => [
             "libcrypto",
             "libssl"
         ],
@@ -15053,10 +15039,6 @@ our %unified_info = (
             "openssl/test/generate_buildtest.pl",
             "conf_api"
         ],
-        "test/buildtest_configuration.c" => [
-            "openssl/test/generate_buildtest.pl",
-            "configuration"
-        ],
         "test/buildtest_conftypes.c" => [
             "openssl/test/generate_buildtest.pl",
             "conftypes"
@@ -15168,10 +15150,6 @@ our %unified_info = (
         "test/buildtest_objects.c" => [
             "openssl/test/generate_buildtest.pl",
             "objects"
-        ],
-        "test/buildtest_opensslv.c" => [
-            "openssl/test/generate_buildtest.pl",
-            "opensslv"
         ],
         "test/buildtest_ossl_typ.c" => [
             "openssl/test/generate_buildtest.pl",
@@ -16954,44 +16932,14 @@ our %unified_info = (
             ".",
             "openssl/util/perl/OpenSSL"
         ],
-        "openssl/providers/common/der/der_dsa_gen.c" => [
-            "openssl/providers/common/der"
-        ],
-        "openssl/providers/common/der/der_ec_gen.c" => [
-            "openssl/providers/common/der"
-        ],
-        "openssl/providers/common/der/der_ecx_gen.c" => [
-            "openssl/providers/common/der"
-        ],
-        "openssl/providers/common/der/der_rsa_gen.c" => [
-            "openssl/providers/common/der"
-        ],
-        "openssl/providers/common/der/der_wrap_gen.c" => [
-            "openssl/providers/common/der"
-        ],
-        "openssl/providers/common/include/prov/der_digests.h" => [
-            "openssl/providers/common/der"
-        ],
-        "openssl/providers/common/include/prov/der_dsa.h" => [
-            "openssl/providers/common/der"
-        ],
-        "openssl/providers/common/include/prov/der_ec.h" => [
-            "openssl/providers/common/der"
-        ],
-        "openssl/providers/common/include/prov/der_ecx.h" => [
-            "openssl/providers/common/der"
-        ],
-        "openssl/providers/common/include/prov/der_rsa.h" => [
-            "openssl/providers/common/der"
-        ],
-        "openssl/providers/common/include/prov/der_wrap.h" => [
-            "openssl/providers/common/der"
-        ],
         "providers/common/der/der_digests_gen.c" => [
             "openssl/providers/common/der"
         ],
         "providers/common/der/der_digests_gen.o" => [
             "providers/common/include/prov"
+        ],
+        "providers/common/der/der_dsa_gen.c" => [
+            "openssl/providers/common/der"
         ],
         "providers/common/der/der_dsa_gen.o" => [
             "providers/common/include/prov"
@@ -17002,6 +16950,9 @@ our %unified_info = (
         "providers/common/der/der_dsa_sig.o" => [
             "providers/common/include/prov"
         ],
+        "providers/common/der/der_ec_gen.c" => [
+            "openssl/providers/common/der"
+        ],
         "providers/common/der/der_ec_gen.o" => [
             "providers/common/include/prov"
         ],
@@ -17011,11 +16962,17 @@ our %unified_info = (
         "providers/common/der/der_ec_sig.o" => [
             "providers/common/include/prov"
         ],
+        "providers/common/der/der_ecx_gen.c" => [
+            "openssl/providers/common/der"
+        ],
         "providers/common/der/der_ecx_gen.o" => [
             "providers/common/include/prov"
         ],
         "providers/common/der/der_ecx_key.o" => [
             "providers/common/include/prov"
+        ],
+        "providers/common/der/der_rsa_gen.c" => [
+            "openssl/providers/common/der"
         ],
         "providers/common/der/der_rsa_gen.o" => [
             "providers/common/include/prov"
@@ -17025,6 +16982,9 @@ our %unified_info = (
         ],
         "providers/common/der/der_rsa_sig.o" => [
             "providers/common/include/prov"
+        ],
+        "providers/common/der/der_wrap_gen.c" => [
+            "openssl/providers/common/der"
         ],
         "providers/common/der/der_wrap_gen.o" => [
             "providers/common/include/prov"
@@ -17068,6 +17028,24 @@ our %unified_info = (
         "providers/common/der/libdefault-lib-der_rsa_sig.o" => [
             "providers/common/include/prov"
         ],
+        "providers/common/include/prov/der_digests.h" => [
+            "openssl/providers/common/der"
+        ],
+        "providers/common/include/prov/der_dsa.h" => [
+            "openssl/providers/common/der"
+        ],
+        "providers/common/include/prov/der_ec.h" => [
+            "openssl/providers/common/der"
+        ],
+        "providers/common/include/prov/der_ecx.h" => [
+            "openssl/providers/common/der"
+        ],
+        "providers/common/include/prov/der_rsa.h" => [
+            "openssl/providers/common/der"
+        ],
+        "providers/common/include/prov/der_wrap.h" => [
+            "openssl/providers/common/der"
+        ],
         "providers/implementations/encode_decode/encode_key2any.o" => [
             "providers/common/include/prov"
         ],
@@ -17105,7 +17083,7 @@ our %unified_info = (
             "providers/common/include/prov"
         ],
         "providers/implementations/signature/sm2_sig.o" => [
-            "openssl/providers/common/include/prov"
+            "providers/common/include/prov"
         ],
         "providers/libcommon.a" => [
             "crypto",
@@ -17339,10 +17317,6 @@ our %unified_info = (
             "include",
             "openssl/include"
         ],
-        "test/buildtest_c_configuration" => [
-            "include",
-            "openssl/include"
-        ],
         "test/buildtest_c_conftypes" => [
             "include",
             "openssl/include"
@@ -17452,10 +17426,6 @@ our %unified_info = (
             "openssl/include"
         ],
         "test/buildtest_c_objects" => [
-            "include",
-            "openssl/include"
-        ],
-        "test/buildtest_c_opensslv" => [
             "include",
             "openssl/include"
         ],
@@ -19533,7 +19503,6 @@ our %unified_info = (
         "test/buildtest_c_cmp_util",
         "test/buildtest_c_comp",
         "test/buildtest_c_conf_api",
-        "test/buildtest_c_configuration",
         "test/buildtest_c_conftypes",
         "test/buildtest_c_core",
         "test/buildtest_c_core_dispatch",
@@ -19562,7 +19531,6 @@ our %unified_info = (
         "test/buildtest_c_modes",
         "test/buildtest_c_obj_mac",
         "test/buildtest_c_objects",
-        "test/buildtest_c_opensslv",
         "test/buildtest_c_ossl_typ",
         "test/buildtest_c_param_build",
         "test/buildtest_c_params",
@@ -23794,12 +23762,6 @@ our %unified_info = (
         "test/buildtest_c_conf_api-bin-buildtest_conf_api.o" => [
             "test/buildtest_conf_api.c"
         ],
-        "test/buildtest_c_configuration" => [
-            "test/buildtest_c_configuration-bin-buildtest_configuration.o"
-        ],
-        "test/buildtest_c_configuration-bin-buildtest_configuration.o" => [
-            "test/buildtest_configuration.c"
-        ],
         "test/buildtest_c_conftypes" => [
             "test/buildtest_c_conftypes-bin-buildtest_conftypes.o"
         ],
@@ -23967,12 +23929,6 @@ our %unified_info = (
         ],
         "test/buildtest_c_objects-bin-buildtest_objects.o" => [
             "test/buildtest_objects.c"
-        ],
-        "test/buildtest_c_opensslv" => [
-            "test/buildtest_c_opensslv-bin-buildtest_opensslv.o"
-        ],
-        "test/buildtest_c_opensslv-bin-buildtest_opensslv.o" => [
-            "test/buildtest_opensslv.c"
         ],
         "test/buildtest_c_ossl_typ" => [
             "test/buildtest_c_ossl_typ-bin-buildtest_ossl_typ.o"

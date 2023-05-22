@@ -32,7 +32,7 @@ static void RSA_get0_key(
 OE_STATIC_ASSERT(sizeof(oe_public_key_t) <= sizeof(oe_rsa_public_key_t));
 OE_STATIC_ASSERT(sizeof(oe_private_key_t) <= sizeof(oe_rsa_private_key_t));
 
-#if OPENSSL_VERSION_NUMBER < 0x30000000L || defined(OE_BUILD_ENCLAVE)
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 static oe_result_t _private_key_write_pem_callback(BIO* bio, EVP_PKEY* pkey)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -90,7 +90,7 @@ done:
 }
 #endif
 
-#if OPENSSL_VERSION_NUMBER < 0x30000000L || defined(OE_BUILD_ENCLAVE)
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 static oe_result_t _get_public_key_get_modulus_or_exponent(
     const oe_public_key_t* public_key,
     uint8_t* buffer,
@@ -245,7 +245,7 @@ static oe_result_t _public_key_get_exponent(
         public_key, buffer, buffer_size, false);
 }
 
-#if OPENSSL_VERSION_NUMBER < 0x30000000L || defined(OE_BUILD_ENCLAVE)
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 static oe_result_t _public_key_equal(
     const oe_public_key_t* public_key1,
     const oe_public_key_t* public_key2,
