@@ -32,3 +32,6 @@
 [submodule "3rdparty/symcrypt_engine/SymCrypt-OpenSSL"]
 	path = 3rdparty/symcrypt_engine/SymCrypt-OpenSSL
 	url = https://github.com/microsoft/SymCrypt-OpenSSL
+[submodule "3rdparty/openssl/openssl_3"]
+	path = 3rdparty/openssl/openssl_3
+	url = https://github.com/openssl/openssl

@@ -564,7 +564,7 @@ def windowsLinuxElfBuild(String windows_label, String ubuntu_label, String compi
                                 setlocal EnableDelayedExpansion
                                 cmake.exe ${WORKSPACE} -G Ninja -DADD_WINDOWS_ENCLAVE_TESTS=ON -DBUILD_ENCLAVES=OFF -DCMAKE_BUILD_TYPE=${build_type} -DLINUX_BIN_DIR=${WORKSPACE}\\linuxbin\\tests -DLVI_MITIGATION=${lvi_mitigation} -DLVI_MITIGATION_SKIP_TESTS=${lvi_mitigation_skip_tests} -DNUGET_PACKAGE_PATH=C:/oe_prereqs -Wdev || exit !ERRORLEVEL!
                                 ninja -v || exit !ERRORLEVEL!
-                                ctest.exe -V -C ${build_type} --timeout ${globalvars.CTEST_TIMEOUT_SECONDS} || exit !ERRORLEVEL!
+                                ctest.exe -V -C ${build_type} --timeout ${ globalvars.CTEST_TIMEOUT_SECONDS * 2.2 } || exit !ERRORLEVEL!
                             """
                         )
                     }
@@ -651,7 +651,7 @@ def windowsCrossCompile(String label, String compiler, String build_type, String
                     // Interrupt build if no output received from node for 15 minutes
                     timeout(time: 15, activity: true, unit: 'MINUTES') {
                         withEnv(["OE_SIMULATION=${OE_SIMULATION}"]) {
-                            WinCompilePackageTest("build/X64-${build_type}", build_type, 'OFF', globalvars.CTEST_TIMEOUT_SECONDS, lvi_mitigation, lvi_mitigation_skip_tests, extra_cmake_args)
+                            WinCompilePackageTest("build/X64-${build_type}", build_type, 'OFF', globalvars.CTEST_TIMEOUT_SECONDS * 3, lvi_mitigation, lvi_mitigation_skip_tests, extra_cmake_args)
                         }
                     }
                 }
