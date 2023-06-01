@@ -35,7 +35,6 @@ add_executable(
   ../sha_tests.c
   ../tests.c
   ../utils.c)
-
 add_dependencies(hostcrypto crypto_test_data)
 target_link_libraries(hostcrypto oehost)
 add_test(tests/crypto/host hostcrypto)
