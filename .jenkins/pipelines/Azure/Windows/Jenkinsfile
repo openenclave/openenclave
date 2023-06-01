@@ -16,7 +16,6 @@ def testing_stages = [
 if(FULL_TEST_SUITE == "true") {
     testing_stages += [
         "ELF Win2019 Ubuntu2004 clang-11 Debug":                                 { tests.windowsLinuxElfBuild(params.WS2019_DCAP_CFL_LABEL, params.UBUNTU_2004_NONSGX_LABEL, 'clang-11', 'Debug') },
-        "XC Win2019 v2 clang-10 RelWithDebInfo ControlFlow":                     { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'clang-10', 'RelWithDebInfo', 'ControlFlow') },
         "XC Win2019 v2 clang-11 RelWithDebInfo ControlFlow-Clang":               { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'clang-11', 'RelWithDebInfo', 'ControlFlow-Clang') },
         "XC Win2019 v2 clang-11 Debug ControlFlow Sim":                          { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'clang-11', 'Debug',          'ControlFlow', '1') },
         "XC Win2019 v2 clang-11 Debug ControlFlow Sim snmalloc":                 { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'clang-11', 'Debug',          'ControlFlow', '1', 'OFF', ['-DUSE_SNMALLOC=ON']) },
