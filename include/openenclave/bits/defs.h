@@ -248,7 +248,7 @@
 
 // Statically defined functions which are aliased should be marked as unused
 // to prevent compiler warnings in GCC and Clang
-#if __GNUC__
+#ifdef __GNUC__
 #define OE_UNUSED_FUNC __attribute__((unused))
 #elif _MSC_VER
 #define OE_UNUSED_FUNC
