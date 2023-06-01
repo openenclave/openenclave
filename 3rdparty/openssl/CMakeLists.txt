@@ -1488,8 +1488,7 @@ set(OPENSSL_COMPILE_OPTIONS
     -Wno-unused-parameter
     -Wno-shorten-64-to-32
     -Wno-sign-conversion
-    -Wno-conversion
-    -Wno-deprecated-declarations)
+    -Wno-conversion)
 
 if (OPENSSL_C_COMPILER MATCHES clang)
   list(APPEND OPENSSL_COMPILE_OPTIONS -Qunused-arguments)

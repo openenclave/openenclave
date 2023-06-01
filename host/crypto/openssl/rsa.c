@@ -56,6 +56,7 @@ static int RSA_set0_key(RSA* r, BIGNUM* n, BIGNUM* e, BIGNUM* d)
 
 #endif
 
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 oe_result_t oe_rsa_get_public_key_from_private(
     const oe_rsa_private_key_t* private_key,
     oe_rsa_public_key_t* public_key)
@@ -123,7 +124,66 @@ done:
 
     return result;
 }
+#else
+oe_result_t oe_rsa_get_public_key_from_private(
+    const oe_rsa_private_key_t* private_key,
+    oe_rsa_public_key_t* public_key)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_private_key_t* private_key_temp = (oe_private_key_t*)private_key;
+    EVP_PKEY* rsa_public_pkey = NULL;
+    BIGNUM* public_e = NULL;
+    BIGNUM* public_n = NULL;
+    int ret = 0;
 
+    /* Check for invalid parameters */
+    if (!private_key || !public_key)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    ret = EVP_PKEY_get_bn_param(
+        private_key_temp->pkey, OSSL_PKEY_PARAM_RSA_N, &public_n);
+
+    if (!ret)
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    ret = EVP_PKEY_get_bn_param(
+        private_key_temp->pkey, OSSL_PKEY_PARAM_RSA_E, &public_e);
+
+    if (!ret)
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    /* Init the OE public key type. */
+    OSSL_PARAM_BLD* bld = OSSL_PARAM_BLD_new();
+    OSSL_PARAM_BLD_push_BN(bld, OSSL_PKEY_PARAM_RSA_N, public_n);
+    OSSL_PARAM_BLD_push_BN(bld, OSSL_PKEY_PARAM_RSA_E, public_e);
+    OSSL_PARAM* params = OSSL_PARAM_BLD_to_param(bld);
+    EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new_from_name(NULL, "RSA", NULL);
+    if (!ctx)
+        OE_RAISE(OE_CRYPTO_ERROR);
+    if (!(rsa_public_pkey = EVP_PKEY_new()))
+        OE_RAISE(OE_CRYPTO_ERROR);
+    if (EVP_PKEY_fromdata_init(ctx) <= 0)
+        OE_RAISE(OE_CRYPTO_ERROR);
+    if (EVP_PKEY_fromdata(ctx, &rsa_public_pkey, EVP_PKEY_PUBLIC_KEY, params) <=
+        0)
+        OE_RAISE(OE_CRYPTO_ERROR);
+    oe_rsa_public_key_init(public_key, rsa_public_pkey);
+
+    result = OE_OK;
+    rsa_public_pkey = NULL;
+
+done:
+    if (ctx)
+        EVP_PKEY_CTX_free(ctx);
+
+    if (rsa_public_pkey)
+        EVP_PKEY_free(rsa_public_pkey);
+
+    return result;
+}
+#endif
+
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 oe_result_t oe_rsa_public_key_from_modulus(
     const uint8_t* modulus,
     size_t modulus_size,
@@ -156,3 +216,36 @@ oe_result_t oe_rsa_public_key_from_modulus(
 done:
     return result;
 }
+#else
+oe_result_t oe_rsa_public_key_from_modulus(
+    const uint8_t* modulus,
+    size_t modulus_size,
+    const uint8_t* exponent,
+    size_t exponent_size,
+    oe_rsa_public_key_t* public_key)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    BIGNUM *bignum_modulus = NULL, *bignum_exponent = NULL;
+    EVP_PKEY* pkey = NULL;
+
+    if (!public_key || modulus_size > INT_MAX || exponent_size > INT_MAX)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    bignum_modulus = BN_bin2bn(modulus, (int)modulus_size, 0);
+    bignum_exponent = BN_bin2bn(exponent, (int)exponent_size, 0);
+
+    pkey = EVP_PKEY_new();
+    if ((EVP_PKEY_set_bn_param(pkey, OSSL_PKEY_PARAM_RSA_N, bignum_modulus) ==
+         0) ||
+        (EVP_PKEY_set_bn_param(pkey, OSSL_PKEY_PARAM_RSA_E, bignum_exponent) ==
+         0))
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    oe_rsa_public_key_init(public_key, pkey);
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+#endif

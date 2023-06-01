@@ -16,6 +16,6 @@ void TestCpuEntropy(void);
 void TestRSA(void);
 void TestSHA(void);
 void TestHMAC(void);
-void TestAll();
+void TestAll(void);
 
 #endif /* _TESTS_CRYPTO_TESTS_H */
