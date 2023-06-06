@@ -162,11 +162,15 @@ Get the value of your primary key, which will be used during PCCS service bring 
 
 ### 4.2 Install and Config PCCS
 
-Install nodejs and npm if you haven't
+Install nodejs and npm if you haven't (The minimum node.js version required by PCCS is v14.20.0)
 
 ```bash
-curl -sL https://deb.nodesource.com/setup_13.x | sudo -E bash
+curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash
 sudo apt-get install -y nodejs
+```
+Install the required library
+```
+sudo apt install cracklib-runtime 
 ```
 
 To install PCCS, you can choose to install it from the Intel SGX repository (recommended), or install it manually with dpkg.
