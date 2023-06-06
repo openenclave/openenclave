@@ -221,12 +221,13 @@ Then check the status of your service.
 ```bash
 pm2 status
 ```
+
 You should be able to see the service is running.
 ![nodejs](/docs/GettingStartedDocs/images/nodejs.png)
 
 Run the following command to verify if it can actually fetch the root CA CRL from the Intel PCK service
 ```bash
-curl --noproxy "*" -v -k -G "https://localhost:8081/sgx/certification/v2/rootcacrl"
+curl --noproxy "*" -v -k -G "https://localhost:8081/sgx/certification/v3/rootcacrl"
 ```
 
 To learn more about PCCS, please refer to the [PCCS GitHub repository](https://github.com/intel/SGXDataCenterAttestationPrimitives/tree/master/QuoteGeneration/pccs).
