@@ -314,6 +314,13 @@ oe_enter:
     xor %r11, %r11
     oe_cleanup_registers
 
+    // Clear the flags not covered by oe_cleanup_registers (i.e., control and system
+    // flags) that requires using (enclave) stack. Given that these flags are not
+    // affected instructions and persistent throughout the enclave lifetime, we only
+    // clear them once during the enter routine, which prevents poisoning attack from
+    // the host.
+    oe_cleanup_flags_on_enclave_stack
+
     // Call __oe_handle_main(ARG1=RDI, ARG2=RSI, CSSA=RDX, TCS=RCX, OUTPUTARG1=R8, OUTPUTARG2=R9)
     mov %rax, %rdx
     mov %rbx, %rcx

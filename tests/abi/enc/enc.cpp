@@ -76,9 +76,25 @@ double enclave_check_abi()
          .deepcopy_out_buffer_size = 0,
          ._retval = 0}};
 
+    flat_ocall_args_t* args = NULL;
+
+    /* Get the FLAGS */
+    uint64_t flags = 0xffffffff;
+    asm volatile("pushfq\n\t"
+                 "popq %0"
+                 : "=r"(flags)
+                 :
+                 : "r8");
+
+    /* Validate bit 10 (DF) and 16 - 31 bits are cleared by the
+     * oe_enter routine.
+     * Skip checks against other bits given that they could be impacted
+     * by branch or memory access executed until this point */
+    if (flags & 0xffff0400)
+        goto done;
+
     /* Alloc and initialize host_check_abi OCALL args buffer */
-    flat_ocall_args_t* args =
-        (flat_ocall_args_t*)oe_allocate_ocall_buffer(sizeof(args_template));
+    args = (flat_ocall_args_t*)oe_allocate_ocall_buffer(sizeof(args_template));
     if (!args)
         goto done;
 

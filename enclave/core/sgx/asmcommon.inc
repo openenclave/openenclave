@@ -11,7 +11,7 @@
 //
 //  - The legacy SSE state:
 //    - Initializes the FPU control word to ABI-specified value 0x037F
-//    - Initializes MXCSR to ABI-specified value 0x1F80 and MXCSR_MASK to 0xFFFF
+//    - Initializes MXCSR to ABI-specified value 0x1FBF and MXCSR_MASK to 0xFFFF
 //    - Clears FPU Status, Tag, OpCode, and FIP words
 //    - Clears all FDP bits
 //    - Clears all MMX/FPU registers
@@ -46,6 +46,9 @@
     // Restore initial enclave legacy SSE state
     fxrstor64 OE_XSAVE_INITIAL_STATE(%rip)
 2:
+    // Put a lfence after changing MXCSR for MXCSR Configuration Dependent
+    // Timing (MCDT) mitigation
+    lfence
     // Restore the registers
     mov %r8, %rax
     mov %r9, %rdx
@@ -80,17 +83,36 @@
     xor %r14, %r14
     xor %r15, %r15
 
-    // Zero out the RFLAGS except for system flags and
-    // reserved bits that are not writable by the enclave
+    // Zero out the status flags (CF, PF, AF, SF, OF) that could leak
+    // information about instructions executed by the enclave without using stack.
+    // Doing so avoiding using untrusted host stack when cleaning up registers
+    // during enclave enter and exit routines.
+    // To clear system and control flags, see oe_cleanup_flags_on_enclave_stack
+    // for more detail.
     mov %rax, %r8
     xor %rax, %rax
     test %al, %al // Clear OF
-    cld // Clear DF
     sahf // Clear SF, ZF AF, PF, and CF
     mov %r8, %rax
 
     // No need to clear r8, which equals to rax (return value to the host)
 
+.endm
+
+//==============================================================================
+//
+// This macro is used to clean up the enclave FLAGS register, including not only
+// status but also system and control flags.
+//
+// The macro does not reserve r15 and require consuming stack. Please make sure
+// using the macro within the enclave stack. Currently, the macro is only used
+// during oe_enter.
+//
+//==============================================================================
+.macro oe_cleanup_flags_on_enclave_stack
+    xor %r15, %r15
+    pushq %r15
+    popfq
 .endm
 
 #endif
