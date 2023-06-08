@@ -30,22 +30,21 @@ if (OE_CRYPTO_LIB STREQUAL "openssl_symcrypt_fips")
   # Download the SymCrypt release package at config-time
   include(FetchContent)
   FetchContent_Declare(
-    symcrypt_package
-    SOURCE_DIR
-    ${CMAKE_BINARY_DIR}/SymCrypt
-    URL https://github.com/microsoft/SymCrypt/releases/download/v101.3.0/symcrypt_AMD64_oe_full_v101.3.0-31e06ae.tgz
+    symcrypt_pkg
+    SOURCE_DIR ${CMAKE_BINARY_DIR}/SymCrypt
+    URL https://github.com/microsoft/SymCrypt/releases/download/v103.0.1/symcrypt-linux-oe_full-AMD64-103.0.1-69dbff3.tar.gz
     URL_HASH
-      SHA256=53fcbdbae3925b82e880c102969dc4c646b36dffbca602d2f85f967d54e958e7)
+      SHA256=27C8C1C309B217E74D6055734D305AA86D8CE9E05D6D75AFD12C885F13CEA710)
 
   # Make the downloaded package globally available
-  FetchContent_GetProperties(symcrypt_package)
-  if (NOT symcrypt_package_POPULATED)
-    FetchContent_Populate(symcrypt_package)
+  FetchContent_GetProperties(symcrypt_pkg)
+  if (NOT symcrypt_pkg_POPULATED)
+    FetchContent_Populate(symcrypt_pkg)
   endif ()
 
   # The linker can only resolve up to single number after .so
-  file(COPY_FILE ${CMAKE_BINARY_DIR}/SymCrypt/lib/libsymcrypt.so.101.3.0
-       ${CMAKE_BINARY_DIR}/libsymcrypt.so.101)
+  configure_file(${CMAKE_BINARY_DIR}/SymCrypt/lib/libsymcrypt.so.103.0.1
+                 ${CMAKE_BINARY_DIR}/libsymcrypt.so.103 COPYONLY)
 
   # Option passed in oeedger8r to include entropy.edl (required by
   # SymCrypt FIPS module)

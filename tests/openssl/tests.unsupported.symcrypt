@@ -8,3 +8,5 @@ rsa_mp_test
 evp_test-evpciph
 # Inconsistent implementation between OpenSSL and SymCrypt
 evp_test-evppkey
+# SCOSSL v1.3.0 only supports HMAC with SHA1, SHA256, SHA384, or SHA512
+evp_test-evpmac
