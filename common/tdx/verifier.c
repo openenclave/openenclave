@@ -8,6 +8,7 @@
 #include <openenclave/internal/plugin.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/safemath.h>
+
 #include "../common.h"
 #include "../sgx/quote.h"
 #include "collateral.h"
