@@ -104,6 +104,7 @@ tools/oesign/getopt\.h
 tools/oesign/getopt_long\.c
 tests/host_verify/data/.*
 tests/secure_verify/data/.*
+tests/intel_qve_thread_test/data/.*
 
 # The following files use the BSD license.
 scripts/lvi-mitigation/lvi-mitigation.py
