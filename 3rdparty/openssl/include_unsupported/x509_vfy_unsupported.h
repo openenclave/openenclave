@@ -55,7 +55,7 @@ int X509_STORE_load_locations(
 OE_OPENSSL_UNSUPPORTED(OE_UNSUPPORTED_ENCLAVE_OPENSSL_FUNCTION)
 int X509_STORE_set_default_paths(X509_STORE* ctx);
 #define X509_STORE_set_default_paths \
-    OE_OPENSSL_RAISE_ERRO(X509_STORE_set_default_paths)
+    OE_OPENSSL_RAISE_ERROR(X509_STORE_set_default_paths)
 
 OE_OPENSSL_EXTERN_C_END
 

@@ -229,7 +229,7 @@ foreach (header_file ${OPENSSL_UNSUPPORTED_HEADERS})
     ${OPENSSL_INSTALL_INCLUDES}/${header_file})
   append_copy_command(
     OPENSSL_3_INCLUDES_COMMANDS
-    ${CMAKE_CURRENT_SOURCE_DIR}/include_unsupported/${header_file}
+    ${CMAKE_CURRENT_SOURCE_DIR}/include_unsupported_3/${header_file}
     ${OPENSSL_3_INSTALL_INCLUDES}/${header_file})
 endforeach ()
 
