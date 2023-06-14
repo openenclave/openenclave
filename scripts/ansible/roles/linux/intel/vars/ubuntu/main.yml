@@ -3,8 +3,8 @@
 
 ---
 intel_dcap_driver_files:
-  - "/dev/sgx/provision"
-  - "/dev/sgx/enclave"
+  - "/dev/sgx_provision"
+  - "/dev/sgx_enclave"
   - "/dev/sgx_provision"
   - "/dev/sgx_enclave"
 
