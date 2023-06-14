@@ -608,8 +608,8 @@ def get_date(String delimiter = "") {
 def getDockerSGXDevices(String os_type, String os_version) {
     def devices = []
     if ( os_type.equalsIgnoreCase('ubuntu') && os_version.equals('20.04') ) {
-        devices.add('/dev/sgx/provision')
-        devices.add('/dev/sgx/enclave')
+        devices.add('/dev/sgx_provision')
+        devices.add('/dev/sgx_enclave')
     }
     else if ( os_type.equalsIgnoreCase('ubuntu') && os_version.equals('18.04') ) {
         devices.add('/dev/sgx')
