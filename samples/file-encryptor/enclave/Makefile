@@ -8,16 +8,17 @@ CXXFLAGS=$(shell pkg-config oeenclave-$(CXX_COMPILER) --cflags)
 LDFLAGS=$(shell pkg-config oeenclave-$(CXX_COMPILER) --libs)
 INCDIR=$(shell pkg-config oeenclave-$(C_COMPILER) --variable=includedir)
 CRYPTO_LDFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --variable=${OE_CRYPTO_LIB}libs)
+CRYPTO_FLAGS=$(shell pkg-config oeenclave-$(COMPILER) --variable=${OE_CRYPTO_LIB}flags)
 
 CRYPTO_SRC = $(OE_CRYPTO_LIB)_src
 CXXINCDIR = -I. -I../ -I../..
 CXXSRCS = common/ecalls.cpp \
 		$(CRYPTO_SRC)/encryptor.cpp \
-		$(CRYPTO_SRC)/keys.cpp \
+		$(CRYPTO_SRC)/keys.cpp
 
-ifeq ($(OE_CRYPTO_LIB),openssl_3)
+# Cover openssl, openssl_symcrypt_fips, and openssl_3
+ifneq (,$(findstring openssl,$(OE_CRYPTO_LIB)))
 	CRYPTO_SRC = openssl_src
-	OPENSSL_3FLAGS = -I$(INCDIR)/openenclave/3rdparty/openssl/openssl_3
 endif
 
 all:
@@ -30,9 +31,9 @@ build:
 	oeedger8r ../fileencryptor.edl --trusted \
 		--search-path $(INCDIR) \
 		--search-path $(INCDIR)/openenclave/edl/sgx
-	$(CXX) -g -c $(OPENSSL_3FLAGS) $(CXXFLAGS) -DOE_API_VERSION=2 -std=c++11 $(CXXINCDIR) \
+	$(CXX) -g -c $(CRYPTO_FLAGS) $(CXXFLAGS) -DOE_API_VERSION=2 -std=c++11 $(CXXINCDIR) \
 		$(CXXSRCS)
-	$(CC) -g -c $(OPENSSL_3FLAGS) $(CFLAGS) -DOE_API_VERSION=2 fileencryptor_t.c -o fileencryptor_t.o
+	$(CC) -g -c $(CRYPTO_FLAGS) $(CFLAGS) -DOE_API_VERSION=2 fileencryptor_t.c -o fileencryptor_t.o
 	$(CXX) -o file-encryptorenc ecalls.o encryptor.o keys.o fileencryptor_t.o $(LDFLAGS) $(CRYPTO_LDFLAGS)
 
 sign:

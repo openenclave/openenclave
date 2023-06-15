@@ -8,13 +8,14 @@ CXXFLAGS=$(shell pkg-config oeenclave-$(CXX_COMPILER) --cflags)
 LDFLAGS=$(shell pkg-config oeenclave-$(CXX_COMPILER) --libs)
 INCDIR=$(shell pkg-config oeenclave-$(C_COMPILER) --variable=includedir)
 CRYPTO_LDFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --variable=${OE_CRYPTO_LIB}libs)
+CRYPTO_FLAGS=$(shell pkg-config oeenclave-$(COMPILER) --variable=${OE_CRYPTO_LIB}flags)
 
 .PHONY: all build clean run
 
 SRC_FILES = ecalls.cpp mbedtls_client.cpp cert_verify_config.cpp ../../common/cert_verifier.cpp ../../common/identity_verifier.cpp ../../common/utility.cpp ../../common/mbedtls_utility.cpp
 OBJ_FILES = ecalls.o mbedtls_client.o cert_verify_config.o cert_verifier.o identity_verifier.o utility.o mbedtls_utility.o tls_client_t.o
 
-# Cover both openssl and openssl_symcrypt_fips
+# Cover openssl, openssl_symcrypt_fips, and openssl_3
 ifneq (,$(findstring openssl,$(OE_CRYPTO_LIB)))
 	SRC_FILES = ecalls.cpp openssl_client.cpp cert_verify_config.cpp ../../common/verify_callback.cpp ../../common/utility.cpp ../../common/openssl_utility.cpp
 	OBJ_FILES = ecalls.o openssl_client.o cert_verify_config.o verify_callback.o utility.o openssl_utility.o tls_client_t.o
@@ -38,8 +39,8 @@ build:
 		--search-path $(INCDIR)/openenclave/edl/sgx \
 		$(EDL_USE_HOST_ENTROPY)
 
-	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -I. -std=c++11 $(SRC_FILES)
-	$(CC) -c $(CFLAGS) $(CINCLUDES) -I. ./tls_client_t.c
+	$(CXX) -g -c $(CRYPTO_FLAGS) $(CXXFLAGS) $(INCLUDES) -I. -std=c++11 $(SRC_FILES)
+	$(CC) -c $(CRYPTO_FLAGS) $(CFLAGS) $(CINCLUDES) -I. ./tls_client_t.c
 	$(CXX) -o tls_client_enc $(OBJ_FILES) $(LDFLAGS) $(CRYPTO_LDFLAGS) -loehostsock -loehostresolver
 
 sign:
