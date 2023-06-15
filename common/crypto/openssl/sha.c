@@ -5,18 +5,27 @@
 #include <openenclave/internal/crypto/sha.h>
 #include <openenclave/internal/defs.h>
 #include <openenclave/internal/raise.h>
+#include <openssl/evp.h>
 #include <openssl/sha.h>
 #include <stdio.h>
 #include <string.h>
 
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 typedef struct _oe_sha256_context_impl
 {
     SHA256_CTX ctx;
 } oe_sha256_context_impl_t;
+#else
+typedef struct _oe_sha256_context_impl
+{
+    EVP_MD_CTX* ctx;
+} oe_sha256_context_impl_t;
+#endif
 
 OE_STATIC_ASSERT(
     sizeof(oe_sha256_context_impl_t) <= sizeof(oe_sha256_context_t));
 
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 oe_result_t oe_sha256_init(oe_sha256_context_t* context)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -33,7 +42,29 @@ oe_result_t oe_sha256_init(oe_sha256_context_t* context)
 done:
     return result;
 }
+#else
+oe_result_t oe_sha256_init(oe_sha256_context_t* context)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_sha256_context_impl_t* impl = (oe_sha256_context_impl_t*)context;
 
+    if (!context)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (!(impl->ctx = EVP_MD_CTX_new()))
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    if (!EVP_DigestInit_ex(impl->ctx, EVP_sha256(), NULL))
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+#endif
+
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 oe_result_t oe_sha256_update(
     oe_sha256_context_t* context,
     const void* data,
@@ -53,7 +84,29 @@ oe_result_t oe_sha256_update(
 done:
     return result;
 }
+#else
+oe_result_t oe_sha256_update(
+    oe_sha256_context_t* context,
+    const void* data,
+    size_t size)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_sha256_context_impl_t* impl = (oe_sha256_context_impl_t*)context;
 
+    if (!context)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (!EVP_DigestUpdate(impl->ctx, data, size))
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+#endif
+
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 oe_result_t oe_sha256_final(oe_sha256_context_t* context, OE_SHA256* sha256)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -70,6 +123,27 @@ oe_result_t oe_sha256_final(oe_sha256_context_t* context, OE_SHA256* sha256)
 done:
     return result;
 }
+#else
+oe_result_t oe_sha256_final(oe_sha256_context_t* context, OE_SHA256* sha256)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_sha256_context_impl_t* impl = (oe_sha256_context_impl_t*)context;
+
+    if (!context)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (!EVP_DigestFinal_ex(impl->ctx, sha256->buf, NULL))
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    result = OE_OK;
+
+done:
+    if (impl->ctx)
+        EVP_MD_CTX_free(impl->ctx);
+
+    return result;
+}
+#endif
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
 oe_result_t oe_sha256_save(
