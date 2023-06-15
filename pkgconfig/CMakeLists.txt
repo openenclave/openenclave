@@ -22,7 +22,8 @@ set(ENCLAVE_CINCLUDES
 set(ENCLAVE_CXXINCLUDES
     "-I\${includedir}/openenclave/3rdparty/libcxx ${ENCLAVE_CINCLUDES}")
 
-set(ENCLAVE_OPENSSL3_INCLUDES "-I\${includedir}/openenclave/3rdparty/openssl_3")
+set(ENCLAVE_OPENSSL_3_INCLUDES
+    "-I\${includedir}/openenclave/3rdparty/openssl_3")
 
 set(ENCLAVE_CFLAGS_LIST
     -nostdinc

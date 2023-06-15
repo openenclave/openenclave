@@ -32,6 +32,7 @@ headers=`find ${directory} -name '*.h'`
 ## Append the inclusion of *_unsupported.h
 for i in ${headers}
 do
+    # Append for crypto.h, ssl.h, x509_vfy.h; but NOT prov_ssl.h
     if ([[ "${i}" != *"crypto.h" ]] && [[ "${i}" != *"ssl.h" ]] && [[ "${i}" != *"x509_vfy.h" ]]) || [[ "${i}" == *"prov_ssl.h" ]]; then
         continue
     fi

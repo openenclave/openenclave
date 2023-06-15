@@ -11,7 +11,7 @@ openssllibs=@ENCLAVE_OPENSSL_CRYPTO_LIBS@
 openssl_3libs=@ENCLAVE_OPENSSL_3_CRYPTO_LIBS@
 openssl_symcrypt_fipslibs=@ENCLAVE_OPENSSL_SYMCRYPT_FIPS_CRYPTO_LIBS@
 
-openssl_3flags=@ENCLAVE_OPENSSL3_INCLUDES@
+openssl_3flags=@ENCLAVE_OPENSSL_3_INCLUDES@
 
 Name: Open Enclave
 Description: Open Enclave clang++ flags and libraries for building enclaves.
