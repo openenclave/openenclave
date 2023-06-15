@@ -96,8 +96,8 @@ pipeline {
                             oe2004 = common.dockerImage("oetools-20.04:${TAG_FULL_IMAGE}", LINUX_DOCKERFILE, "${buildArgs}")
                             oe2004.inside("--user root:root \
                                             --cap-add=SYS_PTRACE \
-                                            --device /dev/sgx/provision:/dev/sgx/provision \
-                                            --device /dev/sgx/enclave:/dev/sgx/enclave \
+                                            --device /dev/sgx_provision:/dev/sgx_provision \
+                                            --device /dev/sgx_enclave:/dev/sgx_enclave \
                                             --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
                                 sh """
                                     apt update

@@ -11,8 +11,8 @@ For Intel SGX driver 1.36.2 and lower, the following parameter is needed:
   ```--device /dev/sgx:/dev/sgx```  
 
 For Intel SGX driver 1.41 and above, the following parameters are needed:  
-  ```--device /dev/sgx/provision:/dev/sgx/provision```  
-  ```--device /dev/sgx/enclave:/dev/sgx/enclave```
+  ```--device /dev/sgx_provision:/dev/sgx_provision```  
+  ```--device /dev/sgx_enclave:/dev/sgx_enclave```
 
 ## Out-of-proc attestation support
 This image supports out-of-proc attestation using Intel SGX. To allow this, the Intel SGX AESM Service will need to be made available by running the container with the following parameters:  
