@@ -4,6 +4,7 @@
 include ../../config.mk
 
 CRYPTO_LDFLAGS := $(shell pkg-config oeenclave-$(COMPILER) --variable=${OE_CRYPTO_LIB}libs)
+CRYPTO_FLAGS := $(shell pkg-config oeenclave-$(COMPILER) --variable=${OE_CRYPTO_LIB}flags)
 
 ifeq ($(LVI_MITIGATION), ControlFlow)
     ifeq ($(LVI_MITIGATION_BINDIR),)
@@ -32,8 +33,8 @@ build:
 	oeedger8r ../debugmalloc.edl --trusted \
 		--search-path $(INCDIR) \
 		--search-path $(INCDIR)/openenclave/edl/sgx
-	$(CC) -g -c $(CFLAGS) -DOE_API_VERSION=2 enc.c -o enc.o
-	$(CC) -g -c $(CFLAGS) -DOE_API_VERSION=2 debugmalloc_t.c -o debugmalloc_t.o
+	$(CC) -g -c $(CRYPTO_FLAGS) $(CFLAGS) -DOE_API_VERSION=2 enc.c -o enc.o
+	$(CC) -g -c $(CRYPTO_FLAGS) $(CFLAGS) -DOE_API_VERSION=2 debugmalloc_t.c -o debugmalloc_t.o
 	$(CC) -o debugmallocenc debugmalloc_t.o enc.o $(LDFLAGS_CUSTOM) $(CRYPTO_LDFLAGS)
 
 sign:
