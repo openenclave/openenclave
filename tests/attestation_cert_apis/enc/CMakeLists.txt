@@ -38,7 +38,8 @@ if (BUILD_OPENSSL)
     openssl_rsa.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/tls_t.c)
 
-  enclave_compile_definitions(tls_openssl_enc PRIVATE OE_USE_OPENSSL)
+  enclave_compile_definitions(tls_openssl_enc PRIVATE OE_USE_OPENSSL
+                              OECRYPTO_OPENSSL_VER=1)
 
   enclave_include_directories(
     tls_openssl_enc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
@@ -56,9 +57,8 @@ if (BUILD_OPENSSL)
     openssl_rsa.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/tls_t.c)
 
-  enclave_compile_definitions(tls_openssl_3_enc PRIVATE OE_USE_OPENSSL)
-  enclave_compile_options(tls_openssl_3_enc PRIVATE
-                          "-Wno-deprecated-declarations")
+  enclave_compile_definitions(tls_openssl_3_enc PRIVATE OE_USE_OPENSSL
+                              OECRYPTO_OPENSSL_VER=3)
 
   enclave_include_directories(
     tls_openssl_3_enc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}

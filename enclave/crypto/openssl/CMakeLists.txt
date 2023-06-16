@@ -21,6 +21,11 @@ set(OECRYPTO_OPENSSL_SOURCE
     init.c
     symcrypt_engine.c)
 
+# key.c requires deprecated APIs that have no direct equivalent in OpenSSL 3
+set_source_files_properties(
+  ${PROJECT_SOURCE_DIR}/common/crypto/openssl/key.c
+  PROPERTIES COMPILE_FLAGS "-Wno-deprecated-declarations")
+
 add_enclave_library(oecryptoopenssl STATIC ${OECRYPTO_OPENSSL_SOURCE})
 
 enclave_compile_definitions(oecryptoopenssl PRIVATE OECRYPTO_OPENSSL_VER=1)
@@ -28,9 +33,6 @@ enclave_compile_definitions(oecryptoopenssl PRIVATE OECRYPTO_OPENSSL_VER=1)
 add_enclave_library(oecryptoopenssl_3 STATIC ${OECRYPTO_OPENSSL_SOURCE})
 
 enclave_compile_definitions(oecryptoopenssl_3 PRIVATE OECRYPTO_OPENSSL_VER=3)
-# TODO: remove
-enclave_compile_options(oecryptoopenssl_3 PRIVATE
-                        "-Wno-deprecated-declarations")
 
 maybe_build_using_clangw(oecryptoopenssl)
 maybe_build_using_clangw(oecryptoopenssl_3)
