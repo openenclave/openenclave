@@ -59,7 +59,11 @@ pipeline {
                     steps {
                         script {
                             base_2004_image = docker.image("openenclave-base-ubuntu-20.04:${TAG_BASE_IMAGE}")
-                            base_2004_image.inside("--user root:root --cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
+                            base_2004_image.inside("--user root:root \
+                                                    --cap-add=SYS_PTRACE \
+                                                    --device /dev/sgx_enclave:/dev/sgx_enclave \
+                                                    --device /dev/sgx_provision:/dev/sgx_provision \
+                                                    --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
                                 sh """
                                     apt update
                                     apt install -y build-essential open-enclave libssl-dev curl
@@ -95,10 +99,10 @@ pipeline {
                             )
                             oe2004 = common.dockerImage("oetools-20.04:${TAG_FULL_IMAGE}", LINUX_DOCKERFILE, "${buildArgs}")
                             oe2004.inside("--user root:root \
-                                            --cap-add=SYS_PTRACE \
-                                            --device /dev/sgx_provision:/dev/sgx_provision \
-                                            --device /dev/sgx_enclave:/dev/sgx_enclave \
-                                            --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
+                                           --cap-add=SYS_PTRACE \
+                                           --device /dev/sgx_provision:/dev/sgx_provision \
+                                           --device /dev/sgx_enclave:/dev/sgx_enclave \
+                                           --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
                                 sh """
                                     apt update
                                     apt install -y build-essential open-enclave libssl-dev
