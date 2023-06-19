@@ -98,6 +98,6 @@ OE_SET_ENCLAVE_SGX2(
     false, /* RequireKSS */
     false, /* CreateZeroBaseEnclave */
     0,     /* StartAddress */
-    7200,  /* NumHeapPages */
-    128,   /* NumStackPages */
+    10000, /* NumHeapPages */
+    256,   /* NumStackPages */
     8);    /* NumTCS */

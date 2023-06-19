@@ -20,10 +20,6 @@ static int _initialize_symcrypt_engine()
 
     result = SCOSSL_ENGINE_Initialize();
     if (result != OE_SYMCRYPT_ENGINE_SUCCESS)
-        goto done;
-
-done:
-    if (result == OE_SYMCRYPT_ENGINE_FAIL)
         OE_TRACE_ERROR("SymCrypt engine initialization failed");
 
     return (result == OE_SYMCRYPT_ENGINE_SUCCESS) ? 1 : 0;
