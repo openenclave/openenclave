@@ -102,7 +102,6 @@
 ../../3rdparty/openssl/openssl_3/test/rc2test.c
 ../../3rdparty/openssl/openssl_3/test/rc4test.c
 ../../3rdparty/openssl/openssl_3/test/rc5test.c
-../../3rdparty/openssl/openssl_3/test/rdrand_sanitytest.c
 ../../3rdparty/openssl/openssl_3/test/recordlentest.c
 ../../3rdparty/openssl/openssl_3/test/rsa_complex.c
 ../../3rdparty/openssl/openssl_3/test/rsa_mp_test.c

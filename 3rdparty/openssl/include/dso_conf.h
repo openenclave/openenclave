@@ -10,8 +10,7 @@
  */
 
 #ifndef OSSL_CRYPTO_DSO_CONF_H
-#define OSSL_CRYPTO_DSO_CONF_H
-
-#define DSO_NONE
-#define DSO_EXTENSION ".so"
+# define OSSL_CRYPTO_DSO_CONF_H
+# define DSO_NONE
+# define DSO_EXTENSION ".so"
 #endif

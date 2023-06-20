@@ -62,7 +62,8 @@ set(OPENSSL_GENERATED_ASM_SRC
 
 set(OPENSSL_3_GENERATED_ASM_SRC
     crypto/aes/asm/aes-x86_64.s crypto/aes/asm/bsaes-x86_64.s
-    crypto/bn/asm/rsaz-avx512.s)
+    crypto/bn/asm/rsaz-2k-avx512.s crypto/bn/asm/rsaz-3k-avx512.s
+    crypto/bn/asm/rsaz-4k-avx512.s)
 
 if (OE_SGX)
   list(APPEND OPENSSL_GENERATED_BYPRODUCTS ${OPENSSL_GENERATED_ASM_SRC})
@@ -340,7 +341,8 @@ set(OPENSSL_ASSEMBLY_SCRIPTS
 
 list(APPEND OPENSSL_3_ASSEMBLY_SCRIPTS ${OPENSSL_ASSEMBLY_SCRIPTS}
      crypto/aes/asm/aes-x86_64 crypto/aes/asm/bsaes-x86_64
-     crypto/bn/asm/rsaz-avx512)
+     crypto/bn/asm/rsaz-2k-avx512 crypto/bn/asm/rsaz-3k-avx512
+     crypto/bn/asm/rsaz-4k-avx512)
 
 macro (append_generate_command LIST FILE_NAME SOURCE_DIR DEST_DIR)
   list(
@@ -594,6 +596,7 @@ set(OPENSSL_SHARED_CRYPTO_SOURCE
     crypto/bn/bn_srp.c
     crypto/bn/bn_word.c
     crypto/bn/bn_x931p.c
+    crypto/bn/rsa_sup_mul.c
     crypto/bn/rsaz_exp.c
     crypto/buffer/buf_err.c
     crypto/buffer/buffer.c
@@ -959,7 +962,6 @@ list(
   crypto/bio/b_print.c
   crypto/bio/b_sock.c
   crypto/bio/b_sock2.c
-  crypto/bn/rsa_sup_mul.c
   crypto/cmac/cm_ameth.c
   crypto/cmac/cm_pmeth.c
   crypto/dh/dh_rfc7919.c
