@@ -566,9 +566,7 @@ function Install-NSIS {
 }
 
 function Install-Docker {
-    Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
-    Install-Module -Name DockerMsftProvider -Repository PSGallery -Force
-    Install-Package -Name docker -ProviderName DockerMsftProvider -Force
+    Write-Output '[WARNING] Docker is no longer a prerequisite and installation thereof is deprecated.'
 }
 
 try {
