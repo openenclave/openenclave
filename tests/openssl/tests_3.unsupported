@@ -7,8 +7,6 @@
 ../../3rdparty/openssl/openssl/test/asn1_time_test.c
 # The MS CryptoAPI engine (capieng) is disabled.
 ../../3rdparty/openssl/openssl/test/cmsapitest.c
-# PSK is disabled by OE.
-../../3rdparty/openssl/openssl/test/dtls_mtu_test.c
 # Require fork, which is not supported.
 ../../3rdparty/openssl/openssl/test/drbgtest.c
 # Disable the stress test that takes too long to finish (e.g., ~70 second on both Linux and Windows).
@@ -38,8 +36,6 @@
 ../../3rdparty/openssl/openssl/test/siphash_internal_test.c
 # SM2 is disabled by OE.
 ../../3rdparty/openssl/openssl/test/sm2_internal_test.c
-# SM3 is disabled by OE.
-../../3rdparty/openssl/openssl/test/sm3_internal_test.c
 # SM4 is disabled by OE.
 ../../3rdparty/openssl/openssl/test/sm4_internal_test.c
 # MDC2 is disabled by OE.
@@ -68,3 +64,5 @@
 ../../3rdparty/openssl/openssl_3/test/pbetest.c
 # Require time in execute_HDR_update_messageTime_test, which is not supported.
 ../../3rdparty/openssl/openssl_3/test/cmp_hdr_test.c
+# fips is disabled by OE.
+../../3rdparty/openssl/openssl_3/test/fips_version_test.c

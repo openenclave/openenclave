@@ -63,6 +63,7 @@
 ../../3rdparty/openssl/openssl_3/test/evp_test.c
 ../../3rdparty/openssl/openssl_3/test/exdatatest.c
 ../../3rdparty/openssl/openssl_3/test/exptest.c
+../../3rdparty/openssl/openssl_3/test/ext_internal_test.c
 ../../3rdparty/openssl/openssl_3/test/fatalerrtest.c
 ../../3rdparty/openssl/openssl_3/test/ffc_internal_test.c
 ../../3rdparty/openssl/openssl_3/test/gmdifftest.c
@@ -76,6 +77,7 @@
 ../../3rdparty/openssl/openssl_3/test/memleaktest.c
 ../../3rdparty/openssl/openssl_3/test/modes_internal_test.c
 ../../3rdparty/openssl/openssl_3/test/namemap_internal_test.c
+../../3rdparty/openssl/openssl_3/test/nodefltctxtest.c
 ../../3rdparty/openssl/openssl_3/test/ocspapitest.c
 ../../3rdparty/openssl/openssl_3/test/ossl_store_test.c
 ../../3rdparty/openssl/openssl_3/test/packettest.c
@@ -97,11 +99,13 @@
 ../../3rdparty/openssl/openssl_3/test/provider_pkey_test.c
 ../../3rdparty/openssl/openssl_3/test/provider_status_test.c
 ../../3rdparty/openssl/openssl_3/test/provider_test.c
+../../3rdparty/openssl/openssl_3/test/punycode_test.c
 ../../3rdparty/openssl/openssl_3/test/rand_status_test.c
 ../../3rdparty/openssl/openssl_3/test/rand_test.c
 ../../3rdparty/openssl/openssl_3/test/rc2test.c
 ../../3rdparty/openssl/openssl_3/test/rc4test.c
 ../../3rdparty/openssl/openssl_3/test/rc5test.c
+../../3rdparty/openssl/openssl_3/test/rdcpu_sanitytest.c
 ../../3rdparty/openssl/openssl_3/test/recordlentest.c
 ../../3rdparty/openssl/openssl_3/test/rsa_complex.c
 ../../3rdparty/openssl/openssl_3/test/rsa_mp_test.c
@@ -126,8 +130,10 @@
 ../../3rdparty/openssl/openssl_3/test/time_offset_test.c
 ../../3rdparty/openssl/openssl_3/test/tls13ccstest.c
 ../../3rdparty/openssl/openssl_3/test/tls13encryptiontest.c
+../../3rdparty/openssl/openssl_3/test/trace_api_test.c
 ../../3rdparty/openssl/openssl_3/test/uitest.c
 ../../3rdparty/openssl/openssl_3/test/upcallstest.c
+../../3rdparty/openssl/openssl_3/test/user_property_test.c
 ../../3rdparty/openssl/openssl_3/test/v3ext.c
 ../../3rdparty/openssl/openssl_3/test/v3nametest.c
 ../../3rdparty/openssl/openssl_3/test/verify_extra_test.c
