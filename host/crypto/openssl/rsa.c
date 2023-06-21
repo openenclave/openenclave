@@ -134,6 +134,9 @@ oe_result_t oe_rsa_get_public_key_from_private(
     EVP_PKEY* rsa_public_pkey = NULL;
     BIGNUM* public_e = NULL;
     BIGNUM* public_n = NULL;
+    OSSL_PARAM_BLD* bld = NULL;
+    OSSL_PARAM* params = NULL;
+    EVP_PKEY_CTX* ctx = NULL;
     int ret = 0;
 
     /* Check for invalid parameters */
@@ -153,17 +156,32 @@ oe_result_t oe_rsa_get_public_key_from_private(
         OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Init the OE public key type. */
-    OSSL_PARAM_BLD* bld = OSSL_PARAM_BLD_new();
-    OSSL_PARAM_BLD_push_BN(bld, OSSL_PKEY_PARAM_RSA_N, public_n);
-    OSSL_PARAM_BLD_push_BN(bld, OSSL_PKEY_PARAM_RSA_E, public_e);
-    OSSL_PARAM* params = OSSL_PARAM_BLD_to_param(bld);
-    EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new_from_name(NULL, "RSA", NULL);
+    bld = OSSL_PARAM_BLD_new();
+    if (!bld)
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    ret = OSSL_PARAM_BLD_push_BN(bld, OSSL_PKEY_PARAM_RSA_N, public_n);
+    if (!ret)
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    ret = OSSL_PARAM_BLD_push_BN(bld, OSSL_PKEY_PARAM_RSA_E, public_e);
+    if (!ret)
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    params = OSSL_PARAM_BLD_to_param(bld);
+    if (!params)
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    ctx = EVP_PKEY_CTX_new_from_name(NULL, "RSA", NULL);
     if (!ctx)
         OE_RAISE(OE_CRYPTO_ERROR);
+
     if (!(rsa_public_pkey = EVP_PKEY_new()))
         OE_RAISE(OE_CRYPTO_ERROR);
+
     if (EVP_PKEY_fromdata_init(ctx) <= 0)
         OE_RAISE(OE_CRYPTO_ERROR);
+
     if (EVP_PKEY_fromdata(ctx, &rsa_public_pkey, EVP_PKEY_PUBLIC_KEY, params) <=
         0)
         OE_RAISE(OE_CRYPTO_ERROR);
