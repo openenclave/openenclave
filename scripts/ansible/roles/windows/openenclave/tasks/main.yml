@@ -22,7 +22,6 @@
       -DCAPClientType      "Azure"
       -ClangUrl            "{{ clang_url }}"
       -ClangHash           "{{ clang_hash }}"
-      -InstallDocker
 
   - name: Check installed Intel PSW version
     ansible.windows.win_powershell:
