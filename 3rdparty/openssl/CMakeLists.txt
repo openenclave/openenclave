@@ -16,7 +16,7 @@ set(OPENSSL_INSTALL_INCLUDES ${OE_INCDIR}/openenclave/openssl)
 set(OPENSSL_3_DIR ${CMAKE_CURRENT_SOURCE_DIR}/openssl_3)
 set(OPENSSL_3_BUILD_INCLUDES ${OPENSSL_BUILD}/include_3)
 set(OPENSSL_3_BUILD_GENERATED ${OPENSSL_BUILD}/generated_3)
-set(OPENSSL_3_INSTALL_INCLUDES ${OE_INCDIR}/openenclave/openssl_3)
+set(OPENSSL_3_INSTALL_INCLUDES ${OE_INCDIR}/openenclave/openssl_3/openssl)
 set(OPENSSL_3_PROVIDER_COMMON_INCLUDES
     ${OPENSSL_3_DIR}/providers/common/include)
 
@@ -129,7 +129,7 @@ list(
   ${CMAKE_COMMAND}
   -E
   copy_directory
-  ${OPENSSL_DIR}/include/openssl
+  ${OPENSSL_3_DIR}/include/openssl
   ${OPENSSL_3_INSTALL_INCLUDES})
 
 macro (append_copy_command LIST SOURCE DESTINATION)
@@ -1360,6 +1360,22 @@ list(
   ${CMAKE_CURRENT_SOURCE_DIR}/providers_3/common/der/der_sm2_gen.c
   ${CMAKE_CURRENT_SOURCE_DIR}/providers_3/common/der/der_wrap_gen.c)
 
+# The DRBG random provider used with OpenSSL3 can call openssl_get_fork_id()
+# which uses getpid that is not supported on Windows.
+# We force include this header so that openssl_get_fork_id returns 0 instead.
+if (WIN32)
+  string(REPLACE "/" "\\" COMPILE_CURRENT_SOURCE_DIR
+                 "${CMAKE_CURRENT_SOURCE_DIR}")
+  set(DEFINE_GETPID_COMPILE_OPTION
+      "-include${COMPILE_CURRENT_SOURCE_DIR}\\define_getpid_noop.h")
+else ()
+  set(DEFINE_GETPID_COMPILE_OPTION
+      "-include${CMAKE_CURRENT_SOURCE_DIR}/define_getpid_noop.h")
+endif ()
+set_source_files_properties(
+  openssl_3/crypto/threads_pthread.c PROPERTIES COMPILE_OPTIONS
+                                                ${DEFINE_GETPID_COMPILE_OPTION})
+
 # Add opensslcrypto (the libcrypto in openssl).
 # The assembly files are modified to be compatible with LVI mitigation.
 add_enclave_library(
@@ -1454,7 +1470,11 @@ enclave_include_directories(
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty>)
 
 enclave_include_directories(
-  opensslcrypto_3 PUBLIC $<BUILD_INTERFACE:${OE_INCDIR}/openenclave>
+  opensslcrypto_3
+  PUBLIC
+  $<BUILD_INTERFACE:${OE_INCDIR}/openenclave/openssl_3>
+  $<BUILD_INTERFACE:${OE_INCDIR}/openenclave>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/openssl_3>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty>)
 
 enclave_include_directories(
@@ -1528,8 +1548,7 @@ list(
   openssl/crypto/ec/curve448/scalar.c)
 
 set_property(
-  SOURCE ${CURVE448_SRC}
-  APPEND_STRING
+  SOURCE ${CURVE448_SRC} APPEND_STRING
   PROPERTY
     COMPILE_FLAGS
     " -I${OPENSSL_DIR}/crypto/ec/curve448 -I${OPENSSL_DIR}/crypto/ec/curve448/arch_32"
@@ -1545,17 +1564,13 @@ list(
   openssl/crypto/evp/e_camellia.c
   openssl/crypto/evp/e_sm4.c)
 
-set_property(
-  SOURCE ${EVP_SRC}
-  APPEND_STRING
-  PROPERTY COMPILE_FLAGS " -I${OPENSSL_DIR}/crypto/modes")
+set_property(SOURCE ${EVP_SRC} APPEND_STRING
+             PROPERTY COMPILE_FLAGS " -I${OPENSSL_DIR}/crypto/modes")
 
 list(APPEND RAND_SRC openssl/crypto/rand/drbg_ctr.c)
 
-set_property(
-  SOURCE ${RAND_SRC}
-  APPEND_STRING
-  PROPERTY COMPILE_FLAGS " -I${OPENSSL_DIR}/crypto/modes")
+set_property(SOURCE ${RAND_SRC} APPEND_STRING
+             PROPERTY COMPILE_FLAGS " -I${OPENSSL_DIR}/crypto/modes")
 
 # The following options cannot be specified as part of the OpenSSL
 # Configure script. Options that can be specified with the script
@@ -1673,7 +1688,7 @@ install_enclaves(
   ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
 install(
   DIRECTORY ${OPENSSL_3_INSTALL_INCLUDES}
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/openssl_3
   PATTERN "__DECC_INCLUDE_EPILOGUE.H" EXCLUDE
   PATTERN "__DECC_INCLUDE_PROLOGUE.H" EXCLUDE
   PATTERN "opensslconf.h.in" EXCLUDE)

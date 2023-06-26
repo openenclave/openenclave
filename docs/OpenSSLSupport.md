@@ -86,6 +86,32 @@ In addition, OpenSSL by default disables the following algorithms/features
 - Heartbeats extension
 - SCTP (Stream Control Transimission Protocol) protocol
 
+# OpenSSL 3.0 Support
+
+The default OpenSSL enclave build option uses version 1.1.1 of OpenSSL. There are seperate libraries and headers for building OpenSSL 3.0 in an enclave.
+
+For users who want to continue to use OpenSSL 1.1.1, you do not need to make any changes.
+
+### CMake
+
+Use target `openssl_3` instead of target `openssl`.
+
+### GNU Make
+
+When using pkgconfig, use `openssl_3libs` or `openssl_3libslvicfg` (based on configuration) *in addition to* `libs` to get OpenSSL 3.0 specific libraries. Use `openssl_3flags` *instead of* `flags` to include OpenSSL 3.0 specific header directories.
+
+Example using clang:
+```
+cflags=`pkg-config oeenclave-clang++ --variable=openssl_3flags`
+libs=`pkg-config oeenclave-clang++ --libs`
+cryptolibs=`pkg-config oeenclave-clang++ --variable=openssl_3libs`
+$ clang++-11 ${cflags} -o enc enc.cpp ${libs} ${cryptolibs}
+```
+
+You should not build with `openssllibs` or `openssllibslvicfg`, which should only be used with OpenSSL 1.1.1.
+
+See also: [pkgconfig README](/pkgconfig/README.md#building-enclave-applications).
+
 # Threads Support
 
 *Note:* Only the version after v0.17.2 has the `threads` support. Previous versions of

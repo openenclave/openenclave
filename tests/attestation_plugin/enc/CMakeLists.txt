@@ -40,4 +40,19 @@ if (BUILD_OPENSSL)
 
   enclave_include_directories(plugin_openssl_enc PRIVATE
                               ${CMAKE_CURRENT_BINARY_DIR})
+
+  add_enclave(
+    TARGET
+    plugin_openssl_3_enc
+    UUID
+    95e231ac-7c75-4ae4-9d37-8141aa2d1c62
+    CRYPTO_LIB
+    openssl_3
+    SOURCES
+    enc.c
+    ../plugin/tests.c
+    ${CMAKE_CURRENT_BINARY_DIR}/plugin_t.c)
+
+  enclave_include_directories(plugin_openssl_3_enc PRIVATE
+                              ${CMAKE_CURRENT_BINARY_DIR})
 endif ()

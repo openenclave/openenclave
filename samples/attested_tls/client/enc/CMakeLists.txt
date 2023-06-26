@@ -19,8 +19,9 @@ add_custom_command(
     ${CMAKE_SOURCE_DIR}/client/enc/enc.conf -k
     ${CMAKE_SOURCE_DIR}/client/enc/private.pem)
 
-if (${OE_CRYPTO_LIB} STREQUAL "openssl" OR ${OE_CRYPTO_LIB} STREQUAL
-                                           "openssl_symcrypt_fips")
+if (${OE_CRYPTO_LIB} STREQUAL "openssl"
+    OR ${OE_CRYPTO_LIB} STREQUAL "openssl_symcrypt_fips"
+    OR ${OE_CRYPTO_LIB} STREQUAL "openssl_3")
   add_executable(
     tls_client_enc
     ecalls.cpp
@@ -59,6 +60,10 @@ target_include_directories(
 if (${OE_CRYPTO_LIB} STREQUAL "openssl")
   target_link_libraries(
     tls_client_enc openenclave::oeenclave openenclave::oecryptoopenssl
+    openenclave::oelibcxx openenclave::oehostsock openenclave::oehostresolver)
+elseif (${OE_CRYPTO_LIB} STREQUAL "openssl_3")
+  target_link_libraries(
+    tls_client_enc openenclave::oeenclave openenclave::oecryptoopenssl_3
     openenclave::oelibcxx openenclave::oehostsock openenclave::oehostresolver)
 elseif (${OE_CRYPTO_LIB} STREQUAL "mbedtls")
   target_link_libraries(

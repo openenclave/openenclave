@@ -38,9 +38,29 @@ if (BUILD_OPENSSL)
     openssl_rsa.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/tls_t.c)
 
-  enclave_compile_definitions(tls_openssl_enc PRIVATE OE_USE_OPENSSL)
+  enclave_compile_definitions(tls_openssl_enc PRIVATE OE_USE_OPENSSL
+                              OECRYPTO_OPENSSL_VER=1)
 
   enclave_include_directories(
     tls_openssl_enc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR})
+
+  add_enclave(
+    TARGET
+    tls_openssl_3_enc
+    UUID
+    baf78480-37f1-405b-82d4-9fa0e322ac8e
+    CRYPTO_LIB
+    openssl_3
+    SOURCES
+    enc.cpp
+    openssl_rsa.cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/tls_t.c)
+
+  enclave_compile_definitions(tls_openssl_3_enc PRIVATE OE_USE_OPENSSL
+                              OECRYPTO_OPENSSL_VER=3)
+
+  enclave_include_directories(
+    tls_openssl_3_enc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR})
 endif ()
