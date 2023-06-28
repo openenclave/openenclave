@@ -24,8 +24,7 @@ typedef struct _tdx_attributes_t
         struct
         {
             uint8_t debug : 1;
-            uint8_t sysprof : 1;
-            uint8_t reserved : 6;
+            uint8_t reserved : 7;
         } d;
         uint8_t u;
     } tud;
@@ -34,7 +33,9 @@ typedef struct _tdx_attributes_t
         struct
         {
             uint8_t reserved0[2];
-            uint8_t reserved1 : 6;
+            uint8_t reserved1 : 4;
+            uint8_t sept_ve_disable : 1;
+            uint8_t reserved2 : 1;
             uint8_t pks : 1;
             uint8_t kl : 1;
         } d;

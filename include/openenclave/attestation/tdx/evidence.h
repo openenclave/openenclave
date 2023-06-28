@@ -24,7 +24,8 @@ OE_EXTERNC_BEGIN
 #define OE_CLAIM_TDX_SEAM_ATTRIBUTES "tdx_seam_attributes"
 #define OE_CLAIM_TDX_TD_ATTRIBUTES "tdx_td_attributes"
 #define OE_CLAIM_TDX_TD_ATTRIBUTES_DEBUG "tdx_td_attributes_debug"
-#define OE_CLAIM_TDX_TD_ATTRIBUTES_SYSPROF "tdx_td_attributes_sysprof"
+#define OE_CLAIM_TDX_TD_ATTRIBUTES_SEPT_VE_DISABLE \
+    "tdx_td_attributes_septve_disable"
 #define OE_CLAIM_TDX_TD_ATTRIBUTES_PROTECTION_KEYS \
     "tdx_td_attributes_protection_keys"
 #define OE_CLAIM_TDX_TD_ATTRIBUTES_KEY_LOCKER "tdx_td_attributes_key_locker"
