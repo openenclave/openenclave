@@ -133,12 +133,40 @@ set(UNSUPPORTED_LIST
     X509_STORE_load_locations
     X509_STORE_set_default_paths)
 
+list(
+  APPEND
+  UNSUPPORTED_LIST_3
+  ${UNSUPPORTED_LIST}
+  SSL_CTX_set_default_verify_store
+  SSL_CTX_load_verify_dir
+  SSL_CTX_load_verify_file
+  SSL_CTX_load_verify_store
+  X509_load_cert_file_ex
+  X509_load_cert_crl_file_ex
+  X509_LOOKUP_store
+  X509_STORE_load_file_ex
+  X509_STORE_load_file
+  X509_STORE_load_path
+  X509_STORE_load_locations_ex
+  X509_STORE_load_store_ex
+  X509_STORE_load_store
+  X509_STORE_set_default_paths_ex
+  X509_LOOKUP_ctrl_ex
+  X509_LOOKUP_ctrl
+  X509_LOOKUP_load_file_ex
+  X509_LOOKUP_load_file
+  X509_LOOKUP_add_dir
+  X509_LOOKUP_add_store_ex
+  X509_LOOKUP_add_store
+  X509_LOOKUP_load_store_ex
+  X509_LOOKUP_load_store)
+
 # Add tests for OpenSSL 1.1
 foreach (name ${UNSUPPORTED_LIST})
   add_unsupported_test(${name} FALSE)
 endforeach (name)
 
 # Add tests for OpenSSL 3.0
-foreach (name ${UNSUPPORTED_LIST})
+foreach (name ${UNSUPPORTED_LIST_3})
   add_unsupported_test(${name} TRUE)
 endforeach (name)
