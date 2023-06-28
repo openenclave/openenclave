@@ -240,11 +240,11 @@ static oe_result_t _fill_with_known_tdx_claims(
         &flag,
         sizeof(flag)));
 
-    flag = !!attributes->tud.d.sysprof;
+    flag = !!attributes->sec.d.sept_ve_disable;
     OE_CHECK(_add_claim(
         &claims[claims_index++],
-        OE_CLAIM_TDX_TD_ATTRIBUTES_SYSPROF,
-        sizeof(OE_CLAIM_TDX_TD_ATTRIBUTES_SYSPROF),
+        OE_CLAIM_TDX_TD_ATTRIBUTES_SEPT_VE_DISABLE,
+        sizeof(OE_CLAIM_TDX_TD_ATTRIBUTES_SEPT_VE_DISABLE),
         &flag,
         sizeof(flag)));
 
