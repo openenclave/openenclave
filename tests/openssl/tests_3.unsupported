@@ -53,12 +53,15 @@
 ../../3rdparty/openssl/openssl_3/test/moduleloadtest.c
 # OSSL_METHOD_STORE methods can call rdtsc directly
 ../../3rdparty/openssl/openssl_3/test/property_test.c
-# Tests have memory leak. https://github.com/openssl/openssl/issues/20716
+# CMP is disabled by OE.
 ../../3rdparty/openssl/openssl_3/test/cmp_client_test.c
 ../../3rdparty/openssl/openssl_3/test/cmp_ctx_test.c
 ../../3rdparty/openssl/openssl_3/test/cmp_msg_test.c
 ../../3rdparty/openssl/openssl_3/test/cmp_protect_test.c
 ../../3rdparty/openssl/openssl_3/test/cmp_vfy_test.c
+../../3rdparty/openssl/openssl_3/test/cmp_asn_test.c
+../../3rdparty/openssl/openssl_3/test/cmp_server_test.c
+../../3rdparty/openssl/openssl_3/test/cmp_status_test.c
 # Test depends on calling openssl_init_load_config, that is overwritten in our init.c
 ../../3rdparty/openssl/openssl_3/test/sysdefaulttest.c
 # PBE algorithms use KDF, "Applications requiring this KDF will need to load the legacy crypto provider."
