@@ -582,7 +582,6 @@ set(OPENSSL_SHARED_CRYPTO_SOURCE
     crypto/bn/bn_srp.c
     crypto/bn/bn_word.c
     crypto/bn/bn_x931p.c
-    crypto/bn/rsa_sup_mul.c
     crypto/bn/rsaz_exp.c
     crypto/buffer/buf_err.c
     crypto/buffer/buffer.c
@@ -948,6 +947,7 @@ list(
   crypto/bio/b_print.c
   crypto/bio/b_sock.c
   crypto/bio/b_sock2.c
+  crypto/bn/rsa_sup_mul.c
   crypto/cmac/cm_ameth.c
   crypto/cmac/cm_pmeth.c
   crypto/dh/dh_rfc7919.c
@@ -1046,27 +1046,11 @@ list(
   crypto/bn/bn_rsa_fips186_4.c
   crypto/bn/rsaz_exp_x2.c
   crypto/bsearch.c
-  crypto/cmp/cmp_asn.c
-  crypto/cmp/cmp_client.c
-  crypto/cmp/cmp_ctx.c
-  crypto/cmp/cmp_err.c
-  crypto/cmp/cmp_hdr.c
-  crypto/cmp/cmp_http.c
-  crypto/cmp/cmp_msg.c
-  crypto/cmp/cmp_protect.c
-  crypto/cmp/cmp_server.c
-  crypto/cmp/cmp_status.c
-  crypto/cmp/cmp_util.c
-  crypto/cmp/cmp_vfy.c
   crypto/context.c
   crypto/core_algorithm.c
   crypto/core_fetch.c
   crypto/core_namemap.c
   crypto/cpuid.c
-  crypto/crmf/crmf_asn.c
-  crypto/crmf/crmf_err.c
-  crypto/crmf/crmf_lib.c
-  crypto/crmf/crmf_pbm.c
   crypto/der_writer.c
   crypto/dh/dh_backend.c
   crypto/dh/dh_group_params.c
@@ -1236,8 +1220,6 @@ list(
   providers/implementations/ciphers/cipher_aes_hw.c
   providers/implementations/ciphers/cipher_aes_ocb.c
   providers/implementations/ciphers/cipher_aes_ocb_hw.c
-  providers/implementations/ciphers/cipher_aes_siv.c
-  providers/implementations/ciphers/cipher_aes_siv_hw.c
   providers/implementations/ciphers/cipher_aes_wrp.c
   providers/implementations/ciphers/cipher_aes_xts.c
   providers/implementations/ciphers/cipher_aes_xts_fips.c

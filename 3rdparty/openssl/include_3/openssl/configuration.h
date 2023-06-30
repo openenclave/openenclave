@@ -69,8 +69,14 @@ extern "C" {
 # ifndef OPENSSL_NO_CHACHA
 #  define OPENSSL_NO_CHACHA
 # endif
+# ifndef OPENSSL_NO_CMP
+#  define OPENSSL_NO_CMP
+# endif
 # ifndef OPENSSL_NO_CMS
 #  define OPENSSL_NO_CMS
+# endif
+# ifndef OPENSSL_NO_CRMF
+#  define OPENSSL_NO_CRMF
 # endif
 # ifndef OPENSSL_NO_CRYPTO_MDEBUG
 #  define OPENSSL_NO_CRYPTO_MDEBUG
@@ -165,6 +171,9 @@ extern "C" {
 # ifndef OPENSSL_NO_SIPHASH
 #  define OPENSSL_NO_SIPHASH
 # endif
+# ifndef OPENSSL_NO_SIV
+#  define OPENSSL_NO_SIV
+# endif
 # ifndef OPENSSL_NO_SM2
 #  define OPENSSL_NO_SM2
 # endif
@@ -176,6 +185,9 @@ extern "C" {
 # endif
 # ifndef OPENSSL_NO_SRP
 #  define OPENSSL_NO_SRP
+# endif
+# ifndef OPENSSL_NO_SSL_TRACE
+#  define OPENSSL_NO_SSL_TRACE
 # endif
 # ifndef OPENSSL_NO_SSL3
 #  define OPENSSL_NO_SSL3
