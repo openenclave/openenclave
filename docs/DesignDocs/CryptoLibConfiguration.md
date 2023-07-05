@@ -106,3 +106,9 @@ OPENSSL_NO_SM3 | Disabled | Chinese cryptographic algorithm(s) are not supported
 OPENSSL_NO_SM4 | Disabled | Chinese cryptographic algorithm(s) are not supported by MbedTLS. OE disables it on OpenSSL with the `no-sm4` configuration. |
 OPENSSL_NO_SRP | Disabled | Secure remote password (SRP) is not supported by MbedTLS. OE disables it on OpenSSL with the `no-srp` configuration. |
 OPENSSL_NO_SIPHASH | Disabled | SipHash is not supported by MbedTLS. OE disables it on OpenSSL with the `no-siphash` configuration to minimize TCB. |
+
+## OpenSSL 3.1-specific Configuration
+
+OpenSSL option | OE Configuration | Comment
+|:---|:---|:---|
+OPENSSL_NO_SIV | Disabled | SIV block cipher is not supported by MbedTLS. OE disables it on OpenSSL with the `no-siv` configuration to minimize TCB. |

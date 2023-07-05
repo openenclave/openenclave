@@ -25,9 +25,6 @@
 ../../3rdparty/openssl/openssl_3/test/ciphername_test.c
 ../../3rdparty/openssl/openssl_3/test/clienthellotest.c
 ../../3rdparty/openssl/openssl_3/test/cmactest.c
-../../3rdparty/openssl/openssl_3/test/cmp_asn_test.c
-../../3rdparty/openssl/openssl_3/test/cmp_server_test.c
-../../3rdparty/openssl/openssl_3/test/cmp_status_test.c
 ../../3rdparty/openssl/openssl_3/test/conf_include_test.c
 ../../3rdparty/openssl/openssl_3/test/confdump.c
 ../../3rdparty/openssl/openssl_3/test/constant_time_test.c

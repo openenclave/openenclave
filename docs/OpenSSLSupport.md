@@ -1,22 +1,24 @@
 # Open Enclave Support for OpenSSL
 
-The OpenSSL on OE is configured with following options
+#### OpenSSL 1.1.1 on OE is configured with following options:
 - no-afalgeng
   - Disable the AF_ALG hardware engine.
-- no-autoerrinit
-- no-autoload-config
 - no-aria
   - Disable ARIA block cipher.
-- no-blake2
-  - Disable Blake2.
+- no-autoerrinit
+- no-autoload-config
 - no-bf
   - Disable Blowfish.
+- no-blake2
+  - Disable Blake2.
 - no-camellia
   - Disable camellia.
-- no-cast
-  - Disable CAST5 block cipher.
 - no-capieng
   - Disable the Microsoft CryptoAPI engine.
+- no-cast
+  - Disable CAST5 block cipher.
+- no-chacha
+  - Disable CHACHA.
 - no-cms
   - Disable cryptographic message syntax that handles S/MIME v3.1 mail.
 - no-ct
@@ -36,43 +38,42 @@ The OpenSSL on OE is configured with following options
   - Disable MDC2.
 - no-nextprotoneg
   - Disable Next Protocol Negotiation (NPN).
-- no-psk
-  - Disable PSK.
 - no-poly1305
   - Disable Poly-1305.
+- no-psk
+  - Disable PSK.
+- no-rc4
+  - Disable RC4.
 - no-rfc3779
   - Disable RFC 3379 (Delegated Path Discovery).
 - no-rmd160
   - Disable RIPEMD-160.
+- no-scrypt
+  - Disable scrypt KDF.
 - no-seed
   - Disable SEED ciphersuites.
-- no-rc4
-  - Disable RC4.
 - no-shared
+- no-siphash
+  - Disable SipHash.
 - no-sm2
   - Disable Chinese cryptographic algorithms.
 - no-sm3
   - Disable Chinese cryptographic algorithms.
 - no-sm4
   - Disable Chinese cryptographic algorithms
-- no-siphash
-  - Disable SipHash.
-- no-scrypt
-  - Disable scrypt KDF.
 - no-srp
   - Disable Secure Remote Password (SRP).
 - no-ssl2
 - no-ssl3
-- no-whirlpool
-  - Disable Whirlpool hash.
 - no-ui-console
   - Disable support for the openssl command-line tool that is not required by OE.
+- no-whirlpool
+  - Disable Whirlpool hash.
 - no-zlib
   - Disable the ZLIb support.
 - --with-rand-seed=none
 
-*Note:* The autoalginit option is required by APIs (e.g., EVP) that retrieve algorithms by name so
-can not be disabled.
+*Note:* The autoalginit option is required by APIs (e.g., EVP) that retrieve algorithms by name so can not be disabled.
 
 OE also explicitly disables the following feature:
 - SECURE_MEMORY
@@ -86,9 +87,28 @@ In addition, OpenSSL by default disables the following algorithms/features
 - Heartbeats extension
 - SCTP (Stream Control Transimission Protocol) protocol
 
-# OpenSSL 3.0 Support
+#### OpenSSL 3.1 on OE is configured with the following additional options:
 
-The default OpenSSL enclave build option uses version 1.1.1 of OpenSSL. There are seperate libraries and headers for building OpenSSL 3.0 in an enclave.
+- --with-rand-seed=rdcpu
+  - Build with rdcpu provider. Engines in OpenSSL 3.1 are deprecated so we no longer use RDRAND engine as with OpenSSL 1.1.1.
+- no-cmp
+  - Disable Certificate Management Protocol (CMP) and Certificate Request Message Format (CRMF). See [Security Guidance](#security-guidance-for-using-openssl-apismacros) for more information about how we recommend managing X509 certificates in the enclave.
+- no-legacy
+  - Disable legacy provider.
+- no-padlockeng
+  - This is synonomous with `no-hw-padlock` and `no-hw` flag used with OpenSSL 1.1.1.
+- no-siv
+  - Disable SIV block cipher.
+- no-ssl-trace
+  - Disable SSL Trace capabilities. (OpenSSL 1.1.1 builds without SSL Trace by default.)
+- no-ssl
+  - `no-ssl` is synonymous with `no-ssl3`; `no-ssl2` is deprecated.
+- no-uplink
+  - Disable UPLINK interface.
+
+# OpenSSL 3.1 Support
+
+The default OpenSSL enclave build option uses version 1.1.1 of OpenSSL. There are separate libraries and headers for building OpenSSL 3.1 in an enclave.
 
 For users who want to continue to use OpenSSL 1.1.1, you do not need to make any changes.
 
@@ -98,7 +118,7 @@ Use target `openssl_3` instead of target `openssl`.
 
 ### GNU Make
 
-When using pkgconfig, use `openssl_3libs` or `openssl_3libslvicfg` (based on configuration) *in addition to* `libs` to get OpenSSL 3.0 specific libraries. Use `openssl_3flags` *instead of* `flags` to include OpenSSL 3.0 specific header directories.
+When using pkgconfig, use `openssl_3libs` or `openssl_3libslvicfg` (based on configuration) *in addition to* `libs` to get OpenSSL 3.1 specific libraries. Use `openssl_3flags` *instead of* `flags` to include OpenSSL 3.1 specific header directories.
 
 Example using clang:
 ```
@@ -129,6 +149,8 @@ holds only if the host is not compromised.
 
 *Note:* Starting from v0.13, users no longer need to manually opt into the RDRAND engine (as described in this
 section) when linking an enclave against `oecryptoopenssl`.
+
+*Note:* This information is specific to OpenSSL 1.1.1. OpenSSL 3.1 uses the rdcpu provider instead of the RDRAND engine.
 
 Currently, the default RAND method used by RAND APIs is not supported by OE. More specifically,
 the default OpenSSL RAND method relies on the `rdtsc` instruction, which is not supported by SGXv1 enclaves.
@@ -245,10 +267,12 @@ configure a TLS/SSL server with the recommended configuration.
 
 ## API Support
 
+### Headers in OpenSSL 1.1.1
+
 Header | Supported | Comments |
 :---:|:---:|:---|
 aes.h | Yes | - |
-asn1.h | Yes | ASN1_TIME_* APIs tests (asn1_test_time) is disabled. Refer to the [unsuppored test list](/tests/openssl/tests.unsupported) for more detail. |
+asn1.h | Yes | ASN1_TIME_* APIs tests (asn1_test_time) is disabled. Refer to the [unsupported test list](/tests/openssl/tests.unsupported) for more detail. |
 asn1_mac.h | Yes | - |
 asn1err.h | Yes | - |
 asn1t.h | Yes | - |
@@ -271,7 +295,7 @@ comperr.h | Yes | - |
 conf.h | Yes | - |
 conf_api.h | Yes | - |
 conferr.h | Yes | - |
-crypto.h | Yes | SECURE_MEMORY APIs (e.g., CRYPTO_secure_malloc, CRYPT_secure_free) are disabled. The `OPENSSL_INIT_LOAD_CONFIG` macro is disabled for security concerns. Refer to [Security Guidance for using OpenSSL APIs/Macros](#security-guidance-for-using-openssl-apismacros) for more detail. |
+crypto.h | Yes | SECURE_MEMORY APIs (e.g., CRYPTO_secure_malloc, CRYPT_secure_free) are disabled. The `OPENSSL_INIT_LOAD_CONFIG` macro is disabled for security concerns. Refer to [Security Guidance for using OpenSSL APIs/Macros](#security-guidance) for more detail. |
 cryptoerr.h | Yes | - |
 ct.h | No | Certificate Transparency is disabled by OE. |
 cterr.h | Yes | - |
@@ -290,13 +314,13 @@ ecerr.h | Yes | - |
 engine.h | Yes | - |
 engineerr.h | Yes | - |
 err.h | Yes | - |
-evp.h | Partial | MD2 and RC5 are disabled by default. |
+evp.h | Partial | Multiple algorithms, including MD2 and RC5, are disabled by default or by OE. Refer to [Open Enclave Support for OpenSSL](#open-enclave-support-for-openssl) for a complete list. |
 evperr.h | Yes | - |
 hmac.h | Yes | - |
 idea.h | No | IDEA is disabled by OE. |
 kdf.h | Yes | - |
 kdferr.h | Yes | - |
-lhash.h | Yes | The lhash test is disabled becuase of requiring too much heap size. Refer to the [unsuppored test list](/tests/openssl/tests.unsupported) for more detail. |
+lhash.h | Yes | The lhash test is disabled because of requiring too much heap size. Refer to the [unsupported test list](/tests/openssl/tests.unsupported) for more detail. |
 md2.h | No | MD2 is disabled by default (header is present). |
 md4.h | No | MD4 is disabled by OE. |
 md5.h | Yes | - |
@@ -317,7 +341,7 @@ pkcs12err.h | Yes | - |
 pkcs7.h | Yes | - |
 pkcs7err.h | Yes | - |
 rand.h | Partial | EGD is disabled by default. The default method (RAND_OpenSSL) does not work because the depending `rdtsc` instruction is not supported by SGXv1. Refer to [How to use RAND APIs](#how-to-use-rand-apis) for more detail. |
-rand_drbg.h | Partial | OE by default does not depend on the default rand method. Therefore, rand_drbg APIs are supported but have no impact on rand APIs. The drbg test is disabled. Refer to the [unsuppored test list](/tests/openssl/tests.unsupported) for more detail. |
+rand_drbg.h | Partial | OE by default does not depend on the default rand method. Therefore, rand_drbg APIs are supported but have no impact on rand APIs. The drbg test is disabled. Refer to the [unsupported test list](/tests/openssl/tests.unsupported) for more detail. |
 randerr.h | Yes | - |
 rc2.h | Yes | - |
 rc4.h | No | RC4 is disabled by OE. |
@@ -328,9 +352,9 @@ rsaerr.h | Yes | - |
 safestack.h | Yes | - |
 seed.h | No | SEED is disabled by OE. |
 sha.h | Yes | - |
-srp.h | No | SRC is disabled by OE. |
+srp.h | No | SRP is disabled by OE. |
 srtp.h | Yes | - |
-ssl.h | Partial | SSL2 and SSL3 methods are disabled. Heartbeats extension is disabled by default. Functions that are unsupported by OE for security concerns include: `SSL_CTX_set_default_verify_paths`, `SSL_CTX_set_default_verify_dir`, `SSL_CTX_set_default_verify_file`, `SSL_CTX_load_verify_locations`. Refer to [Security Guidance for using OpenSSL APIs/Macros](#security-guidance-for-using-openssl-apismacros) for more detail |
+ssl.h | Partial | SSL2 and SSL3 methods are disabled. Heartbeats extension is disabled by default. Functions that are unsupported by OE for security concerns include: `SSL_CTX_set_default_verify_paths`, `SSL_CTX_set_default_verify_dir`, `SSL_CTX_set_default_verify_file`, `SSL_CTX_load_verify_locations`. Refer to [Security Guidance for using OpenSSL APIs/Macros](#security-guidance) for more detail |
 ssl2.h | Yes | - |
 ssl3.h | Yes | - |
 sslerr.h | Yes | - |
@@ -345,8 +369,47 @@ txt_db.h | Yes | - |
 ui.h | No | Configured with no-ui-console. |
 uierr.h | Yes | - |
 whrlpool.h | No | Whirlpool is disabled by OE. |
-x509.h | Yes | - |
-x509_vfy.h | Partial | Functions that are unsupported by OE for security concerns include: `X509_load_cert_file`, `X509_load_crl_file`, `X509_LOOKUP_hash_dir`, `X509_LOOKUP_file`, `X509_load_cert_crl_file`, `X509_STORE_load_locations`, `X509_STORE_set_default_paths`. Refer to [Security Guidance for using OpenSSL APIs/Macros](#security-guidance-for-using-openssl-apismacros) for more detail. |
+x509.h | Partial | SCRYPT is disabled by OE. |
+x509_vfy.h | Partial | Functions that are unsupported by OE for security concerns include: `X509_load_cert_file`, `X509_load_crl_file`, `X509_LOOKUP_hash_dir`, `X509_LOOKUP_file`, `X509_load_cert_crl_file`, `X509_STORE_load_locations`, `X509_STORE_set_default_paths`. Refer to [Security Guidance for using OpenSSL APIs/Macros](#security-guidance) for more detail. |
 x509err.h | Yes | - |
-x509v3.h | Yes | - |
+x509v3.h | Partial | RFC3779 is disabled by OE. |
 x509v3err.h | Yes | - |
+
+### Additional headers in OpenSSL 3.1
+
+Header | Supported | Comments |
+:---:|:---:|:---|
+bio.h | Partial | SCTP and Kernal TLS support are disabled by default. |
+cmp.h | No | CMP (Certificate Management Protocol) is disabled by OE. |
+cmp_util.h | No | CMP (Certificate Management Protocol) is disabled by OE.
+cmperr.h | No | CMP (Certificate Management Protocol) is disabled by OE.
+configuration.h | Yes | - |
+conftypes.h | Yes | - |
+core.h | Yes | - |
+core_dispatch.h | Yes | - |
+core_names.h | Yes | - |
+core_object.h | Yes | - |
+crmf.h | No | CRMF (Certificate Request Message Format) is disabled by OE. |
+crmferr.h | No | CRMF (Certificate Request Message Format) is disabled by OE. |
+cryptoerr_legacy.h | Partial | Some crypto components, including CMS and CT, are disabled by default or by OE. Refer to [Open Enclave Support for OpenSSL](#open-enclave-support-for-openssl) for a complete list. |
+decoder.h | Yes | - |
+decodererr.h | Yes | - |
+encoder.h | Yes | - |
+encodererr.h | Yes | - |
+ess.h | Yes | - |
+esserr.h | Yes | - |
+fips_names.h | Yes | Note that fips provider is not enabled by OE. |
+fipskey.h | Yes | Note that fips provider is not enabled by OE. |
+http.h | Yes | - |
+httperr.h | Yes | - |
+macros.h | Yes | - |
+param_build.h | Yes | - |
+params.h | Yes | - |
+prov_ssl.h | Yes | - |
+proverr.h | Yes | - |
+provider.h | Yes | - |
+self_test.h | Yes | - |
+ssl.h | Partial | SSL3 methods are disabled. Heartbeats extension is disabled by default. SSL Tracing is disabled. Functions that are unsupported by OE for security concerns include: `SSL_CTX_set_default_verify_paths`, `SSL_CTX_set_default_verify_dir`, `SSL_CTX_set_default_verify_file`, `SSL_CTX_load_verify_locations`. Refer to [Security Guidance for using OpenSSL APIs/Macros](#security-guidance) for more detail. |
+sslerr_legacy.h | Yes | - |
+trace.h | No | Tracing is disabled by default. |
+types.h | Yes | - |

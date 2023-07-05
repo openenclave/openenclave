@@ -22,13 +22,13 @@ update-openssl-headers:
 			> include/opensslconf.h; \
 
 update-openssl_3-headers:
-	perl openssl_3/Configure linux-x86_64 --with-rand-seed=rdcpu no-hw \
+	perl openssl_3/Configure linux-x86_64 --with-rand-seed=rdcpu \
 			no-afalgeng no-aria no-autoerrinit no-autoload-config \
-			no-bf no-blake2 no-camellia no-capieng no-cast no-chacha \
-			no-cms no-ct no-dso no-gost no-idea no-md2 no-md4 no-mdc2 no-nextprotoneg \
-			no-poly1305 no-psk no-rc4 no-rfc3779 no-rmd160 no-scrypt no-seed \
-			no-shared no-siphash no-sm2 no-sm3 no-sm4 no-srp no-ssl2 no-ssl3 \
-			no-ui-console no-whirlpool no-zlib CC=clang-10 CXX=clang++-10; \
+			no-bf no-blake2 no-camellia no-capieng no-cast no-chacha no-cmp \
+			no-cms no-ct no-dso no-gost no-idea no-legacy no-md2 no-md4 no-mdc2 no-nextprotoneg \
+			no-padlockeng no-poly1305 no-psk no-rc4 no-rfc3779 no-rmd160 no-scrypt no-seed \
+			no-shared no-siphash no-siv no-sm2 no-sm3 no-sm4 no-srp no-ssl no-ssl3 \
+			no-ssl-trace no-ui-console no-uplink no-whirlpool no-zlib CC=clang-10 CXX=clang++-10; \
 	perl "-I." -Mconfigdata "openssl_3/util/dofile.pl" "-oMakefile" "openssl_3/include/crypto/bn_conf.h.in" > include_3/crypto/bn_conf.h;
 	perl "-I." -Mconfigdata "openssl_3/util/dofile.pl" "-oMakefile" "openssl_3/include/crypto/dso_conf.h.in" > include_3/crypto/dso_conf.h;
 	perl "-I." -Mconfigdata "openssl_3/util/dofile.pl" "-oMakefile" "openssl_3/include/openssl/asn1.h.in" > include_3/openssl/asn1.h;
