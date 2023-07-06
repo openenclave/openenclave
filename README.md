@@ -16,7 +16,6 @@ Azure
 [![Azure Windows](https://openenclaveci.westus.cloudapp.azure.com/job/OpenEnclave/job/Badges/job/Azure-Windows/badge/icon?subject=Azure-Windows)](https://openenclaveci.westus.cloudapp.azure.com/job/OpenEnclave/job/Badges/job/Azure-Windows/)
 [![Nightly Libcxx](https://openenclaveci.westus.cloudapp.azure.com/job/OpenEnclave/job/Badges/job/OpenEnclave-libcxx-tests/badge/icon?subject=Azure%20libcxx%20testing)](https://openenclaveci.westus.cloudapp.azure.com/job/OpenEnclave/job/Badges/job/OpenEnclave-libcxx-tests/)
 [![Azure Linux](https://openenclaveci.westus.cloudapp.azure.com/job/OpenEnclave/job/Badges/job/Azure-Linux/badge/icon?subject=Azure-Linux)](https://openenclaveci.westus.cloudapp.azure.com/job/OpenEnclave/job/Badges/job/Azure-Linux/)
-[![Nightly Packages](https://openenclaveci.westus.cloudapp.azure.com/job/OpenEnclave/job/Badges/job/OpenEnclave-nightly-packages/badge/icon?subject=Nightly%20Packages)](https://openenclaveci.westus.cloudapp.azure.com/job/OpenEnclave/job/Badges/job/OpenEnclave-nightly-packages/)
 
 
 Introduction

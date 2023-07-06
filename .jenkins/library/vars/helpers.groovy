@@ -8,9 +8,81 @@ import java.time.format.DateTimeFormatter
 * Shared Library for Helpers and Commands
 ****************************************/
 
-def CmakeArgs(String build_type = "RelWithDebInfo", String code_coverage = "OFF", String debug_malloc = "ON", String lvi_args="", String cmake_args = "") {
-    def args = "-G Ninja -DCMAKE_INSTALL_PREFIX:PATH='/opt/openenclave' -DCPACK_GENERATOR=DEB -DCODE_COVERAGE=${code_coverage} -DUSE_DEBUG_MALLOC=${debug_malloc} -DCMAKE_BUILD_TYPE=${build_type} ${lvi_args} ${cmake_args} -Wdev"
-    return args
+/** Helps create cmake parameters for the build
+ * TODO: Check support for Windows tests
+ *
+ * @param builder                   [string]  The build system to use.
+ *                                            Choice of: Ninja, CMake
+ * @param build_type                [string]  The build type to use.
+ *                                            Choice of: Debug, RelWithDebInfo, Release
+ * @param code_coverage             [boolean] Enable code coverage?
+ *                                            Default: OFF
+ * @param debug_malloc              [boolean] Enable debug malloc?
+ *                                            Default: OFF
+ * @param lvi_mitigation            [string]  The LVI mitigation to use.
+ *                                            Choice of: None, ControlFlow, ControlFlow-Clang, ControlFlow-GNU
+ *                                            Default: None
+ * @param lvi_mitigation_skip_tests [boolean] Skip LVI mitigation tests?
+ *                                            Default: OFF
+ * @param use_snmalloc              [boolean] Use snmalloc?
+ *                                            Default: OFF
+ * @param use_eeid                  [boolean] Use EEID?
+ *                                            Default: OFF
+ */
+def CmakeArgs(Map args) {
+    // Check valid builder parameters
+    if ((args.builder != 'Ninja') &&
+        (args.builder != 'CMake')) {
+        throw new Exception("Unsupported builder: ${args.builder}")
+    }
+    // Set generator for appropriate build system
+    def generator = ""
+    if (args.builder == 'Ninja') {
+        generator = 'Ninja'
+    } else if (args.builder == 'CMake') {
+        generator = 'Unix Makefiles'
+    }
+    // Check valid build_type parameters
+    if ((args.build_type != 'Debug') &&
+        (args.build_type != 'RelWithDebInfo') &&
+        (args.build_type != 'Release')) {
+        throw new Exception("Unsupported build type: ${args.build_type}")
+    }
+    // set code_coverage
+    def code_coverage = 'OFF'
+    if (args.code_coverage) {
+        code_coverage = 'ON'
+    }
+    // set debug_malloc
+    def debug_malloc = 'OFF'
+    if (args.debug_malloc) {
+        debug_malloc = 'ON'
+    }
+    // Check valid lvi_mitigation parameters
+    def lvi_args = ""
+    if ((args.lvi_mitigation == 'ControlFlow') ||
+        (args.lvi_mitigation == 'ControlFlow-GNU')) {
+        lvi_args = "-DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin"
+    } else if ((args.lvi_mitigation != 'None') &&
+               (args.lvi_mitigation != 'ControlFlow-Clang')) {
+        throw new Exception("Unsupported LVI mitigation: ${args.lvi_mitigation}")
+    }
+    // set lvi_mitigation_skip_tests
+    def lvi_mitigation_skip_tests = 'OFF'
+    if (args.lvi_mitigation_skip_tests) {
+        lvi_mitigation_skip_tests = 'ON'
+    }
+    // set use_snmalloc
+    def use_snmalloc = 'OFF'
+    if (args.use_snmalloc) {
+        use_snmalloc = 'ON'
+    }
+    // set use_eeid
+    def use_eeid = 'OFF'
+    if (args.use_eeid) {
+        use_eeid = 'ON'
+    }
+    return "-G '${generator}' -DCMAKE_INSTALL_PREFIX:PATH='/opt/openenclave' -DCPACK_GENERATOR=DEB -DCODE_COVERAGE=${code_coverage} -DUSE_DEBUG_MALLOC=${debug_malloc} -DCMAKE_BUILD_TYPE=${args.build_type} -DLVI_MITIGATION=${args.lvi_mitigation} -DLVI_MITIGATION_SKIP_TESTS=${lvi_mitigation_skip_tests} ${lvi_args} -DUSE_SNMALLOC=${use_snmalloc} -DWITH_EEID=${use_eeid} -Wdev"
 }
 
 def WaitForAptLock() {
@@ -44,14 +116,32 @@ def TestCommand() {
     return testCommand
 }
 
-def InstallBuildCommand() {
-    def installCommand = """
-        echo "Running Install Build Command"
-        cpack -G DEB
-        ${WaitForAptLock()}
+def createOpenEnclavePackageCommand() {
+    if (isUnix()) {
+        return "cpack -G DEB"
+    } else {
+        return "cpack -D CPACK_NUGET_COMPONENT_INSTALL=ON"
+    }
+}
+
+def createHostVerifyPackageCommand() {
+    if (isUnix()) {
+        return "cpack -G DEB -D CPACK_DEB_COMPONENT_INSTALL=ON -DCPACK_COMPONENTS_ALL=OEHOSTVERIFY"
+    } else {
+        return "cpack -D CPACK_NUGET_COMPONENT_INSTALL=ON -DCPACK_COMPONENTS_ALL=OEHOSTVERIFY"
+    }
+}
+
+def makeInstallCommand() {
+    return """
+        sudo make install
+    """
+}
+
+def ninjaInstallCommand() {
+    return """
         sudo ninja -v install
     """
-    return installCommand
 }
 
 def InstallReleaseCommand(String version) {
@@ -61,7 +151,7 @@ def InstallReleaseCommand(String version) {
     } else {
         throw new Exception("Unsupported Ubuntu version: ${version}")
     }
-    def installCommand = """
+    return installCommand = """
         echo "Running Install Release Command"
         echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu ${codename} main' | sudo tee /etc/apt/sources.list.d/intel-sgx.list
         wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | sudo apt-key add -
@@ -81,7 +171,6 @@ def InstallReleaseCommand(String version) {
         echo "Open Enclave SDK version installed"
         apt list --installed | grep open-enclave
     """
-    return installCommand
 }
 
 /**
@@ -264,6 +353,30 @@ def ninjaBuildCommand(String cmake_arguments = "", String build_directory = "${W
             setlocal EnableDelayedExpansion
             cmake ${build_directory} ${cmake_arguments} || exit !ERRORLEVEL!
             ninja -v || exit !ERRORLEVEL!
+        """
+    }
+}
+
+/** Builds Open Enclave using cmake and make
+ *
+ * @param cmake_arguments String of arguments to be passed to cmake
+ * @param build_dir       String that is a path to the directory that contains CMakeList.txt
+ *                        Can be relative to current working directory or an absolute path
+ */
+def makeBuildCommand(String cmake_arguments = "", String build_directory = "${WORKSPACE}") {
+    // Note: make -j seems to cause issues where the agent disconnects and is not reconnectable within 2 hours.
+    if(isUnix()) {
+        return """
+            set -x
+            cmake ${build_directory} ${cmake_arguments}
+            make
+        """
+    } else {
+        return """
+            @echo on
+            setlocal EnableDelayedExpansion
+            cmake ${build_directory} ${cmake_arguments} || exit !ERRORLEVEL!
+            make || exit !ERRORLEVEL!
         """
     }
 }
