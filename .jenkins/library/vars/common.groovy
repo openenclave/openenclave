@@ -31,30 +31,6 @@ def ContainerRun(String imageName, String compiler, String task, String runArgs=
     }
 }
 
-/**
- * Runs tasks within a Docker container
- *
- * @param imageName     The name of the Docker image to run.
- * @param compiler      The compiler to use, if applicable.
- * @param tasks         List of tasks to run within the Docker container. Must be in Jenkins groovy syntax.
- * @param runArgs       [Optional] Arguments to pass when calling Docker run
- * @param registryUrl   [Optional] Url of the Docker registry to pull from. Defaults to "https://oejenkinscidockerregistry.azurecr.io"
- * @param registryName  [Optional] Name of the Docker registry to pull from. Defaults to "oejenkinscidockerregistry"
- */
-def ContainerTasks(String imageName, String compiler, List tasks, String runArgs="", registryUrl="https://oejenkinscidockerregistry.azurecr.io", registryName="oejenkinscidockerregistry") {
-    exec_with_retry(3,300){
-        docker.withRegistry(registryUrl, registryName) {
-            def image = docker.image(imageName)
-            image.pull()
-            image.inside(runArgs) {
-                for (task in tasks) {
-                    task
-                }
-            }
-        }
-    }
-}
-
 def azureEnvironment(String task, String imageName = "oetools-deploy:latest") {
     withCredentials([usernamePassword(credentialsId: 'SERVICE_PRINCIPAL_OSTCLAB',
                                       passwordVariable: 'SERVICE_PRINCIPAL_PASSWORD',
@@ -88,7 +64,7 @@ def runTask(String task) {
     }
 }
 
-def Run(String compiler, String task, String compiler_version = "") {
+def Run(String compiler, String task) {
     def c_compiler
     def cpp_compiler
 
