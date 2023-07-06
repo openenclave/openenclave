@@ -9,9 +9,10 @@
 
 /* Builds and runs code coverage tests for OE on Ubuntu
  *
- *  @param version: The Ubuntu version to use
- *  @param compiler: The compiler to use
- *  @param build_type: The cmake build type to use. Choice of: Debug, Release, or RelWithDebInfo
+ * @param version    [string] The Ubuntu version to use
+ * @param compiler   [string] The compiler to use
+ * @param build_type [string] The cmake build type to use.
+ *                                Choice of: Debug, Release, or RelWithDebInfo
  */
 def ACCCodeCoverageTest(String version, String compiler, String build_type) {
     stage("ACC ${version} ${compiler} ${build_type} Code Coverage") {
@@ -19,7 +20,15 @@ def ACCCodeCoverageTest(String version, String compiler, String build_type) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
-                def cmakeArgs = helpers.CmakeArgs(build_type, "ON", "OFF")
+                def cmakeArgs = helpers.CmakeArgs(
+                    builder: 'Ninja',
+                    build_type: build_type,
+                    code_coverage: true,
+                    debug_malloc: false,
+                    lvi_mitigation: 'None',
+                    lvi_mitigation_skip_tests: true,
+                    use_snmalloc: false,
+                    use_eeid: false)
                 def task = """
                            ${helpers.ninjaBuildCommand(cmakeArgs)}
                            ${helpers.TestCommand()}
@@ -44,14 +53,19 @@ def ACCCodeCoverageTest(String version, String compiler, String build_type) {
 
 /* Builds and runs ctest for OE on Ubuntu
  *
- *  @param label: the label of the Jenkins agent to use
- *  @param compiler: The compiler to use
- *  @param build_type: The cmake build type to use. Choice of: Debug, Release, or RelWithDebInfo
- *  @param extra_cmake_args: Extra cmake args to pass to the build
- *  @param fresh_install: whether to start with a plain VM and install OE dependencies
+ * @param label                      [string]  the label of the Jenkins agent to use
+ * @param compiler                   [string]  the compiler to use
+ * @param build_type                 [string]  cmake build type to use. 
+ *                                             Choice of: Debug, Release, or RelWithDebInfo
+ * @param lvi_mitigation             [string]  build enclave libraries with LVI mitigation. 
+ *                                             Choice of: None, ControlFlow-GNU, ControlFlow-Clang, or ControlFlow
+ * @param lvi_mitigation_skip_tests  [boolean] skip LVI mitigation tests?
+ * @param use_snmalloc               [boolean] use snmalloc allocator?
+ * @param use_eeid                   [boolean] use EEID?
+ * @param fresh_install              [boolean] start with a plain VM and install OE dependencies?
  */
-def ACCTest(String label, String compiler, String build_type, List extra_cmake_args = [], boolean fresh_install = false) {
-    stage("${label} ${compiler} ${build_type} ${extra_cmake_args} ${fresh_install ? ", e2e" : ""}") {
+def ACCTest(String label, String compiler, String build_type, String lvi_mitigation, boolean lvi_mitigation_skip_tests = false, boolean use_snmalloc = false, boolean use_eeid = false, boolean fresh_install = false) {
+    stage("${label} ${compiler} ${build_type} ${lvi_mitigation} ${fresh_install ? ", e2e" : ""} SNMALLOC=${use_snmalloc} EEID=${use_eeid}") {
         node(label) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
@@ -74,7 +88,15 @@ def ACCTest(String label, String compiler, String build_type, List extra_cmake_a
                 sh """
                     sudo apt list --installed | grep sgx
                 """
-                def cmakeArgs = helpers.CmakeArgs(build_type,"OFF","ON","-DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin",extra_cmake_args.join(' '))
+                def cmakeArgs = helpers.CmakeArgs(
+                    builder: 'Ninja',
+                    build_type: build_type,
+                    code_coverage: false,
+                    debug_malloc: false,
+                    lvi_mitigation: lvi_mitigation,
+                    lvi_mitigation_skip_tests: lvi_mitigation_skip_tests,
+                    use_snmalloc: use_snmalloc,
+                    use_eeid: use_eeid)
                 def task = """
                            ${helpers.ninjaBuildCommand(cmakeArgs)}
                            ${helpers.TestCommand()}
@@ -89,22 +111,37 @@ def ACCTest(String label, String compiler, String build_type, List extra_cmake_a
  *  This is done by installing the latest release, building the current build,
  *  and then installing the current build.
  *
- *  @param version: The Ubuntu version to use
- *  @param compiler: The compiler to use
- *  @param extra_cmake_args: Extra cmake args to pass to the build 
- * 
+ * @param version                   [string]  the Ubuntu version to use
+ * @param compiler                  [string]  the compiler to use
+ * @param lvi_mitigation            [string]  build enclave libraries with LVI mitigation.
+ *                                            Choice of: None, ControlFlow-GNU, ControlFlow-Clang, or ControlFlow
+ * @param lvi_mitigation_skip_tests [boolean] skip LVI mitigation tests?
  */
-def ACCUpgradeTest(String version, String compiler, List extra_cmake_args = []) {
-    stage("ACC Upgrade ${version} RelWithDebInfo, extra_cmake_args: ${extra_cmake_args}") {
+def ACCUpgradeTest(String version, String compiler, String lvi_mitigation, boolean lvi_mitigation_skip_tests = false) {
+    stage("ACC Upgrade ${version} RelWithDebInfo ${lvi_mitigation} LVI_MITIGATION_SKIP_TESTS=${lvi_mitigation_skip_tests}") {
         node(globalvars.AGENTS_LABELS["acc-ubuntu-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
-                def cmakeArgs = helpers.CmakeArgs("RelWithDebInfo","OFF","ON","-DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin",extra_cmake_args.join(' '))
-                common.Run(compiler, helpers.InstallReleaseCommand(version))
+                def cmakeArgs = helpers.CmakeArgs(
+                    builder: 'Ninja',
+                    build_type: 'RelWithDebInfo',
+                    code_coverage: false,
+                    debug_malloc: false,
+                    lvi_mitigation: lvi_mitigation,
+                    lvi_mitigation_skip_tests: lvi_mitigation_skip_tests,
+                    use_snmalloc: false,
+                    use_eeid: false)
+                println "Install latest open-enclave release"
+                sh("${helpers.InstallReleaseCommand(version)}")
                 helpers.TestSamplesCommand()
-                common.Run(compiler, helpers.ninjaBuildCommand(cmakeArgs))
-                common.Run(compiler, helpers.InstallBuildCommand())
+                println "Build and install current open-enclave build"
+                def task = """
+                           ${helpers.ninjaBuildCommand(cmakeArgs)}
+                           ${helpers.TestCommand()}
+                           ${helpers.ninjaInstallCommand()}
+                           """
+                common.Run(compiler, task)
                 helpers.TestSamplesCommand()
             }
         }
@@ -113,17 +150,27 @@ def ACCUpgradeTest(String version, String compiler, List extra_cmake_args = []) 
 
 /* Tests building and running OE in a container environment
  *
- *  @param version: The version of the container to use
- *  @param compiler: The compiler to use
- *  @param extra_cmake_args: Extra cmake args to pass to the build
+ * @param version                   [string]  the Ubuntu version to use
+ * @param compiler                  [string]  the compiler to use
+ * @param lvi_mitigation            [string]  build enclave libraries with LVI mitigation.
+ *                                            Choice of: None, ControlFlow-GNU, ControlFlow-Clang, or ControlFlow
+ * @param lvi_mitigation_skip_tests [boolean] skip LVI mitigation tests?
  */
-def ACCContainerTest(String version, String compiler, List extra_cmake_args = []) {
-    stage("ACC Container ${version} RelWithDebInfo, extra_cmake_args: ${extra_cmake_args}") {
+def ACCContainerTest(String version, String compiler, String lvi_mitigation, boolean lvi_mitigation_skip_tests = false) {
+    stage("ACC Container ${version} RelWithDebInfo ${lvi_mitigation} LVI_MITIGATION_SKIP_TESTS=${lvi_mitigation_skip_tests}") {
         node(globalvars.AGENTS_LABELS["acc-ubuntu-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
-                def cmakeArgs = helpers.CmakeArgs("RelWithDebInfo","OFF","ON","-DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin",extra_cmake_args.join(' '))
+                def cmakeArgs = helpers.CmakeArgs(
+                    builder: 'Ninja',
+                    build_type: 'RelWithDebInfo',
+                    code_coverage: false,
+                    debug_malloc: false,
+                    lvi_mitigation: lvi_mitigation,
+                    lvi_mitigation_skip_tests: lvi_mitigation_skip_tests,
+                    use_snmalloc: false,
+                    use_eeid: false)
                 def devices = helpers.getDockerSGXDevices("ubuntu", helpers.getUbuntuReleaseVer())
                 def runArgs = "--user root:root --cap-add=SYS_PTRACE ${devices} --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket"
                 println("${globalvars.AGENTS_LABELS["acc-ubuntu-${version}"]} running Docker container with ${devices}")
@@ -139,31 +186,41 @@ def ACCContainerTest(String version, String compiler, List extra_cmake_args = []
 
 /* Tests building and packing OE in a container environment
  *
- *  @param version: The version of the container to use
- *  @param extra_cmake_args: Extra cmake args to pass to the build
+ * @param version                    [string]  the version of the container to use
+ * @param build_type                 [string]  cmake build type to use.
+ *                                             Choice of: Debug, Release, or RelWithDebInfo
+ * @param lvi_mitigation             [string]  build enclave libraries with LVI mitigation.
+ *                                             Choice of: None, ControlFlow-GNU, ControlFlow-Clang, or ControlFlow
+ * @param lvi_mitigation_skip_tests  [boolean] skip LVI mitigation tests?
+ * @param use_snmalloc               [boolean] use snmalloc allocator?
  */
-def ACCPackageTest(String version, List extra_cmake_args = []) {
-    stage("ACC Package ${version} RelWithDebInfo ${extra_cmake_args}") {
+def ACCPackageTest(String version, String build_type, String lvi_mitigation, boolean lvi_mitigation_skip_tests = 'OFF', boolean use_snmalloc = 'OFF') {
+    stage("ACC Package ${version} RelWithDebInfo ${lvi_mitigation} LVI_MITIGATION_SKIP_TESTS=${lvi_mitigation_skip_tests} SNMALLOC=${use_snmalloc}") {
         node(globalvars.AGENTS_LABELS["acc-ubuntu-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
-                def cmakeArgs = helpers.CmakeArgs("RelWithDebInfo","OFF","ON","-DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin",extra_cmake_args.join(' '))
+                def cmakeArgs = helpers.CmakeArgs(
+                    builder: 'CMake',
+                    build_type: build_type,
+                    code_coverage: false,
+                    debug_malloc: false,
+                    lvi_mitigation: lvi_mitigation,
+                    lvi_mitigation_skip_tests: lvi_mitigation_skip_tests,
+                    use_snmalloc: use_snmalloc,
+                    use_eeid: false)
                 def devices = helpers.getDockerSGXDevices("ubuntu", helpers.getUbuntuReleaseVer())
                 println("Running Docker container with ${devices}")
-                common.ContainerTasks(
+                common.ContainerRun(
                     "oetools-${version}:${params.DOCKER_TAG}",
                     globalvars.COMPILER,
-                    [
-                    common.Run(
-                        globalvars.COMPILER,
-                        """
-                        ${helpers.ninjaBuildCommand(cmakeArgs)}
-                        ${helpers.InstallBuildCommand()}
-                        """
-                    ),
-                    helpers.TestSamplesCommand()
-                    ],
+                    """
+                        ${helpers.makeBuildCommand(cmakeArgs)}
+                        ${helpers.createOpenEnclavePackageCommand()}
+                        ${helpers.createHostVerifyPackageCommand()}
+                        ${helpers.makeInstallCommand()}
+                        ${helpers.TestCommand()}
+                    """,
                     "--cap-add=SYS_PTRACE ${devices} --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket"
                 )
             }
@@ -175,9 +232,9 @@ def ACCPackageTest(String version, List extra_cmake_args = []) {
  * This will generate the necessary certs on Ubuntu and then
  * verify on another Ubuntu and Windows node.
  *
- *  @param version: The version of the container to use
- *  @param build_type: The build type to use
- *  @param compiler: The compiler to use
+ * @param version     [string] The version of the container to use
+ * @param build_type  [string] The build type to use
+ * @param compiler    [string] The compiler to use
  */
 def ACCHostVerificationTest(String version, String build_type, String compiler) {
     stage("ACC ${version} Generate Quote") {
@@ -289,9 +346,10 @@ def ACCHostVerificationTest(String version, String build_type, String compiler) 
  * This will generate the necessary certs on Ubuntu and then
  * verify on another Ubuntu and Windows node.
  *
- * @param version: The version of Ubuntu to use
- * @param build_type: The build type to use. Choice of: Debug, Release, or RelWithDebInfo
- * @param compiler: The compiler to use.
+ * @param version     [string] The version of Ubuntu to use
+ * @param build_type  [string] The build type to use.
+ *                             Choice of: Debug, Release, or RelWithDebInfo
+ * @param compiler    [string] The compiler to use.
 */
 
 def ACCHostVerificationPackageTest(String version, String build_type, String compiler) {
@@ -443,13 +501,16 @@ def ACCHostVerificationPackageTest(String version, String build_type, String com
 
 /* Tests OE Release packages
  *
- * @param label: Label of the node to run the test on
- * @param release_version: Version of the OE release to test
- * @param oe_package: Name of the OE package to test
- * @param source: Source to obtain the OE package from
- * @param storage_credentials_id: ID of the credentials to access the Azure storage account
- * @param storage_blob: Name of the Azure storage blob to download the OE package from
- * @param lvi_mitigation: Whether to test with LVI mitigation
+ * @param label                  [string]  Label of the node to run the test on
+ * @param release_version        [string]  Version of the OE release to test
+ * @param oe_package             [string]  Name of the OE package to test
+ *                                         Choice of: open-enclave, or open-enclave-hostverify
+ * @param source                 [string]  Source to obtain the OE package from
+ *                                         Choice of: Azure, or GitHub
+ * @param storage_credentials_id [string]  ID of the credentials to access the Azure storage account
+ * @param storage_blob           [string]  Name of the Azure storage blob to download the OE package from
+ * @param lvi_mitigation         [boolean] Build enclave libraries with LVI mitigation.
+ *                                         TODO: This and helpers.testSamples* should be converted into string to allow for the different mitigation options
  */
 def OEReleaseTest(String label, String release_version, String oe_package = "open-enclave", String source = "Azure", String storage_credentials_id, String storage_blob, boolean lvi_mitigation = false) {
     stage("OE Release Test ${label}") {
@@ -465,14 +526,17 @@ def OEReleaseTest(String label, String release_version, String oe_package = "ope
 
 /* Tests Intel RCs
  *
- * @param label: Label of the node to run the test on
- * @param release_version: Version of the OE release to test
- * @param oe_package: Name of the OE package to test
- * @param source: Source to obtain the OE package from
- * @param lvi_mitigation: Whether to test with LVI mitigation
- * @param dcap_url: URL of the DCAP package to install
- * @param local_repository_name: Name of the local repository to install
- * @param install_flags: Flags to pass to the install script
+ * @param label                 [string]  Label of the node to run the test on
+ * @param release_version       [string]  Version of the OE release to test
+ * @param oe_package            [string]  Name of the OE package to test
+ *                                        Choice of: open-enclave, or open-enclave-hostverify
+ * @param source                [string]  Source to obtain the OE package from
+ *                                        Choice of: Azure, or GitHub
+ * @param lvi_mitigation        [string]  Build enclave libraries with LVI mitigation.
+ *                                        Choice of: None, ControlFlow-GNU, ControlFlow-Clang, or ControlFlow
+ * @param dcap_url              [string]  URL of the DCAP package to install
+ * @param local_repository_name [string]  Name of the local repository to install
+ * @param install_flags         [string]  Flags to pass to the install script
  */
 def TestIntelRCs(String label, String release_version, String oe_package = "open-enclave", String source = "GitHub", boolean lvi_mitigation = false, String dcap_url = "", String local_repository_name = "", String install_flags = "") {
     stage("Test Intel Drivers RCs ${label}") {
@@ -516,6 +580,18 @@ def windowsPrereqsVerify(String label) {
     }
 }
 
+/* Precompiles ELF enclave on Linux and run on Windows
+ *
+ * @param windows_label              [string]  Label of the Windows node to run the test on
+ * @param ubuntu_label               [string]  Label of the Ubuntu node to run the test on
+ * @param compiler                   [string]  Compiler to use
+ * @param build_type                 [string]  The build type to use.
+ *                                             Choice of: Debug, Release, or RelWithDebInfo
+ * @param lvi_mitigation             [string]  build enclave libraries with LVI mitigation.
+ *                                             Choice of: None, ControlFlow-GNU, ControlFlow-Clang, or ControlFlow
+ * @param lvi_mitigation_skip_tests  [boolean] Whether to skip LVI mitigation tests
+ * @param extra_cmake_args           [string]  Add custom cmake args
+ */
 def windowsLinuxElfBuild(String windows_label, String ubuntu_label, String compiler, String build_type, String lvi_mitigation = 'None', String lvi_mitigation_skip_tests = 'OFF', List extra_cmake_args = []) {
     stage("${ubuntu_label} ${compiler} ${build_type} LVI_MITIGATION=${lvi_mitigation}") {
         node(ubuntu_label) {
@@ -577,8 +653,17 @@ def windowsLinuxElfBuild(String windows_label, String ubuntu_label, String compi
 /**
  * Compile open-enclave on Windows platform, generate NuGet package out of it, 
  * install the generated NuGet package, and run samples tests against the installation.
+ *
+ * @param dirName                    [string]  Directory to run the test in
+ * @param buildType                  [string]  The build type to use.
+ *                                             Choice of: Debug, Release, or RelWithDebInfo
+ * @param timeoutSeconds             [integer] Timeout in seconds for the test
+ * @param lviMitigation              [string]  Build enclave libraries with LVI mitigation.
+ *                                             Choice of: None, ControlFlow-GNU, ControlFlow-Clang, or ControlFlow
+ * @param lviMitigationSkipTests     [boolean] Whether to skip LVI mitigation tests
+ * @param extra_cmake_args           [string]  Add custom cmake args
  */
-def WinCompilePackageTest(String dirName, String buildType, String hasQuoteProvider, Integer timeoutSeconds, String lviMitigation = 'None', String lviMitigationSkipTests = 'ON', List extra_cmake_args = []) {
+def WinCompilePackageTest(String dirName, String buildType, Integer timeoutSeconds, String lviMitigation = 'None', String lviMitigationSkipTests = 'ON', List extra_cmake_args = []) {
     cleanWs()
     checkout scm
     dir(dirName) {
@@ -600,7 +685,7 @@ def WinCompilePackageTest(String dirName, String buildType, String hasQuoteProvi
                 script: """
                     call vcvars64.bat x64
                     setlocal EnableDelayedExpansion
-                    cmake.exe ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${buildType} -DBUILD_ENCLAVES=ON -DHAS_QUOTE_PROVIDER=${hasQuoteProvider} -DLVI_MITIGATION=${lviMitigation} -DLVI_MITIGATION_SKIP_TESTS=${lviMitigationSkipTests} -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCPACK_GENERATOR=NuGet -Wdev ${extra_cmake_args.join(' ')} || exit !ERRORLEVEL!
+                    cmake.exe ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${buildType} -DBUILD_ENCLAVES=ON -DLVI_MITIGATION=${lviMitigation} -DLVI_MITIGATION_SKIP_TESTS=${lviMitigationSkipTests} -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCPACK_GENERATOR=NuGet -Wdev ${extra_cmake_args.join(' ')} || exit !ERRORLEVEL!
                     ninja.exe || exit !ERRORLEVEL!
                     ctest.exe -V -C ${buildType} --timeout ${timeoutSeconds} || exit !ERRORLEVEL!
                     cpack.exe -D CPACK_NUGET_COMPONENT_INSTALL=ON -DCPACK_COMPONENTS_ALL=OEHOSTVERIFY || exit !ERRORLEVEL!
@@ -636,6 +721,19 @@ def WinCompilePackageTest(String dirName, String buildType, String hasQuoteProvi
     }
 }
 
+/* Seems about the same as WinCompilePackageTest, but with a different name.
+ *
+ * @param label                      [string]  Label of the Windows node to run the test on
+ * @param compiler                   [string]  Compiler to use
+ * @param build_type                 [string]  The build type to use.
+ *                                             Choice of: Debug, Release, or RelWithDebInfo
+ * @param lvi_mitigation             [string]  build enclave libraries with LVI mitigation.
+ *                                             Choice of: None, ControlFlow-GNU, ControlFlow-Clang, or ControlFlow
+ * @param OE_SIMULATION              [string]  Whether to run in simulation mode.
+ *                                             Choice of: 0, 1
+ * @param lvi_mitigation_skip_tests  [boolean] Whether to skip LVI mitigation tests
+ * @param extra_cmake_args           [string]  Add custom cmake args
+ */
 def windowsCrossCompile(String label, String compiler, String build_type, String lvi_mitigation = 'None', String OE_SIMULATION = "0", String lvi_mitigation_skip_tests = 'OFF', List extra_cmake_args = []) {
     stage("Windows ${label} ${build_type} with SGX LVI_MITIGATION=${lvi_mitigation}") {
         // fail fast and retry if Windows agent goes offline
@@ -651,7 +749,7 @@ def windowsCrossCompile(String label, String compiler, String build_type, String
                     // Interrupt build if no output received from node for 15 minutes
                     timeout(time: 15, activity: true, unit: 'MINUTES') {
                         withEnv(["OE_SIMULATION=${OE_SIMULATION}"]) {
-                            WinCompilePackageTest("build/X64-${build_type}", build_type, 'OFF', globalvars.CTEST_TIMEOUT_SECONDS * 3, lvi_mitigation, lvi_mitigation_skip_tests, extra_cmake_args)
+                            WinCompilePackageTest("build/X64-${build_type}", build_type, globalvars.CTEST_TIMEOUT_SECONDS * 3, lvi_mitigation, lvi_mitigation_skip_tests, extra_cmake_args)
                         }
                     }
                 }
@@ -720,6 +818,14 @@ def windowsCrossPlatform(String label) {
 
 // Agnostic Linux
 
+/* Builds OE in Simulation mode inside a containar
+ *
+ * @param version           [string]  Version of Ubuntu to use
+ * @param build_type        [string]  The build type to use.
+ *                                    Choice of: Debug, Release, or RelWithDebInfo
+ * @param compiler          [string]  Compiler to use
+ * @param extra_cmake_args  [string]  Add custom cmake args
+ */
 def simulationContainerTest(String version, String build_type, String compiler, List extra_cmake_args = []) {
     stage("Simulation Ubuntu ${version} clang-${compiler} ${build_type}, extra_cmake_args: ${extra_cmake_args}") {
         node(globalvars.AGENTS_LABELS["ubuntu-nonsgx-${version}"]) {
@@ -745,6 +851,11 @@ def simulationContainerTest(String version, String build_type, String compiler, 
     }
 }
 
+/* Builds OP-TEE inside a container
+ *
+ * @param version           [string]  Version of Ubuntu to use
+ * @param compiler          [string]  Compiler to use
+ */
 def buildCrossPlatform(String version, String compiler) {
     stage("Ubuntu ${version} OP-TEE Build") {
         node(globalvars.AGENTS_LABELS["ubuntu-nonsgx-${version}"]) {
@@ -776,6 +887,12 @@ def buildCrossPlatform(String version, String compiler) {
     }
 }
 
+/* Builds OE for ARM64 inside a containar
+ *
+ * @param version           [string]  Version of Ubuntu to use
+ * @param build_type        [string]  The build type to use.
+ *                                    Choice of: Debug, Release, or RelWithDebInfo
+ */
 def AArch64GNUTest(String version, String build_type) {
     stage("AArch64 GNU gcc Ubuntu${version} ${build_type}") {
         node(globalvars.AGENTS_LABELS["ubuntu-nonsgx-${version}"]) {
@@ -831,45 +948,6 @@ def checkCI(String compiler) {
                 // At the moment, the check-ci script assumes that it's executed from the
                 // root source code directory.
                 common.ContainerRun("oetools-20.04:${DOCKER_TAG}", compiler, task, runArgs)
-            }
-        }
-    }
-}
-
-
-// Packaging
-
-def LinuxPackaging(String node_label, String compiler, String build_type, String lvi_mitigation = 'None') {
-    stage("${node_label} ${compiler} Package ${build_type} LVI ${lvi_mitigation}") {
-        node("${node_label}") {
-            timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
-                cleanWs()
-                checkout scm
-                def task = """
-                           cmake ${WORKSPACE}                               \
-                             -DCMAKE_BUILD_TYPE=${build_type}               \
-                             -DCMAKE_INSTALL_PREFIX:PATH='/opt/openenclave' \
-                             -DCPACK_GENERATOR=DEB                          \
-                             -DLVI_MITIGATION=${lvi_mitigation}             \
-                             -DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin
-                           make
-                           cpack -D CPACK_DEB_COMPONENT_INSTALL=ON -DCPACK_COMPONENTS_ALL=OEHOSTVERIFY
-                           cpack
-                           ctest --output-on-failure --timeout ${globalvars.CTEST_TIMEOUT_SECONDS}
-                           """
-                common.Run(compiler, task)
-            }
-        }
-    }
-}
-
-def WindowsPackaging(String node_label, String compiler, String build_type, String lvi_mitigation = 'None', String simulation = '1') {
-    stage("WS2019 ${compiler} ${build_type} LVI ${lvi_mitigation}") {
-        node("${node_label}-${compiler}") {
-            withEnv(["OE_SIMULATION=${simulation}"]) {
-                timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
-                    WinCompilePackageTest("build", build_type, "ON", globalvars.CTEST_TIMEOUT_SECONDS, lvi_mitigation)
-                }
             }
         }
     }
