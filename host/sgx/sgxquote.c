@@ -1335,9 +1335,6 @@ oe_result_t oe_tdx_get_supplemental_data_size(
             get_quote3_error_t_string(error));
     }
 
-    if (*p_data_size != sizeof(sgx_ql_qv_supplemental_t))
-        OE_RAISE(OE_UNEXPECTED);
-
     OE_TRACE_INFO(
         "tdx supplemental data size=%u, major version=%u, minor version=%u",
         *p_data_size,
