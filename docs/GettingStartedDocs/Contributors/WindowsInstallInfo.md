@@ -29,7 +29,7 @@ To create a redistributable NuGet package use the following commands from your b
 ```cmd
 cmake .. -G  Ninja -DNUGET_PACKAGE_PATH=C:\oe_prereqs -DCPACK_GENERATOR=NuGet
 ninja
-cpack -D CPACK_NUGET_COMPONENT_INSTALL=ON
+cpack -D CPACK_NUGET_COMPONENT_INSTALL=ON && cpack
 ```
 
 This will result in a NuGet package being created in the build folder.
@@ -40,5 +40,15 @@ The host-only report verification package allows non-enclave applications to
 validate remote reports from enclaves.
 
 ```cmd
-cpack -D CPACK_NUGET_COMPONENT_INSTALL=ON -DCPACK_COMPONENTS_ALL=OEHOSTVERIFY
+cpack -D CPACK_NUGET_COMPONENT_INSTALL=ON -DCPACK_COMPONENTS_ALL=OEHOSTVERIFY && cpack
 ```
+
+## Install the NuGet package
+
+Assuming the directory containing the `.nupkg` packages is `C:\oe_nuget\`, then the installation procedure is as followed:
+
+```cmd
+Nuget.exe install "open-enclave" -OutputDirectory C:\oe -ExcludeVersion -Source C:\oe_nuget\
+```
+
+The package is installed at `C:\oe\open-enclave\openenclave`. The installation can then be tested by building and running samples with `CMAKE_PREFIX_PATH` set to `C:\oe\open-enclave\openenclave\lib\openenclave\cmake\`
