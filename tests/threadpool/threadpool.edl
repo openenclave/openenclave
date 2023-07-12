@@ -1,0 +1,24 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave {
+    from "openenclave/edl/attestation.edl" import *;
+    from "openenclave/edl/logging.edl" import *;
+    from "openenclave/edl/fcntl.edl" import *;
+#ifdef OE_SGX
+    from "openenclave/edl/sgx/platform.edl" import *;
+#else
+    from "openenclave/edl/optee/platform.edl" import *;
+#endif
+
+    include "openenclave/bits/types.h"
+    include "openenclave/bits/sgx/sgxtypes.h"
+
+    trusted {
+        public oe_result_t enclave_init();
+        public oe_result_t enclave_shutdown();
+
+        public oe_result_t enclave_use_threadpool(
+        );
+    };
+};
