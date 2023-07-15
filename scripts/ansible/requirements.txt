@@ -1,6 +1,6 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
-cryptography==41.0.0
+cryptography==41.0.2
 pyOpenSSL==23.2.0
 ansible>=4.10,<=5.2.0
 cmake_format==0.6.9
