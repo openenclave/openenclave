@@ -21,10 +21,7 @@
 #include "../hostthread.h"
 #include "sgxquote_ex.h"
 
-#include "../../common/thpool.h"
-
-// TODO: delete
-#include <unistd.h>
+#include "../thpool.h"
 
 // init/shutdown managed in common/tdx/verifier.c
 static threadpool _thread_pool = NULL;

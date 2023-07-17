@@ -337,14 +337,14 @@ list(
   ${PROJECT_SOURCE_DIR}/common/datetime.c
   ${PROJECT_SOURCE_DIR}/common/safecrt.c
   ${PROJECT_SOURCE_DIR}/common/sha.c
-  ${PROJECT_SOURCE_DIR}/common/thpool.c
   memalign.c
   hexdump.c
   dupenv.c
   fopen.c
   tests.c
   result.c
-  traceh.c)
+  traceh.c
+  thpool.c)
 
 # Common files that are used in the OE SDK only.
 list(
