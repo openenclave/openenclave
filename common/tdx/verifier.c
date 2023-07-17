@@ -588,13 +588,25 @@ static oe_verifier_t _verifier = {
 
 oe_result_t oe_tdx_verifier_initialize(void)
 {
-    return oe_register_verifier_plugin(&_verifier, NULL, 0);
+    oe_result_t result = OE_UNEXPECTED;
+
+    result = oe_register_verifier_plugin(&_verifier, NULL, 0);
+    OE_CHECK(result);
+
+done:
+    return result;
 }
 
 // Registration of plugins does not allocate any resources to them.
 oe_result_t oe_tdx_verifier_shutdown(void)
 {
-    return oe_unregister_verifier_plugin(&_verifier);
+    oe_result_t result = OE_UNEXPECTED;
+
+    result = oe_unregister_verifier_plugin(&_verifier);
+    OE_CHECK(result);
+
+done:
+    return result;
 }
 
 oe_result_t oe_get_tdx_endorsements(

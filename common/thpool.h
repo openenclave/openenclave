@@ -83,7 +83,7 @@ extern "C"
     /**
      * One call to this must be paired with thpool_destroy_result
      */
-    jobresult thpool_init_result();
+    jobresult thpool_init_result(void);
     void thpool_destroy_result(jobresult);
 
     /**

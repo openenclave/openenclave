@@ -16,9 +16,19 @@
 #include <sgx_uae_quote_ex.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "../../common/oe_host_stdlib.h"
 #include "../hostthread.h"
 #include "sgxquote_ex.h"
+
+#include "../../common/thpool.h"
+
+// TODO: delete
+#include <unistd.h>
+
+// init/shutdown managed in common/tdx/verifier.c
+static threadpool _thread_pool = NULL;
+#define _MAX_THREAD_COUNT 4
 
 // Check consistency with OE definition.
 OE_STATIC_ASSERT(sizeof(sgx_target_info_t) == 512);
@@ -1428,7 +1438,7 @@ done:
     return result;
 }
 
-oe_result_t oe_tdx_verify_quote(
+static oe_result_t _oe_tdx_verify_quote(
     const oe_uuid_t* format_id,
     const void* opt_params,
     size_t opt_params_size,
@@ -1514,6 +1524,102 @@ oe_result_t oe_tdx_verify_quote(
     OE_TRACE_INFO("verification status=%d", *p_quote_verification_result);
 
     result = OE_OK;
+
+done:
+    return result;
+}
+
+typedef struct _oe_tdx_verify_quote_arg
+{
+    const oe_uuid_t* format_id;
+    const void* opt_params;
+    size_t opt_params_size;
+    const uint8_t* p_quote;
+    uint32_t quote_size;
+    const uint8_t* p_endorsements;
+    uint32_t endorsements_size;
+    time_t expiration_check_date;
+    uint32_t* p_collateral_expiration_status;
+    uint32_t* p_quote_verification_result;
+    void* p_qve_report_info;
+    uint32_t qve_report_info_size;
+    void* p_supplemental_data;
+    uint32_t supplemental_data_size;
+} oe_tdx_verify_quote_arg;
+
+static void task(void* arg, jobresult result)
+{
+    oe_tdx_verify_quote_arg* args = (oe_tdx_verify_quote_arg*)arg;
+    oe_result_t oe_result = _oe_tdx_verify_quote(
+        args->format_id,
+        args->opt_params,
+        args->opt_params_size,
+        args->p_quote,
+        args->quote_size,
+        args->p_endorsements,
+        args->endorsements_size,
+        args->expiration_check_date,
+        args->p_collateral_expiration_status,
+        args->p_quote_verification_result,
+        args->p_qve_report_info,
+        args->qve_report_info_size,
+        args->p_supplemental_data,
+        args->supplemental_data_size);
+
+    thpool_provide_result(result, (int)oe_result, NULL, 0);
+}
+
+oe_result_t oe_tdx_verify_quote(
+    const oe_uuid_t* format_id,
+    const void* opt_params,
+    size_t opt_params_size,
+    const uint8_t* p_quote,
+    uint32_t quote_size,
+    const uint8_t* p_endorsements,
+    uint32_t endorsements_size,
+    time_t expiration_check_date,
+    uint32_t* p_collateral_expiration_status,
+    uint32_t* p_quote_verification_result,
+    void* p_qve_report_info,
+    uint32_t qve_report_info_size,
+    void* p_supplemental_data,
+    uint32_t supplemental_data_size)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    if (!_thread_pool)
+    {
+        _thread_pool = thpool_init(_MAX_THREAD_COUNT);
+        if (!_thread_pool)
+        {
+            OE_RAISE(OE_UNEXPECTED);
+        }
+    }
+
+    // Add task to thread pool
+    jobresult task_result = thpool_init_result();
+    oe_tdx_verify_quote_arg arg = {
+        .format_id = format_id,
+        .opt_params = opt_params,
+        .opt_params_size = opt_params_size,
+        .p_quote = p_quote,
+        .quote_size = quote_size,
+        .p_endorsements = p_endorsements,
+        .endorsements_size = endorsements_size,
+        .expiration_check_date = expiration_check_date,
+        .p_collateral_expiration_status = p_collateral_expiration_status,
+        .p_quote_verification_result = p_quote_verification_result,
+        .p_qve_report_info = p_qve_report_info,
+        .qve_report_info_size = qve_report_info_size,
+        .p_supplemental_data = p_supplemental_data,
+        .supplemental_data_size = supplemental_data_size,
+    };
+    thpool_add_work(_thread_pool, task, (void*)&arg, task_result);
+
+    // Wait for result from thread pool
+    result = (oe_result_t)thpool_consume_result(task_result, NULL, NULL);
+    thpool_destroy_result(task_result);
+    OE_CHECK(result);
 
 done:
     return result;
