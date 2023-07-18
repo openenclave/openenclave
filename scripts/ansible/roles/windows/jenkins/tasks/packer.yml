@@ -33,6 +33,12 @@
   ansible.windows.win_shell: |
     git config --system user.name '{{ ci_team_name }}'
 
+- name: Install Docker-ce
+  ansible.windows.win_powershell:
+    script: |
+        Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/microsoft/Windows-Containers/Main/helpful_tools/Install-DockerCE/install-docker-ce.ps1" -o install-docker-ce.ps1
+        .\install-docker-ce.ps1
+
 - name: Include validation
   ansible.builtin.include_tasks: "validation.yml"
   when: jdk_download is changed
