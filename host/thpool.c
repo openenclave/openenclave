@@ -42,7 +42,7 @@ static volatile int threads_keepalive;
 /* Binary semaphore */
 typedef struct bsem
 {
-    oe_mutex mutex;
+    CRITICAL_SECTION mutex;
 
     CONDITION_VARIABLE cond;
     int v;
@@ -58,7 +58,7 @@ typedef struct _job_result
     int return_code;
 
     int completed;
-    oe_mutex mutex;
+    CRITICAL_SECTION mutex;
     CONDITION_VARIABLE cond;
 } job_result;
 
@@ -95,7 +95,7 @@ typedef struct thpool_
     thread** threads;                 /* pointer to threads        */
     volatile int num_threads_alive;   /* threads currently alive   */
     volatile int num_threads_working; /* threads currently working */
-    oe_mutex thcount_lock;            /* used for thread count etc */
+    CRITICAL_SECTION thcount_lock;            /* used for thread count etc */
     CONDITION_VARIABLE threads_all_idle;  /* signal to thpool_wait     */
     jobqueue jobqueue;                /* job queue                 */
 } thpool_;
@@ -160,7 +160,7 @@ struct thpool_* thpool_init(int num_threads)
         return NULL;
     }
 
-    oe_mutex_init(&(thpool_p->thcount_lock));
+    InitializeCriticalSection(&(thpool_p->thcount_lock));
     InitializeConditionVariable(&thpool_p->threads_all_idle);
 
     /* Thread init */
@@ -210,7 +210,8 @@ job_result* thpool_init_result()
     new_job_result->return_data = NULL;
     new_job_result->size_return_data = 0;
     new_job_result->completed = 0;
-    oe_mutex_init(&new_job_result->mutex);
+    // oe_mutex_init(&new_job_result->mutex);
+    InitializeCriticalSection(&new_job_result->mutex);
     InitializeConditionVariable(&new_job_result->cond);
 
     return new_job_result;
@@ -218,14 +219,17 @@ job_result* thpool_init_result()
 
 void thpool_destroy_result(job_result* result)
 {
-    oe_mutex_lock(&result->mutex);
+    // oe_mutex_lock(&result->mutex);
+    EnterCriticalSection(&result->mutex);
     free(result->return_data);
     result->return_data = NULL;
     result->size_return_data = 0;
     result->completed = 1;
-    oe_mutex_unlock(&result->mutex);
+    // oe_mutex_unlock(&result->mutex);
+    LeaveCriticalSection(&result->mutex);
 
-    oe_mutex_destroy(&result->mutex);
+    // oe_mutex_destroy(&result->mutex);
+    CloseHandle(&result->mutex);
     CloseHandle(&result->cond);
     free(result);
 }
@@ -236,19 +240,22 @@ void thpool_provide_result(
     void* data,
     size_t size)
 {
-    oe_mutex_lock(&result->mutex);
+    // oe_mutex_lock(&result->mutex);
+    EnterCriticalSection(&result->mutex);
     result->return_code = return_code;
     result->return_data = data;
     result->size_return_data = size;
     result->completed = 1;
-    oe_mutex_unlock(&result->mutex);
+    // oe_mutex_unlock(&result->mutex);
+    LeaveCriticalSection(&result->mutex);
 
     WakeConditionVariable(&result->cond);
 }
 
 int thpool_consume_result(job_result* result, void** out, size_t* out_size)
 {
-    oe_mutex_lock(&result->mutex);
+    // oe_mutex_lock(&result->mutex);
+    EnterCriticalSection(&result->mutex);
     while (!result->completed)
     {
         SleepConditionVariableCS(&result->cond, &result->mutex, INFINITE);
@@ -264,7 +271,8 @@ int thpool_consume_result(job_result* result, void** out, size_t* out_size)
     result->return_data = NULL;
     result->size_return_data = 0;
 
-    oe_mutex_unlock(&result->mutex);
+    // oe_mutex_unlock(&result->mutex);
+    LeaveCriticalSection(&result->mutex);
 
     return return_code;
 }
@@ -272,12 +280,12 @@ int thpool_consume_result(job_result* result, void** out, size_t* out_size)
 /* Wait until all jobs have finished */
 void thpool_wait(thpool_* thpool_p)
 {
-    oe_mutex_lock(&thpool_p->thcount_lock);
+    EnterCriticalSection(&thpool_p->thcount_lock);
     while (thpool_p->jobqueue.len || thpool_p->num_threads_working)
     {
         SleepConditionVariableCS(&thpool_p->threads_all_idle, &thpool_p->thcount_lock, INFINITE);
     }
-    oe_mutex_unlock(&thpool_p->thcount_lock);
+    LeaveCriticalSection(&thpool_p->thcount_lock);
 }
 
 /* Destroy the threadpool */
@@ -387,9 +395,9 @@ static void* thread_do(struct thread* thread_p)
     thpool_* thpool_p = thread_p->thpool_p;
 
     /* Mark thread as alive (initialized) */
-    oe_mutex_lock(&thpool_p->thcount_lock);
+    EnterCriticalSection(&thpool_p->thcount_lock);
     thpool_p->num_threads_alive += 1;
-    oe_mutex_unlock(&thpool_p->thcount_lock);
+    LeaveCriticalSection(&thpool_p->thcount_lock);
 
     while (threads_keepalive)
     {
@@ -397,9 +405,9 @@ static void* thread_do(struct thread* thread_p)
 
         if (threads_keepalive)
         {
-            oe_mutex_lock(&thpool_p->thcount_lock);
+            EnterCriticalSection(&thpool_p->thcount_lock);
             thpool_p->num_threads_working++;
-            oe_mutex_unlock(&thpool_p->thcount_lock);
+            LeaveCriticalSection(&thpool_p->thcount_lock);
 
             /* Read job from queue and execute it */
             void (*func_buff)(void*, job_result*);
@@ -413,18 +421,18 @@ static void* thread_do(struct thread* thread_p)
                 free(job_p);
             }
 
-            oe_mutex_lock(&thpool_p->thcount_lock);
+            EnterCriticalSection(&thpool_p->thcount_lock);
             thpool_p->num_threads_working--;
             if (!thpool_p->num_threads_working)
             {
                 WakeConditionVariable(&thpool_p->threads_all_idle);
             }
-            oe_mutex_unlock(&thpool_p->thcount_lock);
+            LeaveCriticalSection(&thpool_p->thcount_lock);
         }
     }
-    oe_mutex_lock(&thpool_p->thcount_lock);
+    EnterCriticalSection(&thpool_p->thcount_lock);
     thpool_p->num_threads_alive--;
-    oe_mutex_unlock(&thpool_p->thcount_lock);
+    LeaveCriticalSection(&thpool_p->thcount_lock);
 
     return NULL;
 }
@@ -541,7 +549,7 @@ static void bsem_init(bsem* bsem_p, int value)
         err("bsem_init(): Binary semaphore can take only values 1 or 0");
         exit(1);
     }
-    oe_mutex_init(&(bsem_p->mutex));
+    InitializeCriticalSection(&(bsem_p->mutex));
     InitializeConditionVariable(&(bsem_p->cond));
     bsem_p->v = value;
 }
@@ -555,29 +563,35 @@ static void bsem_reset(bsem* bsem_p)
 /* Post to at least one thread */
 static void bsem_post(bsem* bsem_p)
 {
-    oe_mutex_lock(&bsem_p->mutex);
+    // oe_mutex_lock(&bsem_p->mutex);
+    EnterCriticalSection(&bsem_p->mutex);
     bsem_p->v = 1;
     WakeConditionVariable(&bsem_p->cond);
-    oe_mutex_unlock(&bsem_p->mutex);
+    // oe_mutex_unlock(&bsem_p->mutex);
+    LeaveCriticalSection(&bsem_p->mutex);
 }
 
 /* Post to all threads */
 static void bsem_post_all(bsem* bsem_p)
 {
-    oe_mutex_lock(&bsem_p->mutex);
+    // oe_mutex_lock(&bsem_p->mutex);
+    EnterCriticalSection(&bsem_p->mutex);
     bsem_p->v = 1;
     WakeAllConditionVariable(&bsem_p->cond);
-    oe_mutex_unlock(&bsem_p->mutex);
+    // oe_mutex_unlock(&bsem_p->mutex);
+    LeaveCriticalSection(&bsem_p->mutex);
 }
 
 /* Wait on semaphore until semaphore has value 0 */
 static void bsem_wait(bsem* bsem_p)
 {
-    oe_mutex_lock(&bsem_p->mutex);
+    // oe_mutex_lock(&bsem_p->mutex);
+    EnterCriticalSection(&bsem_p->mutex);
     while (bsem_p->v != 1)
     {
         SleepConditionVariableCS(&bsem_p->cond, &bsem_p->mutex, INFINITE);
     }
     bsem_p->v = 0;
-    oe_mutex_unlock(&bsem_p->mutex);
+    // oe_mutex_unlock(&bsem_p->mutex);
+    LeaveCriticalSection(&bsem_p->mutex);
 }
