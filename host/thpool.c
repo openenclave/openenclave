@@ -43,7 +43,8 @@ static volatile int threads_keepalive;
 typedef struct bsem
 {
     oe_mutex mutex;
-    pthread_cond_t cond;
+
+    CONDITION_VARIABLE cond;
     int v;
 } bsem;
 
@@ -58,7 +59,7 @@ typedef struct _job_result
 
     int completed;
     oe_mutex mutex;
-    pthread_cond_t cond;
+    CONDITION_VARIABLE cond;
 } job_result;
 
 /* Job */
@@ -95,7 +96,7 @@ typedef struct thpool_
     volatile int num_threads_alive;   /* threads currently alive   */
     volatile int num_threads_working; /* threads currently working */
     oe_mutex thcount_lock;            /* used for thread count etc */
-    pthread_cond_t threads_all_idle;  /* signal to thpool_wait     */
+    CONDITION_VARIABLE threads_all_idle;  /* signal to thpool_wait     */
     jobqueue jobqueue;                /* job queue                 */
 } thpool_;
 
@@ -160,7 +161,7 @@ struct thpool_* thpool_init(int num_threads)
     }
 
     oe_mutex_init(&(thpool_p->thcount_lock));
-    pthread_cond_init(&thpool_p->threads_all_idle, NULL);
+    InitializeConditionVariable(&thpool_p->threads_all_idle);
 
     /* Thread init */
     int n;
@@ -210,7 +211,7 @@ job_result* thpool_init_result()
     new_job_result->size_return_data = 0;
     new_job_result->completed = 0;
     oe_mutex_init(&new_job_result->mutex);
-    pthread_cond_init(&new_job_result->cond, NULL);
+    InitializeConditionVariable(&new_job_result->cond);
 
     return new_job_result;
 }
@@ -225,7 +226,7 @@ void thpool_destroy_result(job_result* result)
     oe_mutex_unlock(&result->mutex);
 
     oe_mutex_destroy(&result->mutex);
-    pthread_cond_destroy(&result->cond);
+    CloseHandle(&result->cond);
     free(result);
 }
 
@@ -242,7 +243,7 @@ void thpool_provide_result(
     result->completed = 1;
     oe_mutex_unlock(&result->mutex);
 
-    pthread_cond_signal(&result->cond);
+    WakeConditionVariable(&result->cond);
 }
 
 int thpool_consume_result(job_result* result, void** out, size_t* out_size)
@@ -250,7 +251,7 @@ int thpool_consume_result(job_result* result, void** out, size_t* out_size)
     oe_mutex_lock(&result->mutex);
     while (!result->completed)
     {
-        pthread_cond_wait(&result->cond, &result->mutex);
+        SleepConditionVariableCS(&result->cond, &result->mutex, INFINITE);
     }
 
     int return_code = result->return_code;
@@ -274,7 +275,7 @@ void thpool_wait(thpool_* thpool_p)
     oe_mutex_lock(&thpool_p->thcount_lock);
     while (thpool_p->jobqueue.len || thpool_p->num_threads_working)
     {
-        pthread_cond_wait(&thpool_p->threads_all_idle, &thpool_p->thcount_lock);
+        SleepConditionVariableCS(&thpool_p->threads_all_idle, &thpool_p->thcount_lock, INFINITE);
     }
     oe_mutex_unlock(&thpool_p->thcount_lock);
 }
@@ -416,7 +417,7 @@ static void* thread_do(struct thread* thread_p)
             thpool_p->num_threads_working--;
             if (!thpool_p->num_threads_working)
             {
-                pthread_cond_signal(&thpool_p->threads_all_idle);
+                WakeConditionVariable(&thpool_p->threads_all_idle);
             }
             oe_mutex_unlock(&thpool_p->thcount_lock);
         }
@@ -541,7 +542,7 @@ static void bsem_init(bsem* bsem_p, int value)
         exit(1);
     }
     oe_mutex_init(&(bsem_p->mutex));
-    pthread_cond_init(&(bsem_p->cond), NULL);
+    InitializeConditionVariable(&(bsem_p->cond));
     bsem_p->v = value;
 }
 
@@ -556,7 +557,7 @@ static void bsem_post(bsem* bsem_p)
 {
     oe_mutex_lock(&bsem_p->mutex);
     bsem_p->v = 1;
-    pthread_cond_signal(&bsem_p->cond);
+    WakeConditionVariable(&bsem_p->cond);
     oe_mutex_unlock(&bsem_p->mutex);
 }
 
@@ -565,7 +566,7 @@ static void bsem_post_all(bsem* bsem_p)
 {
     oe_mutex_lock(&bsem_p->mutex);
     bsem_p->v = 1;
-    pthread_cond_broadcast(&bsem_p->cond);
+    WakeAllConditionVariable(&bsem_p->cond);
     oe_mutex_unlock(&bsem_p->mutex);
 }
 
@@ -575,7 +576,7 @@ static void bsem_wait(bsem* bsem_p)
     oe_mutex_lock(&bsem_p->mutex);
     while (bsem_p->v != 1)
     {
-        pthread_cond_wait(&bsem_p->cond, &bsem_p->mutex);
+        SleepConditionVariableCS(&bsem_p->cond, &bsem_p->mutex, INFINITE);
     }
     bsem_p->v = 0;
     oe_mutex_unlock(&bsem_p->mutex);
