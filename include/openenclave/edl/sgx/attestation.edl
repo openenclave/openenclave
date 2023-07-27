@@ -155,6 +155,6 @@ enclave
             [in, size=qe_identity_size] const void* p_qe_identity,
             uint32_t qe_identity_size,
             [in, size=qe_identity_issuer_chain_size] const void* p_qe_identity_issuer_chain,
-            uint32_t qe_identity_issuer_chain_size);
+            uint32_t qe_identity_issuer_chain_size) transition_using_threads;
     };
 };

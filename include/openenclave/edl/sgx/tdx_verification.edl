@@ -43,6 +43,6 @@ enclave
             uint32_t qve_report_info_size,
             [out, size=supplemental_data_size] void* p_supplemental_data,
             uint32_t supplemental_data_size,
-            [out] uint32_t* p_supplemental_data_size_out);
+            [out] uint32_t* p_supplemental_data_size_out) transition_using_threads;
     };
 };
