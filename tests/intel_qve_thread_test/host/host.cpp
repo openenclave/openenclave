@@ -191,6 +191,12 @@ int main(int argc, const char* argv[])
     oe_result_t result = OE_UNEXPECTED;
 
     oe_enclave_t* enclave = nullptr;
+    oe_enclave_setting_context_switchless_t switchless_setting = {
+        4,  // number of host worker threads
+        4}; // number of enclave worker threads.
+    oe_enclave_setting_t settings[] = {
+        {OE_ENCLAVE_SETTING_CONTEXT_SWITCHLESS, {&switchless_setting}}};
+
     uint8_t* tdx_evidence = nullptr;
     size_t tdx_evidence_size = 0;
 
@@ -225,8 +231,8 @@ int main(int argc, const char* argv[])
              _params.enclave_filename,
              OE_ENCLAVE_TYPE_AUTO,
              OE_ENCLAVE_FLAG_DEBUG,
-             nullptr,
-             0,
+             settings,
+             OE_COUNTOF(settings),
              &enclave)) != OE_OK)
     {
         printf(
