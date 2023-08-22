@@ -14,6 +14,20 @@
 #include "collateral.h"
 #include "quote.h"
 
+// Copied from common/sgx/verifier.c:25
+#ifdef OE_BUILD_ENCLAVE
+#include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/thread.h>
+#include "../../enclave/core/sgx/report.h"
+#include "../enclave/sgx/report.h"
+#else
+#include "../../host/hostthread.h"
+#include "../../host/sgx/quote.h"
+typedef oe_mutex oe_mutex_t;
+#define OE_MUTEX_INITIALIZER OE_H_MUTEX_INITIALIZER
+#endif
+
+static oe_mutex_t init_mutex = OE_MUTEX_INITIALIZER;
 static const oe_uuid_t _uuid_tdx_quote_ecdsa = {OE_FORMAT_UUID_TDX_QUOTE_ECDSA};
 
 /* Convert Intel-defined verification result to OE tcb status */
@@ -588,13 +602,33 @@ static oe_verifier_t _verifier = {
 
 oe_result_t oe_tdx_verifier_initialize(void)
 {
-    return oe_register_verifier_plugin(&_verifier, NULL, 0);
+    oe_result_t result = OE_UNEXPECTED;
+
+    if (oe_mutex_lock(&init_mutex))
+        OE_RAISE(OE_UNEXPECTED);
+
+    result = oe_register_verifier_plugin(&_verifier, NULL, 0);
+    OE_CHECK(result);
+
+done:
+    oe_mutex_unlock(&init_mutex);
+    return result;
 }
 
 // Registration of plugins does not allocate any resources to them.
 oe_result_t oe_tdx_verifier_shutdown(void)
 {
-    return oe_unregister_verifier_plugin(&_verifier);
+    oe_result_t result = OE_UNEXPECTED;
+
+    if (oe_mutex_lock(&init_mutex))
+        OE_RAISE(OE_UNEXPECTED);
+
+    result = oe_unregister_verifier_plugin(&_verifier);
+    OE_CHECK(result);
+
+done:
+    oe_mutex_unlock(&init_mutex);
+    return result;
 }
 
 oe_result_t oe_get_tdx_endorsements(
