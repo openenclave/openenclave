@@ -8,8 +8,6 @@
 
 OE_EXTERNC_BEGIN
 
-#define OE_TDX_QUOTE_VERSION (4)
-
 typedef struct _tee_tcb_svn
 {
     uint8_t seam0;
@@ -104,6 +102,62 @@ typedef struct _tdx_report_body_t
 OE_PACK_END
 
 OE_PACK_BEGIN
+typedef struct _tdx_report_body_v5_t
+{
+    /* (0) */
+    tee_tcb_svn_t tee_tcb_svn;
+
+    /* (16) */
+    uint8_t mrseam[48];
+
+    /* (64) */
+    uint8_t mrseamsigner[48];
+
+    /* (112) */
+    uint8_t seam_attributes[8];
+
+    /* (120) */
+    tdx_attributes_t td_attributes;
+
+    /* (128) */
+    uint8_t xfam[8];
+
+    /* (136) */
+    uint8_t mrtd[48];
+
+    /* (184) */
+    uint8_t mrconfigid[48];
+
+    /* (232) */
+    uint8_t mrowner[48];
+
+    /* (280) */
+    uint8_t mrownerconfig[48];
+
+    /* (328) */
+    uint8_t rtmr0[48];
+
+    /* (376) */
+    uint8_t rtmr1[48];
+
+    /* (424) */
+    uint8_t rtmr2[48];
+
+    /* (472) */
+    uint8_t rtmr3[48];
+
+    /* (520) */
+    uint8_t report_data[64];
+
+    /* (584) */
+    tee_tcb_svn_t tee_tcb_svn2;
+
+    /* (600) */
+    uint8_t mrservicetd[48];
+} tdx_report_body_v5_t;
+OE_PACK_END
+
+OE_PACK_BEGIN
 typedef struct _tdx_quote_t
 {
     /* (0) */
@@ -136,6 +190,41 @@ typedef struct _tdx_quote_t
     /* (660) */
     OE_ZERO_SIZED_ARRAY uint8_t signature[];
 } tdx_quote_t;
+OE_PACK_END
+
+OE_PACK_BEGIN
+typedef struct _tdx_quote_v5_t
+{
+    /* (0) */
+    uint16_t version;
+
+    /* (2) */
+    uint16_t sign_type;
+
+    /* (4) */
+    uint32_t tee_type;
+
+    /* (8) */
+    uint16_t qe_svn;
+
+    /* (10) */
+    uint16_t pce_svn;
+
+    /* (12) */
+    uint8_t uuid[16];
+
+    /* (28) */
+    uint8_t user_data[SGX_USERDATA_SIZE];
+
+    /* (48) */
+    uint16_t type;
+
+    /* (50) */
+    uint32_t size;
+
+    /* (54) */
+    OE_ZERO_SIZED_ARRAY uint8_t body[];
+} tdx_quote_v5_t;
 OE_PACK_END
 
 /*

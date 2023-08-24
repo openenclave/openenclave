@@ -726,7 +726,8 @@ typedef enum
 
 // The required "version" value in sgx_quote_t for ECDSA quotes
 #define SGX_QE3_QUOTE_VERSION 3
-#define SGX_QE4_QUOTE_VERSION 4
+#define SGX_QE4_QUOTE_VERSION 4 // TDX 1.0 or 1.4
+#define SGX_QE5_QUOTE_VERSION 5 // TDX 1.5
 
 // Size of actual data within the quote excluding authentication information.
 // This data is signed for quote verification.
