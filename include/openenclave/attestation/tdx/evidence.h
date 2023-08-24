@@ -40,7 +40,9 @@ OE_EXTERNC_BEGIN
 #define OE_CLAIM_TDX_RTMR2 "tdx_rtmr2"
 #define OE_CLAIM_TDX_RTMR3 "tdx_rtmr3"
 #define OE_CLAIM_TDX_REPORT_DATA "tdx_report_data"
-#define OE_TDX_REQUIRED_CLAIMS_COUNT 20
+#define OE_CLAIM_TDX_TEE_TCB_SVN_2 "tdx_tee_tcb_svn_2"
+#define OE_CLAIM_TDX_MRSERVICETD "tdx_mrservicetd"
+#define OE_TDX_REQUIRED_CLAIMS_COUNT 22
 
 /*
  * Additional claims from other sources (e.g., data returned by QvE/QVL)

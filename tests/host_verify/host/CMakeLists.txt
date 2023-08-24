@@ -12,5 +12,7 @@ configure_file(../data/sgx_report_bad.bin
                ${CMAKE_CURRENT_BINARY_DIR}/sgx_report_bad.bin COPYONLY)
 configure_file(../data/tdx_quote.bin ${CMAKE_CURRENT_BINARY_DIR}/tdx_quote.bin
                COPYONLY)
+configure_file(../data/tdx_quote_v5.bin
+               ${CMAKE_CURRENT_BINARY_DIR}/tdx_quote_v5.bin COPYONLY)
 
 target_link_libraries(test_host_verify oehostverify)
