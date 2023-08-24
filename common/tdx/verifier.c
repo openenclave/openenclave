@@ -136,9 +136,11 @@ static oe_result_t _fill_with_known_tdx_claims(
 {
     oe_sgx_tcb_status_t tcb_status = OE_SGX_TCB_STATUS_INVALID;
     const tdx_report_body_t* tdx_report = NULL;
+    const tdx_report_body_v5_t* tdx_report_v5 = NULL;
     const tdx_attributes_t* attributes = NULL;
     oe_result_t result = OE_UNEXPECTED;
     tdx_quote_t* tdx_quote = NULL;
+    tdx_quote_v5_t* tdx_quote_v5 = NULL;
     size_t claims_index = 0;
     oe_identity_t id = {0};
     size_t sa_list_size = 0;
@@ -150,8 +152,26 @@ static oe_result_t _fill_with_known_tdx_claims(
                             OE_TDX_ADDITIONAL_CLAIMS_COUNT)
         OE_RAISE(OE_INVALID_PARAMETER);
 
+    /* TDX quote versions 4 and 5 have the same header, which contains version
+     * number */
     tdx_quote = (tdx_quote_t*)quote;
-    tdx_report = &tdx_quote->report_body;
+    if (tdx_quote->version == 4)
+    {
+        tdx_report = &tdx_quote->report_body;
+    }
+    else if (tdx_quote->version == 5)
+    {
+        /* If quote version is 5, then recast to TDX quote v5 struct */
+        tdx_quote_v5 = (tdx_quote_v5_t*)quote;
+        /* Type 1 is SGX, which is not handled here */
+        if (tdx_quote_v5->type == 1)
+            OE_RAISE(OE_UNEXPECTED);
+        /* Type 2 is TDX V4 report body */
+        tdx_report = (tdx_report_body_t*)tdx_quote_v5->body;
+        /* Type 3 is TDX V5 report body */
+        if (tdx_quote_v5->type == 3)
+            tdx_report_v5 = (tdx_report_body_v5_t*)tdx_quote_v5->body;
+    }
 
     /* OE-specific claims. Not applicable to TDX so just fill with zeros */
 
@@ -357,6 +377,25 @@ static oe_result_t _fill_with_known_tdx_claims(
         tdx_report->report_data,
         sizeof(tdx_report->report_data)));
 
+    /* Two additional attributes introduced in TDX V5 report body. Above is the
+     * same for both versions. */
+    if (tdx_report_v5 != NULL)
+    {
+        OE_CHECK(_add_claim(
+            &claims[claims_index++],
+            OE_CLAIM_TDX_TEE_TCB_SVN_2,
+            sizeof(OE_CLAIM_TDX_TEE_TCB_SVN_2),
+            (uint8_t*)&tdx_report_v5->tee_tcb_svn2,
+            sizeof(tdx_report_v5->tee_tcb_svn2)));
+
+        OE_CHECK(_add_claim(
+            &claims[claims_index++],
+            OE_CLAIM_TDX_MRSERVICETD,
+            sizeof(OE_CLAIM_TDX_MRSERVICETD),
+            tdx_report_v5->mrservicetd,
+            sizeof(tdx_report_v5->mrservicetd)));
+    }
+
     /* Additional claims */
 
     tcb_status = _verification_result_to_tcb_status(
@@ -449,11 +488,14 @@ static oe_result_t _extract_claims(
         claims_length,
         &claims_added));
 
-    if (claims_added != claims_length)
+    /* To accommodate the new claims introduced by the newer quote
+       versions, we allow the number of added claims to be less than or
+       equal to the number of allocated claim slots (the upper bound). */
+    if (claims_added > claims_length)
         OE_RAISE(OE_UNEXPECTED);
 
     *claims_out = claims;
-    *claims_length_out = claims_length;
+    *claims_length_out = claims_added;
     claims = NULL;
     result = OE_OK;
 
@@ -544,11 +586,21 @@ static oe_result_t _verify_evidence(
 
     if (!memcmp(format_id, &_uuid_tdx_quote_ecdsa, sizeof(oe_uuid_t)))
     {
+        size_t total_size = 0;
         tdx_quote_t* quote = (tdx_quote_t*)evidence_buffer;
-
-        // TDX quote should have version 4
-        if (evidence_buffer_size < sizeof(*quote) + quote->signature_len ||
-            quote->version != SGX_QE4_QUOTE_VERSION ||
+        if (quote->version == 4)
+        {
+            total_size = sizeof(*quote) + quote->signature_len;
+        }
+        else if (quote->version == 5)
+        {
+            tdx_quote_v5_t* quote_v5 = (tdx_quote_v5_t*)evidence_buffer;
+            total_size = sizeof(*quote_v5) + quote_v5->size;
+        }
+        // TDX quote should have either version 4 or 5
+        if (evidence_buffer_size < total_size ||
+            (quote->version != SGX_QE4_QUOTE_VERSION &&
+             quote->version != SGX_QE5_QUOTE_VERSION) ||
             quote->sign_type != SGX_QL_ALG_ECDSA_P256 ||
             quote->tee_type != TDX_QUOTE_TYPE)
             OE_RAISE(OE_INVALID_PARAMETER);
