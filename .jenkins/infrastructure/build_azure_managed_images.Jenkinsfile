@@ -356,9 +356,7 @@ node(params.AGENTS_LABEL) {
         stage("Build images") {
             def windows_images = [
                 "Build WS2019 - nonSGX - clang11"       : { buildWindowsManagedImage("win2019", "nonSGX", "SGX1FLC-NoIntelDrivers", "11.1.0", image_id, image_version) },
-                "Build WS2019 - nonSGX - clang10"       : { buildWindowsManagedImage("win2019", "nonSGX", "SGX1FLC-NoIntelDrivers", "10.0.0", image_id, image_version) },
-                "Build WS2019 - SGX1FLC DCAP - clang11" : { buildWindowsManagedImage("win2019", "SGX-DCAP", "SGX1FLC", "11.1.0", image_id, image_version) },
-                "Build WS2019 - SGX1FLC DCAP - clang10" : { buildWindowsManagedImage("win2019", "SGX-DCAP", "SGX1FLC", "10.0.0", image_id, image_version) }
+                "Build WS2019 - SGX1FLC DCAP - clang11" : { buildWindowsManagedImage("win2019", "SGX-DCAP", "SGX1FLC", "11.1.0", image_id, image_version) }
             ]
             def linux_images = [
                 "Build Ubuntu 20.04" : { buildLinuxManagedImage("ubuntu", "20.04", image_id, image_version) }
