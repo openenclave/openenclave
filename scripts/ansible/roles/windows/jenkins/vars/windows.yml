@@ -10,3 +10,4 @@ jdk_url: "https://jenkinsprivatestorage.blob.core.windows.net/oraclejdk/jdk-11.0
 
 validation_binaries:
   - "C:\\Program Files\\Java\\jdk-11.0.16.1\\bin\\java.exe"
+  - "C:\\Windows\\System32\\docker.exe"
