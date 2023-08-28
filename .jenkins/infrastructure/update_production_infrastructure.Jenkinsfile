@@ -10,9 +10,7 @@ AZURE_IMAGES_MAP = [
     // generated Azure managed image name
     "ubuntu-20.04":      "",
     "nonSGX-clang-11":   "",
-    "nonSGX-clang-10":   "",
     "SGX-DCAP-clang-11": "",
-    "SGX-DCAP-clang-10": ""
 ]
 
 def update_production_azure_gallery_images(String image_name) {
