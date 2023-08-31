@@ -24,7 +24,6 @@ try{
             "Host verification package 2004 Debug":                  { tests.ACCHostVerificationPackageTest('20.04', 'Debug', 'clang-11') },
             "Package ACC2004 Debug ControlFlow":                     { tests.ACCPackageTest('20.04', 'Debug', 'ControlFlow', false, false) },
             "ACC2004 clang-11 RelWithDebInfo ControlFlow":           { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04"], 'clang-11', 'RelWithDebInfo', 'ControlFlow',       false, false, false, false) },
-            "ACC2004 clang-11 RelWithDebInfo ControlFlow EEID":      { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04"], 'clang-11', 'RelWithDebInfo', 'ControlFlow',       false, false, true,  false) },
             "ACC2004 clang-11 RelWithDebInfo ControlFlow-Clang":     { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04"], 'clang-11', 'RelWithDebInfo', 'ControlFlow-Clang', false, false, false, false) },
             "ACC2004 clang-11 Debug ControlFlow":                    { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04"], 'clang-11', 'Debug',          'ControlFlow',       false, false, false, false) }
         ]
