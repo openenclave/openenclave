@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../../common/oe_host_stdlib.h"
+#include "../dupenv.h"
 #include "../hostthread.h"
 #include "sgxquote_ex.h"
 
@@ -76,6 +77,9 @@ static quote3_error_t (*_sgx_qe_get_quote)(
     uint32_t quote_size,
     uint8_t* p_quote);
 
+static quote3_error_t (*_sgx_qv_set_enclave_load_policy)(
+    sgx_ql_request_policy_t policy);
+
 static quote3_error_t (*_sgx_qv_get_quote_supplemental_data_size)(
     uint32_t* p_data_size);
 
@@ -113,6 +117,8 @@ static quote3_error_t (*_tee_qv_get_collateral)(
     uint32_t* p_collateral_size);
 
 static quote3_error_t (*_tee_qv_free_collateral)(uint8_t* p_quote_collateral);
+
+static sgx_ql_request_policy_t _policy = SGX_QL_DEFAULT;
 
 typedef struct _supp_ver_t
 {
@@ -169,6 +175,50 @@ typedef struct _supp_ver_t
 
 static void* _ql_module;
 static void* _qvl_module;
+
+// Starting from
+// https://github.com/intel/SGXDataCenterAttestationPrimitives/releases/tag/DCAP_1.18
+// The API (sgx_qv_set_enclave_load_policy) is enhanced to support changing QvL
+// multithreading behavior At runtime, OE read env var
+// "OE_INTEL_QVL_LOAD_POLICY=?" to set sgx_ql_request_policy_t policy Accepted
+// values: SGX_QL_PERSISTENT, SGX_QL_EPHEMERAL,
+// SGX_QL_EPHEMERAL_QVE_MULTI_THREAD, SGX_QL_PERSISTENT_QVE_MULTI_THREAD,
+// SGX_QL_DEFAULT
+static sgx_ql_request_policy_t _get_qvl_load_policy(void)
+{
+    sgx_ql_request_policy_t policy = SGX_QL_DEFAULT;
+    char* policy_str = oe_dupenv("OE_INTEL_QVL_LOAD_POLICY");
+
+    if (policy_str == NULL)
+    {
+        goto done;
+    }
+    else if (strcmp(policy_str, "SGX_QL_PERSISTENT") == 0)
+    {
+        policy = SGX_QL_PERSISTENT;
+    }
+    else if (strcmp(policy_str, "SGX_QL_EPHEMERAL") == 0)
+    {
+        policy = SGX_QL_EPHEMERAL;
+    }
+    else if (strcmp(policy_str, "SGX_QL_EPHEMERAL_QVE_MULTI_THREAD") == 0)
+    {
+        policy = SGX_QL_EPHEMERAL_QVE_MULTI_THREAD;
+    }
+    else if (strcmp(policy_str, "SGX_QL_PERSISTENT_QVE_MULTI_THREAD") == 0)
+    {
+        policy = SGX_QL_PERSISTENT_QVE_MULTI_THREAD;
+    }
+    else if (strcmp(policy_str, "SGX_QL_DEFAULT") == 0)
+    {
+        policy = SGX_QL_DEFAULT;
+    }
+done:
+    if (policy_str)
+        free(policy_str);
+
+    return policy;
+}
 
 // This is a helper for getting human readable quote3_error_t codes.
 static const char* get_quote3_error_t_string(quote3_error_t error)
@@ -510,6 +560,10 @@ static void _load_tdx_dcap_qvl_impl(void)
     {
         OE_CHECK(_lookup_function(
             _qvl_module,
+            "sgx_qv_set_enclave_load_policy",
+            (void**)&_sgx_qv_set_enclave_load_policy));
+        OE_CHECK(_lookup_function(
+            _qvl_module,
             "tee_get_supplemental_data_version_and_size",
             (void**)&_tee_get_supplemental_data_version_and_size));
         OE_CHECK(_lookup_function(
@@ -542,6 +596,25 @@ static bool _load_tdx_dcap_qvl(void)
 {
     static oe_once_type _once;
     oe_once(&_once, _load_tdx_dcap_qvl_impl);
+
+    {
+        sgx_ql_request_policy_t new_policy = _get_qvl_load_policy();
+        // Only call set_policy on policy change
+        if (new_policy != _policy)
+        {
+            quote3_error_t error = _sgx_qv_set_enclave_load_policy(new_policy);
+            if (error != SGX_QL_SUCCESS)
+            {
+                OE_TRACE_ERROR(
+                    "_sgx_qv_set_enclave_load_policy failed with "
+                    "quote3_error_t=%s\n",
+                    get_quote3_error_t_string(error));
+            }
+
+            _policy = new_policy;
+        }
+    }
+
     return (_qvl_module != NULL);
 }
 
@@ -553,6 +626,10 @@ static void _load_sgx_dcap_qvl_impl(void)
 
     if (_qvl_module)
     {
+        OE_CHECK(_lookup_function(
+            _qvl_module,
+            "sgx_qv_set_enclave_load_policy",
+            (void**)&_sgx_qv_set_enclave_load_policy));
         OE_CHECK(_lookup_function(
             _qvl_module,
             "sgx_qv_get_quote_supplemental_data_size",
@@ -582,6 +659,25 @@ static bool _load_sgx_dcap_qvl(void)
 {
     static oe_once_type _once;
     oe_once(&_once, _load_sgx_dcap_qvl_impl);
+
+    {
+        sgx_ql_request_policy_t new_policy = _get_qvl_load_policy();
+        // Only call set_policy on policy change
+        if (new_policy != _policy)
+        {
+            quote3_error_t error = _sgx_qv_set_enclave_load_policy(new_policy);
+            if (error != SGX_QL_SUCCESS)
+            {
+                OE_TRACE_ERROR(
+                    "_sgx_qv_set_enclave_load_policy failed with "
+                    "quote3_error_t=%s\n",
+                    get_quote3_error_t_string(error));
+            }
+
+            _policy = new_policy;
+        }
+    }
+
     return (_qvl_module != NULL);
 }
 
