@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Unreleased][Unreleased_log]
 --------------
 
+### Added
+- (#4832) OE SDK now accepts environment variable `OE_INTEL_QVL_LOAD_POLICY`, which can be used to specify the policy for loading [Intel DCAP's QvE](https://github.com/intel/SGXDataCenterAttestationPrimitives) (Quote Verification) for SGX/TDX quote verification. The value can be one of the following:
+  - `SGX_QL_EPHEMERAL` and `SGX_QL_DEFAULT` - Default policy. QvE is initialized and terminated on every quote verification function call.
+  - `SGX_QL_PERSISTENT` - All the threads will share single QvE instance, and QvE is initialized on first use and reused until process ends.
+  - `SGX_QL_EPHEMERAL_QVE_MULTI_THREAD` - QvE is loaded per thread and be unloaded before function exit.
+  - `SGX_QL_PERSISTENT_QVE_MULTI_THREAD` - QvE is loaded per thread and only be unloaded before thread exit.
+
 [v0.19.0][v0.19.0_log]
 --------------
 ### Added
