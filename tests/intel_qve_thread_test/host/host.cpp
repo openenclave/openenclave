@@ -188,7 +188,8 @@ static int _parse_args(int argc, const char* argv[])
 
 int main(int argc, const char* argv[])
 {
-    oe_result_t result = OE_UNEXPECTED;
+    oe_result_t result_oe = OE_UNEXPECTED;
+    int ret_code = 0;
 
     oe_enclave_t* enclave = nullptr;
     uint8_t* tdx_evidence = nullptr;
@@ -197,10 +198,10 @@ int main(int argc, const char* argv[])
     // number of request made in enclave
     int count_global = 0;
 
-    int ret = _parse_args(argc, argv);
-    if (ret != 0)
+    if (_parse_args(argc, argv) != 0)
     {
         printf("Parse arguments failed\n");
+        ret_code = 1;
         goto done;
     }
 
@@ -208,7 +209,7 @@ int main(int argc, const char* argv[])
     {
         printf(
             "=== Skipped unsupported test in simulation mode (%s)\n", argv[0]);
-        ret = SKIP_RETURN_CODE;
+        ret_code = SKIP_RETURN_CODE;
         goto done;
     }
 
@@ -217,11 +218,11 @@ int main(int argc, const char* argv[])
             _params.evidence_filename, &tdx_evidence, &tdx_evidence_size))
     {
         printf("Failed to read tdx evidence file\n");
-        ret = 1;
+        ret_code = 1;
         goto done;
     }
 
-    if ((result = oe_create_intel_qve_thread_test_enclave(
+    if ((result_oe = oe_create_intel_qve_thread_test_enclave(
              _params.enclave_filename,
              OE_ENCLAVE_TYPE_AUTO,
              OE_ENCLAVE_FLAG_DEBUG,
@@ -231,72 +232,74 @@ int main(int argc, const char* argv[])
     {
         printf(
             "Failed to create enclave. result=%u (%s)\n",
-            result,
-            oe_result_str(result));
-        ret = 1;
+            result_oe,
+            oe_result_str(result_oe));
+        ret_code = 1;
         goto done;
     }
 
     // Init Enclave TDX verifier
+    init_tdx_verifier(enclave, &result_oe);
+    if (result_oe != OE_OK)
     {
-        oe_result_t result = OE_UNEXPECTED;
-        init_tdx_verifier(enclave, &result);
-        if (result != OE_OK)
-        {
-            printf(
-                "Failed to create enclave. result=%u (%s)\n",
-                result,
-                oe_result_str(result));
-            ret = 1;
-            goto done;
-        }
+        printf(
+            "Failed to create enclave. result=%u (%s)\n",
+            result_oe,
+            oe_result_str(result_oe));
+        ret_code = 1;
+        goto done;
     }
 
-    // Generate threads
     {
+        // Generate threads
         std::vector<std::thread> threads((size_t)_params.thread_count);
         for (size_t i = 0; i < threads.size(); i++)
         {
             printf("Creating thread %zu\n", i);
-            threads[i] = std::thread(
-                [i, enclave, tdx_evidence, tdx_evidence_size, &count_global]() {
-                    oe_result_t result = OE_UNEXPECTED;
-                    int count = 0;
-                    run_enclave_thread(
-                        enclave,
-                        &result,
-                        _params.evidence_format,
-                        tdx_evidence,
-                        tdx_evidence_size,
-                        (double)_params.duration,
-                        &count);
+            threads[i] = std::thread([i,
+                                      enclave,
+                                      tdx_evidence,
+                                      tdx_evidence_size,
+                                      &count_global,
+                                      &result_oe]() {
+                oe_result_t result = OE_UNEXPECTED;
+                int count = 0;
+                run_enclave_thread(
+                    enclave,
+                    &result,
+                    _params.evidence_format,
+                    tdx_evidence,
+                    tdx_evidence_size,
+                    (double)_params.duration,
+                    &count);
 
-                    if (result != OE_OK)
-                    {
-                        printf(
-                            "Thread %zu failed to run_enclave_thread, "
-                            "result=%u (%s)\n",
-                            i,
-                            result,
-                            oe_result_str(result));
-                    }
-                    else
-                    {
-                        printf(
-                            "Thread %zu finished, OPS %.1f (%d in %d sec)\n",
-                            i,
-                            (count / (double)_params.duration),
-                            count,
-                            _params.duration);
-                    }
+                if (result != OE_OK)
+                {
+                    printf(
+                        "Thread %zu failed to run_enclave_thread, "
+                        "result=%u (%s)\n",
+                        i,
+                        result,
+                        oe_result_str(result));
+                    result_oe = result;
+                }
+                else
+                {
+                    printf(
+                        "Thread %zu finished, OPS %.1f (%d in %d sec)\n",
+                        i,
+                        (count / (double)_params.duration),
+                        count,
+                        _params.duration);
+                }
 
-                    // aggregate result
-                    if (oe_mutex_lock(&mutex) == OE_OK)
-                    {
-                        count_global += count;
-                        oe_mutex_unlock(&mutex);
-                    }
-                });
+                // aggregate result
+                if (oe_mutex_lock(&mutex) == OE_OK)
+                {
+                    count_global += count;
+                    oe_mutex_unlock(&mutex);
+                }
+            });
         }
 
         for (size_t i = 0; i < threads.size(); ++i)
@@ -316,15 +319,15 @@ done:
     {
         // Shutdown Enclave TDX verifier
         {
-            oe_result_t result = OE_UNEXPECTED;
-            shutdown_tdx_verifier(enclave, &result);
-            if (result != OE_OK)
+            oe_result_t result_oe = OE_UNEXPECTED;
+            shutdown_tdx_verifier(enclave, &result_oe);
+            if (result_oe != OE_OK)
             {
                 printf(
                     "Failed to shutdown_tdx_verifier. result=%u (%s)\n",
-                    result,
-                    oe_result_str(result));
-                ret = 1;
+                    result_oe,
+                    oe_result_str(result_oe));
+                ret_code = 1;
             }
         }
 
@@ -336,5 +339,11 @@ done:
         free(tdx_evidence);
     }
 
-    return ret;
+    // Skip if ret_code is 2
+    if (result_oe != OE_OK && ret_code == 0)
+    {
+        ret_code = 1;
+    }
+
+    return ret_code;
 }
