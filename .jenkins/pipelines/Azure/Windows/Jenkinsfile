@@ -5,8 +5,8 @@ library "OpenEnclaveJenkinsLibrary@${params.OECI_LIB_VERSION}"
 GLOBAL_ERROR = globalvars.GLOBAL_ERROR
 
 def testing_stages = [
-    // "Windows 2019 Install Prerequisites Verification" :                      { tests.windowsPrereqsVerify("acc-win2019-dcap") },
-    // "ELF Win2019 Ubuntu2004 clang-11 RelWithDebInfo ControlFlow":            { tests.windowsLinuxElfBuild(params.WS2019_DCAP_CFL_LABEL, params.UBUNTU_2004_NONSGX_LABEL, 'clang-11', 'RelWithDebInfo', 'ControlFlow') },
+    "Windows 2019 Install Prerequisites Verification" :                      { tests.windowsPrereqsVerify("acc-win2019-dcap") },
+    "ELF Win2019 Ubuntu2004 clang-11 RelWithDebInfo ControlFlow":            { tests.windowsLinuxElfBuild(params.WS2019_DCAP_CFL_LABEL, params.UBUNTU_2004_NONSGX_LABEL, 'clang-11', 'RelWithDebInfo', 'ControlFlow') },
     "XC Win2019 v2 clang-11 RelWithDebInfo ControlFlow":                     { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'clang-11', 'RelWithDebInfo', 'ControlFlow', '0', 'ON', 'OFF') },
     "XC Win2019 v2 clang-11 RelWithDebInfo ControlFlow Sim":                 { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'clang-11', 'RelWithDebInfo', 'ControlFlow', '1', 'ON', 'OFF') },
     "XC Win2019 v2 clang-11 RelWithDebInfo ControlFlow snmalloc":            { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'clang-11', 'RelWithDebInfo', 'ControlFlow', '0', 'ON', 'ON') },
