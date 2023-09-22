@@ -326,12 +326,10 @@ def ACCHostVerificationTest(String version, String build_type, String compiler) 
                         string(credentialsId: 'thim-tdx-base-url', variable: 'AZDCAP_BASE_CERT_URL_TDX'),
                         string(credentialsId: 'thim-tdx-region-url', variable: 'AZDCAP_REGION_URL')
                     ]) {
+                        helpers.ninjaBuildCommand(cmakeArgs)
                         bat(
-                            returnStdout: false,
-                            returnStatus: false,
                             script: """
                                 call vcvars64.bat x64
-                                ${helpers.ninjaBuildCommand(cmakeArgs)}
                                 ctest.exe -V -C ${build_type} -R host_verify --output-on-failure --timeout ${globalvars.CTEST_TIMEOUT_SECONDS} || exit !ERRORLEVEL!
                             """
                         )
@@ -470,28 +468,47 @@ def ACCHostVerificationPackageTest(String version, String build_type, String com
                                        -DCMAKE_PREFIX_PATH=C:/openenclave/lib/openenclave/cmake \
                                        -DNUGET_PACKAGE_PATH=C:/oe_prereqs \
                                        -Wdev"
-                dir('build') {
+                boolean PACKAGE_BUILT = false
+                dir("${WORKSPACE}\\build") {
+                    if ( PACKAGE_BUILT ) {
+                        unstash "windows_host_verify-${version}-${build_type}-${BUILD_NUMBER}"
+                    } else {
+                        helpers.ninjaBuildCommand(cmakeArgs)
+                        bat(
+                            script: """
+                                call vcvars64.bat x64
+                                cpack -D CPACK_NUGET_COMPONENT_INSTALL=ON -DCPACK_COMPONENTS_ALL=OEHOSTVERIFY
+                            """
+                        )
+                        stash includes: '*.nupkg,tests\\host_verify\\host\\*.bin,tests\\host_verify\\host\\*.der', 
+                              name: "windows_host_verify-${version}-${build_type}-${BUILD_NUMBER}"
+                        PACKAGE_BUILT = true
+                    }
                     bat(
-                        returnStdout: false,
-                        returnStatus: false,
                         script: """
-                            call vcvars64.bat x64
-                            ${helpers.ninjaBuildCommand(cmakeArgs)}
-                            cpack -D CPACK_NUGET_COMPONENT_INSTALL=ON -DCPACK_COMPONENTS_ALL=OEHOSTVERIFY
                             copy tests\\host_verify\\host\\*.der ${WORKSPACE}\\samples\\host_verify
                             copy tests\\host_verify\\host\\*.bin ${WORKSPACE}\\samples\\host_verify
                             if exist C:\\oe (rmdir C:\\oe)
                             nuget.exe install open-enclave.OEHOSTVERIFY -Source ${WORKSPACE}\\build -OutputDirectory C:\\oe -ExcludeVersion
                             xcopy /E C:\\oe\\open-enclave.OEHOSTVERIFY\\OEHOSTVERIFY\\openenclave C:\\openenclave\\
-                            pushd ${WORKSPACE}\\samples\\host_verify
+                        """
+                    )
+                }
+                dir("${WORKSPACE}\\samples\\host_verify") {
+                    bat(
+                        script: """
                             if not exist build\\ (mkdir build)
-                            cd build
-                            ${helpers.ninjaBuildCommand(cmakeArgsHostVerify, "..")}
-                            host_verify.exe -r ../sgx_report.bin
-                            host_verify.exe -c ../sgx_cert_ec.der
-                            host_verify.exe -c ../sgx_cert_rsa.der
-                            popd
-                            """
+                        """
+                    )
+                }
+                dir("${WORKSPACE}\\samples\\host_verify\\build") {
+                    helpers.ninjaBuildCommand(cmakeArgsHostVerify, "..")
+                    bat(
+                        script: """
+                            .\\host_verify.exe -r ../sgx_report.bin
+                            .\\host_verify.exe -c ../sgx_cert_ec.der
+                            .\\host_verify.exe -c ../sgx_cert_rsa.der
+                        """
                     )
                 }
             }
@@ -810,7 +827,7 @@ def windowsCrossCompile(String label, String compiler, String build_type, String
                         error("Caught exception: ${e}")
                     }
                 } else {
-                    println("An abort was caused by a known issue. Retrying...")
+                    println("An exception was caused by a known issue. Retrying...")
                     if (e.getCause()) {
                         println(e.getCause().toString())
                     }

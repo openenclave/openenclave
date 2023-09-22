@@ -356,12 +356,31 @@ def ninjaBuildCommand(String cmake_arguments = "", String build_directory = "${W
             ninja -v
         """
     } else {
-        return """
-            @echo on
-            setlocal EnableDelayedExpansion
-            cmake ${build_directory} ${cmake_arguments} || exit !ERRORLEVEL!
-            ninja -v || exit !ERRORLEVEL!
-        """
+        retry(3) {  
+            try {
+                bat(
+                    script: """
+                        call vcvars64.bat x64
+                        @echo on
+                        cmake ${build_directory} ${cmake_arguments}
+                        ninja -v
+                    """
+                )
+            }
+            catch(IOException e) {
+                println("Caught IOException: ${e}")
+                println("An exception was caused by a known issue. Retrying...")
+                if (e.getCause()) {
+                    println(e.getCause().toString())
+                }
+                throw e
+            }
+            catch(Exception e) {
+                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                    error("Caught Exception: ${e}")
+                }
+            }
+        }
     }
 }
 
