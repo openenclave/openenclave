@@ -934,16 +934,18 @@ static void _test_crl_distribution_points(void)
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
-void TestEC()
+void TestEC(char* path)
 {
-    OE_TEST(read_cert("../data/ec_cert_with_ext.pem", _CERT) == OE_OK);
+    OE_TEST(read_cert(path, "../data/ec_cert_with_ext.pem", _CERT) == OE_OK);
     OE_TEST(
-        read_cert("../data/leaf.ec.cert.pem", _CERT_WITHOUT_EXTENSIONS) ==
+        read_cert(path, "../data/leaf.ec.cert.pem", _CERT_WITHOUT_EXTENSIONS) ==
         OE_OK);
     OE_TEST(
-        read_cert("../data/ec_cert_crl_distribution.pem", _SGX_CERT) == OE_OK);
+        read_cert(path, "../data/ec_cert_crl_distribution.pem", _SGX_CERT) ==
+        OE_OK);
     OE_TEST(
         read_chains(
+            path,
             "../data/leaf.ec.cert.pem",
             "../data/intermediate.ec.cert.pem",
             "../data/root.ec.cert.pem",
@@ -951,23 +953,29 @@ void TestEC()
             OE_COUNTOF(_CHAIN)) == OE_OK);
     OE_TEST(
         read_pem_key(
+            path,
             "../data/root.ec.key.pem",
             _PRIVATE_KEY,
             sizeof(_PRIVATE_KEY),
             &private_key_size) == OE_OK);
     OE_TEST(
         read_pem_key(
+            path,
             "../data/root.ec.public.key.pem",
             _PUBLIC_KEY,
             sizeof(_PUBLIC_KEY),
             &public_key_size) == OE_OK);
     OE_TEST(
-        read_sign("../data/test_ec_signature", _SIGNATURE, &sign_size) ==
+        read_sign(path, "../data/test_ec_signature", _SIGNATURE, &sign_size) ==
         OE_OK);
     OE_TEST(
         read_coordinates(
-            "../data/coordinates.bin", x_data, y_data, &x_size, &y_size) ==
-        OE_OK);
+            path,
+            "../data/coordinates.bin",
+            x_data,
+            y_data,
+            &x_size,
+            &y_size) == OE_OK);
 
     _test_cert_with_extensions();
     _test_cert_without_extensions();

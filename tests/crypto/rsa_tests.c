@@ -467,39 +467,47 @@ static void _test_cert_methods()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
-void TestRSA(void)
+void TestRSA(char* path)
 {
-    OE_TEST(read_cert("../data/self_signed.cert.der", _DER_CERT) == OE_OK);
-    OE_TEST(read_cert("../data/leaf.cert.pem", _CERT1) == OE_OK);
+    OE_TEST(
+        read_cert(path, "../data/self_signed.cert.der", _DER_CERT) == OE_OK);
+    OE_TEST(read_cert(path, "../data/leaf.cert.pem", _CERT1) == OE_OK);
     OE_TEST(
         read_chain(
+            path,
             "../data/intermediate.cert.pem",
             "../data/root.cert.pem",
             CHAIN1,
             OE_COUNTOF(CHAIN1)) == OE_OK);
     OE_TEST(
         read_chain(
+            path,
             "../data/intermediate2.cert.pem",
             "../data/root2.cert.pem",
             CHAIN2,
             OE_COUNTOF(CHAIN2)) == OE_OK);
     OE_TEST(
         read_mod(
+            path,
             "../data/leaf_modulus.hex",
             _CERT1_RSA_MODULUS,
             &rsa_modulus_size) == OE_OK);
     OE_TEST(
         read_pem_key(
-            "../data/leaf.key.pem", _PRIVATE_KEY, sizeof(_PRIVATE_KEY), NULL) ==
-        OE_OK);
+            path,
+            "../data/leaf.key.pem",
+            _PRIVATE_KEY,
+            sizeof(_PRIVATE_KEY),
+            NULL) == OE_OK);
     OE_TEST(
         read_pem_key(
+            path,
             "../data/leaf.public.key.pem",
             _PUBLIC_KEY,
             sizeof(_PUBLIC_KEY),
             NULL) == OE_OK);
     OE_TEST(
-        read_sign("../data/test_rsa_signature", _SIGNATURE, &sign_size) ==
+        read_sign(path, "../data/test_rsa_signature", _SIGNATURE, &sign_size) ==
         OE_OK);
     OE_TEST(
         read_mixed_chain(

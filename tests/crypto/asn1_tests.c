@@ -327,7 +327,7 @@ done:
     return result;
 }
 
-static void _test_asn1_parsing(void)
+static void _test_asn1_parsing(char* path)
 {
     oe_cert_t cert;
     uint8_t* data = NULL;
@@ -336,7 +336,7 @@ static void _test_asn1_parsing(void)
     oe_result_t r;
 
     printf("=== begin %s()\n", __FUNCTION__);
-    OE_TEST(read_cert("../data/asn1.cert.pem", _CERT) == OE_OK);
+    OE_TEST(read_cert(path, "../data/asn1.cert.pem", _CERT) == OE_OK);
     OE_TEST(oe_cert_read_pem(&cert, _CERT, strlen(_CERT) + 1) == OE_OK);
 
     /* Find the SGX_EXTENSION */
@@ -367,7 +367,7 @@ static void _test_asn1_parsing(void)
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
-void TestASN1(void)
+void TestASN1(char* path)
 {
-    _test_asn1_parsing();
+    _test_asn1_parsing(path);
 }
