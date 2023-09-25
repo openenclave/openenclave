@@ -22,10 +22,16 @@ FILE* read_file(const char* filename, const char* mode)
     return file;
 }
 
-oe_result_t read_cert(char* filename, char* cert)
+oe_result_t read_cert(char* dir, char* filename, char* cert)
 {
     size_t len_cert;
-    FILE* cfp = read_file(filename, "rb");
+    char* abspath = NULL;
+
+    abspath = (char*)malloc(strlen(dir) + strlen(filename) + 2);
+    snprintf(
+        abspath, strlen(dir) + strlen(filename) + 2, "%s/%s", dir, filename);
+
+    FILE* cfp = read_file(abspath, "rb");
     if (cfp != NULL)
     {
         len_cert = fread(cert, sizeof(char), max_cert_size, cfp);
@@ -36,10 +42,12 @@ oe_result_t read_cert(char* filename, char* cert)
     }
     cert[len_cert] = '\0';
     fclose(cfp);
+    free(abspath);
     return OE_OK;
 }
 
 oe_result_t read_chain(
+    char* dir,
     char* filename1,
     char* filename2,
     char* chain,
@@ -47,8 +55,17 @@ oe_result_t read_chain(
 {
     size_t len_cert1 = 0, len_cert2 = 0;
     char chain_temp[max_cert_size];
-    FILE* cfp1 = read_file(filename1, "rb");
-    FILE* cfp2 = read_file(filename2, "rb");
+    char* abspath1 = NULL;
+    char* abspath2 = NULL;
+
+    abspath1 = (char*)malloc(strlen(dir) + strlen(filename1) + 2);
+    abspath2 = (char*)malloc(strlen(dir) + strlen(filename2) + 2);
+    snprintf(
+        abspath1, strlen(dir) + strlen(filename1) + 2, "%s/%s", dir, filename1);
+    snprintf(
+        abspath2, strlen(dir) + strlen(filename2) + 2, "%s/%s", dir, filename2);
+    FILE* cfp1 = read_file(abspath1, "rb");
+    FILE* cfp2 = read_file(abspath2, "rb");
 
     if (cfp1 != NULL && cfp2 != NULL)
     {
@@ -63,12 +80,15 @@ oe_result_t read_chain(
         return OE_FAILURE;
     }
 
+    free(abspath1);
+    free(abspath2);
     fclose(cfp1);
     fclose(cfp2);
     return OE_OK;
 }
 
 oe_result_t read_chains(
+    char* dir,
     char* filename1,
     char* filename2,
     char* filename3,
@@ -78,9 +98,22 @@ oe_result_t read_chains(
     size_t len_cert1 = 0, len_cert2 = 0, len_cert3 = 0;
     char chain_temp1[max_cert_size];
     char chain_temp2[max_cert_size];
-    FILE* cfp1 = read_file(filename1, "rb");
-    FILE* cfp2 = read_file(filename2, "rb");
-    FILE* cfp3 = read_file(filename3, "rb");
+    char* abspath1 = NULL;
+    char* abspath2 = NULL;
+    char* abspath3 = NULL;
+
+    abspath1 = (char*)malloc(strlen(dir) + strlen(filename1) + 2);
+    abspath2 = (char*)malloc(strlen(dir) + strlen(filename2) + 2);
+    abspath3 = (char*)malloc(strlen(dir) + strlen(filename3) + 2);
+    snprintf(
+        abspath1, strlen(dir) + strlen(filename1) + 2, "%s/%s", dir, filename1);
+    snprintf(
+        abspath2, strlen(dir) + strlen(filename2) + 2, "%s/%s", dir, filename2);
+    snprintf(
+        abspath3, strlen(dir) + strlen(filename3) + 2, "%s/%s", dir, filename3);
+    FILE* cfp1 = read_file(abspath1, "rb");
+    FILE* cfp2 = read_file(abspath2, "rb");
+    FILE* cfp3 = read_file(abspath3, "rb");
 
     if (cfp1 != NULL && cfp2 != NULL && cfp3 != NULL)
     {
@@ -97,16 +130,24 @@ oe_result_t read_chains(
     {
         return OE_FAILURE;
     }
+    free(abspath1);
+    free(abspath2);
+    free(abspath3);
     fclose(cfp1);
     fclose(cfp2);
     fclose(cfp3);
     return OE_OK;
 }
 
-oe_result_t read_crl(char* filename, uint8_t* crl, size_t* crl_size)
+oe_result_t read_crl(char* dir, char* filename, uint8_t* crl, size_t* crl_size)
 {
     size_t len_crl = 0;
-    FILE* cfp = read_file(filename, "rb");
+    char* abspath = NULL;
+
+    abspath = (char*)malloc(strlen(dir) + strlen(filename) + 2);
+    snprintf(
+        abspath, strlen(dir) + strlen(filename) + 2, "%s/%s", dir, filename);
+    FILE* cfp = read_file(abspath, "rb");
 
     if (cfp != NULL)
     {
@@ -119,14 +160,20 @@ oe_result_t read_crl(char* filename, uint8_t* crl, size_t* crl_size)
     crl[len_crl] = '\0';
     *crl_size = len_crl;
     fclose(cfp);
+    free(abspath);
     return OE_OK;
 }
 
-oe_result_t read_dates(char* filename, oe_datetime_t* time)
+oe_result_t read_dates(char* dir, char* filename, oe_datetime_t* time)
 {
     size_t len_date = 0;
     char buffer[max_date_size];
-    FILE* dfp = read_file(filename, "rb");
+    char* abspath = NULL;
+
+    abspath = (char*)malloc(strlen(dir) + strlen(filename) + 2);
+    snprintf(
+        abspath, strlen(dir) + strlen(filename) + 2, "%s/%s", dir, filename);
+    FILE* dfp = read_file(abspath, "rb");
 
     if (dfp != NULL)
     {
@@ -149,6 +196,7 @@ oe_result_t read_dates(char* filename, oe_datetime_t* time)
         &(time->seconds));
 
     fclose(dfp);
+    free(abspath);
     return OE_OK;
 }
 
@@ -209,14 +257,18 @@ static uint8_t hexval(char c)
 }
 
 // Assume a series of hex digits in the file.
-oe_result_t read_mod(char* filename, uint8_t* mod, size_t* mod_size)
+oe_result_t read_mod(char* dir, char* filename, uint8_t* mod, size_t* mod_size)
 {
     size_t len_mod;
     size_t numchars = 0;
     char buffer[(max_mod_size * 2) + 1];
     char* bufp = buffer;
+    char* abspath = NULL;
 
-    FILE* mfp = read_file(filename, "rb");
+    abspath = (char*)malloc(strlen(dir) + strlen(filename) + 2);
+    snprintf(
+        abspath, strlen(dir) + strlen(filename) + 2, "%s/%s", dir, filename);
+    FILE* mfp = read_file(abspath, "rb");
     if (mfp != NULL)
     {
         numchars = fread(buffer, sizeof(char), max_mod_size * 2, mfp);
@@ -246,6 +298,7 @@ oe_result_t read_mod(char* filename, uint8_t* mod, size_t* mod_size)
 
     *mod_size = len_mod;
     fclose(mfp);
+    free(abspath);
     return OE_OK;
 }
 
@@ -260,10 +313,19 @@ oe_result_t read_mixed_chain(
     return OE_OK;
 }
 
-oe_result_t read_sign(char* filename, uint8_t* sign, size_t* sign_size)
+oe_result_t read_sign(
+    char* dir,
+    char* filename,
+    uint8_t* sign,
+    size_t* sign_size)
 {
     size_t len_sign;
-    FILE* sfp = read_file(filename, "rb");
+    char* abspath = NULL;
+
+    abspath = (char*)malloc(strlen(dir) + strlen(filename) + 2);
+    snprintf(
+        abspath, strlen(dir) + strlen(filename) + 2, "%s/%s", dir, filename);
+    FILE* sfp = read_file(abspath, "rb");
     if (sfp != NULL)
     {
         len_sign = fread(sign, sizeof(char), max_sign_size, sfp);
@@ -276,10 +338,12 @@ oe_result_t read_sign(char* filename, uint8_t* sign, size_t* sign_size)
     sign[len_sign] = '\0';
     *sign_size = len_sign;
     fclose(sfp);
+    free(abspath);
     return OE_OK;
 }
 
 oe_result_t read_pem_key(
+    char* dir,
     const char* filename,
     char* data,
     size_t data_size,
@@ -289,6 +353,7 @@ oe_result_t read_pem_key(
     size_t size = 0;
     FILE* stream = NULL;
     int c;
+    char* abspath = NULL;
 
     if (!filename || !data)
     {
@@ -296,8 +361,11 @@ oe_result_t read_pem_key(
         goto done;
     }
 
+    abspath = (char*)malloc(strlen(dir) + strlen(filename) + 2);
+    snprintf(
+        abspath, strlen(dir) + strlen(filename) + 2, "%s/%s", dir, filename);
     /* Open file in binary mode. */
-    if (!(stream = read_file(filename, "rb")))
+    if (!(stream = read_file(abspath, "rb")))
     {
         result = OE_FAILURE;
         goto done;
@@ -325,6 +393,8 @@ oe_result_t read_pem_key(
 
 done:
 
+    free(abspath);
+
     if (stream)
         fclose(stream);
 
@@ -332,6 +402,7 @@ done:
 }
 
 oe_result_t read_coordinates(
+    char* dir,
     char* filename,
     uint8_t* x,
     uint8_t* y,
@@ -339,7 +410,12 @@ oe_result_t read_coordinates(
     size_t* y_size)
 {
     size_t len_x, len_y;
-    FILE* cfp = read_file(filename, "rb");
+    char* abspath = NULL;
+
+    abspath = (char*)malloc(strlen(dir) + strlen(filename) + 2);
+    snprintf(
+        abspath, strlen(dir) + strlen(filename) + 2, "%s/%s", dir, filename);
+    FILE* cfp = read_file(abspath, "rb");
     if (cfp != NULL)
     {
         len_x = fread(x, sizeof(char), max_coordinates_size, cfp);
@@ -350,6 +426,7 @@ oe_result_t read_coordinates(
         return OE_FAILURE;
     }
     fclose(cfp);
+    free(abspath);
     *x_size = len_x;
     *y_size = len_y;
     return OE_OK;

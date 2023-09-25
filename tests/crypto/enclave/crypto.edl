@@ -11,7 +11,8 @@ enclave {
 #endif
 
     trusted {
-        public void test();
+        public void test(
+            [string, in]char* abspath);
     };
 
     untrusted {

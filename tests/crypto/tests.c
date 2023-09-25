@@ -3,17 +3,17 @@
 
 #include "tests.h"
 
-void TestAll()
+void TestAll(char* path)
 {
 #if !defined(_WIN32)
-    TestASN1();
+    TestASN1(path);
 #endif
-    TestCRL();
+    TestCRL(path);
 #if defined(OE_BUILD_ENCLAVE)
     TestCert();
 #endif
-    TestEC();
-    TestRSA();
+    TestEC(path);
+    TestRSA(path);
     TestRandom();
 #if defined(__x86_64__) || defined(__i386__)
     // Test the RDRAND/RDSEED instructions, which are x86/64-specific.

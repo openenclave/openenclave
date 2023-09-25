@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mount.h>
 #include <sys/syscall.h>
 #include <sys/uio.h>
 #include <unistd.h>
@@ -41,6 +42,7 @@ char* oe_host_strdup(const char* str)
 
 // Tests need these syscall overrides.
 
+#if !defined(OE_USE_OPENSSL)
 OE_DEFINE_SYSCALL2_M(SYS_openat)
 {
     oe_va_list ap;
@@ -145,64 +147,25 @@ OE_DEFINE_SYSCALL1_M(SYS_close)
     OE_TEST(OE_OK == f_close(&rval, (int)arg1));
     return rval;
 }
-
-static long _syscall_dispatch(
-    long number,
-    long arg1,
-    long arg2,
-    long arg3,
-    long arg4,
-    long arg5,
-    long arg6)
-{
-    OE_UNUSED(arg5);
-    OE_UNUSED(arg6);
-
-    switch (number)
-    {
-        OE_SYSCALL_DISPATCH(SYS_openat, arg1, arg2, arg3, arg4);
-#if defined(__x86_64__) || defined(_M_X64)
-        OE_SYSCALL_DISPATCH(SYS_open, arg1, arg2, arg3);
 #endif
-        OE_SYSCALL_DISPATCH(SYS_read, arg1, arg2, arg3);
-        OE_SYSCALL_DISPATCH(SYS_readv, arg1, arg2, arg3);
-        OE_SYSCALL_DISPATCH(SYS_close, arg1);
-        default:
-            return -1;
-    }
-}
 
-static oe_result_t _syscall_hook(
-    long number,
-    long arg1,
-    long arg2,
-    long arg3,
-    long arg4,
-    long arg5,
-    long arg6,
-    long* ret)
+void test(char* abspath)
 {
-    oe_result_t result = OE_UNEXPECTED;
-    if (ret)
-        *ret = -1;
+#if !defined(CODE_COVERAGE) && defined(OE_USE_OPENSSL)
+    /*
+     * When enabling code coverage analysis, libgcov should initialize the host
+     * fs already so we do not do it again here. Otherwise, the
+     * oe_load_module_host_file_system will fail.
+     */
+    if (oe_load_module_host_file_system() != OE_OK)
+        goto done;
+    if (mount("/", "/", OE_HOST_FILE_SYSTEM, 0, NULL))
+        goto done;
 
-    if (!ret)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    *ret = _syscall_dispatch(number, arg1, arg2, arg3, arg4, arg5, arg6);
-    result = OE_OK;
 done:
-    return result;
-}
-
-void test()
-{
-    oe_register_syscall_hook(_syscall_hook);
-    TestAll();
-
-#ifdef CODE_COVERAGE // For code coverage tests.
-    oe_register_syscall_hook(NULL);
+    umount("/");
 #endif
+    TestAll(abspath);
 }
 
 OE_SET_ENCLAVE_SGX(
