@@ -279,27 +279,30 @@ static void _test_verify_with_two_crls(
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
-void TestCRL(void)
+void TestCRL(char* path)
 {
-    OE_TEST(read_cert("../data/intermediate.cert.pem", _CERT1) == OE_OK);
-    OE_TEST(read_cert("../data/leaf.cert.pem", _CERT2) == OE_OK);
+    OE_TEST(read_cert(path, "../data/intermediate.cert.pem", _CERT1) == OE_OK);
+    OE_TEST(read_cert(path, "../data/leaf.cert.pem", _CERT2) == OE_OK);
 
     OE_TEST(
         read_chain(
+            path,
             "../data/leaf.cert.pem",
             "../data/root.cert.pem",
             _CHAIN1,
             OE_COUNTOF(_CHAIN1)) == OE_OK);
     OE_TEST(
         read_chain(
+            path,
             "../data/intermediate.cert.pem",
             "../data/root.cert.pem",
             _CHAIN2,
             OE_COUNTOF(_CHAIN2)) == OE_OK);
 
     OE_TEST(
-        read_crl("../data/intermediate.crl.der", _CRL1, &crl_size1) == OE_OK);
-    OE_TEST(read_crl("../data/root.crl.der", _CRL2, &crl_size2) == OE_OK);
+        read_crl(path, "../data/intermediate.crl.der", _CRL1, &crl_size1) ==
+        OE_OK);
+    OE_TEST(read_crl(path, "../data/root.crl.der", _CRL2, &crl_size2) == OE_OK);
 
     _test_verify_without_crl(_CERT1, _CHAIN1);
     _test_verify_without_crl(_CERT2, _CHAIN2);
@@ -312,6 +315,6 @@ void TestCRL(void)
     _test_verify_with_two_crls(
         _CERT2, _CHAIN2, _CRL1, crl_size1, _CRL2, crl_size2, true);
 
-    OE_TEST(read_dates("../data/time.txt", &_time) == OE_OK);
+    OE_TEST(read_dates(path, "../data/time.txt", &_time) == OE_OK);
     _test_get_dates();
 }
