@@ -2,8 +2,8 @@
 # Licensed under the MIT License.
 
 ---
-intel_dcap_url:      "https://registrationcenter-download.intel.com/akdlm/irc_nas/18784/Intel%20SGX%20DCAP%20for%20Windows%20v1.14.100.3.exe"
-intel_dcap_hash:     "0C91FF2661CC2B3B4440A05FABF78132C3E95781A40EEAB3C9D7A9955CC5B7DC"
+intel_dcap_url:      "https://registrationcenter-download.intel.com/akdlm/IRC_NAS/c8fc28e4-bfa9-4e1d-8dc5-502f5e6895a5/Intel_SGX_DCAP_for_Windows_v1.18.100.1.zip"
+intel_dcap_hash:     "CDB796B5D97744CE64E8B2B1DEC4EF95ABB2AAE00C74ACD38E70355A5235D06F"
 git_url:             "https://oejenkins.blob.core.windows.net/oejenkins/Git-2.31.1-64-bit.exe"
 git_hash:            "C43611EB73AD1F17F5C8CC82AE51C3041A2E7279E0197CCF5F739E9129CE426E"
 seven_zip_url:       "https://oejenkins.blob.core.windows.net/oejenkins/7z1806-x64.msi"
@@ -18,8 +18,8 @@ nuget_url:           "https://oejenkins.blob.core.windows.net/oejenkins/nuget-3.
 nuget_hash:          "2D4D38666E5C7D27EE487C60C9637BD9DD63795A117F0E0EDC68C55EE6DFB71F"
 devcon_package_url:  "https://oejenkins.blob.core.windows.net/oejenkins/devcon_package.cab"
 devcon_package_hash: "A38E409617FC89D0BA1224C31E42AF4344013FEA046D2248E4B9E03F67D5908A"
-az_dcap_client_url:  "https://www.nuget.org/api/v2/package/Microsoft.Azure.DCAP/1.11.2"
-az_dcap_client_hash: "434944D1968772283124419184210149B80722409929F6A93E2FB1ACED853ADF"
+az_dcap_client_url:  "https://www.nuget.org/api/v2/package/Microsoft.Azure.DCAP/1.12.1"
+az_dcap_client_hash: "253B2B427BFC75F22B3B6C48340518335F7EA044FAD06670B22F86017560AFD6"
 nsis_url:            "https://oejenkins.blob.core.windows.net/oejenkins/nsis-3.05-setup.exe"
 nsis_hash:           "1A3CC9401667547B9B9327A177B13485F7C59C2303D4B6183E7BC9E6C8D6BFDB"
 

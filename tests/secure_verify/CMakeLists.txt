@@ -74,4 +74,15 @@ if (BUILD_ENCLAVES)
             ${CMAKE_CURRENT_SOURCE_DIR}/data/tdx_quote -f tdx_quote
     WORKING_DIRECTORY $<TARGET_FILE_DIR:secure_verify>)
 
+  add_test(
+    NAME tests/secure_verify_tdx_v5_openssl
+    COMMAND $<TARGET_FILE:secure_verify> secure_verify_enc_openssl.signed
+            ${CMAKE_CURRENT_SOURCE_DIR}/data/tdx_quote_v5 -f tdx_quote_v5
+    WORKING_DIRECTORY $<TARGET_FILE_DIR:secure_verify>)
+  add_test(
+    NAME tests/secure_verify_tdx_v5_mbedtls
+    COMMAND $<TARGET_FILE:secure_verify> secure_verify_enc_mbedtls.signed
+            ${CMAKE_CURRENT_SOURCE_DIR}/data/tdx_quote_v5 -f tdx_quote_v5
+    WORKING_DIRECTORY $<TARGET_FILE_DIR:secure_verify>)
+
 endif ()

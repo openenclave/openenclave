@@ -42,5 +42,8 @@ if (BUILD_ENCLAVES)
     2 # 2 threads
     2) # 2 seconds
   set_enclave_tests_properties(tests/${PROJ} PROPERTIES SKIP_RETURN_CODE 2)
+  set_enclave_tests_properties(
+    tests/${PROJ} PROPERTIES ENVIRONMENT
+    "OE_USE_SGX=1;OE_INTEL_QVL_LOAD_POLICY=SGX_QL_PERSISTENT_QVE_MULTI_THREAD")
 
 endif ()

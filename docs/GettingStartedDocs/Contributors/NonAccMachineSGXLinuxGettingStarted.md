@@ -34,15 +34,15 @@ Then run the following command to install the dependency:
 ```bash
 ansible-playbook scripts/ansible/oe-contributors-setup.yml
 ```
-NOTE: The Ansible playbook commands from above will try to execute tasks with sudo rights. Make sure that the user running the playbooks has sudo rights, and if it uses a sudo password add the following extra parameter --ask-become-pass.
+NOTE: The Ansible playbook commands from above will try to execute tasks with sudo privileges. Make sure that the user running the playbooks has sudo privileges, and if it uses a sudo password add the following extra parameter `--ask-become-pass`.
 
 ## 3. Set up Intel DCAP Quote Provider Library (QPL):
 ### 3.1 Install Intel DCAP Quote Provider Library
-To install Intel DCAP Quote Provider Library, you can choose to install it from the Intel SGX repository (recommended), or install it manually with dpkg.
+To install Intel DCAP Quote Provider Library, you can choose to install it from the Intel SGX repository (recommended), or install it manually with `dpkg`.
 
 #### Option 1: Install Intel DCAP Quote Provider Library from the Intel SGX APT repository
 
-If you set up your environment by keeping following this documentation, then the Intel SGX APT source repository has been added. Directly run the following command to install it.
+If you set up your environment using this documentation, then the Intel SGX APT source repository has been added. Directly run the following command to install the package.
 
 ```bash
 sudo apt install libsgx-dcap-default-qpl
@@ -73,17 +73,17 @@ For Ubuntu 20.04 (code name [Focal Fossa](https://wiki.ubuntu.com/FocalFossa)), 
 
 In this document, we use Ubuntu 20.04 and Intel DCAP 1.16 as an example, so we will use [sgx_debian_local_repo.tgz](https://download.01.org/intel-sgx/sgx-dcap/1.16/linux/distro/ubuntu20.04-server/sgx_debian_local_repo.tgz)
 
-1. Download the package
+1. Download the package.
 ```bash
 cd ~
 wget https://download.01.org/intel-sgx/sgx-dcap/1.16/linux/distro/ubuntu20.04-server/sgx_debian_local_repo.tgz
 ```
-2. Extract the package
+2. Extract the package.
 ```bash
 tar xvzf sgx_debian_local_repo.tgz
 ```
 
-3. Install the package
+3. Install the package.
 ```bash
 sudo dpkg -i sgx_debian_local_repo/pool/main/libs/libsgx-dcap-default-qpl/libsgx-dcap-default-qpl_1.16.100.2-focal1_amd64.deb
 ```
@@ -113,66 +113,67 @@ dpkg --list | grep az-dcap-client
 
 If you don't have the Azure DCAP Client installed previously, please skip the content below.
 
-In most cases the Azure version of libdcap_quoteprov.so is located in /usr/lib. Check your path before changing. Here we use /usr/lib as an example.
+In most cases the Azure version of libdcap_quoteprov.so is located in /usr/lib. Check your path before changing. Here we use `/usr/lib` as an example.
 
 ```bash
 sudo mv /usr/lib/libdcap_quoteprov.so /usr/lib/libdcap_quoteprov.so.azure
 ```
 
-Otherwise the Azure one might still get used because $PATH might have /usr/lib before the path /usr/lib/x86_64-linux-gnu with the Intel version.
+Otherwise the Azure one might still get used because `$PATH` might have `/usr/lib` before the path `/usr/lib/x86_64-linux-gnu` with the Intel version.
 
 ### 3.3 Configure the QPL
-Edit the file /etc/sgx_default_qcnl.conf. To accept insecure HTTPS cert, set the option USE_SECURE_CERT to FALSE as we will use a local caching service which doesn't have a secure cert.
+Edit the file `/etc/sgx_default_qcnl.conf`. To accept insecure HTTPS cert, set the option `use_secure_cert` to `false` as we will use a local caching service which doesn't have a secure cert.
 
 ```bash
-USE_SECURE_CERT=FALSE
+ // To accept insecure HTTPS certificate, set this option to false
+ ,"use_secure_cert": false
 ```
 
 Note:
-The cert mentioned in /etc/sgx_default_qcnl.conf is just for a regular TLS handshaking between the QPL and the PCCS. That cert itself has nothing to do with attestation process. It has no relationship with the certs (e.g., Provisioning Certification Key certs (PCK certs)) that being used in the attestation.
+The cert mentioned in `/etc/sgx_default_qcnl.conf` is just for a regular TLS handshaking between the QPL and the PCCS. That cert itself has nothing to do with attestation process. It has no relationship with the certs (e.g., Provisioning Certification Key certs (PCK certs)) that are being used in the attestation.
 
-Setting "USE_SECURE_CERT=FALSE" doesn't mean your attestation process is insecure. It just means QPL will accept a self-signed cert for TLS handshaking with PCCS. A CA-signed/self-signed cert might be a better word than a "secure/insecure" cert. But that's how exactly the /etc/sgx_default_qcnl.conf describes it. So we just document it accordingly.
+Setting `"use_secure_cert": false` doesn't mean your attestation process is insecure. It just means QPL will accept a self-signed cert for the TLS handshake with PCCS. A CA-signed/self-signed cert might be a better word than a "secure/insecure" cert. But that's exactly how the `/etc/sgx_default_qcnl.conf` describes it so we document it accordingly.
 
 ## 4 Set up local Provisioning Certificate Caching Service (PCCS)
 ### 4.1 Register an Intel developer account and get a subscription key
 
-If you don't have an Intel account, go to https://www.intel.com to register one by using the button at the corner.
+If you don't have an Intel account, go to [https://www.intel.com](https://www.intel.com) to register one by using the button at the corner.
 
 ![Intel Account](/docs/GettingStartedDocs/images/intel-account.png)
 
 Sign in with your Intel account and then go to
-https://api.portal.trustedservices.intel.com/provisioning-certification
+[https://api.portal.trustedservices.intel.com/provisioning-certification](https://api.portal.trustedservices.intel.com/provisioning-certification)
 
-You shall see the screen like this:
+You should see a screen similar to the following:
 
 ![Subscribe1](/docs/GettingStartedDocs/images/subscribe1.png)
 
-Click the subscribe button then you shall see a page like this.
+Next, click the subscribe button. You should see a screen similar to the following:
 
 ![Subscribe2](/docs/GettingStartedDocs/images/subscribe2.png)
 
-Then click the subscribe button again. You shall see your subscription information.
+Click the subscribe button again. You should be presented with your subscription information.
 
 ![Primary Key](/docs/GettingStartedDocs/images/primary-key.png)
 
-Get the value of your primary key, which will be used during PCCS service bring up.
+Save the value of your primary key, which will be used during PCCS service bring up.
 
 ### 4.2 Install and Config PCCS
 
-Install nodejs and npm if you haven't
+Install nodejs and npm if you haven't already.
 
 ```bash
-curl -sL https://deb.nodesource.com/setup_13.x | sudo -E bash
+curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash
 sudo apt-get install -y nodejs
 ```
 
-To install PCCS, you can choose to install it from the Intel SGX repository (recommended), or install it manually with dpkg.
+To install PCCS, you can choose to install it from the Intel SGX repository (recommended), or install it manually with `dpkg`.
 
 #### Option 1: Install PCCS from the Intel SGX repository
 ```bash
 sudo apt install sgx-dcap-pccs
 ```
-NOTE: In case the Intel SGX APT source repository is not added to your system. See how to add it in Section 3.1.
+NOTE: In case the Intel SGX APT source repository is not added to your system, refer to [Section 3.1 for steps to add it](#option-1-install-intel-dcap-quote-provider-library-from-the-intel-sgx-apt-repository)
 
 #### Option 2: Install PCCS with dpkg manually
 
@@ -203,28 +204,40 @@ You will be asked to finish the configuration during the installation process.
 ![Config](/docs/GettingStartedDocs/images/config.png)
 
 Recommended config:
-- HTTPS listening port: use default value.
-- Set the PCCS service to accept local connections only: use default value.
-- Set your Intel Provisioning Certificate Service(PCS) API key: use the primary key of your subscription.
-- Choose caching fill method: use default value.
-- Set PCCS server administrator password: set your password
-- Set PCCS server user password: set your password
-- Do you want to generate insecure HTTPS key and cert for PCCS service?: Use default value and then in the following questions type in your info.
-
-You can skip the following two items.
-- A challenge password []:
-- An optional company name []:
-
+- `HTTPS listening port:` 
+    - Use default value.
+- `Set the PCCS service to accept local connections only:`
+    - Use default value.
+- `Set your Intel Provisioning Certificate Service(PCS) API key:`
+    - Use the primary key of your subscription.
+- `Choose caching fill method:`
+    - Use default value.
+- `Set PCCS server administrator password:`
+    - Set your password.
+- `Set PCCS server user password:`
+    - Set your password.
+- `Do you want to generate insecure HTTPS key and cert for PCCS service?:`
+    - Use default value, then type in your info at the following prompts.
+- You can skip the following two items.
+    - `A challenge password []:`
+    - `An optional company name []:`
+  
 Then check the status of your service.
 ```bash
 pm2 status
 ```
+
+NOTE: If the `pm2` command is not found, you may need to install `pm2` globally by running the following command.
+```bash
+sudo npm i -g pm2
+```
+
 You should be able to see the service is running.
 ![nodejs](/docs/GettingStartedDocs/images/nodejs.png)
 
-Run the following command to verify if it can actually fetch the root CA CRL from the Intel PCK service
+Run the following command to verify if it can actually fetch the root CA CRL from the Intel PCK service.
 ```bash
-curl --noproxy "*" -v -k -G "https://localhost:8081/sgx/certification/v3/rootcacrl"
+curl --noproxy "*" -v -k -G "https://localhost:8081/sgx/certification/v4/rootcacrl"
 ```
 
 To learn more about PCCS, please refer to the [PCCS GitHub repository](https://github.com/intel/SGXDataCenterAttestationPrimitives/tree/master/QuoteGeneration/pccs).
@@ -240,7 +253,7 @@ mkdir build
 cd build
 ```
 
-Then run `cmake` to configure the build and generate the Makefiles, and then build by running `make` or 'ninja' depending:
+Then run `cmake` to configure the build and generate the Makefiles, and then build by running `make` or `ninja` accordingly
 
 ```bash
 cmake -G "Unix Makefiles" ..
@@ -286,18 +299,18 @@ Total Test time (real) =  83.61 sec
 
 A clean pass of the above unit tests is an indication that your Open Enclave setup was successful.
 
-Above remote attestation tests/samples will only succeed if using a production CPU. 
-If you want remote attestation tests/samples to succeed on the pre-production CPU, you should follow below steps to switch backend provisioning server to pre-production.
+The remote attestation tests/samples above will only succeed when using a production CPU. 
+If you want remote attestation tests/samples to succeed on a pre-production CPU, refer to the following steps to switch the back-end provisioning server to pre-production.
 
 ## 6. (Optional) Verify OE remote attestation on pre-production platforms
 You will need to make some changes in Step 4.1 and 5 above when using the pre-production platforms.
 
 ### 6.1 Get SBX (Sand Box) primary key for Provisioning Certificate Caching Service (PCCS) in Step 4.1
-Get the SBX primary key from https://sbx.api.portal.trustedservices.intel.com/provisioning-certification.
-The steps of installing and configuring PCCS are similar to Step 4.2.
+Get the SBX primary key from [https://sbx.api.portal.trustedservices.intel.com/provisioning-certification](https://sbx.api.portal.trustedservices.intel.com/provisioning-certification).
+The steps for installing and configuring PCCS are similar to [Step 4.2](#42-install-and-config-pccs).
 
-Please check PCCS configuration file (config/production-0.json)
-- uri - The URL needs to be set as https://sbx.api.trustedservices.intel.com/sgx/certification/v2/.
+Please check PCCS configuration file (`config/production-0.json`)
+- uri - The URL needs to be set as `https://sbx.api.trustedservices.intel.com/sgx/certification/v2/`.
 - ApiKey - The API key needs to be set as SBX primary key.
 
 ### 6.2 Replace the Intel root certificate's public key value before Step 5
