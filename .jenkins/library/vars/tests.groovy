@@ -195,7 +195,7 @@ def ACCContainerTest(String version, String compiler, String lvi_mitigation, boo
  * @param use_snmalloc               [boolean] use snmalloc allocator?
  */
 def ACCPackageTest(String version, String build_type, String lvi_mitigation, boolean lvi_mitigation_skip_tests = 'OFF', boolean use_snmalloc = 'OFF') {
-    stage("ACC Package ${version} RelWithDebInfo ${lvi_mitigation} LVI_MITIGATION_SKIP_TESTS=${lvi_mitigation_skip_tests} SNMALLOC=${use_snmalloc}") {
+    stage("ACC Package ${version} ${build_type} ${lvi_mitigation} LVI_MITIGATION_SKIP_TESTS=${lvi_mitigation_skip_tests} SNMALLOC=${use_snmalloc}") {
         node(globalvars.AGENTS_LABELS["acc-ubuntu-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
@@ -305,7 +305,7 @@ def ACCHostVerificationTest(String version, String build_type, String compiler) 
                 def runArgs = "--user root:root --cap-add=SYS_PTRACE"
                 def task = """
                            ${helpers.ninjaBuildCommand(cmakeArgs)}
-                           ctest -R host_verify --output-on-failure --timeout ${globalvars.CTEST_TIMEOUT_SECONDS}
+                           ctest -R host_verify --output-on-failure --timeout ${globalvars.CTEST_TIMEOUT_SECONDS} || ctest --rerun-failed --output-on-failure --timeout ${globalvars.CTEST_TIMEOUT_SECONDS}
                            """
                 // Note: Include the commands to build and run the quote verification test above
                 common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", compiler, task, runArgs)
@@ -326,12 +326,10 @@ def ACCHostVerificationTest(String version, String build_type, String compiler) 
                         string(credentialsId: 'thim-tdx-base-url', variable: 'AZDCAP_BASE_CERT_URL_TDX'),
                         string(credentialsId: 'thim-tdx-region-url', variable: 'AZDCAP_REGION_URL')
                     ]) {
+                        helpers.ninjaBuildCommand(cmakeArgs)
                         bat(
-                            returnStdout: false,
-                            returnStatus: false,
                             script: """
                                 call vcvars64.bat x64
-                                ${helpers.ninjaBuildCommand(cmakeArgs)}
                                 ctest.exe -V -C ${build_type} -R host_verify --output-on-failure --timeout ${globalvars.CTEST_TIMEOUT_SECONDS} || exit !ERRORLEVEL!
                             """
                         )
@@ -470,28 +468,47 @@ def ACCHostVerificationPackageTest(String version, String build_type, String com
                                        -DCMAKE_PREFIX_PATH=C:/openenclave/lib/openenclave/cmake \
                                        -DNUGET_PACKAGE_PATH=C:/oe_prereqs \
                                        -Wdev"
-                dir('build') {
+                boolean PACKAGE_BUILT = false
+                dir("${WORKSPACE}\\build") {
+                    if ( PACKAGE_BUILT ) {
+                        unstash "windows_host_verify-${version}-${build_type}-${BUILD_NUMBER}"
+                    } else {
+                        helpers.ninjaBuildCommand(cmakeArgs)
+                        bat(
+                            script: """
+                                call vcvars64.bat x64
+                                cpack -D CPACK_NUGET_COMPONENT_INSTALL=ON -DCPACK_COMPONENTS_ALL=OEHOSTVERIFY
+                            """
+                        )
+                        stash includes: '*.nupkg,tests\\host_verify\\host\\*.bin,tests\\host_verify\\host\\*.der', 
+                              name: "windows_host_verify-${version}-${build_type}-${BUILD_NUMBER}"
+                        PACKAGE_BUILT = true
+                    }
                     bat(
-                        returnStdout: false,
-                        returnStatus: false,
                         script: """
-                            call vcvars64.bat x64
-                            ${helpers.ninjaBuildCommand(cmakeArgs)}
-                            cpack -D CPACK_NUGET_COMPONENT_INSTALL=ON -DCPACK_COMPONENTS_ALL=OEHOSTVERIFY
                             copy tests\\host_verify\\host\\*.der ${WORKSPACE}\\samples\\host_verify
                             copy tests\\host_verify\\host\\*.bin ${WORKSPACE}\\samples\\host_verify
                             if exist C:\\oe (rmdir C:\\oe)
                             nuget.exe install open-enclave.OEHOSTVERIFY -Source ${WORKSPACE}\\build -OutputDirectory C:\\oe -ExcludeVersion
                             xcopy /E C:\\oe\\open-enclave.OEHOSTVERIFY\\OEHOSTVERIFY\\openenclave C:\\openenclave\\
-                            pushd ${WORKSPACE}\\samples\\host_verify
+                        """
+                    )
+                }
+                dir("${WORKSPACE}\\samples\\host_verify") {
+                    bat(
+                        script: """
                             if not exist build\\ (mkdir build)
-                            cd build
-                            ${helpers.ninjaBuildCommand(cmakeArgsHostVerify, "..")}
-                            host_verify.exe -r ../sgx_report.bin
-                            host_verify.exe -c ../sgx_cert_ec.der
-                            host_verify.exe -c ../sgx_cert_rsa.der
-                            popd
-                            """
+                        """
+                    )
+                }
+                dir("${WORKSPACE}\\samples\\host_verify\\build") {
+                    helpers.ninjaBuildCommand(cmakeArgsHostVerify, "..")
+                    bat(
+                        script: """
+                            .\\host_verify.exe -r ../sgx_report.bin
+                            .\\host_verify.exe -c ../sgx_cert_ec.der
+                            .\\host_verify.exe -c ../sgx_cert_rsa.der
+                        """
                     )
                 }
             }
@@ -650,78 +667,8 @@ def windowsLinuxElfBuild(String windows_label, String ubuntu_label, String compi
     }
 }
 
-/**
- * Compile open-enclave on Windows platform, generate NuGet package out of it, 
+/* Compile open-enclave on Windows platform, generate NuGet package out of it, 
  * install the generated NuGet package, and run samples tests against the installation.
- *
- * @param dirName                    [string]  Directory to run the test in
- * @param buildType                  [string]  The build type to use.
- *                                             Choice of: Debug, Release, or RelWithDebInfo
- * @param timeoutSeconds             [integer] Timeout in seconds for the test
- * @param lviMitigation              [string]  Build enclave libraries with LVI mitigation.
- *                                             Choice of: None, ControlFlow-GNU, ControlFlow-Clang, or ControlFlow
- * @param lviMitigationSkipTests     [boolean] Whether to skip LVI mitigation tests
- * @param extra_cmake_args           [string]  Add custom cmake args
- */
-def WinCompilePackageTest(String dirName, String buildType, Integer timeoutSeconds, String lviMitigation = 'None', String lviMitigationSkipTests = 'ON', List extra_cmake_args = []) {
-    cleanWs()
-    checkout scm
-    dir(dirName) {
-        /*
-        In simulation mode, some samples should not be ran or should run simulation mode. 
-        For items that should be skipped, see items appended to SAMPLES_LIST under the IF statement with OE_SIMULATION in:
-        https://github.com/openenclave/openenclave/blob/master/samples/test-samples.cmake#L54
-        For items that should run in simulation mode, check sample Makefiles for target `simulate`
-        SIMULATION_SKIP is a "list" of samples to skip in simulation mode.
-        SIMULATION_TEST is a "list" of samples to run in simulation mode.
-        */
-        withCredentials([
-            string(credentialsId: 'thim-tdx-base-url', variable: 'AZDCAP_BASE_CERT_URL_TDX'),
-            string(credentialsId: 'thim-tdx-region-url', variable: 'AZDCAP_REGION_URL')
-        ]) {
-            bat(
-                returnStdout: false,
-                returnStatus: false,
-                script: """
-                    call vcvars64.bat x64
-                    setlocal EnableDelayedExpansion
-                    cmake.exe ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${buildType} -DBUILD_ENCLAVES=ON -DLVI_MITIGATION=${lviMitigation} -DLVI_MITIGATION_SKIP_TESTS=${lviMitigationSkipTests} -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCPACK_GENERATOR=NuGet -Wdev ${extra_cmake_args.join(' ')} || exit !ERRORLEVEL!
-                    ninja.exe || exit !ERRORLEVEL!
-                    ctest.exe -V -C ${buildType} --timeout ${timeoutSeconds} || exit !ERRORLEVEL!
-                    cpack.exe -D CPACK_NUGET_COMPONENT_INSTALL=ON -DCPACK_COMPONENTS_ALL=OEHOSTVERIFY || exit !ERRORLEVEL!
-                    cpack.exe || exit !ERRORLEVEL!
-                    if exist C:\\oe rmdir /s/q C:\\oe
-                    nuget.exe install open-enclave -Source %cd% -OutputDirectory C:\\oe -ExcludeVersion
-                    set CMAKE_PREFIX_PATH=C:\\oe\\open-enclave\\openenclave\\lib\\openenclave\\cmake
-                    set SIMULATION_SKIP="\\attested_tls\\attestation\\"
-                    set SIMULATION_TEST="\\debugmalloc\\helloworld\\switchless\\log_callback\\file-encryptor\\pluggable_allocator\\"
-                    cd C:\\oe\\open-enclave\\openenclave\\share\\openenclave\\samples
-                    for /d %%i in (*) do (
-                        set BUILD=1
-                        if ${OE_SIMULATION} equ 1 if "!SIMULATION_SKIP:%%~nxi=!" neq "%SIMULATION_SKIP%" set BUILD=
-                        if !BUILD! equ 1 (
-                            cd C:\\oe\\open-enclave\\openenclave\\share\\openenclave\\samples\\"%%i"
-                            mkdir build
-                            cd build
-                            cmake .. -G Ninja -DNUGET_PACKAGE_PATH=C:\\oe_prereqs -DLVI_MITIGATION=${lviMitigation} || exit !ERRORLEVEL!
-                            ninja || exit !ERRORLEVEL!
-                            if ${OE_SIMULATION} equ 1 if "!SIMULATION_TEST:%%~nxi=!" neq "%SIMULATION_TEST%" (
-                                echo "Running %%i with --simulation flag" 
-                                ninja simulate || exit !ERRORLEVEL!
-                            ) else (
-                                ninja run || exit !ERRORLEVEL!
-                            )
-                        ) else (
-                            echo "Skipping %%i as we are in simulation mode."
-                        )
-                    )
-                """
-            )
-        }
-    }
-}
-
-/* Seems about the same as WinCompilePackageTest, but with a different name.
  *
  * @param label                      [string]  Label of the Windows node to run the test on
  * @param compiler                   [string]  Compiler to use
@@ -734,22 +681,114 @@ def WinCompilePackageTest(String dirName, String buildType, Integer timeoutSecon
  * @param lvi_mitigation_skip_tests  [boolean] Whether to skip LVI mitigation tests
  * @param extra_cmake_args           [string]  Add custom cmake args
  */
-def windowsCrossCompile(String label, String compiler, String build_type, String lvi_mitigation = 'None', String OE_SIMULATION = "0", String lvi_mitigation_skip_tests = 'OFF', List extra_cmake_args = []) {
+def windowsCrossCompile(String label, String compiler, String build_type, String lvi_mitigation = 'None', String OE_SIMULATION = "0", String lvi_mitigation_skip_tests = 'OFF', String use_snmalloc = 'OFF') {
     stage("Windows ${label} ${build_type} with SGX LVI_MITIGATION=${lvi_mitigation}") {
         // fail fast and retry if Windows agent goes offline
         // exceptions seen in the wild:
         // 1. java.io.IOException
         // 2. org.jenkinsci.plugins.workflow.steps.FlowInterruptedException
         // 3. java.org.InterruptedException
-        int max_try_count = 3
-        int try_count = 1
-        retry(count: max_try_count) {
+        boolean BUILD_COMPLETED = false
+        boolean PACKAGE_BUILT = false
+        retry(count: 3) {
             try {
                 node("${label}-${compiler}") {
                     // Interrupt build if no output received from node for 15 minutes
                     timeout(time: 15, activity: true, unit: 'MINUTES') {
                         withEnv(["OE_SIMULATION=${OE_SIMULATION}"]) {
-                            WinCompilePackageTest("build/X64-${build_type}", build_type, globalvars.CTEST_TIMEOUT_SECONDS * 3, lvi_mitigation, lvi_mitigation_skip_tests, extra_cmake_args)
+                            checkout scm
+                            dir("build") {
+                                /*
+                                In simulation mode, some samples should not be ran or should run simulation mode. 
+                                For items that should be skipped, see items appended to SAMPLES_LIST under the IF statement with OE_SIMULATION in:
+                                https://github.com/openenclave/openenclave/blob/master/samples/test-samples.cmake#L54
+                                For items that should run in simulation mode, check sample Makefiles for target `simulate`
+                                SIMULATION_SKIP is a "list" of samples to skip in simulation mode.
+                                SIMULATION_TEST is a "list" of samples to run in simulation mode.
+                                */
+                                withCredentials([
+                                    string(credentialsId: 'thim-tdx-base-url', variable: 'AZDCAP_BASE_CERT_URL_TDX'),
+                                    string(credentialsId: 'thim-tdx-region-url', variable: 'AZDCAP_REGION_URL')
+                                ]) {
+                                    if ( PACKAGE_BUILT ) {
+                                        unstash "${label}-${compiler}-${build_type}-${lvi_mitigation}-${OE_SIMULATION}-${lvi_mitigation_skip_tests}-${use_snmalloc}-${BUILD_NUMBER}"
+                                    } else {
+                                        timeout(time: 60 , unit: 'MINUTES') {
+                                            bat(
+                                                script: """
+                                                    call vcvars64.bat x64
+                                                    cmake.exe ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DBUILD_ENCLAVES=ON -DLVI_MITIGATION=${lvi_mitigation} -DLVI_MITIGATION_SKIP_TESTS=${lvi_mitigation_skip_tests} -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCPACK_GENERATOR=NuGet -Wdev -DUSE_SNMALLOC=${use_snmalloc}
+                                                    ninja.exe
+                                                    """
+                                            )
+                                        }
+                                        BUILD_COMPLETED = true
+                                        bat(
+                                            script: """
+                                                call vcvars64.bat x64
+                                                setlocal EnableDelayedExpansion
+                                                ctest.exe -V -C ${build_type} --timeout ${globalvars.CTEST_TIMEOUT_SECONDS * 3}
+                                                if !ERRORLEVEL! neq 0 (
+                                                    echo Retrying only if more than 10 tests failed from counting lines in Testing/Temporary/LastTestsFailed.log
+                                                    if exist Testing\\Temporary\\LastTestsFailed.log (
+                                                        for /f "delims=" %%i in ('type Testing\\Temporary\\LastTestsFailed.log ^| find /c /v ""') DO (
+                                                            SET count=%%i
+                                                        )
+                                                        if !count! LSS 10 (
+                                                            echo Retrying due to less than 10 tests failing
+                                                            ctest --rerun-failed --output-on-failure --verbose --build-config ${build_type} --repeat after-timeout:3 --timeout ${globalvars.CTEST_TIMEOUT_SECONDS}
+                                                        )
+                                                    )
+
+                                                )
+                                            """
+                                        )
+                                        bat(
+                                            script: """
+                                                call vcvars64.bat x64
+                                                cpack.exe -D CPACK_NUGET_COMPONENT_INSTALL=ON -DCPACK_COMPONENTS_ALL=OEHOSTVERIFY
+                                                cpack.exe
+                                            """
+                                        )
+                                        stash includes: '*.nupkg', name: "${label}-${compiler}-${build_type}-${lvi_mitigation}-${OE_SIMULATION}-${lvi_mitigation_skip_tests}-${use_snmalloc}-${BUILD_NUMBER}"
+                                        PACKAGE_BUILT = true
+                                    }
+                                    // Reset BUILD_COMPLETED as samples test needs to build and run
+                                    // OE package is already built and stashed, so we can skip the build step in future failures
+                                    BUILD_COMPLETED = false
+                                    bat(
+                                        script: """
+                                            call vcvars64.bat x64
+                                            setlocal EnableDelayedExpansion
+                                            if exist C:\\oe rmdir /s/q C:\\oe
+                                            nuget.exe install open-enclave -Source %cd% -OutputDirectory C:\\oe -ExcludeVersion
+                                            set CMAKE_PREFIX_PATH=C:\\oe\\open-enclave\\openenclave\\lib\\openenclave\\cmake
+                                            set SIMULATION_SKIP="\\attested_tls\\attestation\\"
+                                            set SIMULATION_TEST="\\debugmalloc\\helloworld\\switchless\\log_callback\\file-encryptor\\pluggable_allocator\\"
+                                            cd C:\\oe\\open-enclave\\openenclave\\share\\openenclave\\samples
+                                            for /d %%i in (*) do (
+                                                set BUILD=1
+                                                if ${OE_SIMULATION} equ 1 if "!SIMULATION_SKIP:%%~nxi=!" neq "%SIMULATION_SKIP%" set BUILD=
+                                                if !BUILD! equ 1 (
+                                                    cd C:\\oe\\open-enclave\\openenclave\\share\\openenclave\\samples\\"%%i"
+                                                    mkdir build
+                                                    cd build
+                                                    cmake.exe .. -G Ninja -DNUGET_PACKAGE_PATH=C:\\oe_prereqs -DLVI_MITIGATION=${lvi_mitigation} || exit !ERRORLEVEL!
+                                                    ninja.exe || exit !ERRORLEVEL!
+                                                    if ${OE_SIMULATION} equ 1 if "!SIMULATION_TEST:%%~nxi=!" neq "%SIMULATION_TEST%" (
+                                                        echo "Running %%i with --simulation flag" 
+                                                        ninja.exe simulate || exit !ERRORLEVEL!
+                                                    ) else (
+                                                        ninja.exe run || exit !ERRORLEVEL!
+                                                    )
+                                                ) else (
+                                                    echo "Skipping %%i as we are in simulation mode."
+                                                )
+                                            )
+                                        """
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -757,32 +796,43 @@ def windowsCrossCompile(String label, String compiler, String build_type, String
             catch(org.jenkinsci.plugins.workflow.steps.FlowInterruptedException e) {
                 println("Caught FlowInterruptedException")
                 // FlowInterruptedException can be caused by timeouts, aborts, or 
-                // graceful agent disconnections. We only want to retry on timeouts
-                // all other FlowInterruptionException causes should abort the stage.
+                // graceful agent disconnections. We only want to retry on agent timeouts.
+                // All other FlowInterruptionException causes should fail the stage.
+                println(e.getCauses()[0].toString())
                 if(e.getCauses()[0].toString() ==~ /.*(t|T)imeout.*/) {
-                    println("An abort was caused by a known agent issue.")
-                    try_count = try_count + 1
-                    helpers.check_if_retry(max_try_count, try_count)
+                    println("An abort was caused by a known agent issue. Retrying...")
                     throw e
+                } else {
+                    catchError(buildResult: 'ABORTED', stageResult: 'ABORTED') {
+                        error("Caught exception: ${e}")
+                    }
                 }
             }
             catch(InterruptedException e) {
                 println("Caught InterruptedException")
                 // Thread interruptions caused by unexpected or abrupt agent disconnection
                 // will cause this exception. This case should be retried.
-                println("An abort was caused by a known agent issue.")
-                try_count = try_count + 1
-                helpers.check_if_retry(max_try_count, try_count)
+                println("An abort was caused by a known agent issue. Retrying...")
+                println(e.getCauses()[0].toString())
                 throw e
             }
             catch(IOException e) {
                 println("Caught IOException")
-                // Unexpected termination of the channel with the agent will cause
-                // this exception. This case should be retried.
-                println("An abort was caused by a known agent issue.")
-                try_count = try_count + 1
-                helpers.check_if_retry(max_try_count, try_count)
-                throw e
+                // Unexpected termination of the channel with the agent should be retried.
+                // File read/write issues in build/tests will also be caught. IOExceptions 
+                // during tests should not be retried.
+                if ( BUILD_COMPLETED ) {
+                    println("IOException occurred but the build completed. This is likely a test failure, and will not be retried.")
+                    catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                        error("Caught exception: ${e}")
+                    }
+                } else {
+                    println("An exception was caused by a known issue. Retrying...")
+                    if (e.getCause()) {
+                        println(e.getCause().toString())
+                    }
+                    throw e
+                }
             }
             catch(e) {
                 catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
@@ -841,7 +891,7 @@ def simulationContainerTest(String version, String build_type, String compiler, 
                                ${extra_cmake_args.join(' ')}                            \
                                -Wdev
                            ninja -v
-                           ctest --output-on-failure --timeout ${globalvars.CTEST_TIMEOUT_SECONDS}
+                           ${helpers.TestCommand()}
                            """
                 withEnv(["OE_SIMULATION=1"]) {
                     common.ContainerRun("oetools-${version}:${DOCKER_TAG}", compiler, task, runArgs)

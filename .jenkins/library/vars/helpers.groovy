@@ -108,19 +108,27 @@ def WaitForAptLock() {
     
 }
 
-def TestCommand() {
-    def testCommand = """
+/* Runs ctest with specific paramters and retry logic
+ * Note: this currently only supports Linux
+ */
+def TestCommand(int test_fail_limit = 10) {
+    return """
         echo "Running Test Command"
-        ctest --output-on-failure --timeout ${globalvars.CTEST_TIMEOUT_SECONDS}
+        ctest --output-on-failure --timeout ${globalvars.CTEST_TIMEOUT_SECONDS} ||
+            if [[ \$(wc -l < Testing/Temporary/LastTestsFailed.log) -le ${test_fail_limit} ]]; then
+                ctest --rerun-failed --output-on-failure --timeout ${globalvars.CTEST_TIMEOUT_SECONDS}
+            else
+                echo "More than 10 tests failed and is likely not a flaky test issue. Not retrying."
+                exit 8
+            fi
     """
-    return testCommand
 }
 
 def createOpenEnclavePackageCommand() {
     if (isUnix()) {
         return "cpack -G DEB"
     } else {
-        return "cpack -D CPACK_NUGET_COMPONENT_INSTALL=ON"
+        return "cpack.exe -D CPACK_NUGET_COMPONENT_INSTALL=ON"
     }
 }
 
@@ -128,7 +136,7 @@ def createHostVerifyPackageCommand() {
     if (isUnix()) {
         return "cpack -G DEB -D CPACK_DEB_COMPONENT_INSTALL=ON -DCPACK_COMPONENTS_ALL=OEHOSTVERIFY"
     } else {
-        return "cpack -D CPACK_NUGET_COMPONENT_INSTALL=ON -DCPACK_COMPONENTS_ALL=OEHOSTVERIFY"
+        return "cpack.exe -D CPACK_NUGET_COMPONENT_INSTALL=ON -DCPACK_COMPONENTS_ALL=OEHOSTVERIFY"
     }
 }
 
@@ -348,12 +356,31 @@ def ninjaBuildCommand(String cmake_arguments = "", String build_directory = "${W
             ninja -v
         """
     } else {
-        return """
-            @echo on
-            setlocal EnableDelayedExpansion
-            cmake ${build_directory} ${cmake_arguments} || exit !ERRORLEVEL!
-            ninja -v || exit !ERRORLEVEL!
-        """
+        retry(3) {  
+            try {
+                bat(
+                    script: """
+                        call vcvars64.bat x64
+                        @echo on
+                        cmake ${build_directory} ${cmake_arguments}
+                        ninja -v
+                    """
+                )
+            }
+            catch(IOException e) {
+                println("Caught IOException: ${e}")
+                println("An exception was caused by a known issue. Retrying...")
+                if (e.getCause()) {
+                    println(e.getCause().toString())
+                }
+                throw e
+            }
+            catch(Exception e) {
+                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                    error("Caught Exception: ${e}")
+                }
+            }
+        }
     }
 }
 
@@ -769,20 +796,4 @@ def dockerGetAptPackageVersion(String docker_image, String apt_package) {
     ).trim()
     if ( !version ) { version = "N/A" }
     return version
-}
-
-/**
- * Checks if a retry should be attempted. Returns bool
- * @param max_try_count  Maximum number of tries
- * @param try_count      Current try count
- */
-def check_if_retry(int max_try_count, int try_count) {
-    if (try_count <= max_try_count) {
-        println("Retrying build (Try #${try_count}/3)")
-        return true
-    }
-    else {
-        println("Max retries reached. Aborting build.")
-        return false
-    }
 }

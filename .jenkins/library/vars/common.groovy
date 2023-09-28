@@ -18,14 +18,14 @@ String dockerImage(String tag, String dockerfile = ".jenkins/Dockerfile", String
 }
 
 def ContainerRun(String imageName, String compiler, String task, String runArgs="", registryUrl="https://oejenkinscidockerregistry.azurecr.io", registryName="oejenkinscidockerregistry") {
-    exec_with_retry(3,60){
-        docker.withRegistry(registryUrl, registryName) {
-            def image = docker.image(imageName)
+    docker.withRegistry(registryUrl, registryName) {
+        def image = docker.image(imageName)
+        retry(3) {
             image.pull()
-            image.inside(runArgs) {
-                dir("${WORKSPACE}/build") {
-                    Run(compiler, task)
-                }
+        }
+        image.inside(runArgs) {
+            dir("${WORKSPACE}/build") {
+                Run(compiler, task)
             }
         }
     }
