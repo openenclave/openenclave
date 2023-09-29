@@ -49,7 +49,7 @@ endif ()
 enclave_include_directories(crypto_mbedtls_enc PRIVATE
                             ${CMAKE_CURRENT_BINARY_DIR})
 
-enclave_link_libraries(crypto_mbedtls_enc oehostfs)
+enclave_link_libraries(crypto_mbedtls_enc)
 
 if (BUILD_OPENSSL)
   add_enclave(

@@ -161,11 +161,13 @@ void test(char* abspath)
         goto done;
     if (mount("/", "/", OE_HOST_FILE_SYSTEM, 0, NULL))
         goto done;
+#endif
+    TestAll(abspath);
 
+#if !defined(CODE_COVERAGE) && defined(OE_USE_OPENSSL)
 done:
     umount("/");
 #endif
-    TestAll(abspath);
 }
 
 OE_SET_ENCLAVE_SGX(
