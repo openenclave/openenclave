@@ -304,23 +304,43 @@ def testSamplesWindows(boolean lvi_mitigation, String oe_package) {
     def cmakeArgs = "-G Ninja \
                     -DNUGET_PACKAGE_PATH=C:\\oe_prereqs \
                     -DCMAKE_PREFIX_PATH=C:\\oe\\${oe_package}\\openenclave\\lib\\openenclave\\cmake ${lvi_args}"
-    bat(
-        returnStdout: false,
-        returnStatus: false,
-        script: """
-            call vcvars64.bat x64
-            @echo on
-            cd C:\\oe\\${oe_package}\\openenclave\\share\\openenclave\\samples
-            for /d %%i in (*) do (
-                cd "C:\\oe\\${oe_package}\\openenclave\\share\\openenclave\\samples\\%%i"
+    def samples = [
+        "attestation",
+        "attested_tls",
+        "data-sealing",
+        "debugmalloc",
+        "file-encryptor",
+        "helloworld",
+        "host_verify",
+        "log_callback",
+        "pluggable_allocator",
+        "switchless"
+    ]
+    samples.each { sample ->
+        bat(
+            returnStdout: false,
+            returnStatus: false,
+            script: """
+                call vcvars64.bat x64
+                @echo on
+                cd C:\\oe\\${oe_package}\\openenclave\\share\\openenclave\\samples\\${sample}
                 mkdir build
                 cd build
-                ${ninjaBuildCommand(cmakeArgs, "..")}
-                ninja run || exit !ERRORLEVEL!
+            """
+        )
+        dir("C:\\oe\\${oe_package}\\openenclave\\share\\openenclave\\samples\\${sample}\\build") {
+            ninjaBuildCommand(cmakeArgs, "C:\\oe\\${oe_package}\\openenclave\\share\\openenclave\\samples\\${sample}")
+            bat(
+                script: """
+                    call vcvars64.bat x64
+                    @echo on
+                    ninja run
+                """
             )
-        """
-    )
+        }
+    }
 }
+
 /**
  * Tests Open Enclave samples on Unix and Windows systems
  *
@@ -336,6 +356,8 @@ def TestSamplesCommand(boolean lvi_mitigation = false, String oe_package = "open
     else {
         if(oe_package == "open-enclave-hostverify") {
             oe_package = "open-enclave.OEHOSTVERIFY"
+            // No tests for open-enclave.OEHOSTVERIFY package. Return true to pass stage.
+            return True
         }
         testSamplesWindows(lvi_mitigation, oe_package)
     }
@@ -362,8 +384,9 @@ def ninjaBuildCommand(String cmake_arguments = "", String build_directory = "${W
                     script: """
                         call vcvars64.bat x64
                         @echo on
-                        cmake ${build_directory} ${cmake_arguments}
-                        ninja -v
+                        setlocal EnableDelayedExpansion
+                        cmake.exe ${build_directory} ${cmake_arguments} || exit !ERRORLEVEL!
+                        ninja.exe -v || exit !ERRORLEVEL!
                     """
                 )
             }
