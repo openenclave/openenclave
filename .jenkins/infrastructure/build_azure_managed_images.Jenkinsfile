@@ -13,10 +13,15 @@ AZURE_IMAGES_MAP = [
     "win2019": [
         "image": "MicrosoftWindowsServer:WindowsServer:2019-datacenter-gensecond:latest",
         "generation": "V2"
+    ],
+    "win2022": [
+        "image": "MicrosoftWindowsServer:WindowsServer:2022-datacenter-azure-edition:latest",
+        "generation": "V2"
     ]
 ]
 OS_NAME_MAP = [
     "win2019": "Windows Server 2019",
+    "win2022": "Windows Server 2022",
     "ubuntu":  "Ubuntu",
 ]
 
@@ -77,7 +82,9 @@ def buildLinuxManagedImage(String os_type, String version, String managed_image_
 /* This builds a Windows image for Azure Managed Images
  * @param os_series            String for Windows OS version. 
  *                             Options: "win2019"
- * @param image_type           String for image type that forms part of the image definition. 
+ * @param image_os_version     String for windows OS version that forms part of the image definition in Azure Compute Galleries.
+ *                             Options: "ws2019", "WS22"
+ * @param image_type           String for image type that forms part of the image definition in Azure Compute Galleries.
  *                             Options: "nonSGX", "SGX-DCAP"
  * @param launch_configuration String for the configuration used to provision the Windows image for the install-windows-prereqs.ps1 script. 
  *                             Options: "SGX1FLC-NoIntelDrivers", "SGX1FLC"
@@ -87,20 +94,29 @@ def buildLinuxManagedImage(String os_type, String version, String managed_image_
  * @param image_version
  */
  
-def buildWindowsManagedImage(String os_series, String image_type, String launch_configuration, String clang_version, String image_id, String image_version) {
+def buildWindowsManagedImage(String os_series, String image_os_version, String image_type, String launch_configuration, String clang_version, String image_id, String image_version) {
 
     stage("${launch_configuration} Build") {
 
         def managed_image_name_id = image_id
         def gallery_image_version = image_version
-        def vm_rg_name = "build-${managed_image_name_id}-ws2019-${image_type}-${clang_version}-${BUILD_NUMBER}"
+        def gallery_image_definition
+        def vm_rg_name = "build-${managed_image_name_id}-${image_os_version}-${image_type}-${clang_version}-${BUILD_NUMBER}"
         def clang_version_short = clang_version.take(2)
-        // Azure VM names must be 15 characters or less
-        def vm_name = image_type + "-" + clang_version_short + "-" + BUILD_NUMBER
+        def image_os_version_short = image_os_version[-2..-1]
+        def image_type_short = image_type.take(3)
+        // Azure VM names must be 15 characters or less, cannot start with a number
+        def vm_name = image_type_short + image_os_version_short + "-" + clang_version_short + "-" + BUILD_NUMBER
         def jenkins_rg_name = params.JENKINS_RESOURCE_GROUP
         def jenkins_vnet_name = params.JENKINS_VNET_NAME
         def jenkins_subnet_name = params.JENKINS_SUBNET_NAME
         def azure_image_id = AZURE_IMAGES_MAP[os_series]["image"]
+
+        if (image_os_version[-2..-1] == "19") {
+            gallery_image_definition = "${image_type}-clang-${clang_version_short}"
+        } else if (image_os_version[-2..-1] == "22") {
+            gallery_image_definition = "${image_os_version}-${image_type}-clang-${clang_version_short}"
+        }
 
         try {
 
@@ -261,13 +277,13 @@ def buildWindowsManagedImage(String os_series, String image_type, String launch_
                             az sig image-version delete \
                                 --resource-group ${RESOURCE_GROUP} \
                                 --gallery-name ${GALLERY_NAME} \
-                                --gallery-image-definition ${image_type}-clang-${clang_version_short} \
+                                --gallery-image-definition ${gallery_image_definition} \
                                 --gallery-image-version ${gallery_image_version}
 
                             az sig image-version create \
                                 --resource-group ${RESOURCE_GROUP} \
                                 --gallery-name ${GALLERY_NAME} \
-                                --gallery-image-definition ${image_type}-clang-${clang_version_short} \
+                                --gallery-image-definition ${gallery_image_definition} \
                                 --gallery-image-version ${gallery_image_version} \
                                 --managed-image \$MANAGED_IMG_ID \
                                 --target-regions ${env.REPLICATION_REGIONS.split(',').join(' ')} \
@@ -355,8 +371,10 @@ node(params.AGENTS_LABEL) {
         }
         stage("Build images") {
             def windows_images = [
-                "Build WS2019 - nonSGX - clang11"       : { buildWindowsManagedImage("win2019", "nonSGX", "SGX1FLC-NoIntelDrivers", "11.1.0", image_id, image_version) },
-                "Build WS2019 - SGX1FLC DCAP - clang11" : { buildWindowsManagedImage("win2019", "SGX-DCAP", "SGX1FLC", "11.1.0", image_id, image_version) }
+                "Build WS2019 - nonSGX - clang11"       : { buildWindowsManagedImage("win2019", "ws2019", "nonSGX", "SGX1FLC-NoIntelDrivers", "11.1.0", image_id, image_version) },
+                "Build WS2019 - SGX1FLC DCAP - clang11" : { buildWindowsManagedImage("win2019", "ws2019", "SGX-DCAP", "SGX1FLC", "11.1.0", image_id, image_version) },
+                "Build WS2022 - nonSGX - clang11"       : { buildWindowsManagedImage("win2022", "WS22", "nonSGX", "SGX1FLC-NoIntelDrivers", "11.1.0", image_id, image_version) },
+                "Build WS2022 - SGX1FLC DCAP - clang11" : { buildWindowsManagedImage("win2022", "WS22", "SGX-DCAP", "SGX1FLC", "11.1.0", image_id, image_version) }
             ]
             def linux_images = [
                 "Build Ubuntu 20.04" : { buildLinuxManagedImage("ubuntu", "20.04", image_id, image_version) }
