@@ -21,7 +21,7 @@ pipeline {
         string(name: "INTERNAL_REPO", defaultValue: "https://oejenkinscidockerregistry.azurecr.io", description: "Url for internal Docker repository")
         string(name: "INTERNAL_REPO_CRED_ID", defaultValue: "oejenkinscidockerregistry", description: "Credential ID for internal Docker repository")
         string(name: "OECI_LIB_VERSION", defaultValue: 'master', description: 'Version of OE Libraries to use')
-        string(name: "AGENTS_LABEL", defaultValue: 'windows-nonsgx', description: "Label of the agent to use to run this job")
+        string(name: "AGENTS_LABEL", defaultValue: 'ws2019-nonsgx', description: "Label of the agent to use to run this job")
         booleanParam(name: "TAG_LATEST", defaultValue: false, description: "Update the latest tag to the currently built DOCKER_TAG")
     }
     stages {

@@ -11,7 +11,8 @@ def testing_stages = [
     "XC Win2019 v2 clang-11 RelWithDebInfo ControlFlow Sim":                 { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'clang-11', 'RelWithDebInfo', 'ControlFlow', '1', 'ON', 'OFF') },
     "XC Win2019 v2 clang-11 RelWithDebInfo ControlFlow snmalloc":            { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'clang-11', 'RelWithDebInfo', 'ControlFlow', '0', 'ON', 'ON') },
     "XC Win2019 v2 clang-11 Debug ControlFlow":                              { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'clang-11', 'Debug',          'ControlFlow', '0', 'ON', 'OFF') },
-    "XC Win2019 v3 clang-11 RelWithDebInfo ControlFlow":                     { tests.windowsCrossCompile(params.WS2019_DCAP_ICX_LABEL, 'clang-11', 'RelWithDebInfo', 'ControlFlow', '0', 'ON', 'OFF') }
+    "XC Win2019 v3 clang-11 RelWithDebInfo ControlFlow":                     { tests.windowsCrossCompile(params.WS2019_DCAP_ICX_LABEL, 'clang-11', 'RelWithDebInfo', 'ControlFlow', '0', 'ON', 'OFF') },
+    "XC Win2022 v2 clang-11 Debug ControlFlow":                              { tests.windowsCrossCompile(params.WS2022_DCAP_CFL_LABEL, 'clang-11', 'RelWithDebInfo', 'ControlFlow', '0', 'ON', 'OFF') }
 ]
 if(FULL_TEST_SUITE == "true") {
     testing_stages += [
