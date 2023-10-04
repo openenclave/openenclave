@@ -334,7 +334,7 @@ def testSamplesWindows(boolean lvi_mitigation, String oe_package) {
                 script: """
                     call vcvars64.bat x64
                     @echo on
-                    ninja run
+                    ninja.exe run
                 """
             )
         }
