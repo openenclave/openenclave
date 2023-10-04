@@ -315,7 +315,7 @@ def ACCHostVerificationTest(String version, String build_type, String compiler) 
 
     /* Windows nonSGX stage. */
     stage("Windows nonSGX Verify Quote") {
-        node(globalvars.AGENTS_LABELS["windows-nonsgx"]) {
+        node(globalvars.AGENTS_LABELS["ws2019-nonsgx"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
@@ -450,7 +450,7 @@ def ACCHostVerificationPackageTest(String version, String build_type, String com
 
     /* Windows nonSGX stage. */
     stage("Windows nonSGX Verify Quote") {
-        node(globalvars.AGENTS_LABELS["windows-nonsgx"]) {
+        node(globalvars.AGENTS_LABELS["ws2019-nonsgx"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm

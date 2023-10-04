@@ -6,7 +6,7 @@
  Note: To check if your system has support for SGX1 with or without FLC, please look [here](../SGXSupportLevel.md).
  
 - A version of Windows OS with native support for SGX features:
-   - For server: Windows Server 2019
+   - For server: Windows Server 2019 or 2022
    - For client: Windows 10 64-bit version 1709 or newer
    - To check your Windows version, run `winver` on the command line.
 
@@ -15,13 +15,17 @@ This guide will help you install Software prerequisites on Windows systems that 
 > Note: see [Windows Open Enclave SDK Prerequisites](WindowsPrerequisites.md) for a full list of current prerequisite versions, and download links.
 
 The following will be installed as part of this guide:
-- [Microsoft Visual Studio Build Tools 2019](#microsoft-visual-studio-build-tools-2019)
-- [Git for Windows 64-bit](#git-for-windows-64-bit)
-- [Clang/LLVM 10.0.0 for Windows 64-bit](#clang)
-- [Python 3](#python-3)
-- [ShellCheck 0.7.0](#shellcheck)
-- [OpenSSL 1.1.1](#openssl)
-- [cmake format](#cmake-format)
+- [Manually Installing Open Enclave Prerequisites for Windows on a System which supports SGX](#manually-installing-open-enclave-prerequisites-for-windows-on-a-system-which-supports-sgx)
+  - [Platform requirements](#platform-requirements)
+  - [Software prerequisites](#software-prerequisites)
+  - [Prerequisites specific to SGX support on your system](#prerequisites-specific-to-sgx-support-on-your-system)
+  - [Microsoft Visual Studio Build Tools 2019](#microsoft-visual-studio-build-tools-2019)
+  - [Git for Windows 64-bit](#git-for-windows-64-bit)
+  - [Clang](#clang)
+  - [Python 3](#python-3)
+  - [ShellCheck](#shellcheck)
+  - [OpenSSL](#openssl)
+  - [cmake format](#cmake-format)
 
 > Note: the list above does not contain the additional prerequisites specific to SGX that will need to be installed. See [Platform requirements](#platform-requirements) to determine your system type and [Prerequisites specific to SGX support on your system](#prerequisites-specific-to-sgx-support-on-your-system) to install the additional prerequisites for your system.
 
