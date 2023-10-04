@@ -129,7 +129,7 @@ pipeline {
                                 string(name: 'DOCKER_TAG', value: params.DOCKER_TAG),
                                 string(name: 'UBUNTU_2004_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["acc-ubuntu-20.04"]),
                                 string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["ubuntu-nonsgx"]),
-                                string(name: 'WINDOWS_NONSGX_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["windows-nonsgx"]),
+                                string(name: 'WS2019_NONSGX_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["ws2019-nonsgx"]),
                                 string(name: 'OECI_LIB_VERSION', value: GLOBAL_OECI_LIB_VERSION),
                                 booleanParam(name: 'FULL_TEST_SUITE', value: params.FULL_TEST_SUITE)
                             ]
@@ -143,8 +143,10 @@ pipeline {
                                 string(name: 'BRANCH_NAME', value: GLOBAL_BRANCH_NAME),
                                 string(name: 'DOCKER_TAG', value: params.DOCKER_TAG),
                                 string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["ubuntu-nonsgx"]),
-                                string(name: 'WINDOWS_2019_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["acc-win2019"]),
-                                string(name: 'WINDOWS_2019_DCAP_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["acc-win2019-dcap"]),
+                                string(name: 'WS2019_DCAP_CFL_LABEL', value: globalvars.AGENTS_LABELS["acc-win2019-dcap"]),
+                                string(name: 'WS2019_DCAP_ICX_LABEL', value: globalvars.AGENTS_LABELS["acc-v3-win2019-dcap"]),
+                                string(name: 'WS2022_DCAP_CFL_LABEL', value: globalvars.AGENTS_LABELS["acc-win2022-dcap"]),
+                                string(name: 'WS2022_DCAP_ICX_LABEL', value: globalvars.AGENTS_LABELS["acc-v3-win2022-dcap"]),
                                 string(name: 'OECI_LIB_VERSION', value: GLOBAL_OECI_LIB_VERSION),
                                 booleanParam(name: 'FULL_TEST_SUITE', value: params.FULL_TEST_SUITE)
                             ]

@@ -35,9 +35,12 @@ pipeline {
         string(name: 'UBUNTU_2004_CFL_LABEL', defaultValue: 'e2e-ACC-2004', description: 'Label to use for image testing and promotion', trim: true)
         string(name: 'UBUNTU_2004_ICX_LABEL', defaultValue: 'e2e-ACC-2004-v3', description: 'Label to use for image testing and promotion', trim: true)
         string(name: 'UBUNTU_NONSGX_LABEL', defaultValue: 'e2e-nonSGX-ubuntu-2004', description: 'Label to use for image testing and promotion', trim: true)
-        string(name: 'WINDOWS_2019_DCAP_CFL_LABEL', defaultValue: 'e2e-SGXFLC-Windows-2019-DCAP', description: 'Label to use for image testing and promotion', trim: true)
-        string(name: 'WINDOWS_2019_DCAP_ICX_LABEL', defaultValue: 'e2e-SGXFLC-Windows-2019-DCAP-v3', description: 'Label to use for image testing and promotion', trim: true)
-        string(name: 'WINDOWS_NONSGX_CUSTOM_LABEL', defaultValue: 'e2e-nonsgx-windows', description: 'Label to use for image testing and promotion', trim: true)
+        string(name: 'WS2019_DCAP_CFL_LABEL', defaultValue: 'e2e-SGXFLC-Windows-2019-DCAP-v2', description: 'Label to use for image testing and promotion', trim: true)
+        string(name: 'WS2019_DCAP_ICX_LABEL', defaultValue: 'e2e-SGXFLC-Windows-2019-DCAP-v3', description: 'Label to use for image testing and promotion', trim: true)
+        string(name: 'WS2019_NONSGX_CUSTOM_LABEL', defaultValue: 'e2e-nonsgx-windows', description: 'Label to use for image testing and promotion', trim: true)
+        string(name: 'WS2022_DCAP_CFL_LABEL', defaultValue: 'e2e-SGXFLC-Windows-2022-DCAP-v2', description: 'Label to use for image testing and promotion', trim: true)
+        string(name: 'WS2022_DCAP_ICX_LABEL', defaultValue: 'e2e-SGXFLC-Windows-2022-DCAP-v3', description: 'Label to use for image testing and promotion', trim: true)
+        string(name: 'WS2022_NONSGX_CUSTOM_LABEL', defaultValue: 'e2e-nonsgx-windows-2022', description: 'Label to use for image testing and promotion', trim: true)
         string(name: 'IMAGES_BUILD_LABEL', defaultValue: 'vanilla-ubuntu-2004', description: 'Agent label used to run Azure Managed Image builds', trim: true)
         string(name: 'OECI_LIB_VERSION', defaultValue: 'master', description: 'Version of OE Libraries to use', trim: true)
     }
@@ -99,9 +102,12 @@ pipeline {
                     string(name: 'UBUNTU_2004_CFL_CUSTOM_LABEL', value: params.UBUNTU_2004_CFL_LABEL),
                     string(name: 'UBUNTU_2004_ICX_CUSTOM_LABEL', value: params.UBUNTU_2004_ICX_LABEL),
                     string(name: 'UBUNTU_2004_NONSGX_LABEL', value: params.UBUNTU_NONSGX_LABEL),
-                    string(name: 'WS2019_DCAP_CFL_LABEL', value: params.WINDOWS_2019_DCAP_LABEL),
-                    string(name: 'WS2019_DCAP_ICX_LABEL', value: params.WINDOWS_2019_DCAP_LABEL),
-                    string(name: 'WINDOWS_NONSGX_CUSTOM_LABEL', value: params.WINDOWS_NONSGX_CUSTOM_LABEL),
+                    string(name: 'WS2019_DCAP_CFL_LABEL', value: params.WS2019_DCAP_CFL_LABEL),
+                    string(name: 'WS2019_DCAP_ICX_LABEL', value: params.WS2019_DCAP_ICX_LABEL),
+                    string(name: 'WS2019_NONSGX_CUSTOM_LABEL', value: params.WS2019_NONSGX_CUSTOM_LABEL),
+                    string(name: 'WS2022_DCAP_CFL_LABEL', value: params.WS2022_DCAP_CFL_LABEL),
+                    string(name: 'WS2022_DCAP_ICX_LABEL', value: params.WS2022_DCAP_ICX_LABEL),
+                    string(name: 'WS2022_NONSGX_CUSTOM_LABEL', value: params.WS2022_NONSGX_CUSTOM_LABEL),
                     booleanParam(name: 'FULL_TEST_SUITE', value: true),
                     booleanParam(name: 'FORCE_TEST', value: true)
                 ]

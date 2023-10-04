@@ -123,7 +123,7 @@ pipeline {
                         expression { return params.PUBLISH_WINDOWS }
                     }
                     agent {
-                        label globalvars.AGENTS_LABELS['windows-nonsgx']
+                        label globalvars.AGENTS_LABELS['ws2019-nonsgx']
                     }
                     stages {
                         stage('Pull images') {
