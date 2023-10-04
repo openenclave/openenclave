@@ -2,9 +2,9 @@
 
 ## Intel Platform Software for Windows (PSW)
 
-Intel PSW only needs to be manually installed if you are running a version of Windows client lower than 1709. It should be installed automatically with Windows Update on newer versions of Windows client and Windows Server 2019. You can check your version of Windows by running `winver` on the command line.
+Intel PSW only needs to be manually installed if you are running a version of Windows client lower than 1709. It should be installed automatically with Windows Update on newer versions of Windows client and Windows Server 2019/2022. You can check your version of Windows by running `winver` on the command line.
 
-Ensure that you have the latest drivers on Windows 10 and Windows Server 2019 by checking for updates and installing all updates.
+Ensure that you have the latest drivers on Windows 10 and Windows Server 2019/2022 by checking for updates and installing all updates.
 
 ### Manual installation for client versions lower than 1709
 To manually install Intel SGX PSW on Windows for client versions lower than 1709:

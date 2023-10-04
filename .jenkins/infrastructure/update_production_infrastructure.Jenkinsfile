@@ -11,6 +11,8 @@ AZURE_IMAGES_MAP = [
     "ubuntu-20.04":      "",
     "nonSGX-clang-11":   "",
     "SGX-DCAP-clang-11": "",
+    "WS22-nonSGX-clang-11":   "",
+    "WS22-SGX-DCAP-clang-11": "",
 ]
 
 def update_production_azure_gallery_images(String image_name) {
