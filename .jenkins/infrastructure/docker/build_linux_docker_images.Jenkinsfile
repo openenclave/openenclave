@@ -89,7 +89,7 @@ pipeline {
             }
         }
         stage("Full CI/CD Image") {
-            stages {
+            parallel {
                 stage("Ubuntu 20.04") {
                     steps {
                         script {
@@ -99,10 +99,10 @@ pipeline {
                             )
                             oe2004 = common.dockerImage("oetools-20.04:${TAG_FULL_IMAGE}", LINUX_DOCKERFILE, "${buildArgs}")
                             oe2004.inside("--user root:root \
-                                           --cap-add=SYS_PTRACE \
-                                           --device /dev/sgx_provision:/dev/sgx_provision \
-                                           --device /dev/sgx_enclave:/dev/sgx_enclave \
-                                           --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
+                                        --cap-add=SYS_PTRACE \
+                                        --device /dev/sgx_provision:/dev/sgx_provision \
+                                        --device /dev/sgx_enclave:/dev/sgx_enclave \
+                                        --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
                                 sh """
                                     apt update
                                     apt install -y build-essential open-enclave libssl-dev
@@ -113,6 +113,23 @@ pipeline {
                                 common.exec_with_retry { oe2004.push() }
                                 if ( params.TAG_LATEST ) {
                                     common.exec_with_retry { oe2004.push('latest') }
+                                }
+                            }
+                        }
+                    }
+                }
+                stage("Ubuntu 22.04") {
+                    steps {
+                        script {
+                            buildArgs = common.dockerBuildArgs(
+                                "ubuntu_version=22.04",
+                                "devkits_uri=${params.DEVKITS_URI}"
+                            )
+                            oe2204 = common.dockerImage("oetools-22.04:${TAG_FULL_IMAGE}", LINUX_DOCKERFILE, "${buildArgs}")
+                            docker.withRegistry(params.INTERNAL_REPO, params.INTERNAL_REPO_CRED_ID) {
+                                common.exec_with_retry { oe2204.push() }
+                                if ( params.TAG_LATEST ) {
+                                    common.exec_with_retry { oe2204.push('latest') }
                                 }
                             }
                         }
