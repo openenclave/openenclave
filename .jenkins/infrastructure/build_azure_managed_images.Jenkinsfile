@@ -81,7 +81,7 @@ def buildLinuxManagedImage(String os_type, String version, String managed_image_
 
 /* This builds a Windows image for Azure Managed Images
  * @param os_series            String for Windows OS version. 
- *                             Options: "win2019"
+ *                             Options: "win2019", "win2022"
  * @param image_os_version     String for windows OS version that forms part of the image definition in Azure Compute Galleries.
  *                             Options: "ws2019", "WS22"
  * @param image_type           String for image type that forms part of the image definition in Azure Compute Galleries.

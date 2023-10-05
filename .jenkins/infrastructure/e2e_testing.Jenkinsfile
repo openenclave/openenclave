@@ -34,8 +34,10 @@ pipeline {
          string(name: 'REPLICATION_REGIONS', defaultValue: 'westeurope,eastus,uksouth,eastus2,westus,canadacentral', description: '[OPTIONAL] Replication regions for the shared gallery images definitions (comma-separated)', trim: true)
          string(name: 'UBUNTU_2004_LABEL', defaultValue: 'e2e-ACC-2004', description: 'Label to use for image testing and promotion', trim: true)
          string(name: 'UBUNTU_NONSGX_LABEL', defaultValue: 'e2e-nonSGX-ubuntu-2004', description: 'Label to use for image testing and promotion', trim: true)
-         string(name: 'WINDOWS_2019_DCAP_LABEL', defaultValue: 'e2e-SGXFLC-Windows-2019-DCAP', description: 'Label to use for image testing and promotion', trim: true)
+         string(name: 'WINDOWS_2019_DCAP_LABEL', defaultValue: 'e2e-SGXFLC-Windows-2022-DCAP-v2', description: 'Label to use for image testing and promotion', trim: true)
+         string(name: 'WINDOWS_2022_DCAP_LABEL', defaultValue: 'e2e-SGXFLC-Windows-2022-DCAP-v2', description: 'Label to use for image testing and promotion', trim: true)
          string(name: 'WINDOWS_NONSGX_CUSTOM_LABEL', defaultValue: 'e2e-nonsgx-windows', description: 'Label to use for image testing and promotion', trim: true)
+         string(name: 'WINDOWS_2022_NONSGX_CUSTOM_LABEL', defaultValue: 'e2e-nonsgx-windows-2022', description: 'Label to use for image testing and promotion', trim: true)
          string(name: 'IMAGES_BUILD_LABEL', defaultValue: 'vanilla-ubuntu-2004', description: 'Agent label used to run Azure Managed Image builds', trim: true)
          string(name: 'OECI_LIB_VERSION', defaultValue: 'master', description: 'Version of OE Libraries to use', trim: true)
     }
@@ -97,7 +99,10 @@ pipeline {
                     string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: env.UBUNTU_NONSGX_LABEL),
                     string(name: 'WINDOWS_2019_CUSTOM_LABEL', value: env.WINDOWS_2019_LABEL),
                     string(name: 'WINDOWS_2019_DCAP_CUSTOM_LABEL', value: env.WINDOWS_2019_DCAP_LABEL),
+                    string(name: 'WINDOWS_2022_CUSTOM_LABEL', value: env.WINDOWS_2022_LABEL),
+                    string(name: 'WINDOWS_2022_DCAP_CUSTOM_LABEL', value: env.WINDOWS_2022_DCAP_LABEL),
                     string(name: 'WINDOWS_NONSGX_CUSTOM_LABEL', value: env.WINDOWS_NONSGX_LABEL),
+                    string(name: 'WINDOWS_2022_NONSGX_CUSTOM_LABEL', value: env.WINDOWS_NONSGX_LABEL),
                     booleanParam(name: 'FULL_TEST_SUITE', value: true)
                 ]
             }

@@ -145,6 +145,8 @@ pipeline {
                                 string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["ubuntu-nonsgx"]),
                                 string(name: 'WINDOWS_2019_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["acc-win2019"]),
                                 string(name: 'WINDOWS_2019_DCAP_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["acc-win2019-dcap"]),
+                                string(name: 'WINDOWS_2022_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["acc-win2022"]),
+                                string(name: 'WINDOWS_2022_DCAP_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["acc-win2022-dcap"]),
                                 string(name: 'OECI_LIB_VERSION', value: GLOBAL_OECI_LIB_VERSION),
                                 booleanParam(name: 'FULL_TEST_SUITE', value: params.FULL_TEST_SUITE)
                             ]
