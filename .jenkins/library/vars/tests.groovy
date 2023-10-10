@@ -688,9 +688,14 @@ def windowsCrossCompile(String label, String compiler, String build_type, String
         // 1. java.io.IOException
         // 2. org.jenkinsci.plugins.workflow.steps.FlowInterruptedException
         // 3. java.org.InterruptedException
-        boolean BUILD_COMPLETED = false
+        int TRY_COUNT = 0
+        int MAX_TRY_COUNT = 4
+        boolean BUILD_COMPLETED 
         boolean PACKAGE_BUILT = false
-        retry(count: 3) {
+        retry(count: MAX_TRY_COUNT) {
+            // Reset BUILD_COMPLETED on each retry so previous failures don't skip the build step
+            BUILD_COMPLETED = false
+            TRY_COUNT += 1
             try {
                 node("${label}-${compiler}") {
                     // Interrupt build if no output received from node for 15 minutes
@@ -800,7 +805,7 @@ def windowsCrossCompile(String label, String compiler, String build_type, String
                 // All other FlowInterruptionException causes should fail the stage.
                 println(e.getCauses()[0].toString())
                 if(e.getCauses()[0].toString() ==~ /.*(t|T)imeout.*/) {
-                    println("An abort was caused by a known agent issue. Retrying...")
+                    println("An abort was caused by a known agent issue. Retrying (try ${TRY_COUNT} of ${MAX_TRY_COUNT})")
                     throw e
                 } else {
                     catchError(buildResult: 'ABORTED', stageResult: 'ABORTED') {
@@ -812,7 +817,7 @@ def windowsCrossCompile(String label, String compiler, String build_type, String
                 println("Caught InterruptedException")
                 // Thread interruptions caused by unexpected or abrupt agent disconnection
                 // will cause this exception. This case should be retried.
-                println("An abort was caused by a known agent issue. Retrying...")
+                println("An abort was caused by a known agent issue. Retrying (try ${TRY_COUNT} of ${MAX_TRY_COUNT})")
                 println(e.getCauses()[0].toString())
                 throw e
             }
@@ -827,7 +832,7 @@ def windowsCrossCompile(String label, String compiler, String build_type, String
                         error("Caught exception: ${e}")
                     }
                 } else {
-                    println("An exception was caused by a known issue. Retrying...")
+                    println("An exception was caused by a known issue. Retrying (try ${TRY_COUNT} of ${MAX_TRY_COUNT})")
                     if (e.getCause()) {
                         println(e.getCause().toString())
                     }

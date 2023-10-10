@@ -25,19 +25,21 @@ pipeline {
         timeout(time: 8, unit: 'HOURS')
     }
     parameters {
-         string(name: 'REPOSITORY', defaultValue: 'openenclave/openenclave', description: 'GitHub owner/repository', trim: true)
-         string(name: 'BRANCH', defaultValue: 'master', description: "GitHub repository branch to checkout", trim: true)
-         string(name: 'SGX_VERSION', defaultValue: '', description: "[Required] For Docker containers only. Choose the Intel SGX version to install (Ex: 2.15.100). For versions see: https://download.01.org/intel-sgx/sgx_repo/ubuntu/apt_preference_files", trim: true)
-         string(name: 'RESOURCE_GROUP', defaultValue: 'jenkins-images', description: "The resource group name used for the creation of Azure managed images", trim: true)
-         string(name: 'E2E_IMAGES_GALLERY_NAME', defaultValue: 'e2e_images', description: "E2E Azure images gallery name", trim: true)
-         string(name: 'PRODUCTION_IMAGES_GALLERY_NAME', defaultValue: '', description: "[OPTIONAL]: Specify the Azure Shared Image Gallery for storing production images", trim: true)
-         string(name: 'REPLICATION_REGIONS', defaultValue: 'westeurope,eastus,uksouth,eastus2,westus,canadacentral', description: '[OPTIONAL] Replication regions for the shared gallery images definitions (comma-separated)', trim: true)
-         string(name: 'UBUNTU_2004_LABEL', defaultValue: 'e2e-ACC-2004', description: 'Label to use for image testing and promotion', trim: true)
-         string(name: 'UBUNTU_NONSGX_LABEL', defaultValue: 'e2e-nonSGX-ubuntu-2004', description: 'Label to use for image testing and promotion', trim: true)
-         string(name: 'WINDOWS_2019_DCAP_LABEL', defaultValue: 'e2e-SGXFLC-Windows-2019-DCAP', description: 'Label to use for image testing and promotion', trim: true)
-         string(name: 'WINDOWS_NONSGX_CUSTOM_LABEL', defaultValue: 'e2e-nonsgx-windows', description: 'Label to use for image testing and promotion', trim: true)
-         string(name: 'IMAGES_BUILD_LABEL', defaultValue: 'vanilla-ubuntu-2004', description: 'Agent label used to run Azure Managed Image builds', trim: true)
-         string(name: 'OECI_LIB_VERSION', defaultValue: 'master', description: 'Version of OE Libraries to use', trim: true)
+        string(name: 'REPOSITORY', defaultValue: 'openenclave/openenclave', description: 'GitHub owner/repository', trim: true)
+        string(name: 'BRANCH', defaultValue: 'master', description: "GitHub repository branch to checkout", trim: true)
+        string(name: 'SGX_VERSION', defaultValue: '', description: "[Required] For Docker containers only. Choose the Intel SGX version to install (Ex: 2.15.100). For versions see: https://download.01.org/intel-sgx/sgx_repo/ubuntu/apt_preference_files", trim: true)
+        string(name: 'RESOURCE_GROUP', defaultValue: 'jenkins-images', description: "The resource group name used for the creation of Azure managed images", trim: true)
+        string(name: 'E2E_IMAGES_GALLERY_NAME', defaultValue: 'e2e_images', description: "E2E Azure images gallery name", trim: true)
+        string(name: 'PRODUCTION_IMAGES_GALLERY_NAME', defaultValue: '', description: "[OPTIONAL]: Specify the Azure Shared Image Gallery for storing production images", trim: true)
+        string(name: 'REPLICATION_REGIONS', defaultValue: 'westeurope,eastus,uksouth,eastus2,westus,canadacentral', description: '[OPTIONAL] Replication regions for the shared gallery images definitions (comma-separated)', trim: true)
+        string(name: 'UBUNTU_2004_CFL_LABEL', defaultValue: 'e2e-ACC-2004', description: 'Label to use for image testing and promotion', trim: true)
+        string(name: 'UBUNTU_2004_ICX_LABEL', defaultValue: 'e2e-ACC-2004-v3', description: 'Label to use for image testing and promotion', trim: true)
+        string(name: 'UBUNTU_NONSGX_LABEL', defaultValue: 'e2e-nonSGX-ubuntu-2004', description: 'Label to use for image testing and promotion', trim: true)
+        string(name: 'WINDOWS_2019_DCAP_CFL_LABEL', defaultValue: 'e2e-SGXFLC-Windows-2019-DCAP', description: 'Label to use for image testing and promotion', trim: true)
+        string(name: 'WINDOWS_2019_DCAP_ICX_LABEL', defaultValue: 'e2e-SGXFLC-Windows-2019-DCAP-v3', description: 'Label to use for image testing and promotion', trim: true)
+        string(name: 'WINDOWS_NONSGX_CUSTOM_LABEL', defaultValue: 'e2e-nonsgx-windows', description: 'Label to use for image testing and promotion', trim: true)
+        string(name: 'IMAGES_BUILD_LABEL', defaultValue: 'vanilla-ubuntu-2004', description: 'Agent label used to run Azure Managed Image builds', trim: true)
+        string(name: 'OECI_LIB_VERSION', defaultValue: 'master', description: 'Version of OE Libraries to use', trim: true)
     }
     stages {
         stage("Build Docker Containers") {
@@ -94,11 +96,14 @@ pipeline {
                     string(name: 'BRANCH_NAME', value: env.BRANCH),
                     string(name: 'DOCKER_TAG', value: DOCKER_TAG),
                     string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
-                    string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: env.UBUNTU_NONSGX_LABEL),
-                    string(name: 'WINDOWS_2019_CUSTOM_LABEL', value: env.WINDOWS_2019_LABEL),
-                    string(name: 'WINDOWS_2019_DCAP_CUSTOM_LABEL', value: env.WINDOWS_2019_DCAP_LABEL),
-                    string(name: 'WINDOWS_NONSGX_CUSTOM_LABEL', value: env.WINDOWS_NONSGX_LABEL),
-                    booleanParam(name: 'FULL_TEST_SUITE', value: true)
+                    string(name: 'UBUNTU_2004_CFL_CUSTOM_LABEL', value: params.UBUNTU_2004_CFL_LABEL),
+                    string(name: 'UBUNTU_2004_ICX_CUSTOM_LABEL', value: params.UBUNTU_2004_ICX_LABEL),
+                    string(name: 'UBUNTU_2004_NONSGX_LABEL', value: params.UBUNTU_NONSGX_LABEL),
+                    string(name: 'WS2019_DCAP_CFL_LABEL', value: params.WINDOWS_2019_DCAP_LABEL),
+                    string(name: 'WS2019_DCAP_ICX_LABEL', value: params.WINDOWS_2019_DCAP_LABEL),
+                    string(name: 'WINDOWS_NONSGX_CUSTOM_LABEL', value: params.WINDOWS_NONSGX_CUSTOM_LABEL),
+                    booleanParam(name: 'FULL_TEST_SUITE', value: true),
+                    booleanParam(name: 'FORCE_TEST', value: true)
                 ]
             }
         }

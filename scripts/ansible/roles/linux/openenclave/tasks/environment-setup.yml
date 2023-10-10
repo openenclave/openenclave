@@ -16,6 +16,16 @@
 - name: Install distribution packages
   ansible.builtin.include_tasks: "{{ ansible_distribution | lower }}/packages-install.yml"
 
+- name: Install the additional distribution release-specific Open Enclave prerequisites APT packages
+  ansible.builtin.apt:
+    name: "{{ apt_distribution_packages }}"
+    state: latest
+    update_cache: yes
+    install_recommends: no
+  when:
+    - apt_distribution_packages is defined
+    - apt_distribution_packages | length > 0
+
 - name: Setup lvi dependencies
   ansible.builtin.include_tasks: "{{ ansible_distribution | lower }}/lvi-setup.yml"
   when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
@@ -41,13 +51,3 @@
     - cmake
     - cpack
     - ctest
-
-- name: Install the additional distribution-specific Open Enclave prerequisites APT packages
-  ansible.builtin.apt:
-    name: "{{ apt_distribution_packages }}"
-    state: latest
-    update_cache: yes
-    install_recommends: no
-  when:
-    - apt_distribution_packages is defined
-    - apt_distribution_packages | length > 0
