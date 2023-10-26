@@ -1,12 +1,17 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
+# See https://github.com/github/codeql-action/blob/main/init/action.yml 
+# for the full set of input arguments
+
 name: "CodeQL"
 on:
   push:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+    paths-ignore:
+      - '**/*.md'
   schedule:
     - cron: '0 0 * * *'
 
@@ -34,6 +39,8 @@ jobs:
       with:
         languages: ${{ matrix.language }}
         config-file: .github/codeql/codeql-config.yml
+        # Hardcode the CodeQL bundle version to 2.15.0, as 2.15.1 contains a breaking change that will need to be addressed before updating.
+        tools: https://github.com/github/codeql-action/releases/download/codeql-bundle-v2.15.0/codeql-bundle-linux64.tar.gz
 
     - name: Build
       run: |
