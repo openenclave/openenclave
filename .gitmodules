@@ -35,3 +35,6 @@
 [submodule "3rdparty/openssl/openssl_3"]
 	path = 3rdparty/openssl/openssl_3
 	url = https://github.com/openssl/openssl
+[submodule "3rdparty/openssl/intel-sgx-ssl-3"]
+	path = 3rdparty/openssl/intel-sgx-ssl-3
+	url = https://github.com/intel/intel-sgx-ssl.git
