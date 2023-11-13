@@ -1,109 +1,189 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-// Check if BRANCH is specified by multibranch pipeline job
-GLOBAL_BRANCH_NAME = env.BRANCH_NAME ?: params.BRANCH
-
-// Regex that includes directory you want to ignore for CI builds.
-String IGNORED_DIRS = "^docs|^\\.jenkins/infrastructure|\\.md\$|^VERSION\$|^OWNERS\$"
-
-// Load OpenEnclaveJenkinsLibrary version to use in this priority:
-//     1. If this is a bors run, use the bors branch
-//     2. Use params.OECI_LIB_VERSION if it is specified
-//     3. If none of the above, default to master
-if ( REPOSITORY_NAME == 'openenclave/openenclave' && GLOBAL_BRANCH_NAME ==~ /^(trying|staging)$/ ) {
-    GLOBAL_OECI_LIB_VERSION = GLOBAL_BRANCH_NAME
-} else if ( params.OECI_LIB_VERSION ) {
-    // Use regex to match bors branches to include any changes to OpenEnclaveJenkinsLibrary
-    GLOBAL_OECI_LIB_VERSION = params.OECI_LIB_VERSION
+/* Prevent Branch Indexing from triggering a build. This is necessary because
+   Branch Indexing will trigger a build for every Pull Request in the repository
+   every time it occurs and waste resources.
+*/
+build_cause = currentBuild.getBuildCauses().toString()
+if (build_cause.contains('BranchIndexingCause')) {
+  currentBuild.result = 'ABORTED'
+  error("Branch Indexing is not allowed. Please trigger manually or via a pull request.")
 } else {
-    GLOBAL_OECI_LIB_VERSION = "master"
+  println("Build cause: ${build_cause}")
 }
-library "OpenEnclaveJenkinsLibrary@${GLOBAL_OECI_LIB_VERSION}"
+
+/* A list of regex that includes directories and files to be ignored for CI builds.
+  This is used as a grep extended regular expression.
+  See https://www.gnu.org/software/grep/manual/html_node/Basic-vs-Extended.html
+*/
+List<String> LIST_IGNORED_DIRS = [
+    '^docs',
+    '^.jenkins/infrastructure',
+    '^.jenkins/docker',
+    '^.github',
+    '.md\$',
+    '^VERSION\$',
+    '^OWNERS\$'
+]
+
+// This joins list into regex string to be used in git diff
+String IGNORED_DIRS_REGEX = LIST_IGNORED_DIRS.join('|')
+
+List<String> APPROVED_AUTHORS = [
+    'achamayou',
+    'AevaOnline',
+    'anche-is-andy',
+    'gupta-ak',
+    'anakrish',
+    'asvrada',
+    'Britel',
+    'CyanDevs',
+    'dcarpente',
+    'dthaler',
+    'HernanGatta',
+    'jiria',
+    'jazzybluesea',
+    'justanotherminh',
+    'jxyang',
+    'mikbras',
+    'mingweishih',
+    'paulcallen',
+    'radhikaj',
+    'salsal97',
+    'shnwc',
+    'shruti25ratnam',
+    'soccerGB',
+    'vtikoo',
+    'yentsanglee'
+]
 
 pipeline {
     agent any
     options {
         timeout(time: 240, unit: 'MINUTES')
         buildDiscarder(logRotator(artifactDaysToKeepStr: '90', artifactNumToKeepStr: '180', daysToKeepStr: '90', numToKeepStr: '180'))
+        disableConcurrentBuilds(abortPrevious: true)
     }
     parameters {
-        string(name: 'REPOSITORY_NAME', defaultValue: 'openenclave/openenclave', description: 'GitHub repository to checkout', trim: true)
-        string(name: 'BRANCH', defaultValue: 'master', description: 'The branch used to checkout the repository', trim: true)
+        string(name: 'PULL_REQUEST_ID', defaultValue: '', description: '[Optional] If testing a PR - enter PR #', trim: true)
+        string(name: 'REPOSITORY_NAME', defaultValue: 'openenclave/openenclave', description: '[Optional] If testing a branch - enter GitHub repository to checkout', trim: true)
+        string(name: 'BRANCH', defaultValue: 'master', description: '[Optional] If testing a branch - enter branch to checkout', trim: true)
         booleanParam(name: 'FULL_TEST_SUITE', defaultValue: false, description: 'Run all tests')
         booleanParam(name: 'FORCE_TEST', defaultValue: false, description: 'Force tests to continue even if there are no changes compared to master')
         string(name: 'DOCKER_TAG', defaultValue: 'latest', description: 'Version of Docker image "oetools" to use', trim: true)
         string(name: "OECI_LIB_VERSION", defaultValue: 'master', description: 'Version of OE Libraries to use', trim: true)
     }
     stages {
-        stage("Compare changes") {
+        stage('Check access') {
             when {
-                expression { return params.FORCE_TEST == false }
-            }
-            agent {
-                label globalvars.AGENTS_LABELS["nonsgx"]
+                /* This checks access when a build is ran in a multibranch pipeline job and is triggered
+                   when GitHub pull request is created or updated with a new or (forced) different commit.
+                   This stage is skipped if a build is triggered manually.
+                */
+                allOf {
+                    expression { params.PULL_REQUEST_ID == "" }
+                    // env.CHANGE_ID is only set when a build is triggered by a multibranch pipeline job.
+                    expression { env.CHANGE_ID != null && env.CHANGE_ID.isInteger() }
+                }
             }
             steps {
-                cleanWs()
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [
-                        [
-                            name: "origin/master"
-                        ],
-                        [
-                            name: "testremote/${GLOBAL_BRANCH_NAME}"
-                        ]
-                    ],
-                    doGenerateSubmoduleConfigurations: false,
-                    extensions: [
-                        [
-                            $class: 'PruneStaleBranch',
-                            $class: 'SubmoduleOption',
-                            disableSubmodules: true,
-                            recursiveSubmodules: false,
-                            trackingSubmodules: false
-                        ]
-                    ], 
-                    submoduleCfg: [],
-                    userRemoteConfigs: [
-                        [
-                            url: "https://github.com/openenclave/openenclave.git",
-                            name: "origin",
-                            refspec: "+refs/heads/master:refs/remotes/origin/master",
-
-                        ],
-                        [
-                            url: "https://github.com/${REPOSITORY_NAME}.git",
-                            name: "testremote",
-                            refspec: "+refs/heads/${GLOBAL_BRANCH_NAME}:refs/remotes/testremote/${GLOBAL_BRANCH_NAME}"
-                        ]
-                    ]
-                ])
+                retry(5) {
+                    sh """
+                        while sudo lsof /var/lib/dpkg/lock-frontend | grep dpkg; do sleep 3; done
+                        sudo apt-get -y --option Acquire::Retries=5 install jq
+                    """
+                }
                 script {
-                    // Check if git diff vs origin/master contains changes outside of ignored directories
-                    gitChanges = sh (
-                        script: """#!/bin/bash
-                                git diff --name-only testremote/${GLOBAL_BRANCH_NAME} origin/master | grep --invert-match --extended-regexp \'${IGNORED_DIRS}\'  --no-messages || [[ \$? == 1 ]]
-                                """,
-                        returnStdout: true,
+                    PR_AUTHOR = sh(
+                        script: "curl --silent https://api.github.com/repos/openenclave/openenclave/pulls/${env.CHANGE_ID} | jq --raw-output '.user | .login'",
+                        returnStdout: true
                     ).trim()
-                    // Skip build with a success if gitChanges is defined and empty (no changes outside of ignored directories).
-                    // Note: this step must be ran outside of a stage in order to exit the entire build.
-                    if (gitChanges != null && gitChanges == '') {
-                        println("No significant changes detected. Testing is not necessary.")
-                        continue_build = false
+                    if ( PR_AUTHOR == 'null' || PR_AUTHOR == '' || PR_AUTHOR == null ) {
+                        error("No pull request author found. This is an unexpected error. Does the pull request ID exist?")
+                    } else if ( APPROVED_AUTHORS.contains(PR_AUTHOR) ) {
+                        println("Pull request author ${PR_AUTHOR} is authorized. Build will continue.")
                     } else {
-                        println("Detected the follow file changes: " + gitChanges)
-                        continue_build = true
+                        currentBuild.result = 'ABORTED'
+                        error("Pull request author ${PR_AUTHOR} is not in the list of authorized users. Aborting build.")
                     }
+                }
+            }
+        }
+        stage('Determine changes') {
+            /* This stage is used to determine whether to skip the main testing stage
+               if the changes are only in ignored directories or files. 
+               This is only necessary for Jenkins multibranch pipeline builds.
+            */
+            steps {
+                script {
+                    continue_build = false
+                    dir("${WORKSPACE}") {
+                        if ( env.CHANGE_ID != null && env.CHANGE_ID.isInteger() ) {
+                            // This is the git ref in a Jenkins multibranch pipeline build
+                            SOURCE_BRANCH = "origin/PR-${env.CHANGE_ID}"
+                        } else if ( params.PULL_REQUEST_ID ) {
+                            // This is the git ref for a manual PR build
+                            SOURCE_BRANCH = "origin/pr/${params.PULL_REQUEST_ID}"
+                        } else if ( params.BRANCH != "master" ) {
+                            // This is the git ref for a manual branch build
+                            SOURCE_BRANCH = "origin/${params.BRANCH}"
+                        } else {
+                            error("Invalid branch reference. Did you set the PULL_REQUEST_ID or BRANCH parameters?")
+                        }
+                        CHANGED_FILES = sh(
+                            returnStdout: true,
+                            script: """
+                                git diff --name-only \$(git merge-base origin/master ${SOURCE_BRANCH})..${SOURCE_BRANCH} \
+                                | grep --invert-match --extended-regexp \'${IGNORED_DIRS_REGEX}\'  --no-messages || test \$? = 1
+                                """
+                        )
+                        if ( CHANGED_FILES != '' ) {
+                            println("Detected the follow file changes: " + CHANGED_FILES)
+                            continue_build = true
+                        } else {
+                            println("No changes detected. Skipping main testing stage.")
+                        }
+                    }
+                }
+            }
+        }
+        stage('Load library') {
+            when {
+                expression { return continue_build }
+            }
+            steps {
+                script {
+                    library "OpenEnclaveJenkinsLibrary@${params.OECI_LIB_VERSION}"
+                }
+            }
+        }
+        stage('Set PULL_REQUEST_ID') {
+            /* This stage sets PULL_REQUEST_ID so that the downstream pipelines can use it.
+            *  The variable is necessary when a build is:
+            *    triggered by a multibranch pipeline job
+            *    OR is manually triggered with params.PULL_REQUEST_ID set.
+            */
+            when {
+                expression { return continue_build }
+                anyOf {
+                    // env.CHANGE_ID is only set when a build is triggered by a multibranch pipeline job.
+                    expression { env.CHANGE_ID != null }
+                    // params.PULL_REQUEST_ID is set when a build is manually triggered and the parameter is set by the user.
+                    expression { params.PULL_REQUEST_ID != "" }
+                }
+            }
+            steps {
+                script {
+                    PULL_REQUEST_ID = env.CHANGE_ID ?: params.PULL_REQUEST_ID
                 }
             }
         }
         stage("Trigger downstream pipelines") {
             when {
-                expression {
-                    return continue_build
+                anyOf {
+                    expression { return continue_build }
+                    expression { return params.FORCE_TEST }
                 }
             }
             parallel {
@@ -111,11 +191,12 @@ pipeline {
                     steps {
                         build job: '/OpenEnclave/Agnostic-Linux',
                             parameters: [
-                                string(name: 'REPOSITORY_NAME', value: REPOSITORY_NAME),
-                                string(name: 'BRANCH_NAME', value: GLOBAL_BRANCH_NAME),
+                                string(name: 'PULL_REQUEST_ID', value: PULL_REQUEST_ID),
+                                string(name: 'REPOSITORY_NAME', value: params.REPOSITORY_NAME),
+                                string(name: 'BRANCH_NAME', value: params.BRANCH),
                                 string(name: 'DOCKER_TAG', value: params.DOCKER_TAG),
                                 string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["ubuntu-nonsgx"]),
-                                string(name: 'OECI_LIB_VERSION', value: GLOBAL_OECI_LIB_VERSION),
+                                string(name: 'OECI_LIB_VERSION', value: params.OECI_LIB_VERSION),
                                 booleanParam(name: 'FULL_TEST_SUITE', value: params.FULL_TEST_SUITE)
                             ]
                     }
@@ -124,13 +205,14 @@ pipeline {
                     steps {
                         build job: '/OpenEnclave/Azure-Linux',
                             parameters: [
-                                string(name: 'REPOSITORY_NAME', value: REPOSITORY_NAME),
-                                string(name: 'BRANCH_NAME', value: GLOBAL_BRANCH_NAME),
+                                string(name: 'PULL_REQUEST_ID', value: PULL_REQUEST_ID),
+                                string(name: 'REPOSITORY_NAME', value: params.REPOSITORY_NAME),
+                                string(name: 'BRANCH_NAME', value: params.BRANCH),
                                 string(name: 'DOCKER_TAG', value: params.DOCKER_TAG),
                                 string(name: 'UBUNTU_2004_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["acc-ubuntu-20.04"]),
                                 string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["ubuntu-nonsgx"]),
                                 string(name: 'WS2019_NONSGX_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["ws2019-nonsgx"]),
-                                string(name: 'OECI_LIB_VERSION', value: GLOBAL_OECI_LIB_VERSION),
+                                string(name: 'OECI_LIB_VERSION', value: params.OECI_LIB_VERSION),
                                 booleanParam(name: 'FULL_TEST_SUITE', value: params.FULL_TEST_SUITE)
                             ]
                     }
@@ -139,15 +221,16 @@ pipeline {
                     steps {
                         build job: '/OpenEnclave/Azure-Windows',
                             parameters: [
-                                string(name: 'REPOSITORY_NAME', value: REPOSITORY_NAME),
-                                string(name: 'BRANCH_NAME', value: GLOBAL_BRANCH_NAME),
+                                string(name: 'PULL_REQUEST_ID', value: PULL_REQUEST_ID),
+                                string(name: 'REPOSITORY_NAME', value: params.REPOSITORY_NAME),
+                                string(name: 'BRANCH_NAME', value: params.BRANCH),
                                 string(name: 'DOCKER_TAG', value: params.DOCKER_TAG),
                                 string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["ubuntu-nonsgx"]),
                                 string(name: 'WS2019_DCAP_CFL_LABEL', value: globalvars.AGENTS_LABELS["acc-win2019-dcap"]),
                                 string(name: 'WS2019_DCAP_ICX_LABEL', value: globalvars.AGENTS_LABELS["acc-v3-win2019-dcap"]),
                                 string(name: 'WS2022_DCAP_CFL_LABEL', value: globalvars.AGENTS_LABELS["acc-win2022-dcap"]),
                                 string(name: 'WS2022_DCAP_ICX_LABEL', value: globalvars.AGENTS_LABELS["acc-v3-win2022-dcap"]),
-                                string(name: 'OECI_LIB_VERSION', value: GLOBAL_OECI_LIB_VERSION),
+                                string(name: 'OECI_LIB_VERSION', value: params.OECI_LIB_VERSION),
                                 booleanParam(name: 'FULL_TEST_SUITE', value: params.FULL_TEST_SUITE)
                             ]
                     }

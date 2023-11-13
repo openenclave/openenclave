@@ -13,13 +13,14 @@
  * @param compiler   [string] The compiler to use
  * @param build_type [string] The cmake build type to use.
  *                                Choice of: Debug, Release, or RelWithDebInfo
+ * @param pr_id      [string] Optional - to checkout a specific oe pull request merge head
  */
-def ACCCodeCoverageTest(String version, String compiler, String build_type) {
+def ACCCodeCoverageTest(String version, String compiler, String build_type, String pr_id = '') {
     stage("ACC ${version} ${compiler} ${build_type} Code Coverage") {
         node(globalvars.AGENTS_LABELS["acc-ubuntu-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
-                checkout scm
+                helpers.oeCheckoutScm(pr_id)
                 def cmakeArgs = helpers.CmakeArgs(
                     builder: 'Ninja',
                     build_type: build_type,
@@ -63,13 +64,14 @@ def ACCCodeCoverageTest(String version, String compiler, String build_type) {
  * @param use_snmalloc               [boolean] use snmalloc allocator?
  * @param use_eeid                   [boolean] use EEID?
  * @param fresh_install              [boolean] start with a plain VM and install OE dependencies?
+ * @param pr_id                      [string]  Optional - to checkout a specific oe pull request merge head
  */
-def ACCTest(String label, String compiler, String build_type, String lvi_mitigation, boolean lvi_mitigation_skip_tests = false, boolean use_snmalloc = false, boolean use_eeid = false, boolean fresh_install = false) {
+def ACCTest(String label, String compiler, String build_type, String lvi_mitigation, boolean lvi_mitigation_skip_tests = false, boolean use_snmalloc = false, boolean use_eeid = false, boolean fresh_install = false, String pr_id = '') {
     stage("${label} ${compiler} ${build_type} ${lvi_mitigation} ${fresh_install ? ", e2e" : ""} SNMALLOC=${use_snmalloc} EEID=${use_eeid}") {
         node(label) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
-                checkout scm
+                helpers.oeCheckoutScm(pr_id)
                 if (fresh_install) {
                     sh  """
                         sudo bash scripts/ansible/install-ansible.sh
@@ -116,13 +118,14 @@ def ACCTest(String label, String compiler, String build_type, String lvi_mitigat
  * @param lvi_mitigation            [string]  build enclave libraries with LVI mitigation.
  *                                            Choice of: None, ControlFlow-GNU, ControlFlow-Clang, or ControlFlow
  * @param lvi_mitigation_skip_tests [boolean] skip LVI mitigation tests?
+ * @param pr_id                     [string]  Optional - to checkout a specific oe pull request merge head
  */
-def ACCUpgradeTest(String version, String compiler, String lvi_mitigation, boolean lvi_mitigation_skip_tests = false) {
+def ACCUpgradeTest(String version, String compiler, String lvi_mitigation, boolean lvi_mitigation_skip_tests = false, String pr_id = '') {
     stage("ACC Upgrade ${version} RelWithDebInfo ${lvi_mitigation} LVI_MITIGATION_SKIP_TESTS=${lvi_mitigation_skip_tests}") {
         node(globalvars.AGENTS_LABELS["acc-ubuntu-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
-                checkout scm
+                helpers.oeCheckoutScm(pr_id)
                 def cmakeArgs = helpers.CmakeArgs(
                     builder: 'Ninja',
                     build_type: 'RelWithDebInfo',
@@ -155,13 +158,14 @@ def ACCUpgradeTest(String version, String compiler, String lvi_mitigation, boole
  * @param lvi_mitigation            [string]  build enclave libraries with LVI mitigation.
  *                                            Choice of: None, ControlFlow-GNU, ControlFlow-Clang, or ControlFlow
  * @param lvi_mitigation_skip_tests [boolean] skip LVI mitigation tests?
+ * @param pr_id                     [string]  Optional - to checkout a specific oe pull request merge head
  */
-def ACCContainerTest(String version, String compiler, String lvi_mitigation, boolean lvi_mitigation_skip_tests = false) {
+def ACCContainerTest(String version, String compiler, String lvi_mitigation, boolean lvi_mitigation_skip_tests = false, String pr_id = '') {
     stage("ACC Container ${version} RelWithDebInfo ${lvi_mitigation} LVI_MITIGATION_SKIP_TESTS=${lvi_mitigation_skip_tests}") {
         node(globalvars.AGENTS_LABELS["acc-ubuntu-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
-                checkout scm
+                helpers.oeCheckoutScm(pr_id)
                 def cmakeArgs = helpers.CmakeArgs(
                     builder: 'Ninja',
                     build_type: 'RelWithDebInfo',
@@ -193,13 +197,14 @@ def ACCContainerTest(String version, String compiler, String lvi_mitigation, boo
  *                                             Choice of: None, ControlFlow-GNU, ControlFlow-Clang, or ControlFlow
  * @param lvi_mitigation_skip_tests  [boolean] skip LVI mitigation tests?
  * @param use_snmalloc               [boolean] use snmalloc allocator?
+ * @param pr_id                      [string]  Optional - to checkout a specific oe pull request merge head
  */
-def ACCPackageTest(String version, String build_type, String lvi_mitigation, boolean lvi_mitigation_skip_tests = 'OFF', boolean use_snmalloc = 'OFF') {
+def ACCPackageTest(String version, String build_type, String lvi_mitigation, boolean lvi_mitigation_skip_tests = 'OFF', boolean use_snmalloc = 'OFF', String pr_id = '') {
     stage("ACC Package ${version} ${build_type} ${lvi_mitigation} LVI_MITIGATION_SKIP_TESTS=${lvi_mitigation_skip_tests} SNMALLOC=${use_snmalloc}") {
         node(globalvars.AGENTS_LABELS["acc-ubuntu-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
-                checkout scm
+                helpers.oeCheckoutScm(pr_id)
                 def cmakeArgs = helpers.CmakeArgs(
                     builder: 'CMake',
                     build_type: build_type,
@@ -235,13 +240,14 @@ def ACCPackageTest(String version, String build_type, String lvi_mitigation, boo
  * @param version     [string] The version of the container to use
  * @param build_type  [string] The build type to use
  * @param compiler    [string] The compiler to use
+ * @param pr_id       [string] Optional - to checkout a specific oe pull request merge head
  */
-def ACCHostVerificationTest(String version, String build_type, String compiler) {
+def ACCHostVerificationTest(String version, String build_type, String compiler, String pr_id = '') {
     stage("ACC ${version} Generate Quote") {
         node(globalvars.AGENTS_LABELS["acc-ubuntu-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
-                checkout scm
+                helpers.oeCheckoutScm(pr_id)
                 def cmakeArgs = "-G Ninja -DCMAKE_BUILD_TYPE=${build_type} -Wdev"
                 def devices = helpers.getDockerSGXDevices("ubuntu", helpers.getUbuntuReleaseVer())
                 def runArgs = "--user root:root --cap-add=SYS_PTRACE ${devices} --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket"
@@ -299,7 +305,7 @@ def ACCHostVerificationTest(String version, String build_type, String compiler) 
         node(globalvars.AGENTS_LABELS["ubuntu-nonsgx-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
-                checkout scm
+                helpers.oeCheckoutScm(pr_id)
                 unstash "linux_host_verify-${version}-${build_type}-${BUILD_NUMBER}"
                 def cmakeArgs = "-G Ninja -DBUILD_ENCLAVES=OFF -DCMAKE_BUILD_TYPE=${build_type} -Wdev"
                 def runArgs = "--user root:root --cap-add=SYS_PTRACE"
@@ -318,7 +324,7 @@ def ACCHostVerificationTest(String version, String build_type, String compiler) 
         node(globalvars.AGENTS_LABELS["ws2019-nonsgx"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
-                checkout scm
+                helpers.oeCheckoutScm(pr_id)
                 unstash "linux_host_verify-${version}-${build_type}-${BUILD_NUMBER}"
                 def cmakeArgs = "-G Ninja -DBUILD_ENCLAVES=OFF -DCMAKE_BUILD_TYPE=${build_type} -DNUGET_PACKAGE_PATH=C:/oe_prereqs -Wdev"
                 dir('build') {
@@ -348,14 +354,15 @@ def ACCHostVerificationTest(String version, String build_type, String compiler) 
  * @param build_type  [string] The build type to use.
  *                             Choice of: Debug, Release, or RelWithDebInfo
  * @param compiler    [string] The compiler to use.
-*/
+ * @param pr_id       [string] Optional - to checkout a specific oe pull request merge head
+ */
 
-def ACCHostVerificationPackageTest(String version, String build_type, String compiler) {
+def ACCHostVerificationPackageTest(String version, String build_type, String compiler, String pr_id = '') {
     stage("ACC-${version} Generate Quote") {
         node(globalvars.AGENTS_LABELS["acc-ubuntu-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
-                checkout scm
+                helpers.oeCheckoutScm(pr_id)
                 def cmakeArgs = "-G Ninja -DCMAKE_BUILD_TYPE=${build_type} -Wdev"
                 def devices = helpers.getDockerSGXDevices("ubuntu", helpers.getUbuntuReleaseVer())
                 def runArgs = "--user root:root --cap-add=SYS_PTRACE ${devices} --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket"
@@ -413,7 +420,7 @@ def ACCHostVerificationPackageTest(String version, String build_type, String com
         node(globalvars.AGENTS_LABELS["ubuntu-nonsgx-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
-                checkout scm
+                helpers.oeCheckoutScm(pr_id)
                 unstash "linux_host_verify-${version}-${build_type}-${BUILD_NUMBER}"
                 def cmakeArgs = "-G Ninja \
                              -DBUILD_ENCLAVES=OFF \
@@ -453,7 +460,7 @@ def ACCHostVerificationPackageTest(String version, String build_type, String com
         node(globalvars.AGENTS_LABELS["ws2019-nonsgx"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
-                checkout scm
+                helpers.oeCheckoutScm(pr_id)
                 unstash "linux_host_verify-${version}-${build_type}-${BUILD_NUMBER}"
                 cmakeArgs = "-G Ninja \
                              -DBUILD_ENCLAVES=OFF \
@@ -577,12 +584,12 @@ def TestIntelRCs(String label, String release_version, String oe_package = "open
 
 // Azure Windows
 
-def windowsPrereqsVerify(String label) {
+def windowsPrereqsVerify(String label, String pr_id = '') {
     stage("Windows ${label} Install Prereqs Verification") {
         node(globalvars.AGENTS_LABELS[label]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
-                checkout scm
+                helpers.oeCheckoutScm(pr_id)
                 dir('scripts') {
                     bat(
                         returnStdout: false,
@@ -608,13 +615,14 @@ def windowsPrereqsVerify(String label) {
  *                                             Choice of: None, ControlFlow-GNU, ControlFlow-Clang, or ControlFlow
  * @param lvi_mitigation_skip_tests  [boolean] Whether to skip LVI mitigation tests
  * @param extra_cmake_args           [string]  Add custom cmake args
+ * @param pr_id                      [string]  Optional - to checkout a specific oe pull request merge head
  */
-def windowsLinuxElfBuild(String windows_label, String ubuntu_label, String compiler, String build_type, String lvi_mitigation = 'None', String lvi_mitigation_skip_tests = 'OFF', List extra_cmake_args = []) {
+def windowsLinuxElfBuild(String windows_label, String ubuntu_label, String compiler, String build_type, String lvi_mitigation = 'None', String lvi_mitigation_skip_tests = 'OFF', List extra_cmake_args = [], String pr_id = '') {
     stage("${ubuntu_label} ${compiler} ${build_type} LVI_MITIGATION=${lvi_mitigation}") {
         node(ubuntu_label) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
-                checkout scm
+                helpers.oeCheckoutScm(pr_id)
                 def runArgs = "--user root:root --cap-add=SYS_PTRACE"
                 def task = """
                            cmake ${WORKSPACE}                                           \
@@ -641,7 +649,7 @@ def windowsLinuxElfBuild(String windows_label, String ubuntu_label, String compi
         node(windows_label) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
-                checkout scm
+                helpers.oeCheckoutScm(pr_id)
                 unstash "linux-${windows_label}-${compiler}-${build_type}-lvi_mitigation=${lvi_mitigation}-${ubuntu_label}-${BUILD_NUMBER}"
                 bat 'move build linuxbin'
                 dir('build') {
@@ -680,8 +688,9 @@ def windowsLinuxElfBuild(String windows_label, String ubuntu_label, String compi
  *                                             Choice of: 0, 1
  * @param lvi_mitigation_skip_tests  [boolean] Whether to skip LVI mitigation tests
  * @param extra_cmake_args           [string]  Add custom cmake args
+ * @param pr_id                      [string]  Optional - to checkout a specific oe pull request merge head
  */
-def windowsCrossCompile(String label, String compiler, String build_type, String lvi_mitigation = 'None', String OE_SIMULATION = "0", String lvi_mitigation_skip_tests = 'OFF', String use_snmalloc = 'OFF') {
+def windowsCrossCompile(String label, String compiler, String build_type, String lvi_mitigation = 'None', String OE_SIMULATION = "0", String lvi_mitigation_skip_tests = 'OFF', String use_snmalloc = 'OFF', String pr_id = '') {
     stage("Windows ${label} ${build_type} with SGX LVI_MITIGATION=${lvi_mitigation}") {
         // fail fast and retry if Windows agent goes offline
         // exceptions seen in the wild:
@@ -701,7 +710,7 @@ def windowsCrossCompile(String label, String compiler, String build_type, String
                     // Interrupt build if no output received from node for 15 minutes
                     timeout(time: 15, activity: true, unit: 'MINUTES') {
                         withEnv(["OE_SIMULATION=${OE_SIMULATION}"]) {
-                            checkout scm
+                            helpers.oeCheckoutScm(pr_id)
                             dir("build") {
                                 /*
                                 In simulation mode, some samples should not be ran or should run simulation mode. 
@@ -848,12 +857,12 @@ def windowsCrossCompile(String label, String compiler, String build_type, String
     }
 }
 
-def windowsCrossPlatform(String label) {
+def windowsCrossPlatform(String label, String pr_id = '') {
     stage("Windows ${label} Cross Plaform Build") {
         node(label) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
-                checkout scm
+                helpers.oeCheckoutScm(pr_id)
 
                 dir("devex/cross-nuget/standalone-builds/windows") {
                     bat(
@@ -880,13 +889,14 @@ def windowsCrossPlatform(String label) {
  *                                    Choice of: Debug, Release, or RelWithDebInfo
  * @param compiler          [string]  Compiler to use
  * @param extra_cmake_args  [string]  Add custom cmake args
+ * @param pr_id             [string]  Optional - to checkout a specific oe pull request merge head
  */
-def simulationContainerTest(String version, String build_type, String compiler, List extra_cmake_args = []) {
+def simulationContainerTest(String version, String build_type, String compiler, List extra_cmake_args = [], String pr_id = '') {
     stage("Simulation Ubuntu ${version} clang-${compiler} ${build_type}, extra_cmake_args: ${extra_cmake_args}") {
         node(globalvars.AGENTS_LABELS["ubuntu-nonsgx-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
-                checkout scm
+                helpers.oeCheckoutScm(pr_id)
                 def runArgs = "--user root:root --cap-add=SYS_PTRACE"
                 def task = """
                            cmake ${WORKSPACE}                                           \
@@ -908,15 +918,16 @@ def simulationContainerTest(String version, String build_type, String compiler, 
 
 /* Builds OP-TEE inside a container
  *
- * @param version           [string]  Version of Ubuntu to use
- * @param compiler          [string]  Compiler to use
+ * @param version  [string]  Version of Ubuntu to use
+ * @param compiler [string]  Compiler to use
+ * @param pr_id    [string] Optional - to checkout a specific oe pull request merge head
  */
-def buildCrossPlatform(String version, String compiler) {
+def buildCrossPlatform(String version, String compiler, String pr_id = '') {
     stage("Ubuntu ${version} OP-TEE Build") {
         node(globalvars.AGENTS_LABELS["ubuntu-nonsgx-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
-                checkout scm
+                helpers.oeCheckoutScm(pr_id)
                 def runArgs = "--user root:root --cap-add=SYS_PTRACE"
                 def os = version == "20.04" ? "focal" : "bionic"
                 def task = """
@@ -947,13 +958,14 @@ def buildCrossPlatform(String version, String compiler) {
  * @param version           [string]  Version of Ubuntu to use
  * @param build_type        [string]  The build type to use.
  *                                    Choice of: Debug, Release, or RelWithDebInfo
+ * @param pr_id             [string]  Optional - to checkout a specific oe pull request merge head
  */
-def AArch64GNUTest(String version, String build_type) {
+def AArch64GNUTest(String version, String build_type, String pr_id = '') {
     stage("AArch64 GNU gcc Ubuntu${version} ${build_type}") {
         node(globalvars.AGENTS_LABELS["ubuntu-nonsgx-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
-                checkout scm
+                helpers.oeCheckoutScm(pr_id)
                 def runArgs = "--user root:root --cap-add=SYS_PTRACE"
                 def task = """
                             cmake ${WORKSPACE}                                                     \
@@ -971,12 +983,12 @@ def AArch64GNUTest(String version, String build_type) {
     }
 }
 
-def checkDevFlows(String version, String compiler) {
+def checkDevFlows(String version, String compiler, String pr_id = '') {
     stage('Default compiler') {
         node(globalvars.AGENTS_LABELS["ubuntu-nonsgx-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
-                checkout scm
+                helpers.oeCheckoutScm(pr_id)
                 def runArgs = "--user root:root --cap-add=SYS_PTRACE"
                 def task = """
                            cmake ${WORKSPACE} -G Ninja -DHAS_QUOTE_PROVIDER=OFF -Wdev --warn-uninitialized -Werror=dev
@@ -988,12 +1000,12 @@ def checkDevFlows(String version, String compiler) {
     }
 }
 
-def checkCI(String compiler) {
+def checkCI(String compiler, String pr_id = '') {
     stage('Check CI') {
         node(globalvars.AGENTS_LABELS["ubuntu-nonsgx-20.04"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
-                checkout scm
+                helpers.oeCheckoutScm(pr_id)
                 def runArgs = "--user root:root --cap-add=SYS_PTRACE"
                 def task = """
                     git config --global --add safe.directory ${WORKSPACE}
