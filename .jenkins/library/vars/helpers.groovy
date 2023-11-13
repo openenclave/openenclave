@@ -820,3 +820,33 @@ def dockerGetAptPackageVersion(String docker_image, String apt_package) {
     if ( !version ) { version = "N/A" }
     return version
 }
+
+def oeCheckoutScm(String PULL_REQUEST_ID) {
+    /* If a build was triggered with params.PULL_REQUEST_ID set, then we are building a PR.
+    * In this case, we need to checkout the PR merge head.
+    * Otherwise we are building a branch and the branch is already checked out by the SCM plugin.
+    */
+    if ( PULL_REQUEST_ID != "" ) {
+        cleanWs()
+        checkout([$class: 'GitSCM',
+            branches: [[name: "pr/${PULL_REQUEST_ID}"]],
+            doGenerateSubmoduleConfigurations: false,
+            extensions: [[ $class: 'SubmoduleOption',
+                           parentCredentials: true,
+                           reference: '',
+                           disableSubmodules: false,
+                           recursiveSubmodules: true,
+                           trackingSubmodules: false,
+                           timeout: 30,
+                           shallow: true,
+                           depth: 1
+            ]],
+            userRemoteConfigs: [[
+                url: 'https://github.com/openenclave/openenclave',
+                refspec: "+refs/pull/${PULL_REQUEST_ID}/merge:refs/remotes/origin/pr/${PULL_REQUEST_ID}"
+            ]]
+        ])
+    } else {
+        checkout scm
+    }
+}
