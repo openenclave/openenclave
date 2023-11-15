@@ -18,8 +18,8 @@ nuget_url:           "https://oejenkins.blob.core.windows.net/oejenkins/nuget-3.
 nuget_hash:          "2D4D38666E5C7D27EE487C60C9637BD9DD63795A117F0E0EDC68C55EE6DFB71F"
 devcon_package_url:  "https://oejenkins.blob.core.windows.net/oejenkins/devcon_package.cab"
 devcon_package_hash: "A38E409617FC89D0BA1224C31E42AF4344013FEA046D2248E4B9E03F67D5908A"
-az_dcap_client_url:  "https://www.nuget.org/api/v2/package/Microsoft.Azure.DCAP/1.12.1"
-az_dcap_client_hash: "253B2B427BFC75F22B3B6C48340518335F7EA044FAD06670B22F86017560AFD6"
+az_dcap_client_url:  "https://www.nuget.org/api/v2/package/Microsoft.Azure.DCAP/1.12.2"
+az_dcap_client_hash: "C35ACC18B9481171EDE6D0DD9672D44DC94BB95B7B2724B3062D01234CCD8B99"
 nsis_url:            "https://oejenkins.blob.core.windows.net/oejenkins/nsis-3.05-setup.exe"
 nsis_hash:           "1A3CC9401667547B9B9327A177B13485F7C59C2303D4B6183E7BC9E6C8D6BFDB"
 
