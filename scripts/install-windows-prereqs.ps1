@@ -20,9 +20,9 @@ Param(
     [string]$NugetHash = '2D4D38666E5C7D27EE487C60C9637BD9DD63795A117F0E0EDC68C55EE6DFB71F',
     [string]$DevconURL = 'https://download.microsoft.com/download/7/D/D/7DD48DE6-8BDA-47C0-854A-539A800FAA90/wdk/Installers/787bee96dbd26371076b37b13c405890.cab',
     [string]$DevconHash = 'A38E409617FC89D0BA1224C31E42AF4344013FEA046D2248E4B9E03F67D5908A',
-    # Intel PSW 2.20.100.1 is included in DCAP 1.18.100.1
-    [string]$IntelDCAPURL = 'https://registrationcenter-download.intel.com/akdlm/IRC_NAS/c8fc28e4-bfa9-4e1d-8dc5-502f5e6895a5/Intel_SGX_DCAP_for_Windows_v1.18.100.1.zip',
-    [string]$IntelDCAPHash = 'CDB796B5D97744CE64E8B2B1DEC4EF95ABB2AAE00C74ACD38E70355A5235D06F',
+    # Intel PSW 2.21.100.3 is included in DCAP 1.19.100.3
+    [string]$IntelDCAPURL = 'https://registrationcenter-download.intel.com/akdlm/IRC_NAS/d929c03e-d7ab-4c9f-882b-94cb9e35b8b9/Intel_SGX_DCAP_for_Windows_v1.19.100.3.zip',
+    [string]$IntelDCAPHash = '60478D69373D1BD9E244DC6442B12D5D8137CA7F3148ED9979FBC0B76915EBF7',
     [string]$VCRuntime2012URL = 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe',
     [string]$VCRuntime2012Hash = '681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064',
     [string]$AzureDCAPNupkgURL = 'https://www.nuget.org/api/v2/package/Microsoft.Azure.DCAP/1.12.1',
@@ -504,7 +504,7 @@ function Install-DCAP-Dependencies {
     $TEMP_NUGET_DIR = "$PACKAGES_DIRECTORY\Azure_DCAP_Client_nupkg"
     New-Directory -Path $OE_NUGET_DIR -RemoveExisting
     New-Directory -Path $TEMP_NUGET_DIR -RemoveExisting
-    $nupkgDir = Get-Item "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel SGX DCAP for Windows *\nuget"
+    $nupkgDir = Get-Item "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel_SGX_DCAP_for_Windows_*\nuget"
     if(!$nupkgDir) {
         Throw "Cannot find the Intel DCAP nupkg directory"
     }
