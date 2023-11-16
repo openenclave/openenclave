@@ -148,7 +148,8 @@ def buildWindowsManagedImage(String os_series, String image_type, String launch_
                                 --resource-group ${VM_RG_NAME} \
                                 --location ${REGION} \
                                 --name ${VM_NAME} \
-                                --size Standard_DC4s_v3 \
+                                --size Standard_DC4s_v2 \
+                                --security-type Standard \
                                 --os-disk-size-gb 128 \
                                 --subnet \$SUBNET_ID \
                                 --admin-username ${SSH_USERNAME} \

@@ -826,7 +826,7 @@ def oeCheckoutScm(String PULL_REQUEST_ID) {
     * In this case, we need to checkout the PR merge head.
     * Otherwise we are building a branch and the branch is already checked out by the SCM plugin.
     */
-    if ( PULL_REQUEST_ID != "" ) {
+    if ( PULL_REQUEST_ID != null && PULL_REQUEST_ID != "" ) {
         cleanWs()
         checkout([$class: 'GitSCM',
             branches: [[name: "pr/${PULL_REQUEST_ID}"]],
