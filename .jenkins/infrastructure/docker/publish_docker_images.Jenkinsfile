@@ -132,6 +132,8 @@ pipeline {
                                     docker.withRegistry(params.INTERNAL_REPO, params.INTERNAL_REPO_CRED_ID) {
                                         powershell """
                                             docker pull ${INTERNAL_REPO_NAME}/oetools-ws2019:${params.INTERNAL_WINDOWS_TAG}
+                                            
+                                            docker pull ${INTERNAL_REPO_NAME}/oetools-ws2022:${params.INTERNAL_WINDOWS_TAG}
                                         """
                                     }
                                 }
@@ -144,6 +146,9 @@ pipeline {
                                         powershell """
                                             docker tag ${INTERNAL_REPO_NAME}/oetools-ws2019:${params.INTERNAL_WINDOWS_TAG} ${PUBLIC_REPO_NAME}/oetools-ws2019:${params.PUBLIC_WINDOWS_TAG}
                                             docker push ${PUBLIC_REPO_NAME}/oetools-ws2019:${params.PUBLIC_WINDOWS_TAG}
+
+                                            docker tag ${INTERNAL_REPO_NAME}/oetools-ws2022:${params.INTERNAL_WINDOWS_TAG} ${PUBLIC_REPO_NAME}/oetools-ws2022:${params.PUBLIC_WINDOWS_TAG}
+                                            docker push ${PUBLIC_REPO_NAME}/oetools-ws2022:${params.PUBLIC_WINDOWS_TAG}
                                         """
                                     }
                                 }
@@ -159,6 +164,9 @@ pipeline {
                                         powershell """
                                             docker tag ${PUBLIC_REPO_NAME}/oetools-ws2019:${params.PUBLIC_WINDOWS_TAG} ${PUBLIC_REPO_NAME}/oetools-ws2019:latest
                                             docker push ${PUBLIC_REPO_NAME}/oetools-ws2019:latest
+
+                                            docker tag ${PUBLIC_REPO_NAME}/oetools-ws2022:${params.PUBLIC_WINDOWS_TAG} ${PUBLIC_REPO_NAME}/oetools-ws2022:latest
+                                            docker push ${PUBLIC_REPO_NAME}/oetools-ws2022:latest
                                         """
                                     }
                                 }
@@ -174,6 +182,9 @@ pipeline {
                                         powershell """
                                             docker tag ${INTERNAL_REPO_NAME}/oetools-ws2019:${params.INTERNAL_WINDOWS_TAG} ${INTERNAL_REPO_NAME}/oetools-ws2019:${params.PUBLIC_WINDOWS_TAG}
                                             docker push ${INTERNAL_REPO_NAME}/oetools-ws2019:${params.PUBLIC_WINDOWS_TAG}
+                                            
+                                            docker tag ${INTERNAL_REPO_NAME}/oetools-ws2022:${params.INTERNAL_WINDOWS_TAG} ${INTERNAL_REPO_NAME}/oetools-ws2022:${params.PUBLIC_WINDOWS_TAG}
+                                            docker push ${INTERNAL_REPO_NAME}/oetools-ws2022:${params.PUBLIC_WINDOWS_TAG}
                                         """
                                     }
                                 }
@@ -189,6 +200,9 @@ pipeline {
                                         powershell """
                                             docker tag ${INTERNAL_REPO_NAME}/oetools-ws2019:${params.INTERNAL_WINDOWS_TAG} ${INTERNAL_REPO_NAME}/oetools-ws2019:latest
                                             docker push ${INTERNAL_REPO_NAME}/oetools-ws2019:latest
+                                            
+                                            docker tag ${INTERNAL_REPO_NAME}/oetools-ws2022:${params.INTERNAL_WINDOWS_TAG} ${INTERNAL_REPO_NAME}/oetools-ws2022:latest
+                                            docker push ${INTERNAL_REPO_NAME}/oetools-ws2022:latest
                                         """
                                     }
                                 }
@@ -243,6 +257,7 @@ pipeline {
                             if (params.PUBLISH_WINDOWS) {
                                 sh """
                                     echo "| Windows Server 2019 | ${PUBLIC_REPO_NAME}/oetools-ws2019:${PUBLIC_WINDOWS_TAG} | ${OE_VERSION} | None | None |" >> DOCKER_IMAGES_new.md
+                                    echo "| Windows Server 2022 | ${PUBLIC_REPO_NAME}/oetools-ws2022:${PUBLIC_WINDOWS_TAG} | ${OE_VERSION} | None | None |" >> DOCKER_IMAGES_new.md
                                 """
                             }
                             if (params.PUBLISH_LINUX) {

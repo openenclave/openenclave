@@ -21,7 +21,7 @@ pipeline {
         string(name: "INTERNAL_REPO", defaultValue: "https://oejenkinscidockerregistry.azurecr.io", description: "Url for internal Docker repository")
         string(name: "INTERNAL_REPO_CRED_ID", defaultValue: "oejenkinscidockerregistry", description: "Credential ID for internal Docker repository")
         string(name: "OECI_LIB_VERSION", defaultValue: 'master', description: 'Version of OE Libraries to use')
-        string(name: "AGENTS_LABEL", defaultValue: 'ws2019-nonsgx', description: "Label of the agent to use to run this job")
+        string(name: "AGENTS_LABEL", defaultValue: 'ws2022-nonsgx', description: "Label of the agent to use to run this job")
         booleanParam(name: "TAG_LATEST", defaultValue: false, description: "Update the latest tag to the currently built DOCKER_TAG")
     }
     stages {
@@ -46,6 +46,18 @@ pipeline {
                 }
             }
         }
+        stage("Build Windows Server 2022 Docker Image") {
+            steps {
+                powershell """
+                    New-Item -Path build\\scripts -ItemType Directory
+                    Copy-Item -Path scripts\\install-windows-prereqs.ps1 -Destination build\\scripts\\install-windows-prereqs.ps1
+                    cd build
+                """
+                script {
+                    oe2022 = common.dockerImage("oetools-ws2022:${TAG_FULL_IMAGE}", ".jenkins/infrastructure/docker/dockerfiles/windows/Windows22.Dockerfile")
+                }
+            }
+        }
         stage("Push to OE Docker Registry") {
             steps {
                 script {
@@ -53,6 +65,10 @@ pipeline {
                         common.exec_with_retry { oe2019.push() }
                         if ( params.TAG_LATEST ) {
                             common.exec_with_retry { oe2019.push('latest') }
+                        }
+                        common.exec_with_retry { oe2022.push() }
+                        if ( params.TAG_LATEST ) {
+                            common.exec_with_retry { oe2022.push('latest') }
                         }
                     }
                 }
