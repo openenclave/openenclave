@@ -46,3 +46,7 @@ validation_binaries:
   - "C:\\Program Files\\shellcheck\\shellcheck.exe"
   - "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Tools\\MSVC\\14.29.30133\\bin\\Hostx64\\x64\\link.exe"
   - "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Tools\\MSVC\\14.29.30133\\bin\\Hostx64\\x64\\cl.exe"
+
+azure_windows_update_reject_list:
+  # KB5034439: Azure VMs do not use WinRE and cannot update it
+  - "KB5034439"
