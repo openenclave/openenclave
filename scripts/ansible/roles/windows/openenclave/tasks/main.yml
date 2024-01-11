@@ -49,19 +49,17 @@
       name: WinRM
       start_mode: delayed
 
-  - name: OE setup | Windows Updates
-    block:
-      - name: Install all security, critical, and rollup updates without a scheduled task
-        win_updates:
-          category_names:
-            - SecurityUpdates
-            - CriticalUpdates
-            - UpdateRollups
-          reboot: yes
-          reboot_timeout: 3600
-    always:
-      - name: OE setup | Reboot the node
-        win_reboot:
+  - name: Install all security, critical, and rollup updates without a scheduled task
+    win_updates:
+      category_names:
+        - SecurityUpdates
+        - CriticalUpdates
+        - UpdateRollups
+      reboot: yes
+      reboot_timeout: 3600
+      # Use azure_windows_update_reject_list only if the VM is an Azure VM
+      reject_list: "{{ azure_windows_update_reject_list if is_azure_vm else [] }}"
+    notify: "Reboot node"
 
   - import_role:
       name: windows/openenclave
