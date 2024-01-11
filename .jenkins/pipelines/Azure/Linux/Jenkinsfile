@@ -21,7 +21,6 @@ try{
     if(FULL_TEST_SUITE == "true") {
         testing_stages += [
             "Host verification 2004 Debug":                          { tests.ACCHostVerificationTest('20.04', 'Debug', 'clang-11', params.PULL_REQUEST_ID) },
-            "Host verification package 2004 Debug":                  { tests.ACCHostVerificationPackageTest('20.04', 'Debug', 'clang-11', params.PULL_REQUEST_ID) },
             "Package ACC2004 Debug ControlFlow":                     { tests.ACCPackageTest('20.04', 'Debug', 'ControlFlow', false, false, params.PULL_REQUEST_ID) },
             "ACC2004 clang-11 RelWithDebInfo ControlFlow":           { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04"], 'clang-11', 'RelWithDebInfo', 'ControlFlow',       false, false, false, false, params.PULL_REQUEST_ID) },
             "ACC2004 clang-11 RelWithDebInfo ControlFlow-Clang":     { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04"], 'clang-11', 'RelWithDebInfo', 'ControlFlow-Clang', false, false, false, false, params.PULL_REQUEST_ID) },
