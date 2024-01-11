@@ -26,7 +26,7 @@ OS_NAME_MAP = [
 ]
 
 def buildLinuxManagedImage(String os_type, String version, String managed_image_name_id, String gallery_image_version) {
-    stage('Check Prerequisites') {
+    stage('Install prerequisites') {
         retry(10) {
             sh """#!/bin/bash
                 sleep 5
@@ -34,6 +34,8 @@ def buildLinuxManagedImage(String os_type, String version, String managed_image_
                 sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com \$(lsb_release -cs) main"
                 ${helpers.WaitForAptLock()}
                 sudo apt-get update && sudo apt-get install packer
+                packer plugins install github.com/hashicorp/azure
+                packer plugins install github.com/hashicorp/ansible
             """
         }
     }
@@ -139,6 +141,9 @@ def buildWindowsManagedImage(String os_series, String image_type, String launch_
                             "REGION=${REGION}",
                             "VM_NAME=${vm_name}",
                             "AZURE_IMAGE_ID=${azure_image_id}"]) {
+                        // Create a VM that will be captured as a managed image
+                        // Note: Creation of managed images are not supported for virtual machine with TrustedLaunch security type.
+
                         sh '''
                             SUBNET_ID=\$(az network vnet subnet show \
                                 --resource-group ${JENKINS_RG_NAME} \
@@ -148,15 +153,15 @@ def buildWindowsManagedImage(String os_series, String image_type, String launch_
                                 --resource-group ${VM_RG_NAME} \
                                 --location ${REGION} \
                                 --name ${VM_NAME} \
-                                --size Standard_DC4s_v2 \
-                                --security-type Standard \
+                                --size Standard_DC2s_v2 \
                                 --os-disk-size-gb 128 \
                                 --subnet \$SUBNET_ID \
                                 --admin-username ${SSH_USERNAME} \
                                 --admin-password ${SSH_PASSWORD} \
                                 --image ${AZURE_IMAGE_ID} \
                                 --public-ip-address \"\" \
-                                --nsg-rule NONE
+                                --nsg-rule NONE \
+                                --security-type Standard
                             '''
                         sh """
                             az vm run-command invoke \
@@ -217,6 +222,7 @@ def buildWindowsManagedImage(String os_series, String image_type, String launch_
                         ansible-playbook \
                             -i ${WORKSPACE}/scripts/ansible/inventory/hosts-${vm_name} \
                             --extra-vars \"clang_target_version=${clang_version_short}\" \
+                            --extra-vars \"is_azure_vm=yes\" \
                             oe-windows-acc-setup.yml \
                             jenkins-packer.yml
 

@@ -1,0 +1,6 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+- name: Reboot node
+  ansible.windows.win_reboot:
+    reboot_timeout: 900
