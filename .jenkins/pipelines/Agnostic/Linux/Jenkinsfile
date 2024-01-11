@@ -15,7 +15,6 @@ try{
     if(FULL_TEST_SUITE == "true") {
         stage("Full Test Suite") {
             testing_stages += [
-                "Sim 2004 clang-11 SGX1 RelWithDebInfo":             { tests.simulationContainerTest('20.04', 'RelWithDebInfo', 'clang-11', ['-DHAS_QUOTE_PROVIDER=OFF', '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF'], params.PULL_REQUEST_ID) },
                 "Sim 2004 clang-11 SGX1FLC RelWithDebInfo":          { tests.simulationContainerTest('20.04', 'RelWithDebInfo', 'clang-11', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF'], params.PULL_REQUEST_ID) },
                 "Sim 2004 clang-11 SGX1FLC Debug snmalloc":          { tests.simulationContainerTest('20.04', 'Debug',          'clang-11', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON'], params.PULL_REQUEST_ID) },
                 "Sim 2004 clang-11 SGX1FLC RelWithDebInfo snmalloc": { tests.simulationContainerTest('20.04', 'RelWithDebInfo', 'clang-11', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON'], params.PULL_REQUEST_ID) }
