@@ -79,7 +79,7 @@ int main(int argc, const char* argv[])
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
 
-    if (argc != 2)
+    if (argc != 3)
     {
         fprintf(stderr, "Usage: %s ENCLAVE_PATH\n", argv[0]);
         return 1;
@@ -93,7 +93,7 @@ int main(int argc, const char* argv[])
         oe_put_err("oe_create_crypto_enclave(): result=%u", result);
     }
 
-    if ((result = test(enclave)) != OE_OK)
+    if ((result = test(enclave, (char*)argv[2])) != OE_OK)
     {
         oe_put_err("test() failed: result=%u", result);
     }

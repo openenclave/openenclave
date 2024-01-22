@@ -32,25 +32,25 @@
 void _reset_fxsave_state()
 {
     /* Initialize the FXSAVE state values to Linux x86-64 ABI defined values:
-     * FCW = 0x037F, MXCSR = 0x1F80, MXCSR mask = 0xFFFF */
+     * FCW = 0x037F, MXCSR = 0x1FBF, MXCSR mask = 0xFFFF */
     static OE_ALIGNED(OE_FXSAVE_ALIGNMENT) const uint64_t
         _initial_fxstate[OE_FXSAVE_AREA_SIZE / sizeof(uint64_t)] = {
-            0x037F, 0, 0, 0xFFFF00001F80,
-            0,      0, 0, 0,
-            0,      0, 0, 0,
-            0,      0, 0, 0,
-            0,      0, 0, 0,
-            0,      0, 0, 0,
-            0,      0, 0, 0,
-            0,      0, 0, 0,
-            0,      0, 0, 0,
-            0,      0, 0, 0,
-            0,      0, 0, 0,
-            0,      0, 0, 0,
-            0,      0, 0, 0,
-            0,      0, 0, 0,
-            0,      0, 0, 0,
-            0,      0, 0, 0,
+            0x037F, 0,          0, 0xFFFF00001FBF,
+            0,      0,          0, 0,
+            0,      0,          0, 0,
+            0,      0,          0, 0,
+            0,      0,          0, 0,
+            0,      0,          0, 0,
+            0,      0,          0, 0,
+            0,      0,          0, 0,
+            0,      0,          0, 0,
+            0,      0,          0, 0,
+            0,      0,          0, 0,
+            0,      0,          0, 0,
+            0,      0,          0, 0,
+            0,      0,          0, 0,
+            2,      0x80000002, 0, 0,
+            0,      0,          0, 0,
         };
 
     asm volatile("fxrstor %[fx_state] \n\t"

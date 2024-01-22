@@ -19,12 +19,17 @@
     "ConfigurationAndSWHardeningNeeded"
 #define SGX_TCB_STATUS_INVALID "Invalid"
 
+#ifdef OEUTIL_TCB_ALLOW_ANY_ROOT_KEY // allow overrode by oeutil
+// Defined by tools/oeutil/host/generate_evidence.cpp
+extern const char* _trusted_root_key_pem;
+#else // use hard-coded value
 // Public key of Intel's root certificate.
 static const char* _trusted_root_key_pem =
     "-----BEGIN PUBLIC KEY-----\n"
     "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEC6nEwMDIYZOj/iPWsCzaEKi71OiO\n"
     "SLRFhWGjbnBVJfVnkY4u3IjkDYYL0MxO4mqsyYjlBalTVYxFP2sJBK5zlA==\n"
     "-----END PUBLIC KEY-----\n";
+#endif
 
 OE_INLINE uint8_t _is_space(uint8_t c)
 {
@@ -328,6 +333,9 @@ const char* oe_sgx_tcb_status_str(const oe_sgx_tcb_status_t sgx_tcb_status)
 }
 
 /**
+ * For TcbInfoV1 and TcbInfoV2
+ * Parse the tcb object at JSON object.tcbInfo.tcbLevels[].tcb
+ *
  * Type: tcb in TCB Info tcbLevels
  * Schema:
  * {
@@ -338,7 +346,7 @@ const char* oe_sgx_tcb_status_str(const oe_sgx_tcb_status_t sgx_tcb_status)
  *    "pcesvn": uint16_t
  * }
  */
-static oe_result_t _read_tcb_info_tcb_level(
+static oe_result_t _read_tcb_info_tcb_level_tcb_v1_or_v2(
     const uint8_t** itr,
     const uint8_t* end,
     oe_tcb_info_tcb_level_t* tcb_level)
@@ -395,9 +403,157 @@ done:
     return result;
 }
 
+/**
+ * Parse the tcbcomponent object
+ * at JSON object.tcbInfo.tcbLevels[].tcb.<sgx|tdx>tcbcomponents[]
+ *
+ * Only return the svn as other fields are not used
+ *
+ * tcbcomponent Schema
+ * {
+ *     "svn": integer,
+ *     "category": string (optional),
+ *     "type": string (optional)
+ * }
+ */
+static oe_result_t _read_tcb_info_tcb_level_tcb_tcbcomponent(
+    const uint8_t** itr,
+    const uint8_t* end,
+    uint64_t* svn)
+{
+    oe_result_t result = OE_JSON_INFO_PARSE_ERROR;
+    uint64_t value = 0;
+    const uint8_t* str = NULL;
+    size_t str_size = 0;
+
+    OE_CHECK(_read('{', itr, end));
+    OE_CHECK(_read_property_name_and_colon("svn", itr, end));
+    OE_CHECK(_read_integer(itr, end, &value));
+    *svn = value;
+
+    // Read and ignore category, if present
+    if (OE_OK == _read(',', itr, end))
+    {
+        const uint8_t* old_itr = *itr;
+        result = _read_property_name_and_colon("category", itr, end);
+        if (result == OE_OK)
+        {
+            OE_CHECK(_read_string(itr, end, &str, &str_size));
+        }
+        else if (result == OE_JSON_INFO_PARSE_ERROR)
+        {
+            *itr = old_itr;
+        }
+    }
+
+    // Read and ignore type, if present
+    if (OE_OK == _read(',', itr, end))
+    {
+        const uint8_t* old_itr = *itr;
+        result = _read_property_name_and_colon("type", itr, end);
+        if (result == OE_OK)
+        {
+            OE_CHECK(_read_string(itr, end, &str, &str_size));
+        }
+        else if (result == OE_JSON_INFO_PARSE_ERROR)
+        {
+            *itr = old_itr;
+        }
+    }
+
+    OE_CHECK(_read('}', itr, end));
+
+    result = OE_OK;
+done:
+    return result;
+}
+
+/**
+ * For TcbInfoV3
+ * Parse the tcb object at JSON object.tcbInfo.tcbLevels[].tcb
+ *
+ * tcb Schema
+ * {
+ *     "sgxtcbcomponents": array of 16 tcbcomponents,
+ *     "pcesvn": integer,
+ *     "tdxtcbcomponents": array of 16 tcbcomponents (optional)
+ * }
+ */
+static oe_result_t _read_tcb_info_tcb_level_tcb_v3(
+    const uint8_t** itr,
+    const uint8_t* end,
+    oe_tcb_info_tcb_level_t* tcb_level)
+{
+    oe_result_t result = OE_JSON_INFO_PARSE_ERROR;
+    uint64_t value = 0;
+
+    OE_CHECK(_read('{', itr, end));
+    OE_TRACE_VERBOSE("Reading sgxtcbcomponents");
+    OE_CHECK(_read_property_name_and_colon("sgxtcbcomponents", itr, end));
+    OE_CHECK(_read('[', itr, end));
+    // Read array of tcbcomponents for SGX
+    for (size_t i = 0; i < OE_TCB_COMPONENT_SIZE; ++i)
+    {
+        OE_TRACE_VERBOSE("Reading sgxtcbcomponents[%d]", i);
+        OE_CHECK(_read_tcb_info_tcb_level_tcb_tcbcomponent(itr, end, &value));
+        OE_TRACE_VERBOSE("sgxtcbcomponents[%d].svn = %lu", i, value);
+
+        if (value > OE_UCHAR_MAX)
+            OE_RAISE(OE_JSON_INFO_PARSE_ERROR);
+
+        tcb_level->sgx_tcb_comp_svn[i] = (uint8_t)value;
+
+        if (i != (OE_TCB_COMPONENT_SIZE - 1))
+            OE_CHECK(_read(',', itr, end));
+    }
+    OE_CHECK(_read(']', itr, end));
+    OE_CHECK(_read(',', itr, end));
+
+    OE_TRACE_VERBOSE("Reading pcesvn");
+    OE_CHECK(_read_property_name_and_colon("pcesvn", itr, end));
+    OE_CHECK(_read_integer(itr, end, &value));
+    OE_TRACE_VERBOSE("value = %lu", value);
+
+    if (value > OE_USHRT_MAX)
+        OE_RAISE(OE_JSON_INFO_PARSE_ERROR);
+
+    tcb_level->pce_svn = (uint16_t)value;
+
+    // Optionally, read array of tcbcomponents for TDX
+    if (OE_OK == _read(',', itr, end))
+    {
+        OE_TRACE_VERBOSE("Reading tdxtcbcomponents");
+        OE_CHECK(_read_property_name_and_colon("tdxtcbcomponents", itr, end));
+        OE_CHECK(_read('[', itr, end));
+        // Read array of tcbcomponents for TDX
+        for (size_t i = 0; i < OE_TCB_COMPONENT_SIZE; ++i)
+        {
+            OE_TRACE_VERBOSE("Reading tdxtcbcomponents[%d]", i);
+            OE_CHECK(
+                _read_tcb_info_tcb_level_tcb_tcbcomponent(itr, end, &value));
+            OE_TRACE_VERBOSE("tdxtcbcomponents[%d].svn = %lu", i, value);
+
+            if (value > OE_UCHAR_MAX)
+                OE_RAISE(OE_JSON_INFO_PARSE_ERROR);
+
+            tcb_level->tdx_tcb_comp_svn[i] = (uint8_t)value;
+
+            if (i != (OE_TCB_COMPONENT_SIZE - 1))
+                OE_CHECK(_read(',', itr, end));
+        }
+        OE_CHECK(_read(']', itr, end));
+    }
+
+    OE_CHECK(_read('}', itr, end));
+
+    result = OE_OK;
+done:
+    return result;
+}
+
 // Algorithm specified by Intel, reworded:
 // 1. Go over the sorted collection of TCB levels in the JSON.
-// 2. Choose the first tcb level for which  all of the platform's comp svn
+// 2. Choose the first tcb level for which all of the platform's comp svn
 // values and pcesvn values are greater than or equal to corresponding values of
 // the tcb level.
 // 3. The status of the platform's tcb level is the status of the chosen tcb
@@ -474,7 +630,7 @@ static oe_result_t _read_tcb_info_tcb_level_v1(
 
         OE_TRACE_VERBOSE("Reading tcb");
         OE_CHECK(_read_property_name_and_colon("tcb", itr, end));
-        OE_CHECK(_read_tcb_info_tcb_level(itr, end, tcb_level));
+        OE_CHECK(_read_tcb_info_tcb_level_tcb_v1_or_v2(itr, end, tcb_level));
         OE_CHECK(_read(',', itr, end));
 
         OE_TRACE_VERBOSE("Reading status");
@@ -503,8 +659,14 @@ done:
 }
 
 /**
- * Type: tcbLevel in TCB Info (V2)
- * Schema:
+ * Parse JSON representation of .tcbInfo.tcbLevels
+ *
+ * TcbInfoV2's tcbLevels Schema:
+ * {
+ *     "tcbLevels": [array of tcbLevel]
+ * }
+ *
+ * tcbLevel
  * {
  *    "tcb" : object of type tcb (Note: QE Identity info has the same object,
  * but with different set of values). "tcbDate" : oe_datetime_t when TCB level
@@ -516,8 +678,22 @@ done:
  * array of strings describing vulnerabilities that this TCB level is vulnerable
  * to.  Example: ["INTEL-SA-00079", "INTEL-SA-00076"]
  * }
+ *
+ * TcbInfoV3's tcbLevels Schema:
+ * {
+ *     "tcbLevels": [array of tcbLevel]
+ * }
+ *
+ * tcbLevel
+ * {
+ *     "tcb": object
+ *     "tcbDate": string,
+ *     "tcbStatus": string,
+ *     "advisoryIDs": array of string (optional)
+ * }
  */
-static oe_result_t _read_tcb_info_tcb_level_v2(
+static oe_result_t _read_tcb_info_tcb_level_v2_or_v3(
+    uint32_t version,
     const uint8_t* info_json,
     const uint8_t** itr,
     const uint8_t* end,
@@ -540,7 +716,12 @@ static oe_result_t _read_tcb_info_tcb_level_v2(
 
         OE_TRACE_VERBOSE("Reading tcb");
         OE_CHECK(_read_property_name_and_colon("tcb", itr, end));
-        OE_CHECK(_read_tcb_info_tcb_level(itr, end, tcb_level));
+        if (version == 2)
+            OE_CHECK(
+                _read_tcb_info_tcb_level_tcb_v1_or_v2(itr, end, tcb_level));
+        else if (version == 3)
+            OE_CHECK(_read_tcb_info_tcb_level_tcb_v3(itr, end, tcb_level));
+
         OE_CHECK(_read(',', itr, end));
 
         OE_TRACE_VERBOSE("Reading tcbDate");
@@ -609,34 +790,17 @@ done:
 }
 
 /**
- * type = tcbInfo
- * V1 Schema:
- * {
- *    "version" : integer,
- *    "issueDate" : string,
- *    "nextUpdate" : string,
- *    "fmspc" : "hex string (12 nibbles)"
- *    "pceId" : "hex string (4 nibbles)"
- *    "tcbLevels" : [ objects of type oe_tcb_info_tcb_level_t ]
- * }
- *
- * V2 Schema:
- * {
- *    "version" : integer,
- *    "issueDate" : string,
- *    "nextUpdate" : string,
- *    "fmspc" : "hex string (12 nibbles)"
- *    "pceId" : "hex string (4 nibbles)"
- *    "tcbType" : integer
- *    "tcbEvaluationDataNumber" : integer
- *    "tcbLevels" : [ objects of type oe_tcb_info_tcb_level_t ]
- * }
+ * Read common fields among TCB Info V1, V2 and V3's tcbInfo object
+ * In the order of apperance, these fields are:
+ * - version, issueDate, nextUpdate, fmspc
+ * Fields optional for V1, but present to V2 and V3:
+ * - pceId
+ * Fields exclusive to V2 and V3:
+ * - tcbType, tcbEvaluationDataNumber
  */
-static oe_result_t _read_tcb_info(
-    const uint8_t* tcb_info_json,
+static oe_result_t _read_tcb_info_common_fields(
     const uint8_t** itr,
     const uint8_t* end,
-    oe_tcb_info_tcb_level_t* platform_tcb_level,
     oe_parsed_tcb_info_t* parsed_info)
 {
     oe_result_t result = OE_JSON_INFO_PARSE_ERROR;
@@ -644,53 +808,59 @@ static oe_result_t _read_tcb_info(
     const uint8_t* date_str = NULL;
     size_t date_size = 0;
 
-    parsed_info->tcb_info_start = *itr;
-    OE_CHECK(_read('{', itr, end));
-
     OE_TRACE_VERBOSE("Reading version");
     OE_CHECK(_read_property_name_and_colon("version", itr, end));
     OE_CHECK(_read_integer(itr, end, &value));
     parsed_info->version = (uint32_t)value;
+    if (parsed_info->version == 3)
+        parsed_info->tcb_info_v3.version = parsed_info->version;
+    else
+        parsed_info->tcb_info_v2.version = parsed_info->version;
     OE_CHECK(_read(',', itr, end));
 
     OE_TRACE_VERBOSE("Reading issueDate");
     OE_CHECK(_read_property_name_and_colon("issueDate", itr, end));
     OE_CHECK(_read_string(itr, end, &date_str, &date_size));
+    oe_datetime_t* parsed_info_issue_date =
+        parsed_info->version == 3 ? &parsed_info->tcb_info_v3.issue_date
+                                  : &parsed_info->tcb_info_v2.issue_date;
     if (oe_datetime_from_string(
-            (const char*)date_str, date_size, &parsed_info->issue_date) !=
-        OE_OK)
+            (const char*)date_str, date_size, parsed_info_issue_date) != OE_OK)
         OE_RAISE(OE_JSON_INFO_PARSE_ERROR);
     OE_CHECK(_read(',', itr, end));
 
     OE_TRACE_VERBOSE("Reading nextUpdate");
     OE_CHECK(_read_property_name_and_colon("nextUpdate", itr, end));
     OE_CHECK(_read_string(itr, end, &date_str, &date_size));
+    oe_datetime_t* parsed_info_next_update =
+        parsed_info->version == 3 ? &parsed_info->tcb_info_v3.next_update
+                                  : &parsed_info->tcb_info_v2.next_update;
     if (oe_datetime_from_string(
-            (const char*)date_str, date_size, &parsed_info->next_update) !=
-        OE_OK)
+            (const char*)date_str, date_size, parsed_info_next_update) != OE_OK)
         OE_RAISE(OE_JSON_INFO_PARSE_ERROR);
     OE_CHECK(_read(',', itr, end));
 
     OE_TRACE_VERBOSE("Reading fmspc");
     OE_CHECK(_read_property_name_and_colon("fmspc", itr, end));
-    OE_CHECK(_read_hex_string(
-        itr, end, parsed_info->fmspc, sizeof(parsed_info->fmspc)));
+    uint8_t* parsed_info_fmspc = OE_TCB_INFO_GET(parsed_info, fmspc);
+    OE_CHECK(_read_hex_string(itr, end, parsed_info_fmspc, OE_SGX_FMSPC_SIZE));
     OE_CHECK(_read(',', itr, end));
 
+    // pceId is optional for V1, but always present to V2 and V3
     {
         const uint8_t* old_itr = *itr;
 
         // read optional "pceId", if it does not exist, restore the read
         // pointers
         OE_TRACE_VERBOSE("Attempt reading optional pceId field...");
-
-        parsed_info->pceid[0] = 0;
-        parsed_info->pceid[1] = 0;
+        uint8_t* parsed_info_pceid = OE_TCB_INFO_GET(parsed_info, pceid);
+        parsed_info_pceid[0] = 0;
+        parsed_info_pceid[1] = 0;
         result = _read_property_name_and_colon("pceId", itr, end);
         if (result == OE_OK)
         {
             OE_CHECK(_read_hex_string(
-                itr, end, parsed_info->pceid, sizeof(parsed_info->pceid)));
+                itr, end, parsed_info_pceid, OE_SGX_PCEID_SIZE));
             OE_CHECK(_read(',', itr, end));
         }
         else if (result == OE_JSON_INFO_PARSE_ERROR)
@@ -699,7 +869,7 @@ static oe_result_t _read_tcb_info(
         }
     }
 
-    if (parsed_info->version == 2)
+    if (parsed_info->version == 2 || parsed_info->version == 3)
     {
         OE_TRACE_VERBOSE("Reading tcbType");
         OE_CHECK(_read_property_name_and_colon("tcbType", itr, end));
@@ -712,28 +882,97 @@ static oe_result_t _read_tcb_info(
         if (value != 0)
             OE_RAISE_MSG(
                 OE_JSON_INFO_PARSE_ERROR, "Unsupported tcbType(%d).", value);
-        parsed_info->tcb_type = (uint32_t)value;
+        uint32_t* parsed_info_tcb_type =
+            parsed_info->version == 3 ? &parsed_info->tcb_info_v3.tcb_type
+                                      : &parsed_info->tcb_info_v2.tcb_type;
+        *parsed_info_tcb_type = (uint32_t)value;
         OE_CHECK(_read(',', itr, end));
 
         OE_TRACE_VERBOSE("Reading tcbEvaluationDataNumber");
         OE_CHECK(
             _read_property_name_and_colon("tcbEvaluationDataNumber", itr, end));
         OE_CHECK(_read_integer(itr, end, &value));
-        parsed_info->tcb_evaluation_data_number = (uint32_t)value;
+        uint32_t* parsed_info_number =
+            parsed_info->version == 3
+                ? &parsed_info->tcb_info_v3.tcb_evaluation_data_number
+                : &parsed_info->tcb_info_v2.tcb_evaluation_data_number;
+        *parsed_info_number = (uint32_t)value;
         OE_CHECK(_read(',', itr, end));
     }
+
+    result = OE_OK;
+done:
+    return result;
+}
+
+/**
+ * Read tcbInfo.tdxModule
+ */
+static oe_result_t _read_tcb_info_tdx_module(
+    const uint8_t* tcb_info_json,
+    const uint8_t** itr,
+    const uint8_t* end,
+    oe_tcb_info_tdx_module_t* tdx_module)
+{
+    OE_UNUSED(tcb_info_json);
+    oe_result_t result = OE_JSON_INFO_PARSE_ERROR;
+
+    OE_CHECK(_read('{', itr, end));
+
+    OE_TRACE_VERBOSE("Reading tdxModule.mrsigner");
+    OE_CHECK(_read_property_name_and_colon("mrsigner", itr, end));
+    OE_CHECK(_read_hex_string(
+        itr, end, tdx_module->mrsigner, sizeof(tdx_module->mrsigner)));
+    OE_CHECK(_read(',', itr, end));
+
+    OE_TRACE_VERBOSE("Reading tdxModule.attributes");
+    OE_CHECK(_read_property_name_and_colon("attributes", itr, end));
+    OE_CHECK(_read_hex_string(
+        itr, end, tdx_module->attributes, sizeof(tdx_module->attributes)));
+    OE_CHECK(_read(',', itr, end));
+
+    OE_TRACE_VERBOSE("Reading tdxModule.attributesMask");
+    OE_CHECK(_read_property_name_and_colon("attributesMask", itr, end));
+    OE_CHECK(_read_hex_string(
+        itr,
+        end,
+        tdx_module->attributes_mask,
+        sizeof(tdx_module->attributes_mask)));
+
+    OE_CHECK(_read('}', itr, end));
+
+    result = OE_OK;
+done:
+    return result;
+}
+
+static oe_result_t _read_tcb_info_v1_or_v2(
+    const uint8_t* tcb_info_json,
+    const uint8_t** itr,
+    const uint8_t* end,
+    oe_tcb_info_tcb_level_t* platform_tcb_level,
+    oe_parsed_tcb_info_t* parsed_info)
+{
+    oe_result_t result = OE_JSON_INFO_PARSE_ERROR;
+
+    parsed_info->tcb_info_start = *itr;
+    OE_CHECK(_read('{', itr, end));
+
+    // Reading common fields
+    OE_CHECK(_read_tcb_info_common_fields(itr, end, parsed_info));
 
     OE_TRACE_VERBOSE("Reading tcbLevels");
     if (parsed_info->version == 1)
         OE_CHECK(_read_tcb_info_tcb_level_v1(
-            itr, end, platform_tcb_level, &parsed_info->tcb_level));
+            itr, end, platform_tcb_level, &parsed_info->tcb_info_v2.tcb_level));
     else if (parsed_info->version == 2)
-        OE_CHECK(_read_tcb_info_tcb_level_v2(
+        OE_CHECK(_read_tcb_info_tcb_level_v2_or_v3(
+            parsed_info->version,
             tcb_info_json,
             itr,
             end,
             platform_tcb_level,
-            &parsed_info->tcb_level));
+            &parsed_info->tcb_info_v2.tcb_level));
     else
     {
         OE_RAISE_MSG(
@@ -754,8 +993,157 @@ done:
     return result;
 }
 
+static oe_result_t _read_tcb_info_v3(
+    const uint8_t* tcb_info_json,
+    const uint8_t** itr,
+    const uint8_t* end,
+    oe_tcb_info_tcb_level_t* platform_tcb_level,
+    oe_parsed_tcb_info_t* parsed_info)
+{
+    oe_result_t result = OE_JSON_INFO_PARSE_ERROR;
+    const uint8_t* str = NULL;
+    size_t size = 0;
+
+    parsed_info->tcb_info_start = *itr;
+    OE_CHECK(_read('{', itr, end));
+
+    OE_TRACE_VERBOSE("Reading id");
+    OE_CHECK(_read_property_name_and_colon("id", itr, end));
+    OE_CHECK(_read_string(itr, end, &str, &size));
+    // Assign id
+    OE_CHECK(!(size == (OE_TCB_ID_SIZE - 1)));
+    parsed_info->tcb_info_v3.id[0] = str[0];
+    parsed_info->tcb_info_v3.id[1] = str[1];
+    parsed_info->tcb_info_v3.id[2] = str[2];
+    parsed_info->tcb_info_v3.id[3] = '\0';
+    OE_CHECK(_read(',', itr, end));
+
+    // Reading common fields
+    OE_CHECK(_read_tcb_info_common_fields(itr, end, parsed_info));
+
+    if (OE_OK == _read_property_name_and_colon("tdxModule", itr, end))
+    {
+        OE_CHECK(_read_tcb_info_tdx_module(
+            tcb_info_json, itr, end, &parsed_info->tcb_info_v3.tdx_module));
+        OE_CHECK(_read(',', itr, end));
+    }
+
+    OE_TRACE_VERBOSE("Reading tcbLevels");
+    if (parsed_info->version == 3)
+        OE_CHECK(_read_tcb_info_tcb_level_v2_or_v3(
+            parsed_info->version,
+            tcb_info_json,
+            itr,
+            end,
+            platform_tcb_level,
+            &parsed_info->tcb_info_v3.tcb_level));
+    else
+    {
+        OE_RAISE_MSG(
+            OE_JSON_INFO_PARSE_ERROR,
+            "Unsupported TCB level info version %d",
+            parsed_info->version);
+    }
+    // itr is expected to point to the '}' that denotes the end of the tcb
+    // object. The signature is generated over the entire object including the
+    // '}'.
+    parsed_info->tcb_info_size =
+        (size_t)(*itr - parsed_info->tcb_info_start + 1);
+    OE_CHECK(_read('}', itr, end));
+
+    result = OE_OK;
+done:
+    return result;
+}
+
 /**
- * Schema:
+ * Read tcbInfo at JSON object .tcbInfo
+ *
+ * TcbInfoV1 Schema:
+ * {
+ *    "version" : integer,
+ *    "issueDate" : string,
+ *    "nextUpdate" : string,
+ *    "fmspc" : "hex string (12 nibbles)"
+ *    "pceId" : "hex string (4 nibbles)"
+ *    "tcbLevels" : [ objects of type oe_tcb_info_tcb_level_t ]
+ * }
+ *
+ * TcbInfoV2 Schema, for Intel PCS API V3
+ * {
+ *    "version" : integer, should be 2,
+ *    "issueDate" : string,
+ *    "nextUpdate" : string,
+ *    "fmspc" : "hex string (12 nibbles)"
+ *    "pceId" : "hex string (4 nibbles)"
+ *    "tcbType" : integer
+ *    "tcbEvaluationDataNumber" : integer
+ *    "tcbLevels" : [ objects of type oe_tcb_info_tcb_level_t ]
+ * }
+ *
+ * TcbInfoV3 Schema, for Intel PCS API V4
+ * https://api.portal.trustedservices.intel.com/documentation#pcs-tcb-info-model-v3
+ * {
+ *     "id": string,
+ *     "version": string, should be 3,
+ *     "issueDate": string,
+ *     "nextUpdate": string,
+ *     "fmspc": string,
+ *     "pceId": string,
+ *     "tcbType": integer,
+ *     "tcbEvaluationDataNumber": integer,
+ *     "tdxModule": object,
+ *     "tdxModuleIdentities": array,
+ *     "tcbLevels": array,
+ *     "signature": string
+ * }
+ */
+static oe_result_t _read_tcb_info(
+    const uint8_t* tcb_info_json,
+    const uint8_t** itr,
+    const uint8_t* end,
+    oe_tcb_info_tcb_level_t* platform_tcb_level,
+    oe_parsed_tcb_info_t* parsed_info)
+{
+    oe_result_t result = OE_JSON_INFO_PARSE_ERROR;
+    uint64_t version = 0;
+    const uint8_t* itr_original = *itr;
+
+    OE_CHECK(_read('{', itr, end));
+
+    // Try to determing the TCB Info Version
+    OE_TRACE_VERBOSE("Skip id field if present");
+    if (OE_JSON_INFO_PARSE_ERROR !=
+        _read_property_name_and_colon("id", itr, end))
+    {
+        const uint8_t* str = NULL;
+        size_t size = 0;
+        OE_CHECK(_read_string(itr, end, &str, &size));
+        OE_CHECK(_read(',', itr, end));
+    }
+
+    OE_TRACE_VERBOSE("Reading version");
+    OE_CHECK(_read_property_name_and_colon("version", itr, end));
+    OE_CHECK(_read_integer(itr, end, &version));
+    parsed_info->version = (uint32_t)version;
+
+    // restore itr
+    *itr = itr_original;
+
+    if (parsed_info->version == 1 || parsed_info->version == 2)
+        OE_CHECK(_read_tcb_info_v1_or_v2(
+            tcb_info_json, itr, end, platform_tcb_level, parsed_info));
+    else if (parsed_info->version == 3)
+        OE_CHECK(_read_tcb_info_v3(
+            tcb_info_json, itr, end, platform_tcb_level, parsed_info));
+
+    result = OE_OK;
+done:
+    return result;
+}
+
+/**
+ * Schema for both TcbInfoV2 and TcbInfoV3:
  * {
  *    "tcbInfo" : object of type tcbInfo,
  *    "signature" : "hex string"

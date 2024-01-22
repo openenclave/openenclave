@@ -39,7 +39,7 @@ void* oe_ecall_context_get_ocall_buffer(uint64_t size)
     if (ecall_context)
     {
         /* ecall_context is 16-byte aligned. Thus the fields ocall_buffer and
-         * and ocall_buffer_size are guaranteed to by 8-byte aligned due to
+         * and ocall_buffer_size are guaranteed to be 8-byte aligned due to
          * their statically determined offsets (for xAPIC vulnerability
          * mitigation). Also, copy to volatile variables to prevent TOCTOU
          * attacks. */
@@ -49,7 +49,7 @@ void* oe_ecall_context_get_ocall_buffer(uint64_t size)
         /* Validate the ocall_buffer and ocall_buffer_size */
         if (ocall_buffer_size >= size &&
             oe_is_outside_enclave(ocall_buffer, ocall_buffer_size) &&
-            ((uint8_t)ocall_buffer % 8) == 0 && (ocall_buffer_size % 8) == 0)
+            ((uint64_t)ocall_buffer % 8) == 0 && (ocall_buffer_size % 8) == 0)
             return (void*)ocall_buffer;
     }
     return NULL;

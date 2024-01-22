@@ -154,8 +154,8 @@ mv optee/vexpress-qemu_armv8a/export-ta_arm32 devkits/vexpress-qemu_armv8a/
 mv optee/vexpress-qemu_armv8a/export-ta_arm64 devkits/vexpress-qemu_armv8a/
 
 # Tag the tarball with the revision of OP-TEE being built.
-pushd "$OPTEE_OS_PATH"
+pushd "$OPTEE_OS_PATH" || exit 1
 REV=$(git rev-parse --short HEAD)
-popd
+popd || exit 1
 
 tar zcvf "OE-CI-devkits-$REV.tar.gz" devkits

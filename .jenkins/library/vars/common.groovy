@@ -18,38 +18,14 @@ String dockerImage(String tag, String dockerfile = ".jenkins/Dockerfile", String
 }
 
 def ContainerRun(String imageName, String compiler, String task, String runArgs="", registryUrl="https://oejenkinscidockerregistry.azurecr.io", registryName="oejenkinscidockerregistry") {
-    exec_with_retry(3,60){
-        docker.withRegistry(registryUrl, registryName) {
-            def image = docker.image(imageName)
+    docker.withRegistry(registryUrl, registryName) {
+        def image = docker.image(imageName)
+        retry(3) {
             image.pull()
-            image.inside(runArgs) {
-                dir("${WORKSPACE}/build") {
-                    Run(compiler, task)
-                }
-            }
         }
-    }
-}
-
-/**
- * Runs tasks within a Docker container
- *
- * @param imageName     The name of the Docker image to run.
- * @param compiler      The compiler to use, if applicable.
- * @param tasks         List of tasks to run within the Docker container. Must be in Jenkins groovy syntax.
- * @param runArgs       [Optional] Arguments to pass when calling Docker run
- * @param registryUrl   [Optional] Url of the Docker registry to pull from. Defaults to "https://oejenkinscidockerregistry.azurecr.io"
- * @param registryName  [Optional] Name of the Docker registry to pull from. Defaults to "oejenkinscidockerregistry"
- */
-def ContainerTasks(String imageName, String compiler, List tasks, String runArgs="", registryUrl="https://oejenkinscidockerregistry.azurecr.io", registryName="oejenkinscidockerregistry") {
-    exec_with_retry(3,300){
-        docker.withRegistry(registryUrl, registryName) {
-            def image = docker.image(imageName)
-            image.pull()
-            image.inside(runArgs) {
-                for (task in tasks) {
-                    task
-                }
+        image.inside(runArgs) {
+            dir("${WORKSPACE}/build") {
+                Run(compiler, task)
             }
         }
     }
@@ -88,7 +64,7 @@ def runTask(String task) {
     }
 }
 
-def Run(String compiler, String task, String compiler_version = "") {
+def Run(String compiler, String task) {
     def c_compiler
     def cpp_compiler
 
@@ -129,7 +105,12 @@ def Run(String compiler, String task, String compiler_version = "") {
         cpp_compiler += "-${compiler_version}"
     }
     withEnv(["CC=${c_compiler}","CXX=${cpp_compiler}"]) {
-        runTask(task);
+        withCredentials([
+            string(credentialsId: 'thim-tdx-base-url', variable: 'AZDCAP_BASE_CERT_URL_TDX'),
+            string(credentialsId: 'thim-tdx-region-url', variable: 'AZDCAP_REGION_URL')
+        ]) {
+            runTask(task)
+        }
     }
 }
 
@@ -180,63 +161,6 @@ def installAzureCLI() {
             sudo apt-get update
             sudo apt-get -y install azure-cli
         """
-    }
-}
-
-/**
- * Compile open-enclave on Windows platform, generate NuGet package out of it, 
- * install the generated NuGet package, and run samples tests against the installation.
- */
-def WinCompilePackageTest(String dirName, String buildType, String hasQuoteProvider, Integer timeoutSeconds, String lviMitigation = 'None', String lviMitigationSkipTests = 'ON', List extra_cmake_args = []) {
-    cleanWs()
-    checkout scm
-    dir(dirName) {
-        /*
-        In simulation mode, some samples should not be ran or should run simulation mode. 
-        For items that should be skipped, see items appended to SAMPLES_LIST under the IF statement with OE_SIMULATION in:
-        https://github.com/openenclave/openenclave/blob/master/samples/test-samples.cmake#L54
-        For items that should run in simulation mode, check sample Makefiles for target `simulate`
-        SIMULATION_SKIP is a "list" of samples to skip in simulation mode.
-        SIMULATION_TEST is a "list" of samples to run in simulation mode.
-        */
-        bat(
-            returnStdout: false,
-            returnStatus: false,
-            script: """
-                call vcvars64.bat x64
-                setlocal EnableDelayedExpansion
-                cmake.exe ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${buildType} -DBUILD_ENCLAVES=ON -DHAS_QUOTE_PROVIDER=${hasQuoteProvider} -DLVI_MITIGATION=${lviMitigation} -DLVI_MITIGATION_SKIP_TESTS=${lviMitigationSkipTests} -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCPACK_GENERATOR=NuGet -Wdev ${extra_cmake_args.join(' ')} || exit !ERRORLEVEL!
-                ninja.exe || exit !ERRORLEVEL!
-                ctest.exe -V -C ${buildType} --timeout ${timeoutSeconds} || exit !ERRORLEVEL!
-                cpack.exe -D CPACK_NUGET_COMPONENT_INSTALL=ON -DCPACK_COMPONENTS_ALL=OEHOSTVERIFY || exit !ERRORLEVEL!
-                cpack.exe || exit !ERRORLEVEL!
-                if exist C:\\oe rmdir /s/q C:\\oe
-                nuget.exe install open-enclave -Source %cd% -OutputDirectory C:\\oe -ExcludeVersion
-                set CMAKE_PREFIX_PATH=C:\\oe\\open-enclave\\openenclave\\lib\\openenclave\\cmake
-                set SIMULATION_SKIP="\\attested_tls\\attestation\\"
-                set SIMULATION_TEST="\\debugmalloc\\helloworld\\switchless\\log_callback\\file-encryptor\\pluggable_allocator\\"
-                cd C:\\oe\\open-enclave\\openenclave\\share\\openenclave\\samples
-                for /d %%i in (*) do (
-                    set BUILD=1
-                    if ${OE_SIMULATION} equ 1 if "!SIMULATION_SKIP:%%~nxi=!" neq "%SIMULATION_SKIP%" set BUILD=
-                    if !BUILD! equ 1 (
-                        cd C:\\oe\\open-enclave\\openenclave\\share\\openenclave\\samples\\"%%i"
-                        mkdir build
-                        cd build
-                        cmake .. -G Ninja -DNUGET_PACKAGE_PATH=C:\\oe_prereqs -DLVI_MITIGATION=${lviMitigation} || exit !ERRORLEVEL!
-                        ninja || exit !ERRORLEVEL!
-                        if ${OE_SIMULATION} equ 1 if "!SIMULATION_TEST:%%~nxi=!" neq "%SIMULATION_TEST%" (
-                            echo "Running %%i with --simulation flag" 
-                            ninja simulate || exit !ERRORLEVEL!
-                        ) else (
-                            ninja run || exit !ERRORLEVEL!
-                        )
-                    ) else (
-                        echo "Skipping %%i as we are in simulation mode."
-                    )
-                )
-            """
-        )
     }
 }
 

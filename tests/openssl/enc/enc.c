@@ -68,7 +68,9 @@ int enc_test(int argc, char** argv, char** env)
      * framework such that we can free it (which the framework does not do
      * that). Without doing this, DEBUG_MALLOC will report memory leaks.
      */
+#if OECRYPTO_OPENSSL_VER < 3
     tap = BIO_f_tap();
+#endif
 
     /* Perform the test. */
     ret = main(argc, argv);
@@ -96,6 +98,6 @@ OE_SET_ENCLAVE_SGX2(
     false, /* RequireKSS */
     false, /* CreateZeroBaseEnclave */
     0,     /* StartAddress */
-    7200,  /* NumHeapPages */
-    128,   /* NumStackPages */
+    10000, /* NumHeapPages */
+    256,   /* NumStackPages */
     8);    /* NumTCS */

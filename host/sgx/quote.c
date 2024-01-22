@@ -180,12 +180,10 @@ oe_result_t sgx_verify_quote(
     const void* p_qe_identity_issuer_chain,
     uint32_t qe_identity_issuer_chain_size)
 {
+    // delegate input validation to host/sgx/sgxquote.c:oe_sgx_verify_quote
     oe_result_t result = OE_UNEXPECTED;
 
-    /* Reject null parameters */
-    if (!p_quote || !p_collateral_expiration_status ||
-        !p_quote_verification_result ||
-        (!p_supplemental_data && supplemental_data_size > 0))
+    if (p_supplemental_data && !p_supplemental_data_size_out)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Try to get supplemental data size if needed */
@@ -247,13 +245,13 @@ oe_result_t sgx_verify_quote(
     if (p_qve_report_info != NULL)
     {
         OE_TRACE_INFO(
-            "SGX DCAP QvE-based quote verification is used, res: %s\n",
+            "SGX DCAP QvE-based SGX quote verification is used, res: %s\n",
             oe_result_str(result));
     }
     else
     {
         OE_TRACE_INFO(
-            "SGX DCAP QVL-based quote verification is used, res: %s\n",
+            "SGX DCAP QVL-based SGX quote verification is used, res: %s\n",
             oe_result_str(result));
     }
 done:

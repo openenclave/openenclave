@@ -1,0 +1,655 @@
+{
+  "tcbInfo": {
+    "id": "TDX",
+    "version": 3,
+    "issueDate": "2018-06-06T10:12:17Z",
+    "nextUpdate": "2019-06-06T10:12:17Z",
+    "fmspc": "00906EA10000",
+    "pceId": "0000",
+    "tcbType": 0,
+    "tcbEvaluationDataNumber": 14,
+    "tdxModule": {
+      "mrsigner": "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "attributes": "0000000000000000",
+      "attributesMask": "FFFFFFFFFFFFFFFF"
+    },
+    "tcbLevels": [
+      {
+        "tcb": {
+          "sgxtcbcomponents": [
+            {
+              "svn": 7,
+              "category": "BIOS",
+              "type": "Early Microcode Update"
+            },
+            {
+              "svn": 9,
+              "category": "OS/VMM",
+              "type": "SGX Late Microcode Update"
+            },
+            {
+              "svn": 3,
+              "category": "OS/VMM",
+              "type": "TXT SINIT"
+            },
+            {
+              "svn": 3,
+              "category": "BIOS"
+            },
+            {
+              "svn": 255,
+              "category": "BIOS"
+            },
+            {
+              "svn": 255,
+              "category": "BIOS"
+            },
+            {
+              "svn": 1
+            },
+            {
+              "svn": 0,
+              "category": "OS/VMM",
+              "type": "SEAMLDR ACM"
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            }
+          ],
+          "pcesvn": 8,
+          "tdxtcbcomponents": [
+            {
+              "svn": 3,
+              "category": "OS/VMM",
+              "type": "TDX Module"
+            },
+            {
+              "svn": 0,
+              "category": "OS/VMM",
+              "type": "TDX Module"
+            },
+            {
+              "svn": 5,
+              "category": "OS/VMM",
+              "type": "TDX Late Microcode Update"
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            }
+          ]
+        },
+        "tcbDate": "2018-01-04T01:02:03Z",
+        "tcbStatus": "UpToDate"
+      },
+      {
+        "tcb": {
+          "sgxtcbcomponents": [
+            {
+              "svn": 7,
+              "category": "BIOS",
+              "type": "Early Microcode Update"
+            },
+            {
+              "svn": 9,
+              "category": "OS/VMM",
+              "type": "SGX Late Microcode Update"
+            },
+            {
+              "svn": 3,
+              "category": "OS/VMM",
+              "type": "TXT SINIT"
+            },
+            {
+              "svn": 3,
+              "category": "BIOS"
+            },
+            {
+              "svn": 255,
+              "category": "BIOS"
+            },
+            {
+              "svn": 255,
+              "category": "BIOS"
+            },
+            {
+              "svn": 1
+            },
+            {
+              "svn": 0,
+              "category": "OS/VMM",
+              "type": "SEAMLDR ACM"
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            }
+          ],
+          "pcesvn": 7,
+          "tdxtcbcomponents": [
+            {
+              "svn": 3,
+              "category": "OS/VMM",
+              "type": "TDX Module"
+            },
+            {
+              "svn": 0,
+              "category": "OS/VMM",
+              "type": "TDX Module"
+            },
+            {
+              "svn": 5,
+              "category": "OS/VMM",
+              "type": "TDX Late Microcode Update"
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            }
+          ]
+        },
+        "tcbDate": "2018-01-04T01:02:03Z",
+        "tcbStatus": "SWHardeningNeeded",
+        "advisoryIDs": [
+          "INTEL-SA-00106",
+          "INTEL-SA-00115",
+          "INTEL-SA-00135",
+          "INTEL-SA-00203",
+          "INTEL-SA-00220",
+          "INTEL-SA-00233",
+          "INTEL-SA-00270",
+          "INTEL-SA-00293",
+          "INTEL-SA-00320",
+          "INTEL-SA-00329",
+          "INTEL-SA-00381",
+          "INTEL-SA-00389",
+          "INTEL-SA-00477"
+        ]
+      },
+      {
+        "tcb": {
+          "sgxtcbcomponents": [
+            {
+              "svn": 7,
+              "category": "BIOS",
+              "type": "Early Microcode Update"
+            },
+            {
+              "svn": 9,
+              "category": "OS/VMM",
+              "type": "SGX Late Microcode Update"
+            },
+            {
+              "svn": 3,
+              "category": "OS/VMM",
+              "type": "TXT SINIT"
+            },
+            {
+              "svn": 3,
+              "category": "BIOS"
+            },
+            {
+              "svn": 255,
+              "category": "BIOS"
+            },
+            {
+              "svn": 255,
+              "category": "BIOS"
+            },
+            {
+              "svn": 1
+            },
+            {
+              "svn": 0,
+              "category": "OS/VMM",
+              "type": "SEAMLDR ACM"
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            }
+          ],
+          "pcesvn": 6,
+          "tdxtcbcomponents": [
+            {
+              "svn": 3,
+              "category": "OS/VMM",
+              "type": "TDX Module"
+            },
+            {
+              "svn": 0,
+              "category": "OS/VMM",
+              "type": "TDX Module"
+            },
+            {
+              "svn": 5,
+              "category": "OS/VMM",
+              "type": "TDX Late Microcode Update"
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            }
+          ]
+        },
+        "tcbDate": "2018-01-04T01:02:03Z",
+        "tcbStatus": "ConfigurationAndSWHardeningNeeded"
+      },
+      {
+        "tcb": {
+          "sgxtcbcomponents": [
+            {
+              "svn": 7,
+              "category": "BIOS",
+              "type": "Early Microcode Update"
+            },
+            {
+              "svn": 9,
+              "category": "OS/VMM",
+              "type": "SGX Late Microcode Update"
+            },
+            {
+              "svn": 3,
+              "category": "OS/VMM",
+              "type": "TXT SINIT"
+            },
+            {
+              "svn": 3,
+              "category": "BIOS"
+            },
+            {
+              "svn": 255,
+              "category": "BIOS"
+            },
+            {
+              "svn": 255,
+              "category": "BIOS"
+            },
+            {
+              "svn": 1
+            },
+            {
+              "svn": 0,
+              "category": "OS/VMM",
+              "type": "SEAMLDR ACM"
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            }
+          ],
+          "pcesvn": 5,
+          "tdxtcbcomponents": [
+            {
+              "svn": 3,
+              "category": "OS/VMM",
+              "type": "TDX Module"
+            },
+            {
+              "svn": 0,
+              "category": "OS/VMM",
+              "type": "TDX Module"
+            },
+            {
+              "svn": 5,
+              "category": "OS/VMM",
+              "type": "TDX Late Microcode Update"
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            }
+          ]
+        },
+        "tcbDate": "2018-01-04T01:02:03Z",
+        "tcbStatus": "OutOfDateConfigurationNeeded"
+      },
+      {
+        "tcb": {
+          "sgxtcbcomponents": [
+            {
+              "svn": 7,
+              "category": "BIOS",
+              "type": "Early Microcode Update"
+            },
+            {
+              "svn": 9,
+              "category": "OS/VMM",
+              "type": "SGX Late Microcode Update"
+            },
+            {
+              "svn": 3,
+              "category": "OS/VMM",
+              "type": "TXT SINIT"
+            },
+            {
+              "svn": 3,
+              "category": "BIOS"
+            },
+            {
+              "svn": 255,
+              "category": "BIOS"
+            },
+            {
+              "svn": 255,
+              "category": "BIOS"
+            },
+            {
+              "svn": 1
+            },
+            {
+              "svn": 0,
+              "category": "OS/VMM",
+              "type": "SEAMLDR ACM"
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            }
+          ],
+          "pcesvn": 4,
+          "tdxtcbcomponents": [
+            {
+              "svn": 3,
+              "category": "OS/VMM",
+              "type": "TDX Module"
+            },
+            {
+              "svn": 0,
+              "category": "OS/VMM",
+              "type": "TDX Module"
+            },
+            {
+              "svn": 5,
+              "category": "OS/VMM",
+              "type": "TDX Late Microcode Update"
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            },
+            {
+              "svn": 0
+            }
+          ]
+        },
+        "tcbDate": "2018-01-04T01:02:03Z",
+        "tcbStatus": "OutOfDate"
+      }
+    ]
+  },
+  "signature": "62d181c4ba863213b825d1c0b66b92a3dbdb27b8ff7c7250cb2b2ab87a8f90d5e5a1416914369d8f82c56cd3d875caa54ae4b917caf4af7a93dec52067cbfd7b"
+}

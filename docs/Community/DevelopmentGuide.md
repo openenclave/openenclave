@@ -17,7 +17,7 @@ Coding Conventions
   headers as well.
 
 * **DO** disable doxygen documentation for elements that are not in the public
-  API as described [here](./refman/doxygen-howto.md#disable-doxygen).
+  API as described [here](../refman/doxygen-howto.md#disable-doxygen).
 
 * **DON'T** use global variables where possible.
 

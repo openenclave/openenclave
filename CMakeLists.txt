@@ -7,6 +7,11 @@
 # https://rix0r.nl/blog/2015/08/13/cmake-guide/
 cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
+if (${CMAKE_VERSION} GREATER_EQUAL "3.24.0")
+  # Suppress error when using FetchContent_Declare in subprojects
+  cmake_policy(SET CMP0135 NEW)
+endif ()
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Include utilities such as `check_submodule_not_empty`.
@@ -31,21 +36,37 @@ elseif (WIN32)
 endif ()
 
 # Will be overwritten during the cmake initialization.
+
+# Value can be one of "None", "ControlFlow-GNU", ""ControlFlow-Clang" and "ControlFlow" (which is alias to ControlFlow-GNU)
+# If None, no LVI mitigation will be applied
+# If ControlFlow, only control-flow mitigations will be applied
+# If ControlFlow-Clang, the Clang's built-in mitigation will be applied (only support clang-11 and later)
+# If ControlFlow-GNU, the custom mitigation will be applied
+# Support of full-LVI hardening (-mlvi-hardening) is omitted
 set(LVI_MITIGATION
     "None"
-    CACHE STRING "Build with LVI mitigation.")
+    CACHE
+      STRING
+      "Build with LVI mitigation. Options: [None, ControlFlow, ControlFlow-GNU, ControlFlow-Clang]"
+)
 set(LVI_MITIGATION_BINDIR
     "None"
     CACHE STRING "Path to the LVI mitigation bindir.")
 
+# alias ControlFlow to ControlFlow-GNU
+if (LVI_MITIGATION STREQUAL "ControlFlow")
+  set(LVI_MITIGATION "ControlFlow-GNU")
+endif ()
+
 # On Unix, configuring cmake to use the preferred compiler.
 # Note that this must be done before the `project` command.
 if (UNIX)
-  if (LVI_MITIGATION MATCHES ControlFlow)
-    # If the LVI mitigation is enabled, use the customized compilation toolchain.
+  if (LVI_MITIGATION STREQUAL ControlFlow-GNU)
     if (${LVI_MITIGATION_BINDIR} MATCHES None)
       message(FATAL_ERROR "LVI_MITIGATION_BINDIR is not specified.")
     endif ()
+
+    # If the LVI mitigation is enabled, use the customized compilation toolchain.
     include(configure_lvi_mitigation_build)
     configure_lvi_mitigation_build(BINDIR ${LVI_MITIGATION_BINDIR})
   else ()
@@ -53,11 +74,31 @@ if (UNIX)
     # the CMAKE_C_COMPILER cmake variable has been passed to cmake, use the C compiler
     # that has been specified. Otherwise, prefer clang. Same for C++ compiler.
     if (NOT DEFINED ENV{CC} AND NOT DEFINED CMAKE_C_COMPILER)
-      find_program(CMAKE_C_COMPILER clang-10 clang)
+      find_program(CMAKE_C_COMPILER NAMES clang-11 clang-10 clang)
     endif ()
     if (NOT DEFINED ENV{CXX} AND NOT DEFINED CMAKE_CXX_COMPILER)
-      find_program(CMAKE_CXX_COMPILER clang++-10 clang++)
+      find_program(CMAKE_CXX_COMPILER NAMES clang++-11 clang++-10 clang++)
     endif ()
+  endif ()
+  # On Windows, find if Clang is available and determine the version
+elseif (WIN32)
+  find_program(
+    CLANG_C_COMPILER
+    NAMES clang
+    PATHS "C:/Program Files/LLVM/bin")
+  if (CLANG_C_COMPILER)
+    execute_process(
+      COMMAND ${CLANG_C_COMPILER} --version
+      OUTPUT_VARIABLE CLANG_C_COMPILER_VERSION
+      OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if (CLANG_C_COMPILER_VERSION MATCHES
+        "clang version ([0-9]+\.[0-9]+\.[0-9]+)")
+      set(CLANG_C_COMPILER_VERSION ${CMAKE_MATCH_1})
+    else ()
+      message(WARNING "Could not determine the version of ${CLANG_C_COMPILER}.")
+    endif ()
+  else ()
+    message(WARNING "Could not find an installed version of Clang.")
   endif ()
 endif ()
 
@@ -68,19 +109,43 @@ project(
 set(PROJECT_VERSION ${OE_VERSION})
 set(OE_SCRIPTSDIR "${PROJECT_SOURCE_DIR}/scripts")
 
+if (LVI_MITIGATION STREQUAL ControlFlow-Clang)
+  if (UNIX)
+    if (NOT CMAKE_C_COMPILER_ID MATCHES Clang)
+      message(
+        FATAL_ERROR
+          "ControlFlow-Clang requires Clang but got ${CMAKE_C_COMPILER_ID}.")
+    elseif (CMAKE_C_COMPILER_VERSION VERSION_LESS 11)
+      message(
+        FATAL_ERROR
+          "ControlFlow-Clang requires Clang version >= 11 but got ${CMAKE_C_COMPILER_VERSION}."
+      )
+    endif ()
+  elseif (WIN32)
+    if (NOT CLANG_C_COMPILER)
+      message(FATAL_ERROR "ControlFlow-Clang requires Clang to be installed.")
+    elseif (CLANG_C_COMPILER_VERSION VERSION_LESS 11)
+      message(
+        FATAL_ERROR
+          "ControlFlow-Clang only works with Clang version >= 11. But got ${CLANG_C_COMPILER_VERSION}"
+      )
+    endif ()
+  endif ()
+endif ()
+
 # Collect Git info
 if (IS_DIRECTORY "${PROJECT_SOURCE_DIR}/.git")
   execute_process(
     COMMAND git rev-parse HEAD
     OUTPUT_VARIABLE GIT_COMMIT
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-    ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} ERROR_QUIET
+                      OUTPUT_STRIP_TRAILING_WHITESPACE)
 
   execute_process(
     COMMAND git symbolic-ref HEAD
     OUTPUT_VARIABLE GIT_BRANCH
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-    ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} ERROR_QUIET
+                      OUTPUT_STRIP_TRAILING_WHITESPACE)
 
   # Install Git pre-commit hook
   file(COPY scripts/pre-commit scripts/commit-msg
@@ -160,8 +225,11 @@ if (OE_SGX)
     string(REPLACE " " ";" CONFIG_OUTPUT ${CONFIG_OUTPUT})
     # Get the major version for clang
     list(GET CONFIG_OUTPUT 2 MAJOR_VERSION)
-    if (MAJOR_VERSION VERSION_LESS 7)
-      message(FATAL_ERROR "Clang version 7.0 or higher is required")
+    if (MAJOR_VERSION VERSION_LESS 10 OR MAJOR_VERSION VERSION_GREATER 11)
+      message(
+        FATAL_ERROR
+          "Building ELF enclaves with Clang version ${CLANG_C_COMPILER_VERSION} is not supported.
+        Only Clang version 10 and 11 is supported")
     endif ()
 
     set(USE_CLANGW ON)
@@ -203,9 +271,8 @@ if (WIN32)
   find_program(GIT git)
   get_filename_component(GIT_DIR ${GIT} DIRECTORY)
   find_program(
-    OE_BASH bash
-    PATHS "C:/Program Files/Git/bin" "${GIT_DIR}/../bin"
-    NO_DEFAULT_PATH) # Do not find WSL bash.
+    OE_BASH bash PATHS "C:/Program Files/Git/bin" "${GIT_DIR}/../bin"
+                       NO_DEFAULT_PATH) # Do not find WSL bash.
 
   if (NOT OE_BASH)
     message(FATAL_ERROR "Git Bash not found!")
@@ -216,8 +283,8 @@ if (WIN32)
     # OpenSSL relies on Perl to generate files (e.g., headers, assembly files, and test cases).
     find_program(
       OE_PERL perl
-      PATHS "C:/Program Files/Git/bin" "${GIT_DIR}/../usr/bin"
-      NO_DEFAULT_PATH)
+      PATHS "C:/Program Files/Git/bin" "C:/Program Files/Git/usr/bin"
+            "${GIT_DIR}/../usr/bin" NO_DEFAULT_PATH)
     if (NOT OE_PERL)
       message(FATAL_ERROR "Perl not found!")
     endif ()
@@ -226,8 +293,8 @@ if (WIN32)
     # OpenSSL tests.
     find_program(
       OE_DOS2UNIX dos2unix
-      PATHS "C:/Program Files/Git/bin" "${GIT_DIR}/../usr/bin"
-      NO_DEFAULT_PATH)
+      PATHS "C:/Program Files/Git/bin" "C:/Program Files/Git/usr/bin"
+            "${GIT_DIR}/../usr/bin" NO_DEFAULT_PATH)
     if (NOT OE_DOS2UNIX)
       message(FATAL_ERROR "Dos2unix not found!")
     endif ()
@@ -343,9 +410,10 @@ if (CODE_COVERAGE)
     message(FATAL_ERROR "Code coverage is currently only supported by clang.")
   else ()
     if (CMAKE_C_COMPILER_VERSION VERSION_LESS 10 OR CMAKE_C_COMPILER_VERSION
-                                                    VERSION_GREATER 10.99)
+                                                    VERSION_GREATER 11.99)
       message(
-        WARNING "Code coverage may not work with clang versions other than 10.")
+        WARNING
+          "Code coverage may not work with clang versions other than 10 or 11.")
     endif ()
   endif ()
 
@@ -370,8 +438,8 @@ if (CODE_COVERAGE)
   add_custom_command(
     TARGET code_coverage
     COMMAND
-      lcov -d ${CMAKE_BINARY_DIR} --gcov-tool
-      ${OE_SCRIPTSDIR}/code-coverage/llvm-gcov -c -o cov.info --rc
+      lcov -c -d ${CMAKE_BINARY_DIR} --gcov-tool
+      ${OE_SCRIPTSDIR}/code-coverage/llvm-gcov -o cov.info --rc
       lcov_branch_coverage=1
     COMMAND lcov -a base.info -a cov.info -o cov_total.info --rc
             lcov_branch_coverage=1
@@ -485,8 +553,6 @@ if (LVI_MITIGATION MATCHES ControlFlow)
     install(FILES ./scripts/lvi-mitigation/lvi-mitigation.py
             DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/lvi-mitigation)
   endif ()
-  install(FILES ./cmake/apply_lvi_mitigation.cmake
-          DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
 endif ()
 
 install(FILES LICENSE THIRD_PARTY_NOTICES

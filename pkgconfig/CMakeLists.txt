@@ -22,6 +22,9 @@ set(ENCLAVE_CINCLUDES
 set(ENCLAVE_CXXINCLUDES
     "-I\${includedir}/openenclave/3rdparty/libcxx ${ENCLAVE_CINCLUDES}")
 
+set(ENCLAVE_OPENSSL_3_INCLUDES
+    "-I\${includedir}/openenclave/3rdparty/openssl_3")
+
 set(ENCLAVE_CFLAGS_LIST
     -nostdinc
     -m64
@@ -41,21 +44,30 @@ list(JOIN ENCLAVE_CFLAGS_LIST " " ENCLAVE_CFLAGS_GCC)
 
 # See `cmake/apply_lvi_mitigation.cmake`.
 if (LVI_MITIGATION MATCHES ControlFlow)
-  set(LVI_MITIGATION_FLAGS -Wa,-mlfence-before-indirect-branch=register
-                           -Wa,-mlfence-before-ret=not)
-  if (NOT GLIBC_VERSION)
-    get_glibc_version()
-  endif ()
-  if (GLIBC_VERSION LESS 2.27)
-    set(LVI_MITIGATION_FLAGS ${LVI_MITIGATION_FLAGS} -g0)
-  endif ()
-  set(LVI_MITIGATION_FLAGS_GCC ${ENCLAVE_CFLAGS_GCC} ${LVI_MITIGATION_FLAGS}
-                               -mindirect-branch-register)
-  list(JOIN LVI_MITIGATION_FLAGS_GCC " " ENCLAVE_LVI_MITIGATION_CFLAGS_GCC)
+  if (LVI_MITIGATION STREQUAL ControlFlow-GNU)
+    set(LVI_MITIGATION_FLAGS -Wa,-mlfence-before-indirect-branch=register
+                             -Wa,-mlfence-before-ret=not)
+    if (NOT GLIBC_VERSION)
+      get_glibc_version()
+    endif ()
+    if (GLIBC_VERSION LESS 2.27)
+      set(LVI_MITIGATION_FLAGS ${LVI_MITIGATION_FLAGS} -g0)
+    endif ()
+    set(LVI_MITIGATION_FLAGS_GCC ${ENCLAVE_CFLAGS_GCC} ${LVI_MITIGATION_FLAGS}
+                                 -mindirect-branch-register)
+    list(JOIN LVI_MITIGATION_FLAGS_GCC " " ENCLAVE_LVI_MITIGATION_CFLAGS_GCC)
 
-  set(LVI_MITIGATION_FLAGS_CLANG ${ENCLAVE_CFLAGS_CLANG_LIST}
-                                 ${LVI_MITIGATION_FLAGS} -no-integrated-as)
-  list(JOIN LVI_MITIGATION_FLAGS_CLANG " " ENCLAVE_LVI_MITIGATION_CFLAGS_CLANG)
+    set(LVI_MITIGATION_FLAGS_CLANG ${ENCLAVE_CFLAGS_CLANG_LIST}
+                                   ${LVI_MITIGATION_FLAGS} -no-integrated-as)
+    list(JOIN LVI_MITIGATION_FLAGS_CLANG " "
+         ENCLAVE_LVI_MITIGATION_CFLAGS_CLANG)
+  elseif (LVI_MITIGATION STREQUAL ControlFlow-Clang)
+    set(LVI_MITIGATION_FLAGS -mlvi-cfi)
+    set(LVI_MITIGATION_FLAGS_CLANG ${ENCLAVE_CFLAGS_CLANG_LIST}
+                                   ${LVI_MITIGATION_FLAGS})
+    list(JOIN LVI_MITIGATION_FLAGS_CLANG " "
+         ENCLAVE_LVI_MITIGATION_CFLAGS_CLANG)
+  endif ()
 endif ()
 
 ##==============================================================================
@@ -86,6 +98,9 @@ set(ENCLAVE_MBEDTLS_CRYPTO_WRAPPER_LIBS -loecryptombedtls -lmbedx509 -lmbedtls
 set(ENCLAVE_OPENSSL_CRYPTO_WRAPPER_LIBS -loecryptoopenssl -lopensslssl
                                         -lopensslcrypto)
 
+set(ENCLAVE_OPENSSL_3_CRYPTO_WRAPPER_LIBS -loecryptoopenssl_3 -lopensslssl_3
+                                          -lopensslcrypto_3)
+
 set(ENCLAVE_OPENSSL_SYMCRYPT_FIPS_WRAPPER_LIBS
     -loesymcryptengine -loecryptoopenssl -lopensslssl -lopensslcrypto)
 
@@ -97,11 +112,14 @@ list(JOIN ENCLAVE_CLIBS_LIST " " ENCLAVE_CLIBS)
 set(ENCLAVE_CXXLIBS_LIST ${ENCLAVE_CLIBS_1} -loelibcxx ${ENCLAVE_CLIBS_2})
 list(APPEND ENCLAVE_MBEDTLS_CRYPTO_WRAPPER_LIBS ${ENCLAVE_CLIBS_2})
 list(APPEND ENCLAVE_OPENSSL_CRYPTO_WRAPPER_LIBS ${ENCLAVE_CLIBS_2})
+list(APPEND ENCLAVE_OPENSSL_3_CRYPTO_WRAPPER_LIBS ${ENCLAVE_CLIBS_2})
 list(APPEND ENCLAVE_OPENSSL_SYMCRYPT_FIPS_WRAPPER_LIBS ${ENCLAVE_CLIBS_2})
 
 list(JOIN ENCLAVE_CXXLIBS_LIST " " ENCLAVE_CXXLIBS)
 list(JOIN ENCLAVE_MBEDTLS_CRYPTO_WRAPPER_LIBS " " ENCLAVE_MBEDTLS_CRYPTO_LIBS)
 list(JOIN ENCLAVE_OPENSSL_CRYPTO_WRAPPER_LIBS " " ENCLAVE_OPENSSL_CRYPTO_LIBS)
+list(JOIN ENCLAVE_OPENSSL_3_CRYPTO_WRAPPER_LIBS " "
+     ENCLAVE_OPENSSL_3_CRYPTO_LIBS)
 list(JOIN ENCLAVE_OPENSSL_SYMCRYPT_FIPS_WRAPPER_LIBS " "
      ENCLAVE_OPENSSL_SYMCRYPT_FIPS_CRYPTO_LIBS)
 
@@ -129,6 +147,10 @@ if (LVI_MITIGATION MATCHES ControlFlow)
   set(LVI_MITIGATION_OPENSSL_CRYPTO_WRAPPER_LIBS
       -loecryptoopenssl-lvi-cfg -lopensslssl-lvi-cfg -lopensslcrypto-lvi-cfg)
 
+  set(LVI_MITIGATION_OPENSSL_3_CRYPTO_WRAPPER_LIBS
+      -loecryptoopenssl_3-lvi-cfg -lopensslssl_3-lvi-cfg
+      -lopensslcrypto_3-lvi-cfg)
+
   set(LVI_MITIGATION_OPENSSL_SYMCRYPT_FIPS_CRYPTO_WRAPPER_LIBS
       -loesymcryptengine-lvi-cfg -loecryptoopenssl-lvi-cfg -lopensslssl-lvi-cfg
       -lopensslcrypto-lvi-cfg)
@@ -153,6 +175,8 @@ if (LVI_MITIGATION MATCHES ControlFlow)
        ${LVI_MITIGATION_CLIBS_2})
   list(APPEND LVI_MITIGATION_OPENSSL_CRYPTO_WRAPPER_LIBS
        ${LVI_MITIGATION_CLIBS_2})
+  list(APPEND LVI_MITIGATION_OPENSSL_3_CRYPTO_WRAPPER_LIBS
+       ${LVI_MITIGATION_CLIBS_2})
   list(APPEND LVI_MITIGATION_OPENSSL_SYMCRYPT_FIPS_CRYPTO_WRAPPER_LIBS
        ${LVI_MITIGATION_CLIBS_2})
 
@@ -160,6 +184,8 @@ if (LVI_MITIGATION MATCHES ControlFlow)
        LVI_MITIGATION_MBEDTLS_CRYPTO_LIBS)
   list(JOIN LVI_MITIGATION_OPENSSL_CRYPTO_WRAPPER_LIBS " "
        LVI_MITIGATION_OPENSSL_CRYPTO_LIBS)
+  list(JOIN LVI_MITIGATION_OPENSSL_3_CRYPTO_WRAPPER_LIBS " "
+       LVI_MITIGATION_OPENSSL_3_CRYPTO_LIBS)
   list(JOIN LVI_MITIGATION_OPENSSL_SYMCRYPT_FIPS_CRYPTO_WRAPPER_LIBS " "
        LVI_MITIGATION_OPENSSL_SYMCRYPT_FIPS_CRYPTO_LIBS)
 

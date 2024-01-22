@@ -11,6 +11,7 @@
 #include <string.h>
 #include "rsa.h"
 
+#if OECRYPTO_OPENSSL_VER < 3
 oe_result_t generate_rsa_pair(
     uint8_t** public_key,
     size_t* public_key_size,
@@ -126,3 +127,120 @@ done:
 
     return result;
 }
+#else
+oe_result_t generate_rsa_pair(
+    uint8_t** public_key,
+    size_t* public_key_size,
+    uint8_t** private_key,
+    size_t* private_key_size)
+{
+    oe_result_t result = OE_FAILURE;
+    uint8_t* local_public_key = nullptr;
+    uint8_t* local_private_key = nullptr;
+    int res = -1;
+    EVP_PKEY* pkey = nullptr;
+    EVP_PKEY_CTX* ctx = nullptr;
+    BIO* bio = nullptr;
+    BIGNUM* e = nullptr;
+
+    ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, NULL);
+    if (!ctx)
+        OE_RAISE_MSG(OE_FAILURE, "EVP_PKEY_CTX_new_id failed\n");
+
+    res = EVP_PKEY_keygen_init(ctx);
+    if (res <= 0)
+        OE_RAISE_MSG(OE_FAILURE, "EVP_PKEY_keygen_init failed(%d)\n", res);
+
+    res = EVP_PKEY_CTX_set_rsa_keygen_bits(ctx, 2048);
+    if (res <= 0)
+        OE_RAISE_MSG(
+            OE_FAILURE, "EVP_PKEY_CTX_set_rsa_keygen_bits failed(%d)\n", res);
+
+    e = BN_new();
+    if (!e)
+        OE_RAISE_MSG(OE_FAILURE, "BN_new failed\n");
+
+    res = BN_set_word(e, (BN_ULONG)RSA_F4);
+    if (res <= 0)
+        OE_RAISE_MSG(OE_FAILURE, "BN_set_word failed(%d)\n", res);
+
+    res = EVP_PKEY_CTX_set1_rsa_keygen_pubexp(ctx, e);
+    if (res <= 0)
+        OE_RAISE_MSG(
+            OE_FAILURE, "EVP_PKEY_CTX_set_rsa_keygen_pubexp failed(%d)\n", res);
+
+    res = EVP_PKEY_keygen(ctx, &pkey);
+    if (res <= 0)
+    {
+        OE_RAISE_MSG(OE_FAILURE, "EVP_PKEY_keygen failed (%d)\n", res);
+    }
+
+    local_public_key = (uint8_t*)calloc(1, OE_RSA_PUBLIC_KEY_SIZE);
+    if (local_public_key == nullptr)
+        OE_RAISE(OE_OUT_OF_MEMORY);
+
+    local_private_key = (uint8_t*)calloc(1, OE_RSA_PRIVATE_KEY_SIZE);
+    if (local_private_key == nullptr)
+        OE_RAISE(OE_OUT_OF_MEMORY);
+
+    bio = BIO_new(BIO_s_mem());
+    if (!bio)
+        OE_RAISE_MSG(OE_FAILURE, "BIO_new for local_public_key failed\n");
+
+    res = PEM_write_bio_PUBKEY(bio, pkey);
+    if (!res)
+        OE_RAISE_MSG(OE_FAILURE, "PEM_write_bio_PUBKEY failed (%d)\n", res);
+
+    res = BIO_read(bio, local_public_key, OE_RSA_PUBLIC_KEY_SIZE);
+    if (!res)
+        OE_RAISE_MSG(OE_FAILURE, "BIO_read public key failed (%d)\n", res);
+
+    BIO_free(bio);
+    bio = nullptr;
+
+    bio = BIO_new(BIO_s_mem());
+    if (!bio)
+        OE_RAISE_MSG(OE_FAILURE, "BIO_new for local_public_key failed\n");
+
+    res = PEM_write_bio_PrivateKey(
+        bio, pkey, nullptr, nullptr, 0, nullptr, nullptr);
+    if (!res)
+        OE_RAISE_MSG(OE_FAILURE, "PEM_write_bio_PrivateKey failed (%d)\n", res);
+
+    res = BIO_read(bio, local_private_key, OE_RSA_PRIVATE_KEY_SIZE);
+    if (!res)
+        OE_RAISE_MSG(OE_FAILURE, "BIO_read private key failed (%d)\n", res);
+
+    BIO_free(bio);
+    bio = nullptr;
+
+    *public_key = local_public_key;
+    // plus one to make sure \0 at the end is counted
+    *public_key_size = strlen((const char*)local_public_key) + 1;
+
+    *private_key = local_private_key;
+    *private_key_size = strlen((const char*)local_private_key) + 1;
+
+    local_public_key = nullptr;
+    local_private_key = nullptr;
+
+    OE_TRACE_INFO("public_key_size\n[%d]\n", *public_key_size);
+    OE_TRACE_INFO("public_key\n[%s]\n", *public_key);
+    result = OE_OK;
+
+done:
+    if (local_public_key)
+        free(local_public_key);
+    if (local_private_key)
+        free(local_private_key);
+    if (bio)
+        BIO_free(bio);
+    if (e)
+        BN_free(e);
+    if (ctx)
+        EVP_PKEY_CTX_free(ctx);
+    if (pkey)
+        EVP_PKEY_free(pkey);
+    return result;
+}
+#endif

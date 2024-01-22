@@ -16,9 +16,9 @@ OE_XSAVE_INITIAL_STATE[OE_MINIMAL_XSTATE_AREA_SIZE/sizeof(uint32_t)] = {
      * clear Status, Tag, OpCode, FIP words */
     0x037F, 0, 0, 0,
 
-    /* Clear FDP bits, set MXCSR to ABI init value of 0x1F80
+    /* Clear FDP bits, set MXCSR to ABI init value of 0x1FBF
      * and MXCSR_MASK to all bits (0XFFFF) */
-    0, 0, 0x1F80, 0xFFFF,
+    0, 0, 0x1FBF, 0xFFFF,
 
     /* Clear ST/MM0-7 */
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -35,10 +35,12 @@ OE_XSAVE_INITIAL_STATE[OE_MINIMAL_XSTATE_AREA_SIZE/sizeof(uint32_t)] = {
     0, 0, 0, 0, 0, 0, 0, 0,
 
     /* XSAVE Header */
-    /* Clear XSTATE_BV. Note that this means we don't support
-     * compaction mode (XCOMP_BV[63]) to accommodate running
-     * the same code in simulation mode on older CPUs. */
-    0, 0, 0, 0,
+    /* Set XSTATE_BV[1] to 1 (SSE state) */
+    2, 0,
+    /* Set XCOMP_BV[1] to 1 (SSE state), allowing non-default
+     * MXCSR value to be restored.
+     * Also, set XCOMP_BV[63] to 1 for compaction mode */
+    2, 0x80000000,
 
     /* Reserved XSAVE header bits */
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,

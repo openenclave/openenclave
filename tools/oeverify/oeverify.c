@@ -4,12 +4,14 @@
 #include <errno.h>
 #include <openenclave/attestation/custom_claims.h>
 #include <openenclave/attestation/sgx/evidence.h>
+#include <openenclave/attestation/tdx/evidence.h>
 #include <openenclave/attestation/verifier.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 static const oe_uuid_t oe_format_default = {OE_FORMAT_UUID_SGX_ECDSA};
+static const oe_uuid_t _tdx_quote_uuid = {OE_FORMAT_UUID_TDX_QUOTE_ECDSA};
 
 typedef struct _evidence_uuid_desc
 {
@@ -21,7 +23,8 @@ typedef struct _evidence_uuid_desc
     XX(SGX_ECDSA)                   \
     XX(LEGACY_REPORT_REMOTE)        \
     XX(RAW_SGX_QUOTE_ECDSA)         \
-    XX(SGX_LOCAL_ATTESTATION)
+    XX(SGX_LOCAL_ATTESTATION)       \
+    XX(TDX_QUOTE_ECDSA)
 
 static char* allowed_evidence_formats =
 #define XX(id) #id " "
@@ -117,7 +120,10 @@ exit:
     return result;
 }
 
-oe_result_t print_and_verify_claims(oe_claim_t* claims, size_t claims_length)
+oe_result_t print_and_verify_claims(
+    const oe_uuid_t* format,
+    oe_claim_t* claims,
+    size_t claims_length)
 {
     fprintf(stdout, "Claims:\n");
     for (size_t i = 0; i < claims_length; i++)
@@ -127,7 +133,8 @@ oe_result_t print_and_verify_claims(oe_claim_t* claims, size_t claims_length)
         {
             uint32_t security_version = *(uint32_t*)(claim->value);
             // Check the enclave's security version
-            if (security_version < 1)
+            if (memcmp(format, &_tdx_quote_uuid, sizeof(oe_uuid_t)) &&
+                security_version < 1)
             {
                 fprintf(
                     stdout,
@@ -225,7 +232,7 @@ oe_result_t verify_evidence(
             &claims_length);
     }
 
-    print_and_verify_claims(claims, claims_length);
+    print_and_verify_claims(&format, claims, claims_length);
 
     if (evidence_data != NULL)
     {
@@ -252,7 +259,7 @@ oe_result_t enclave_claims_verifier(
 {
     (void)arg;
     fprintf(stdout, "enclave_claims_verifier is called with claims:\n");
-    return print_and_verify_claims(claims, claims_length);
+    return print_and_verify_claims(&oe_format_default, claims, claims_length);
 }
 
 oe_result_t verify_cert(const char* filename)
@@ -399,6 +406,7 @@ int main(int argc, const char* argv[])
         }
 
         oe_verifier_initialize();
+        oe_tdx_verifier_initialize();
 
         if (evidence_filename != NULL)
         {

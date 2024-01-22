@@ -48,6 +48,10 @@ install(
         openenclave/attestation/sgx/evidence.h
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/attestation/sgx/
   COMPONENT OEHOSTVERIFY)
+install(
+  FILES openenclave/attestation/tdx/evidence.h
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/attestation/tdx/
+  COMPONENT OEHOSTVERIFY)
 install(TARGETS oe_includes EXPORT openenclave-targets)
 install(
   TARGETS oe_includes

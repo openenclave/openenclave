@@ -1,0 +1,12 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+---
+gcc_target_version: "11.3.0"
+# For specifying distribution-specific packages
+apt_distribution_packages:
+  - "python3"
+  - "clang-11"
+  - "clang-format-11"
+apt_arm_distribution_packages:
+  - "python3-cryptography"

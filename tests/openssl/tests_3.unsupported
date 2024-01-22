@@ -1,0 +1,73 @@
+# Test aborts as expected, but the test harness does not currently support treating it as a pass.
+../../3rdparty/openssl/openssl_3/test/aborttest.c
+# OpenSSL is not built with support for ACVP by default
+# https://github.com/openssl/openssl/blob/master/INSTALL.md#enable-acvp-tests
+../../3rdparty/openssl/openssl_3/test/acvp_test.c
+# Require localtime, which is not supported.
+../../3rdparty/openssl/openssl_3/test/asn1_time_test.c
+# The MS CryptoAPI engine (capieng) is disabled.
+../../3rdparty/openssl/openssl_3/test/cmsapitest.c
+# PSK is disabled by OE.
+../../3rdparty/openssl/openssl_3/test/dtls_mtu_test.c
+# Require fork, which is not supported.
+../../3rdparty/openssl/openssl_3/test/drbgtest.c
+# Disable the stress test that takes too long to finish (e.g., ~70 second on both Linux and Windows).
+../../3rdparty/openssl/openssl_3/test/ecstresstest.c
+# Fail with the stress test because of insufficient heap size (still fail with 25600 pages/100 MB).
+# The memory usage peak of running the non-enclave version of the test is 171.69 MB.
+../../3rdparty/openssl/openssl_3/test/lhash_test.c
+# Require openssl libapp.a, which is not included by OE.
+../../3rdparty/openssl/openssl_3/test/uitest.c
+# Require getservbyname, which is not supported.
+../../3rdparty/openssl/openssl_3/test/ssltest_old.c
+../../3rdparty/openssl/openssl_3/test/ssl_old_test.c
+../../3rdparty/openssl/openssl_3/test/http_test.c
+# Depend on the OPENSSL_NO_SECURE_MEMORY build flag that is not supported by OE.
+../../3rdparty/openssl/openssl_3/test/secmemtest.c
+# Depends on shared libraries, OE builds OpenSSL as static library.
+../../3rdparty/openssl/openssl_3/test/tls13secretstest.c
+# GOST engine is not supported by OE (require dynamic loading).
+../../3rdparty/openssl/openssl_3/test/gosttest.c
+# Depend on PSK that is disabled by OE.
+../../3rdparty/openssl/openssl_3/test/dtls_mtu_test.c
+# Poly1305 is disabled by OE.
+../../3rdparty/openssl/openssl_3/test/poly1305_internal_test.c
+# Chacha is disabled by OE.
+../../3rdparty/openssl/openssl_3/test/chacha_internal_test.c
+# SipHash is disabled by OE.
+../../3rdparty/openssl/openssl_3/test/siphash_internal_test.c
+# SM2 is disabled by OE.
+../../3rdparty/openssl/openssl_3/test/sm2_internal_test.c
+# SM4 is disabled by OE.
+../../3rdparty/openssl/openssl_3/test/sm4_internal_test.c
+# MDC2 is disabled by OE.
+../../3rdparty/openssl/openssl_3/test/mdc2_internal_test.c
+# Depend on the shared configuration that is disabled by OE.
+../../3rdparty/openssl/openssl_3/test/cipher_overhead_test.c
+# The 25-cipher.conf depends on chacha and poly1305 that are disabled by OE.
+../../3rdparty/openssl/openssl_3/test/ssl_test.c
+# Exceeds max number of enclave threads supported 15
+../../3rdparty/openssl/openssl_3/test/threadstest_fips.c
+../../3rdparty/openssl/openssl_3/test/threadstest.c
+# fips is disabled, which is the module this tests loading
+../../3rdparty/openssl/openssl_3/test/moduleloadtest.c
+# OSSL_METHOD_STORE methods can call rdtsc directly
+../../3rdparty/openssl/openssl_3/test/property_test.c
+# CMP is disabled by OE.
+../../3rdparty/openssl/openssl_3/test/cmp_client_test.c
+../../3rdparty/openssl/openssl_3/test/cmp_ctx_test.c
+../../3rdparty/openssl/openssl_3/test/cmp_msg_test.c
+../../3rdparty/openssl/openssl_3/test/cmp_protect_test.c
+../../3rdparty/openssl/openssl_3/test/cmp_vfy_test.c
+../../3rdparty/openssl/openssl_3/test/cmp_asn_test.c
+../../3rdparty/openssl/openssl_3/test/cmp_server_test.c
+../../3rdparty/openssl/openssl_3/test/cmp_status_test.c
+# Test depends on calling openssl_init_load_config, that is overwritten in our init.c
+../../3rdparty/openssl/openssl_3/test/sysdefaulttest.c
+# PBE algorithms use KDF, "Applications requiring this KDF will need to load the legacy crypto provider."
+# see https://github.com/openssl/openssl_3/blob/master/CHANGES.md
+../../3rdparty/openssl/openssl_3/test/pbetest.c
+# Require time in execute_HDR_update_messageTime_test, which is not supported.
+../../3rdparty/openssl/openssl_3/test/cmp_hdr_test.c
+# fips is disabled by OE.
+../../3rdparty/openssl/openssl_3/test/fips_version_test.c

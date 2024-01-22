@@ -24,8 +24,8 @@ OE_EXTERNC_END
 // Set FTZ, Truncation RC and DAZ, clear all exception masks
 #define TEST_MXCSR 0xE040
 
-// Initial MXCSR value as defined by Linux/Window ABIs
-#define INIT_MXCSR 0x1F80
+// Default MXCSR value used by OE for MCDT mitigation
+#define INIT_MXCSR 0x1FBF
 
 // Set RC to RNE, PC to SP, clear all exception masks (11 00 01 000000)
 #define TEST_FCW 0xC40

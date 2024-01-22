@@ -4,7 +4,7 @@
 ---
 - name: Include distribution vars
   ansible.builtin.include_vars:
-    file: "{{ ansible_distribution | lower }}/{{ ansible_distribution_release | lower }}.yml"
+    file: "{{ ansible_distribution | lower }}/main.yml"
 
 - name: Install apt-transport-https APT package
   ansible.builtin.apt:
@@ -21,6 +21,7 @@
   retries: 10
   register: add_key
   until: add_key is success
+  when: apt_key_url is defined
 
 - name: Add APT repository
   ansible.builtin.apt_repository:

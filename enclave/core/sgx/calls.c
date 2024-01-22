@@ -641,15 +641,17 @@ OE_INLINE void _handle_oret(
     td->oret_arg = arg;
 
     /* Restore the FXSTATE and flags */
-    asm volatile("pushq %[rflags] \n\t" // Restore flags.
-                 "popfq \n\t"
-                 "fldcw %[fcw] \n\t"     // Restore x87 control word
-                 "ldmxcsr %[mxcsr] \n\t" // Restore MXCSR
-                 : [mxcsr] "=m"(callsite->mxcsr),
-                   [fcw] "=m"(callsite->fcw),
-                   [rflags] "=m"(callsite->rflags)
-                 :
-                 : "cc");
+    asm volatile(
+        "pushq %[rflags] \n\t" // Restore flags.
+        "popfq \n\t"
+        "fldcw %[fcw] \n\t"     // Restore x87 control word
+        "ldmxcsr %[mxcsr] \n\t" // Restore MXCSR
+        "lfence \n\t" // MXCSR Configuration Dependent Timing (MCDT) mitigation
+        : [mxcsr] "=m"(callsite->mxcsr),
+          [fcw] "=m"(callsite->fcw),
+          [rflags] "=m"(callsite->rflags)
+        :
+        : "cc");
 
     oe_longjmp(&callsite->jmpbuf, 1);
 }

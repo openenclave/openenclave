@@ -26,28 +26,30 @@
 #define sscanf_s sscanf
 #endif
 
-oe_result_t read_cert(char* filename, char* cert);
+oe_result_t read_cert(char* dir, char* filename, char* cert);
 
 oe_result_t read_chain(
+    char* dir,
     char* filename1,
     char* filename2,
     char* chain,
     size_t chain_size);
 
 oe_result_t read_chains(
+    char* dir,
     char* filename1,
     char* filename2,
     char* filename3,
     char* chain,
     size_t chain_size);
 
-oe_result_t read_crl(char* filename, uint8_t* crl, size_t* crl_size);
+oe_result_t read_crl(char* dir, char* filename, uint8_t* crl, size_t* crl_size);
 
-oe_result_t read_dates(char* filename, oe_datetime_t* time);
+oe_result_t read_dates(char* dir, char* filename, oe_datetime_t* time);
 
 FILE* read_file(const char* filename, const char* mode);
 
-oe_result_t read_mod(char* filename, uint8_t* mod, size_t* mod_size);
+oe_result_t read_mod(char* dir, char* filename, uint8_t* mod, size_t* mod_size);
 
 oe_result_t read_mixed_chain(
     char* chain1,
@@ -55,15 +57,21 @@ oe_result_t read_mixed_chain(
     char* chain,
     size_t chain_size);
 
-oe_result_t read_sign(char* filename, uint8_t* sign, size_t* sign_size);
+oe_result_t read_sign(
+    char* dir,
+    char* filename,
+    uint8_t* sign,
+    size_t* sign_size);
 
 oe_result_t read_pem_key(
+    char* dir,
     const char* filename,
     char* data,
     size_t data_size,
     size_t* data_size_out);
 
 oe_result_t read_coordinates(
+    char* dir,
     char* filename,
     uint8_t* x,
     uint8_t* y,

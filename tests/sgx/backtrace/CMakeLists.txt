@@ -89,5 +89,5 @@ add_test(
 set_tests_properties(
   tests/sgx/backtrace_segfault_no_pf_gp
   PROPERTIES SKIP_RETURN_CODE 2 PASS_REGULAR_EXPRESSION "\
-Unhanded in-enclave exception.+\
+Unhandled in-enclave exception.+\
 ")

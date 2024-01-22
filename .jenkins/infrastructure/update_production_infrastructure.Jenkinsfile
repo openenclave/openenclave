@@ -8,10 +8,11 @@ GLOBAL_TIMEOUT_MINUTES = 240
 AZURE_IMAGES_MAP = [
     // Mapping between shared gallery image definition name and
     // generated Azure managed image name
-    "ubuntu-18.04":    "${params.IMAGE_ID}-ubuntu-18.04-SGX",
-    "ubuntu-20.04":    "${params.IMAGE_ID}-ubuntu-20.04-SGX",
-    "ws2019-nonSGX":   "${params.IMAGE_ID}-ws2019-nonSGX",
-    "ws2019-SGX-DCAP": "${params.IMAGE_ID}-ws2019-SGX-DCAP"
+    "ubuntu-20.04":      "",
+    "nonSGX-clang-11":   "",
+    "SGX-DCAP-clang-11": "",
+    "WS22-nonSGX-clang-11":   "",
+    "WS22-SGX-DCAP-clang-11": "",
 ]
 
 def update_production_azure_gallery_images(String image_name) {

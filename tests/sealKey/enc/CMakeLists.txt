@@ -48,4 +48,23 @@ if (BUILD_OPENSSL)
 
   enclave_compile_features(sealKey_openssl_enc PRIVATE
                            cxx_generalized_initializers)
+
+  add_enclave(
+    TARGET
+    sealKey_openssl_3_enc
+    UUID
+    7d5d378e-49f8-478e-9dd8-abaa9a160bbe
+    CXX
+    CRYPTO_LIB
+    OpenSSL_3
+    SOURCES
+    enc.cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/sealKey_t.c)
+
+  enclave_include_directories(
+    sealKey_openssl_3_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR})
+
+  enclave_compile_features(sealKey_openssl_3_enc PRIVATE
+                           cxx_generalized_initializers)
 endif ()

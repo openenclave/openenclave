@@ -1,7 +1,7 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 #
-# Helper mecro to either sign an SGX enclave binary or to generate and sign
+# Helper macro to either sign an SGX enclave binary or to generate and sign
 # an OP-TEE-compatible enclave binary.
 #
 # Usage:
@@ -170,6 +170,7 @@ function (add_enclave_sgx)
                         ${ARGN})
 
   add_executable(${ENCLAVE_TARGET} ${ENCLAVE_SOURCES})
+
   # Add an enclave with LVI mitigation if LVI_MITIGATION is globally configured.
   #
   # If the LVI_MITIGATION_SKIP_TESTS global variable is set, then it takes
@@ -203,6 +204,8 @@ function (add_enclave_sgx)
     enclave_link_libraries(${ENCLAVE_TARGET} oecryptombedtls)
   elseif (ENCLAVE_CRYPTO_LIB_LOWER STREQUAL "openssl")
     enclave_link_libraries(${ENCLAVE_TARGET} oecryptoopenssl)
+  elseif (ENCLAVE_CRYPTO_LIB_LOWER STREQUAL "openssl_3")
+    enclave_link_libraries(${ENCLAVE_TARGET} oecryptoopenssl_3)
   elseif (ENCLAVE_CRYPTO_LIB_LOWER STREQUAL "symcrypt_fips")
     enclave_link_libraries(
       ${ENCLAVE_TARGET} oesymcryptengine oecryptoopenssl

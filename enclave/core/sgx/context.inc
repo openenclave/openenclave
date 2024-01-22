@@ -106,6 +106,9 @@ oe_continue_execution:
     // oe_snap_current_context.
     ldmxcsr OE_CONTEXT_MXCSR(%rdi)
 
+    // For MXCSR Configuration Dependent Timing (MCDT) mitigation
+    lfence
+
     // Restore general registers.
     // Restore rax, rbx, rcx, rdx.
     movq    OE_CONTEXT_RAX(%rdi), %rax

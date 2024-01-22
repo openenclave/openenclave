@@ -42,7 +42,6 @@ oe_result_t oe_get_collaterals(
     oe_result_t result = OE_UNEXPECTED;
     size_t report_size = OE_MAX_REPORT_SIZE;
     uint8_t* remote_report = NULL;
-    oe_report_t* parsed_report = NULL;
     oe_report_header_t* header = NULL;
 
     OE_TRACE_INFO("Enter enclave call %s\n", __FUNCTION__);
@@ -73,7 +72,7 @@ oe_result_t oe_get_collaterals(
     header = (oe_report_header_t*)remote_report;
 
     OE_CHECK_MSG(
-        oe_verify_report(remote_report, report_size, parsed_report),
+        oe_verify_report(remote_report, report_size, NULL),
         "Failed to verify OE remote report. %s",
         oe_result_str(result));
 #else
@@ -95,7 +94,7 @@ oe_result_t oe_get_collaterals(
     header = (oe_report_header_t*)remote_report;
 
     OE_CHECK_MSG(
-        oe_verify_report(enclave, remote_report, report_size, parsed_report),
+        oe_verify_report(enclave, remote_report, report_size, NULL),
         "Failed to verify OE remote report. %s",
         oe_result_str(result));
 #endif
@@ -163,6 +162,7 @@ static oe_result_t oe_verify_report_with_collaterals(
     oe_result_t result = OE_UNEXPECTED;
     oe_report_t oe_report = {0};
     oe_report_header_t* header = (oe_report_header_t*)report;
+    uint32_t verification_result = 0;
 
     if (report == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -186,11 +186,15 @@ static oe_result_t oe_verify_report_with_collaterals(
             header->report_size,
             collaterals,
             collaterals_size,
-            input_validation_time));
+            input_validation_time,
+            &verification_result));
 
         // Optionally return parsed report.
         if (parsed_report != NULL)
-            OE_CHECK(oe_parse_report(report, report_size, parsed_report));
+        {
+            *parsed_report = oe_report;
+            parsed_report->verification_result = verification_result;
+        }
     }
     else if (header->report_type == OE_REPORT_TYPE_SGX_LOCAL)
     {
@@ -1198,6 +1202,7 @@ void test_local_verify_report()
     uint8_t* report_ptr;
     size_t report_size;
     sgx_target_info_t* tampered_target_info = NULL;
+    oe_report_t parsed_report = {0};
 
     uint8_t report_data[sizeof(sgx_report_data_t)];
     for (uint32_t i = 0; i < sizeof(report_data); ++i)
@@ -1218,8 +1223,10 @@ void test_local_verify_report()
             &report_ptr,
             &report_size),
         OE_OK);
-    OE_TEST_CODE(VerifyReport(report_ptr, report_size, NULL), OE_OK);
+    OE_TEST_CODE(VerifyReport(report_ptr, report_size, &parsed_report), OE_OK);
+    OE_TEST(parsed_report.verification_result == OE_SGX_TCB_STATUS_UP_TO_DATE);
     oe_free_report(report_ptr);
+    memset(&parsed_report, 0, sizeof(parsed_report));
 
 // 2. Report with full custom report data.
 #ifdef OE_BUILD_ENCLAVE
@@ -1233,8 +1240,10 @@ void test_local_verify_report()
             &report_ptr,
             &report_size),
         OE_OK);
-    OE_TEST_CODE(VerifyReport(report_ptr, report_size, NULL), OE_OK);
+    OE_TEST_CODE(VerifyReport(report_ptr, report_size, &parsed_report), OE_OK);
+    OE_TEST(parsed_report.verification_result == OE_SGX_TCB_STATUS_UP_TO_DATE);
     oe_free_report(report_ptr);
+    memset(&parsed_report, 0, sizeof(parsed_report));
 
     // 3. Report with partial custom report data.
     OE_TEST_CODE(
@@ -1247,8 +1256,10 @@ void test_local_verify_report()
             &report_ptr,
             &report_size),
         OE_OK);
-    OE_TEST_CODE(VerifyReport(report_ptr, report_size, NULL), OE_OK);
+    OE_TEST_CODE(VerifyReport(report_ptr, report_size, &parsed_report), OE_OK);
+    OE_TEST(parsed_report.verification_result == OE_SGX_TCB_STATUS_UP_TO_DATE);
     oe_free_report(report_ptr);
+    memset(&parsed_report, 0, sizeof(parsed_report));
 #endif
 
     // 4. Negative case.
@@ -1277,6 +1288,7 @@ void test_remote_verify_report()
 {
     uint8_t* report_ptr;
     size_t report_size;
+    oe_report_t parsed_report = {0};
 
 #ifdef OE_BUILD_ENCLAVE
     uint8_t report_data[sizeof(sgx_report_data_t)];
@@ -1301,8 +1313,14 @@ void test_remote_verify_report()
         OE_TEST_CODE(
             GetReport_v2(flags, NULL, 0, NULL, 0, &report_ptr, &report_size),
             OE_OK);
-        OE_TEST_CODE(VerifyReport(report_ptr, report_size, NULL), OE_OK);
+        OE_TEST_CODE(
+            VerifyReport(report_ptr, report_size, &parsed_report), OE_OK);
+        OE_TEST(
+            parsed_report.verification_result == OE_SGX_TCB_STATUS_UP_TO_DATE ||
+            parsed_report.verification_result ==
+                OE_SGX_TCB_STATUS_SW_HARDENING_NEEDED);
         oe_free_report(report_ptr);
+        memset(&parsed_report, 0, sizeof(parsed_report));
 
 #ifdef OE_BUILD_ENCLAVE
         report_data_size = 16;
@@ -1316,8 +1334,14 @@ void test_remote_verify_report()
                 &report_ptr,
                 &report_size),
             OE_OK);
-        OE_TEST_CODE(VerifyReport(report_ptr, report_size, NULL), OE_OK);
+        OE_TEST_CODE(
+            VerifyReport(report_ptr, report_size, &parsed_report), OE_OK);
+        OE_TEST(
+            parsed_report.verification_result == OE_SGX_TCB_STATUS_UP_TO_DATE ||
+            parsed_report.verification_result ==
+                OE_SGX_TCB_STATUS_SW_HARDENING_NEEDED);
         oe_free_report(report_ptr);
+        memset(&parsed_report, 0, sizeof(parsed_report));
 #endif
     }
 }
@@ -1332,6 +1356,8 @@ void test_verify_report_with_collaterals()
     size_t collaterals_ptr_size = 0;
     uint8_t* collaterals_buffer_ptr = NULL;
 
+    oe_report_t parsed_report = {0};
+
     /* Test 1: Verify report with collaterals */
     OE_TEST(
         GetReport_v2(
@@ -1341,7 +1367,17 @@ void test_verify_report_with_collaterals()
     /* Verify report without collaterals */
     OE_TEST(
         VerifyReportWithCollaterals(
-            report_buffer_ptr, report_ptr_size, NULL, 0, NULL, NULL) == OE_OK);
+            report_buffer_ptr,
+            report_ptr_size,
+            NULL,
+            0,
+            NULL,
+            &parsed_report) == OE_OK);
+    OE_TEST(
+        parsed_report.verification_result == OE_SGX_TCB_STATUS_UP_TO_DATE ||
+        parsed_report.verification_result ==
+            OE_SGX_TCB_STATUS_SW_HARDENING_NEEDED);
+    memset(&parsed_report, 0, sizeof(parsed_report));
 
     if (GetCollaterals(&collaterals_buffer_ptr, &collaterals_ptr_size) == OE_OK)
     {
@@ -1352,7 +1388,12 @@ void test_verify_report_with_collaterals()
                 collaterals_buffer_ptr,
                 collaterals_ptr_size,
                 NULL, // Validate using current time
-                NULL) == OE_OK);
+                &parsed_report) == OE_OK);
+        OE_TEST(
+            parsed_report.verification_result == OE_SGX_TCB_STATUS_UP_TO_DATE ||
+            parsed_report.verification_result ==
+                OE_SGX_TCB_STATUS_SW_HARDENING_NEEDED);
+        memset(&parsed_report, 0, sizeof(parsed_report));
 
         /* Test with time in the past */
         time_t t;
@@ -1413,7 +1454,13 @@ void test_verify_report_with_collaterals()
                 collaterals_buffer_ptr,
                 collaterals_ptr_size,
                 &valid_from,
-                NULL) == OE_OK);
+                &parsed_report) == OE_OK);
+        OE_TEST(
+            parsed_report.verification_result == OE_SGX_TCB_STATUS_UP_TO_DATE ||
+            parsed_report.verification_result ==
+                OE_SGX_TCB_STATUS_SW_HARDENING_NEEDED);
+        memset(&parsed_report, 0, sizeof(parsed_report));
+
         /* At earliest expiration date */
         OE_TEST(
             VerifyReportWithCollaterals(
@@ -1422,7 +1469,12 @@ void test_verify_report_with_collaterals()
                 collaterals_buffer_ptr,
                 collaterals_ptr_size,
                 &valid_until,
-                NULL) == OE_OK);
+                &parsed_report) == OE_OK);
+        OE_TEST(
+            parsed_report.verification_result == OE_SGX_TCB_STATUS_UP_TO_DATE ||
+            parsed_report.verification_result ==
+                OE_SGX_TCB_STATUS_SW_HARDENING_NEEDED);
+        memset(&parsed_report, 0, sizeof(parsed_report));
 
         valid_from.year -= 1;
         OE_TEST(

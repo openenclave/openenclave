@@ -1,6 +1,6 @@
 # Advanced Build Information
 
-## Installing CMake
+## 1. Installing CMake
 
 This project requires at least [CMake 3.12](https://cmake.org/download/). This
 is probably not available in your package manager's repositories, but we use the
@@ -12,7 +12,7 @@ cd openenclave/scripts/ansible
 ansible localhost -m import_role -a "name=linux/openenclave tasks_from=environment-setup.yml" --become --ask-become-pass
 ```
 
-## CMake Configuration
+## 2. CMake Configuration
 
 In addition to the standard CMake variables, the following CMake variables
 control the behavior of the Linux make generator for Open Enclave:
@@ -45,7 +45,7 @@ during enclave termination.
 
 Multiple variables can be defined in the cmake call with multiple "-D*Var*=*Value*" arguments.
 
-## Building
+## 3. Building
 
 Once CMake has run and the build is configured, build with:
 
@@ -81,7 +81,7 @@ A successful build only outputs the HTML API reference into the build-tree.
 To update the Doxygen-generated documentation published to https://openenclave.github.io/openenclave,
 please follow instructions [here](/docs/refman/doxygen-howto.md)
 
-## Visualizing the CMake Dependency Graph
+## 4. Visualizing the CMake Dependency Graph
 
 CMake comes with [built-in support for
 graphviz](https://cmake.org/cmake/help/latest/module/CMakeGraphVizOptions.html)
@@ -121,14 +121,19 @@ Edges:
 - dotted: interface dependency
 - dashed: private dependency
 
-## LVI Mitigation
+## 5. LVI Mitigation
 
-In response to the [LVI vulnerability](https://software.intel.com/security-software-guidance/software-guidance/load-value-injection), Open Enclave SDK adopts the mitigation based on [Intel's prebuilt as/ld binaries
-](https://01.org/intel-software-guard-extensions/downloads).
+In response to the [LVI vulnerability](https://software.intel.com/security-software-guidance/software-guidance/load-value-injection), Open Enclave SDK provides two mutually exclusive mitigation methods: one adopts the mitigation based on [Intel's prebuilt as/ld binaries
+](https://01.org/intel-software-guard-extensions/downloads) - code name ControlFlow-GNU (default option), and the other adopts the LVI mitigation that comes with Clang 11 or newer - code name ControlFlow-Clang.
 
-### Newly Added Files
+### 5.1 LVI Mitigation #1 - ControlFlow-GNU
 
-The following list includes necessary files for Open Enclave SDK to support LVI mitigation on both Linux and Windows.
+This LVI mitigation method adopts the mitigation based on [Intel's prebuilt as/ld binaries
+](https://01.org/intel-software-guard-extensions/downloads). Some scripts (see below) have been provided to easily configure Open Enclave to use these custom toolchain.
+
+### 5.1.1 Newly Added Files
+
+The following list includes necessary files for Open Enclave SDK to support this LVI mitigation method on both Linux and Windows.
 
 | Filename                          | Description                                           |
 |-----------------------------------|-------------------------------------------------------|
@@ -137,9 +142,9 @@ The following list includes necessary files for Open Enclave SDK to support LVI 
 | scripts/lvi-mitigation/invoke_compiler               | Script for invoking compilers, needed by generated wrappers (Linux). |
 | scripts/lvi-mitigation/lvi-mitigation.py             | Python script for supporting mitigation (Windows). |
 
-### Dependency Installation
+### 5.1.2 Dependency Installation
 
-#### Linux
+#### 5.1.2.1 Linux
 
 On Linux, run the [install_lvi_mitigation_bindir](/scripts/lvi-mitigation/install_lvi_mitigation_bindir) script
 to install the dependencies to a desired location.
@@ -160,10 +165,10 @@ If the script ran successfully, the `lvi_mitigation_bin` should contain a list o
 ~/openenclave/lvi_mitigation_bin$ ls -l
 total 16
 -rwxrwxr-x 1 yourname yourname 2121936 Mar  10 10:00 as
--rwxrwxr-x 1 yourname yourname     233 Mar  10 10:00 clang++-10
-lrwxrwxrwx 1 yourname yourname      18 Mar  10 10:00 clang++-10_symlink -> /usr/bin/clang++-10
--rwxrwxr-x 1 yourname yourname     231 Mar  10 10:00 clang-10
-lrwxrwxrwx 1 yourname yourname      16 Mar  10 10:00 clang-10_symlink -> /usr/bin/clang-10
+-rwxrwxr-x 1 yourname yourname     233 Mar  10 10:00 clang++-11
+lrwxrwxrwx 1 yourname yourname      18 Mar  10 10:00 clang++-11_symlink -> /usr/bin/clang++-11
+-rwxrwxr-x 1 yourname yourname     231 Mar  10 10:00 clang-11
+lrwxrwxrwx 1 yourname yourname      16 Mar  10 10:00 clang-11_symlink -> /usr/bin/clang-11
 -rwxrwxr-x 1 yourname yourname     227 Mar  10 10:00 g++
 lrwxrwxrwx 1 yourname yourname      12 Mar  10 10:00 g++_symlink -> /usr/bin/g++
 -rwxrwxr-x 1 yourname yourname     227 Mar  10 10:00 gcc
@@ -173,11 +178,13 @@ lrwxrwxrwx 1 yourname yourname      12 Mar  10 10:00 gcc_symlink -> /usr/bin/gcc
 ```
 
 `as` and `ld` are the customized GNU assembler and linker obtained from Intel, which support the
-LVI mitigation. `clang-10`, `clang++-10`, `gcc`, and `g++` are the copies of previously shown wrappers that invoke the
+LVI mitigation. `clang-11`, `clang++-11`, `gcc`, and `g++` are the copies of previously shown wrappers that invoke the
 customized `as` and `ld` when compiling enclave code with LVI mitigation. The remaining files with the `_symlink`
 suffix link to the actual compilers installed in the system, which are required by the wrappers.
 
-**Note**: `clang-10` and `clang++-10` may be missing if the system does not have the `clang` version 10 installed. If you encounter this, you will need to install Clang as GCC is not supported.
+**Note**: `clang-11` and `clang++-11` may be missing if the system does not have the `clang` version 11 installed. If you encounter this, you will need to install Clang as GCC is not supported.
+
+**Note**:  While `clang-11` is our supported and recommended version, Open Enclave may be built with `clang-10` as well.
 
 **Note**: If the version of `glibc` is older than `2.27`, the `ld` will be missing in the above output.
 Consequently, `ld` will not be installed. Without a compatible version of `ld`,
@@ -189,22 +196,22 @@ Example of checking the version of `glibc`
 ldd --version | awk '/ldd/{print $NF}'
 ```
 
-#### Windows
+#### 5.1.2.2 Windows
 
 On Windows, this step is not required. Instead of using the customized assembler and linker, the Windows build
 uses the [Python script](/scripts/lvi-mitigation/lvi-mitigation.py)
 (modified based on the Intel's version) to instrument the enclave code at
 the assembly level that achieves similar functionality.
 
-### CMake Configuration
+### 5.1.3 CMake Configuration
 
 Open Enclave SDK adds two CMake variables that allow developers to build enclave libraries
 with LVI mitigation:
 
 | Variable                 | Description                                          |
 |--------------------------|------------------------------------------------------|
-| LVI_MITIGATION           | Enable LVI mitigation to trusted code. The only currently supported values are *None* or *ControlFlow*. |
-| LVI_MITIGATION_BINDIR    | Path to the customized compilation toolchain required by the LVI Mitigation (Linux-only). |
+| LVI_MITIGATION           | Enable LVI mitigation to trusted code. The only currently supported values are `None`, `ControlFlow`, `ControlFlow-GNU` and `ControlFlow-Clang`. Currently `ControlFlow` is an alias for `ControlFlow-GNU` |
+| LVI_MITIGATION_BINDIR    | (Linux-only) Path to the customized compilation toolchain required by the LVI Mitigation.  Not required if using `ControlFlow-Clang`  |
 
 #### Linux
 
@@ -222,7 +229,25 @@ On Windows, only `LVI_MITIGATION` is required.
 cmake .. -DLVI_MITIGATION=ControlFlow
 ```
 
-## Building
+### 5.2 LVI Mitigation #2 - ControlFlow-Clang
+
+This LVI mitigation method uses [an option provided by Clang version 11 and later](https://releases.llvm.org/11.0.0/tools/clang/docs/ClangCommandLineReference.html#cmdoption-clang-mlvi-cfi).
+
+### 5.2.1 Dependency Installation
+
+Install Clang version 11 from a method of your choice.
+
+> Open Enclave does not support newer version, so you need to install Clang major version 11.
+
+### 5.2.2 CMake Configuration
+
+To enable this LVI mitigation method, set CMake variable `LVI_MITIGATION` to `ControlFlow-Clang`.
+
+```bash
+cmake .. -DLVI_MITIGATION=ControlFlow-Clang
+```
+
+## 5.3 Building
 
 Once CMake has run, and the build is configured, build with:
 
@@ -244,7 +269,7 @@ in addition to the regular versions of them. For example:
 | output/enclave/liboelibcxx.a      | C++ runtime library for enclave.                       |
 | output/enclave/liboelibcxx-lvi-cfg.a      | C++ runtime library with LVI mitigation.       |
 
-## Dependency Graph with LVI Mitigation
+## 5.4 Dependency Graph with LVI Mitigation
 
 To get the dependency graph with LVI mitigation enabled, run
 
@@ -259,7 +284,7 @@ As of 2020-03-10, it looks like this:
 
 ![CMake Dependency Graph with LVI Mitigation](/docs/GettingStartedDocs/DependencyGraphLVICFG.svg)
 
-## Building Enclaves with LVI Mitigation
+## 5.5 Building Enclaves with LVI Mitigation
 
 With the LVI mitigation enabled, Open Enclave SDK provides a new option that
 allows users to build enclaves on top of the mitigated version of libraries.

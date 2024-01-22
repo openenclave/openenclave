@@ -171,6 +171,8 @@ if (UNIX
     add_subdirectory(SampleApp)
     add_subdirectory(SampleAppCRT)
     add_subdirectory(sealKey)
+    add_subdirectory(secure_verify)
+    add_subdirectory(intel_qve_thread_test)
     add_subdirectory(sim-mode)
     add_subdirectory(stdc)
     add_subdirectory(stdcxx)

@@ -18,4 +18,8 @@ if (BUILD_OPENSSL)
                    openssl_tls_server_enc $<TARGET_FILE:openssl_tls_client_enc>)
   set_enclave_tests_properties(tests/openssl_tls_e2e PROPERTIES
                                SKIP_RETURN_CODE 2)
+  add_enclave_test(tests/openssl_3_tls_e2e openssl_tls_e2e_host
+                   openssl_3_tls_server_enc $<TARGET_FILE:openssl_3_tls_client_enc>)
+  set_enclave_tests_properties(tests/openssl_3_tls_e2e PROPERTIES
+                               SKIP_RETURN_CODE 2)
 endif ()

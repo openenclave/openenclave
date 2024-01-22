@@ -10,13 +10,13 @@ export OE_CRYPTO_LIB
 
 TARGETS =
 
-SYMCRYPT_TAR = symcrypt_AMD64_oe_full_v101.3.0-31e06ae.tgz
-SYMCRYPT_URL = https://github.com/microsoft/SymCrypt/releases/download/v101.3.0/${SYMCRYPT_TAR}
-SYMCRYPT_SHA256 = 53fcbdbae3925b82e880c102969dc4c646b36dffbca602d2f85f967d54e958e7
+SYMCRYPT_TAR = symcrypt-linux-oe_full-AMD64-103.0.1-69dbff3.tar.gz
+SYMCRYPT_URL = https://github.com/microsoft/SymCrypt/releases/download/v103.0.1/${SYMCRYPT_TAR}
+SYMCRYPT_SHA256 = 27C8C1C309B217E74D6055734D305AA86D8CE9E05D6D75AFD12C885F13CEA710
 SYMCRYPT_DIR = SymCrypt
-SYMCRYPT_SO = libsymcrypt.so.101.3.0
+SYMCRYPT_SO = libsymcrypt.so.103.0.1
 # The linker can only resolve up to single number after .so
-SYMCRYPT_LINK_SO = libsymcrypt.so.101
+SYMCRYPT_LINK_SO = libsymcrypt.so.103
 
 ifeq (${OE_CRYPTO_LIB}, openssl_symcrypt_fips)
 	TARGETS += symcrypt
@@ -36,6 +36,7 @@ symcrypt:
 	cp ${SYMCRYPT_DIR}/lib/${SYMCRYPT_SO} client/enc/${SYMCRYPT_LINK_SO}
 
 build:
+	make symcrypt
 	echo ${OE_CRYPTO_LIB}
 	$(MAKE) -C server
 	$(MAKE) -C client

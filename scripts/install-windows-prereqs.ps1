@@ -3,36 +3,38 @@
 
 # The Hash parameter defaults below are calculated using Get-FileHash with the default SHA256 hashing algorithm
 Param(
-    [string]$GitURL = 'https://github.com/git-for-windows/git/releases/download/v2.37.1.windows.1/Git-2.37.1-64-bit.exe',
-    [string]$GitHash = '1966761AD2C9E4CBD38F9E583B1125949B011A5A250A99D65E9BB21958E6EF8B',
-    [string]$OpenSSLURL = 'https://oejenkins.blob.core.windows.net/oejenkins/openssl.1.1.1579.74.nupkg',
+    [string]$GitURL = 'https://github.com/git-for-windows/git/releases/download/v2.41.0.windows.1/Git-2.41.0-64-bit.exe',
+    [string]$GitHash = '45DC30410916B8EC5501BE39D01D5B60535731C04FA68283B4F9DF4920877D4E',
+    [string]$OpenSSLURL = 'https://oejenkinspublicstorage.blob.core.windows.net/dependencies/openssl.1.1.1579.74.nupkg',
     [string]$OpenSSLHash = '82678FC7C71CBACA420BC869A1938BC80F2876148A5870D46B4C9A746F6BCEB6',
-    [string]$SevenZipURL = 'https://www.7-zip.org/a/7z1806-x64.msi',
-    [string]$SevenZipHash = 'F00E1588ED54DDF633D8652EB89D0A8F95BD80CCCFC3EED362D81927BEC05AA5',
+    [string]$SevenZipURL = 'https://www.7-zip.org/a/7z2201-x64.msi',
+    [string]$SevenZipHash = 'F4AFBA646166999D6090B5BEDDDE546450262DC595DDDEB62132DA70F70D14CA',
     # We skip the hash check for the vs_buildtools.exe file because it is regularly updated without a change to the URL, unfortunately.
-    [string]$VSBuildToolsURL = 'https://aka.ms/vs/15/release/vs_buildtools.exe',
+    [string]$VSBuildToolsURL = 'https://aka.ms/vs/16/release/vs_buildtools.exe',
     [string]$VSBuildToolsHash = '',
-    [string]$ClangURL = 'https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/LLVM-10.0.0-win64.exe',
-    [string]$ClangHash = '893f8a12506f8ad29ca464d868fb432fdadd782786a10655b86575fc7fc1a562',
-    [string]$ShellCheckURL = 'https://oejenkins.blob.core.windows.net/oejenkins/shellcheck-v0.7.0.zip',
+    [string]$ClangURL = 'https://github.com/llvm/llvm-project/releases/download/llvmorg-11.1.0/LLVM-11.1.0-win64.exe',
+    [string]$ClangHash = 'B5770BBFAC712D273938CD155E232AFAA85C2E8D865C7CA504A104A838568516',
+    [string]$ShellCheckURL = 'https://oejenkinspublicstorage.blob.core.windows.net/dependencies/shellcheck-v0.7.0.zip',
     [string]$ShellCheckHash = '02CFA14220C8154BB7C97909E80E74D3A7FE2CBB7D80AC32ADCAC7988A95E387',
     [string]$NugetURL = 'https://www.nuget.org/api/v2/package/NuGet.exe/3.4.3',
     [string]$NugetHash = '2D4D38666E5C7D27EE487C60C9637BD9DD63795A117F0E0EDC68C55EE6DFB71F',
     [string]$DevconURL = 'https://download.microsoft.com/download/7/D/D/7DD48DE6-8BDA-47C0-854A-539A800FAA90/wdk/Installers/787bee96dbd26371076b37b13c405890.cab',
     [string]$DevconHash = 'A38E409617FC89D0BA1224C31E42AF4344013FEA046D2248E4B9E03F67D5908A',
-    [string]$IntelDCAPURL = 'https://registrationcenter-download.intel.com/akdlm/irc_nas/18784/Intel%20SGX%20DCAP%20for%20Windows%20v1.14.100.3.exe',
-    [string]$IntelDCAPHash = '0C91FF2661CC2B3B4440A05FABF78132C3E95781A40EEAB3C9D7A9955CC5B7DC',
+    # Intel PSW 2.21.100.3 is included in DCAP 1.19.100.3
+    [string]$IntelDCAPURL = 'https://registrationcenter-download.intel.com/akdlm/IRC_NAS/d929c03e-d7ab-4c9f-882b-94cb9e35b8b9/Intel_SGX_DCAP_for_Windows_v1.19.100.3.zip',
+    [string]$IntelDCAPHash = '60478D69373D1BD9E244DC6442B12D5D8137CA7F3148ED9979FBC0B76915EBF7',
     [string]$VCRuntime2012URL = 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe',
     [string]$VCRuntime2012Hash = '681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064',
-    [string]$AzureDCAPNupkgURL = 'https://www.nuget.org/api/v2/package/Microsoft.Azure.DCAP/1.11.2',
-    [string]$AzureDCAPNupkgHash = '434944D1968772283124419184210149B80722409929F6A93E2FB1ACED853ADF',
+    [string]$AzureDCAPNupkgURL = 'https://www.nuget.org/api/v2/package/Microsoft.Azure.DCAP/1.12.2',
+    [string]$AzureDCAPNupkgHash = 'C35ACC18B9481171EDE6D0DD9672D44DC94BB95B7B2724B3062D01234CCD8B99',
     [string]$Python3ZipURL = 'https://www.python.org/ftp/python/3.7.4/python-3.7.4-embed-amd64.zip',
     [string]$Python3ZipHash = 'FB65E5CD595AD01049F73B47BC0EE23FD03F0CBADC56CB318990CEE83B37761B',
-    [string]$NSISURL = 'https://oejenkins.blob.core.windows.net/oejenkins/nsis-3.05-setup.exe',
+    [string]$NSISURL = 'https://oejenkinspublicstorage.blob.core.windows.net/dependencies/nsis-3.05-setup.exe',
     [string]$NSISHash = '1A3CC9401667547B9B9327A177B13485F7C59C2303D4B6183E7BC9E6C8D6BFDB',
     [string]$GetPipURL = 'https://bootstrap.pypa.io/pip/3.4/get-pip.py',
     [string]$GetPipHash = 'DBD5DAE3D1E7F6DF844D630CDF65E0F0D98E483C9997DAEA17C7C9D86F7B38AD',
     [Parameter(mandatory=$true)][string]$InstallPath,
+    # SGX1 and SGX1-NoIntelDrivers will be deprecated.
     [Parameter(mandatory=$true)][ValidateSet("SGX1FLC", "SGX1", "SGX1FLC-NoIntelDrivers", "SGX1-NoIntelDrivers")][string]$LaunchConfiguration,
     [Parameter(mandatory=$true)][ValidateSet("None", "Azure")][string]$DCAPClientType,
     [Parameter(mandatory=$false)][switch]$InstallDocker=$false,
@@ -84,7 +86,7 @@ $PACKAGES = @{
     "dcap" = @{
         "url" = $IntelDCAPURL
         "hash" = $IntelDCAPHash
-        "local_file" = Join-Path $PACKAGES_DIRECTORY "Intel_SGX_DCAP.exe"
+        "local_file" = Join-Path $PACKAGES_DIRECTORY "Intel_SGX_DCAP.zip"
     }
     "vc_runtime_2012" = @{
         "url" = $VCRuntime2012URL
@@ -387,13 +389,14 @@ function Install-VisualStudio {
 
     Install-Tool -InstallerPath $PACKAGES["vs_buildtools"]["local_file"] `
                 -ArgumentList $installerArguments `
-                -EnvironmentPath @("${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build", `
-                                   "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\BuildTools\Common7\Tools")
+                -EnvironmentPath @("${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build", `
+                                   "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\BuildTools\Common7\Tools")
 }
 
+# See https://nsis.sourceforge.io/Docs/Chapter3.html#installerusagecommon for valid installer args
 function Install-LLVM {
     Install-Tool -InstallerPath $PACKAGES["clang"]["local_file"] `
-                 -ArgumentList "/S" `
+                 -ArgumentList @("/S", "/D=${env:ProgramFiles}\LLVM") `
                  -EnvironmentPath "${env:ProgramFiles}\LLVM\bin"
 }
 
@@ -466,9 +469,8 @@ function Remove-DCAPDriver {
 
 # Starting from Intel SGX 2.11.101, the Intel SGX DCAP package contains both DCAP and PSW for Windows Server 2019 and Windows 10.
 function Install-DCAP-Dependencies {
-    Install-Tool -InstallerPath $PACKAGES["dcap"]["local_file"] `
-                 -ArgumentList @('/auto', "$PACKAGES_DIRECTORY\Intel_SGX_DCAP")
-
+    Install-ZipTool -ZipPath $PACKAGES["dcap"]["local_file"] `
+                    -InstallDirectory "$PACKAGES_DIRECTORY\Intel_SGX_DCAP"  
     $drivers = @{
         'sgx_base' = @{
             'path'        = "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel*SGX*DCAP*\base\WindowsServer2019_Windows10"
@@ -502,7 +504,7 @@ function Install-DCAP-Dependencies {
     $TEMP_NUGET_DIR = "$PACKAGES_DIRECTORY\Azure_DCAP_Client_nupkg"
     New-Directory -Path $OE_NUGET_DIR -RemoveExisting
     New-Directory -Path $TEMP_NUGET_DIR -RemoveExisting
-    $nupkgDir = Get-Item "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel SGX DCAP for Windows *\nuget"
+    $nupkgDir = Get-Item "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel_SGX_DCAP_for_Windows_*\nuget"
     if(!$nupkgDir) {
         Throw "Cannot find the Intel DCAP nupkg directory"
     }
@@ -529,12 +531,12 @@ function Install-DCAP-Dependencies {
     }
     if (($LaunchConfiguration -eq "SGX1FLC") -or ($DCAPClientType -eq "Azure"))
     {
-        & nuget.exe install 'DCAP_Components' -Source "$TEMP_NUGET_DIR;nuget.org" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
+        & nuget.exe install 'DCAP_Components' -Source "$TEMP_NUGET_DIR" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
         if($LASTEXITCODE -ne 0) {
             Throw "Failed to install nuget DCAP_Components"
         }
     }
-    & nuget.exe install 'EnclaveCommonAPI' -Source "$TEMP_NUGET_DIR;nuget.org" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
+    & nuget.exe install 'EnclaveCommonAPI' -Source "$TEMP_NUGET_DIR" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
     if($LASTEXITCODE -ne 0) {
         Throw "Failed to install nuget EnclaveCommonAPI"
     }
@@ -564,9 +566,7 @@ function Install-NSIS {
 }
 
 function Install-Docker {
-    Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
-    Install-Module -Name DockerMsftProvider -Repository PSGallery -Force
-    Install-Package -Name docker -ProviderName DockerMsftProvider -Force
+    Write-Output '[WARNING] Docker is no longer a prerequisite and installation thereof is deprecated.'
 }
 
 try {

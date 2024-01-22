@@ -17,7 +17,7 @@
 
 namespace snmalloc
 {
-using Globals = snmalloc::FixedGlobals<snmalloc::PALOpenEnclave>;
+using Globals = snmalloc::FixedRangeConfig<snmalloc::PALOpenEnclave>;
 using Alloc = snmalloc::LocalAllocator<Globals>;
 
 class ThreadAllocExternal

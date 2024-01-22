@@ -1,0 +1,68 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+---
+
+  - name: OE setup | Set clang 10 version url and hash
+    set_fact:
+      clang_url:  "https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/LLVM-10.0.0-win64.exe"
+      clang_hash: "893F8A12506F8AD29CA464D868FB432FDADD782786A10655B86575FC7FC1A562"
+    when: clang_target_version == "10"
+
+  - name: OE setup | Set clang 11 version url and hash
+    set_fact:
+      clang_url:  "https://github.com/llvm/llvm-project/releases/download/llvmorg-11.1.0/LLVM-11.1.0-win64.exe"
+      clang_hash: "B5770BBFAC712D273938CD155E232AFAA85C2E8D865C7CA504A104A838568516"
+    when: clang_target_version == "11"
+
+  - name: OE setup | Run the install-windows-prereqs.ps1 script (this may take a while)
+    script: ../install-windows-prereqs.ps1
+      -InstallPath         "C:\oe_prereqs"
+      -LaunchConfiguration "{{ launch_configuration }}"
+      -DCAPClientType      "Azure"
+      -ClangUrl            "{{ clang_url }}"
+      -ClangHash           "{{ clang_hash }}"
+
+  - name: Check installed Intel PSW version
+    ansible.windows.win_powershell:
+      script: |
+        (Get-WmiObject Win32_PnPSignedDriver | select DeviceName, DriverVersion, Manufacturer | where {$_.DeviceName -like "*Guard Extensions Platform*"}).DriverVersion
+    register: intel_psw_version
+
+  - name: Print Intel PSW version
+    debug:
+      var: intel_psw_version.output
+
+  - name: Check installed Intel DCAP version
+    ansible.windows.win_powershell:
+      script: |
+        (Get-Item C:\\Windows\\System32\\sgx_dcap_ql.dll).VersionInfo.ProductVersion
+    register: intel_dcap_version
+
+  - name: Print Intel DCAP version
+    debug:
+      var: intel_dcap_version.output
+
+  # One way to ensure the system is reliable just after a reboot, is to set WinRM to a delayed startup
+  - name: Ensure WinRM starts when the system has settled and is ready to work reliably
+    win_service:
+      name: WinRM
+      start_mode: delayed
+
+  - name: OE setup | Windows Updates
+    block:
+      - name: Install all security, critical, and rollup updates without a scheduled task
+        win_updates:
+          category_names:
+            - SecurityUpdates
+            - CriticalUpdates
+            - UpdateRollups
+          reboot: yes
+          reboot_timeout: 3600
+    always:
+      - name: OE setup | Reboot the node
+        win_reboot:
+
+  - import_role:
+      name: windows/openenclave
+      tasks_from: validation.yml

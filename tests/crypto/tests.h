@@ -4,18 +4,18 @@
 #ifndef _TESTS_CRYPTO_TESTS_H
 #define _TESTS_CRYPTO_TESTS_H
 
-void TestASN1(void);
-void TestCRL(void);
+void TestASN1(char* path);
+void TestCRL(char* path);
 #if defined(OE_BUILD_ENCLAVE)
 void TestCert(void);
 #endif
-void TestEC(void);
+void TestEC(char* path);
 void TestKDF(void);
 void TestRandom(void);
 void TestCpuEntropy(void);
-void TestRSA(void);
+void TestRSA(char* path);
 void TestSHA(void);
 void TestHMAC(void);
-void TestAll();
+void TestAll(char* path);
 
 #endif /* _TESTS_CRYPTO_TESTS_H */

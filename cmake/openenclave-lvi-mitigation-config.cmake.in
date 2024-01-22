@@ -9,16 +9,24 @@ set(OE_LVI_MITIGATION "@LVI_MITIGATION@")
 
 # Include the helper function to apply lvi mitigation.
 if (OE_LVI_MITIGATION MATCHES ControlFlow)
+  set(LVI_MITIGATION "None" CACHE STRING "LVI Mitigation.")
+  # alias ControlFlow to ControlFlow-GNU
+  if (LVI_MITIGATION STREQUAL "ControlFlow")
+    set(LVI_MITIGATION "ControlFlow-GNU")
+  endif ()
+
   if (UNIX)
-    set(LVI_MITIGATION_BINDIR "None" CACHE STRING "Path to the LVI mitigation bindir.")
-    if (${LVI_MITIGATION_BINDIR} MATCHES None)
-      message(FATAL_ERROR "LVI_MITIGATION_BINDIR is not specified.")
-    endif()
-    include("${CMAKE_CURRENT_LIST_DIR}/configure_lvi_mitigation_build.cmake")
-    # Pick up the customized compilation toolchain based on the specified path.
-    configure_lvi_mitigation_build(BINDIR ${LVI_MITIGATION_BINDIR} IN_PACKAGE)
-  endif()
+      if (LVI_MITIGATION STREQUAL ControlFlow-GNU OR OE_LVI_MITIGATION STREQUAL ControlFlow-GNU)
+        set(LVI_MITIGATION_BINDIR "None" CACHE STRING "Path to the LVI mitigation bindir.")
+        if (LVI_MITIGATION_BINDIR MATCHES None)
+          message(FATAL_ERROR "LVI_MITIGATION_BINDIR is not specified.")
+        endif ()
+        # Pick up the customized compilation toolchain based on the specified path.
+        include("${CMAKE_CURRENT_LIST_DIR}/configure_lvi_mitigation_build.cmake")
+        configure_lvi_mitigation_build(BINDIR ${LVI_MITIGATION_BINDIR} IN_PACKAGE)
+      endif ()
+  endif ()
   include("${CMAKE_CURRENT_LIST_DIR}/apply_lvi_mitigation.cmake")
 else()
   message(FATAL_ERROR "This version of the OE SDK was not built with support for LVI mitigation.")
-endif()
+endif ()

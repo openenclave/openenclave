@@ -611,6 +611,12 @@ static void test_realpath(const char* tmp_dir)
 
     OE_TEST(mount("/", "/", OE_DEVICE_NAME_HOST_FILE_SYSTEM, 0, NULL) == 0);
 
+    OE_TEST(!oe_realpath(NULL, &buf));
+    OE_TEST(oe_errno == EINVAL);
+
+    OE_TEST(!oe_realpath("", &buf));
+    OE_TEST(oe_errno == ENOENT);
+
     OE_TEST(oe_realpath("/../../..", &buf));
     OE_TEST(strcmp(buf.buf, "/") == 0);
 

@@ -574,7 +574,7 @@ OE_WEAK OE_DEFINE_SYSCALL2_M(SYS_listen)
     return oe_listen(sockfd, backlog);
 }
 
-OE_WEAK OE_WEAK OE_DEFINE_SYSCALL3(SYS_lseek)
+OE_WEAK OE_DEFINE_SYSCALL3(SYS_lseek)
 {
     oe_errno = 0;
     int fd = (int)arg1;

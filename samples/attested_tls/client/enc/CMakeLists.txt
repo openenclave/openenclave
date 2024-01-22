@@ -19,8 +19,9 @@ add_custom_command(
     ${CMAKE_SOURCE_DIR}/client/enc/enc.conf -k
     ${CMAKE_SOURCE_DIR}/client/enc/private.pem)
 
-# Cover both openssl and openssl_symcrypt_fips
-if (${OE_CRYPTO_LIB} MATCHES "openssl")
+if (${OE_CRYPTO_LIB} STREQUAL "openssl"
+    OR ${OE_CRYPTO_LIB} STREQUAL "openssl_symcrypt_fips"
+    OR ${OE_CRYPTO_LIB} STREQUAL "openssl_3")
   add_executable(
     tls_client_enc
     ecalls.cpp
@@ -30,7 +31,7 @@ if (${OE_CRYPTO_LIB} MATCHES "openssl")
     ../../common/utility.cpp
     ../../common/openssl_utility.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/tls_client_t.c)
-elseif (${OE_CRYPTO_LIB} MATCHES "mbedtls")
+elseif (${OE_CRYPTO_LIB} STREQUAL "mbedtls")
   add_executable(
     tls_client_enc
     ecalls.cpp
@@ -60,6 +61,10 @@ if (${OE_CRYPTO_LIB} STREQUAL "openssl")
   target_link_libraries(
     tls_client_enc openenclave::oeenclave openenclave::oecryptoopenssl
     openenclave::oelibcxx openenclave::oehostsock openenclave::oehostresolver)
+elseif (${OE_CRYPTO_LIB} STREQUAL "openssl_3")
+  target_link_libraries(
+    tls_client_enc openenclave::oeenclave openenclave::oecryptoopenssl_3
+    openenclave::oelibcxx openenclave::oehostsock openenclave::oehostresolver)
 elseif (${OE_CRYPTO_LIB} STREQUAL "mbedtls")
   target_link_libraries(
     tls_client_enc openenclave::oeenclave openenclave::oecryptombedtls
@@ -67,8 +72,8 @@ elseif (${OE_CRYPTO_LIB} STREQUAL "mbedtls")
 elseif (${OE_CRYPTO_LIB} STREQUAL "openssl_symcrypt_fips")
   add_custom_command(
     TARGET tls_client_enc
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/libsymcrypt.so.101
-            ${CMAKE_CURRENT_BINARY_DIR}/libsymcrypt.so.101)
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/libsymcrypt.so.103
+            ${CMAKE_CURRENT_BINARY_DIR}/libsymcrypt.so.103)
 
   target_link_libraries(
     tls_client_enc
@@ -77,7 +82,7 @@ elseif (${OE_CRYPTO_LIB} STREQUAL "openssl_symcrypt_fips")
     openenclave::oecryptoopenssl
     # Workaround: refer to the root of the build location so that we don't rely on the
     # order of copy
-    ${CMAKE_BINARY_DIR}/libsymcrypt.so.101
+    ${CMAKE_BINARY_DIR}/libsymcrypt.so.103
     openenclave::oelibcxx
     openenclave::oehostsock
     openenclave::oehostresolver)

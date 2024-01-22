@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2020 Intel Corporation. All rights reserved.
+ * Copyright (C) 2011-2021 Intel Corporation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -59,7 +59,7 @@ typedef enum _quote3_error_t {
     SGX_QL_ATT_KEY_BLOB_ERROR = SGX_QL_MK_ERROR(0x000a),             ///< There is a problem with the attestation key blob.
     SGX_QL_UNSUPPORTED_ATT_KEY_ID = SGX_QL_MK_ERROR(0x000b),         ///< Unsupported attestation key ID.
     SGX_QL_UNSUPPORTED_LOADING_POLICY = SGX_QL_MK_ERROR(0x000c),     ///< Unsupported enclave loading policy.
-    SGX_QL_INTERFACE_UNAVAILABLE = SGX_QL_MK_ERROR(0x000d),          ///< Unable to load the QE enclave
+    SGX_QL_INTERFACE_UNAVAILABLE = SGX_QL_MK_ERROR(0x000d),          ///< Unable to load the PCE enclave
     SGX_QL_PLATFORM_LIB_UNAVAILABLE = SGX_QL_MK_ERROR(0x000e),       ///< Unable to find the platform library with the dependent APIs.  Not fatal.
     SGX_QL_ATT_KEY_NOT_INITIALIZED = SGX_QL_MK_ERROR(0x000f),        ///< The attestation key doesn't exist or has not been certified.
     SGX_QL_ATT_KEY_CERT_DATA_INVALID = SGX_QL_MK_ERROR(0x0010),      ///< The certification data retrieved from the platform library is invalid.
@@ -68,7 +68,7 @@ typedef enum _quote3_error_t {
     SGX_QL_ERROR_REPORT = SGX_QL_MK_ERROR(0x0013),                   ///< There was a problem verifying an SGX REPORT.
     SGX_QL_ENCLAVE_LOST = SGX_QL_MK_ERROR(0x0014),                   ///< Interfacing to the enclave failed due to a power transition.
     SGX_QL_INVALID_REPORT = SGX_QL_MK_ERROR(0x0015),                 ///< Error verifying the application enclave's report.
-    SGX_QL_ENCLAVE_LOAD_ERROR = SGX_QL_MK_ERROR(0x0016),             ///< Unable to load the enclaves.  Could be due to file I/O error, loading infrastructure error.
+    SGX_QL_ENCLAVE_LOAD_ERROR = SGX_QL_MK_ERROR(0x0016),             ///< Unable to load the enclaves. Could be due to file I/O error, loading infrastructure error, or non-SGX capable system
     SGX_QL_UNABLE_TO_GENERATE_QE_REPORT = SGX_QL_MK_ERROR(0x0017),   ///< The QE was unable to generate its own report targeting the application enclave either
                                                                      ///< because the QE doesn't support this feature there is an enclave compatibility issue.
                                                                      ///< Please call again with the p_qe_report_info to NULL.
@@ -126,8 +126,22 @@ typedef enum _quote3_error_t {
     SGX_QL_CERTS_UNAVAILABLE  = SGX_QL_MK_ERROR(0x0049),             /// Certificates are not available for this platform
 
     SGX_QL_QVEIDENTITY_MISMATCH = SGX_QL_MK_ERROR(0x0050),          ///< QvE Identity is NOT match to Intel signed QvE identity
-    SGX_QL_QVE_OUT_OF_DATE = SGX_QL_MK_ERROR(0x0051),               ///< QvE ISVSVN is smaller then the ISVSVN threshold
+    SGX_QL_QVE_OUT_OF_DATE = SGX_QL_MK_ERROR(0x0051),               ///< QvE ISVSVN is smaller than the ISVSVN threshold, or input QvE ISVSVN is too small
     SGX_QL_PSW_NOT_AVAILABLE = SGX_QL_MK_ERROR(0x0052),             ///< SGX PSW library cannot be loaded, could be due to file I/O error
+    SGX_QL_COLLATERAL_VERSION_NOT_SUPPORTED = SGX_QL_MK_ERROR(0x0053),  ///< SGX quote verification collateral version not supported by QVL/QvE
+    SGX_QL_TDX_MODULE_MISMATCH = SGX_QL_MK_ERROR(0x0060),            ///< TDX SEAM module identity is NOT match to Intel signed TDX SEAM module
+
+    SGX_QL_QEIDENTITY_NOT_FOUND = SGX_QL_MK_ERROR(0x0061),            ///< QE identity was not found
+    SGX_QL_TCBINFO_NOT_FOUND = SGX_QL_MK_ERROR(0x0062),               ///< TCB Info was not found
+    SGX_QL_INTERNAL_SERVER_ERROR = SGX_QL_MK_ERROR(0x0063),           ///< Internal server error
+
+    SGX_QL_SUPPLEMENTAL_DATA_VERSION_NOT_SUPPORTED = SGX_QL_MK_ERROR(0x0064),       ///< The supplemental data version is not supported
+
+    SGX_QL_ROOT_CA_UNTRUSTED = SGX_QL_MK_ERROR(0x0065),              ///< The certificate used to establish SSL session is untrusted
+
+    SGX_QL_TCB_NOT_SUPPORTED = SGX_QL_MK_ERROR(0x0066),              ///< Current TCB level cannot be found in platform/enclave TCB info
+
+    SGX_QL_CONFIG_INVALID_JSON = SGX_QL_MK_ERROR(0x0067),            ///< The QPL's config file is in JSON format but has a format error
 
     SGX_QL_ERROR_MAX = SGX_QL_MK_ERROR(0x00FF),                      ///< Indicate max error to allow better translation.
 
@@ -147,7 +161,7 @@ typedef struct _sgx_ql_pck_cert_id_t
     uint32_t qe3_id_size;                  ///< The Size of hte QE_ID (currenlty 16 bytes)
     sgx_cpu_svn_t *p_platform_cpu_svn;     ///< Pointer to the platform's raw CPUSVN
     sgx_isv_svn_t *p_platform_pce_isv_svn; ///< Pointer to the platform's raw PCE ISVSVN
-    uint8_t *p_encrypted_ppid;             ///< Pointer to the enccrypted PPID (Optional)
+    uint8_t *p_encrypted_ppid;             ///< Pointer to the encrypted PPID (Optional)
     uint32_t encrypted_ppid_size;          ///< Size of encrytped PPID.
     uint8_t crypto_suite;                  ///< Crypto algorithm used to encrypt the PPID
     uint16_t pce_id;                       ///< Identifies the PCE-Version used to generate the encrypted PPID.
@@ -163,19 +177,41 @@ typedef enum _sgx_ql_config_version_t
 typedef struct _sgx_ql_config_t
 {
     sgx_ql_config_version_t version;
-    sgx_cpu_svn_t cert_cpu_svn;            ///< The CPUSVN used to generate the PCK Signature used to certify the attestation key.
-    sgx_isv_svn_t cert_pce_isv_svn;        ///< The PCE ISVSVN used to generate the PCK Signature used to certify the attestation key.
-    uint32_t cert_data_size;               ///< The size of the buffer pointed to by p_cert_data
-    uint8_t* p_cert_data;                  ///< The certificaton data used for the quote.
-                                           ///todo: It is the assumed to be the PCK Cert Chain.  May want to change to support other cert types.
-}sgx_ql_config_t;
+    sgx_cpu_svn_t cert_cpu_svn;     ///< The CPUSVN used to generate the PCK Signature used to certify the attestation key.
+    sgx_isv_svn_t cert_pce_isv_svn; ///< The PCE ISVSVN used to generate the PCK Signature used to certify the attestation key.
+    uint32_t cert_data_size;        ///< The size of the buffer pointed to by p_cert_data
+    uint8_t *p_cert_data;           ///< The certification data used for the quote.
+                                    ///todo: It is the assumed to be the PCK Cert Chain.  May want to change to support other cert types.
+} sgx_ql_config_t;
+
 #pragma pack(pop)
+
+#define MAX_PARAM_STRING_SIZE (256)
+typedef struct _sgx_ql_qve_collateral_param_t {
+    uint8_t key[MAX_PARAM_STRING_SIZE + 1];
+    uint8_t value[MAX_PARAM_STRING_SIZE + 1];
+} sgx_ql_qve_collateral_param_t;
+
+// Nameless struct generates C4201 warning in MS compiler, but it is allowed in c++ 11 standard
+// Should remove the pragma after Microsoft fixes this issue
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4201)
+#endif
 
 #ifndef __sgx_ql_qve_collateral_t          // The __sgx_ql_qve_collateral_t can also be defined in QvE _t/_u.h
 #define __sgx_ql_qve_collateral_t
 typedef struct _sgx_ql_qve_collateral_t
 {
-    uint32_t version;                      /// version = 1.  PCK Cert chain is in the Quote.
+    union {
+        uint32_t version;           ///< 'version' is the backward compatible legacy representation
+        struct {                    ///< For PCS V1 and V2 APIs, the major_version = 1 and minor_version = 0 and
+            uint16_t major_version; ///< the CRLs will be formatted in PEM. For PCS V3 APIs, the major_version = 3 and the
+            uint16_t minor_version; ///< minor_version can be either 0 or 1. minor_verion of 0 indicates the CRL’s are formatted
+                                    ///< in Base16 encoded DER.  A minor version of 1 indicates the CRL’s are formatted in raw binary DER.
+        };
+    };
+    uint32_t tee_type;                     ///<  0x00000000: SGX or 0x00000081: TDX
     char *pck_crl_issuer_chain;
     uint32_t pck_crl_issuer_chain_size;
     char *root_ca_crl;                     /// Root CA CRL
@@ -191,8 +227,36 @@ typedef struct _sgx_ql_qve_collateral_t
     char *qe_identity;                     /// QE Identity Structure
     uint32_t qe_identity_size;
 } sgx_ql_qve_collateral_t;
-#endif  //__sgx_ql_qve_collateral_t
+#endif //__sgx_ql_qve_collateral_t
 
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
+typedef enum _sgx_ql_log_level_t
+{
+    SGX_QL_LOG_ERROR,
+    SGX_QL_LOG_INFO
+} sgx_ql_log_level_t;
+
+typedef void (*sgx_ql_logging_callback_t)(sgx_ql_log_level_t level, const char* message);
+
+typedef enum _sgx_prod_type_t {
+    SGX_PROD_TYPE_SGX = 0,
+    SGX_PROD_TYPE_TDX = 1,
+} sgx_prod_type_t;
+
+typedef enum _sgx_qpl_cache_type_t {
+    SGX_QPL_CACHE_CERTIFICATE = 1 << 0,
+    SGX_QPL_CACHE_QV_COLLATERAL = 1 << 1,
+    SGX_QPL_CACHE_MULTICERTS = 1 << 2,
+} sgx_qpl_cache_type_t;
+
+#ifndef tdx_ql_qve_collateral_t
+typedef sgx_ql_qve_collateral_t tdx_ql_qve_collateral_t;
+
+// Deprecate structure name tdx_ql_qve_collateral_t
+typedef tdx_ql_qve_collateral_t tdx_ql_qv_collateral_t;
+#endif
 
 #endif //_SGX_QL_LIB_COMMON_H_
-

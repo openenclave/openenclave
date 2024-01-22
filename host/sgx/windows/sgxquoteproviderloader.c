@@ -25,7 +25,8 @@ void oe_load_quote_provider()
     if (provider.handle == 0)
     {
         OE_TRACE_INFO("oe_load_quote_provider dcap_quoteprov.dll\n");
-        HMODULE _handle = LoadLibraryEx("dcap_quoteprov.dll", NULL, 0);
+        HMODULE _handle = LoadLibraryEx(
+            "dcap_quoteprov.dll", NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
         if (_handle != 0)
         {
             provider.handle = _handle;
@@ -100,24 +101,34 @@ void oe_load_quote_provider()
 
 oe_result_t oe_sgx_set_quote_provider_logger(sgx_ql_logging_function_t logger)
 {
-    sgx_ql_set_logging_function_t set_log_fcn = NULL;
+    sgx_ql_set_logging_callback_t set_log_callback = NULL; // Intel QPL
+    sgx_ql_set_logging_function_t set_log_function = NULL; // Azure DCAP client
+
     if (provider.handle == 0)
     {
         // Quote provider is not loaded.
         return OE_QUOTE_PROVIDER_LOAD_ERROR;
     }
 
-    set_log_fcn = (sgx_ql_set_logging_function_t)GetProcAddress(
-        (HMODULE)(provider.handle), SGX_QL_SET_LOGGING_FUNCTION_NAME);
-    if (set_log_fcn == NULL)
+    set_log_callback = (sgx_ql_set_logging_callback_t)GetProcAddress(
+        (HMODULE)(provider.handle), SGX_QL_SET_LOGGING_CALLBACK_NAME);
+    if (set_log_callback != NULL)
     {
-        set_log_fcn = (sgx_ql_set_logging_function_t)GetProcAddress(
-            (HMODULE)(provider.handle), SGX_QL_SET_LOGGING_CALLBACK_NAME);
+        OE_TRACE_INFO("sgxquoteprovider: "
+                      "dcap_quoteprov: " SGX_QL_SET_LOGGING_CALLBACK_NAME
+                      " is set\n");
+        set_log_callback(logger, SGX_QL_LOG_INFO);
+        return OE_OK;
     }
 
-    if (set_log_fcn != NULL)
+    set_log_function = (sgx_ql_set_logging_function_t)GetProcAddress(
+        (HMODULE)(provider.handle), SGX_QL_SET_LOGGING_FUNCTION_NAME);
+    if (set_log_function != NULL)
     {
-        set_log_fcn(logger);
+        OE_TRACE_INFO("sgxquoteprovider: "
+                      "dcap_quoteprov: " SGX_QL_SET_LOGGING_FUNCTION_NAME
+                      " is set\n");
+        set_log_function(logger);
         return OE_OK;
     }
 

@@ -2,7 +2,7 @@
 
 ## Platform requirements
 
-- Ubuntu 18.04-LTS or Ubuntu 20.04-LTS 64-bit.
+- Ubuntu 20.04-LTS 64-bit.
 - SGX1 capable system. Most likely this will be an Intel SkyLake or Intel KabyLake system
 
 ## Clone Open Enclave SDK repo from GitHub

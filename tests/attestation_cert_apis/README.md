@@ -1,4 +1,4 @@
-oe_generate_attestation_cert, oe_free_attestation_cert, and oe_verify_attestation_cert API tests
+oe_generate_attestation_certificate_v2, oe_free_attestation_cert, and oe_verify_attestation_cert API tests
 =====================
 
 Test scenario:

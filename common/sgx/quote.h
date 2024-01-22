@@ -47,13 +47,16 @@ oe_result_t oe_get_quote_cert_chain_internal(
  * if the input time is after than the endorsement creation time, then the
  * CRLs might have updated in the period between the input time and the
  * endorsement creation time.
+ * @param[out] verification_result Optional pointer to the verification-specific
+ * return value.
  */
 oe_result_t oe_verify_sgx_quote(
     const uint8_t* quote,
     size_t quote_size,
     const uint8_t* endorsements,
     size_t endorsements_size,
-    oe_datetime_t* input_validation_time);
+    oe_datetime_t* input_validation_time,
+    uint32_t* verification_result);
 
 /*!
  * Verify SGX quote and endorsements.

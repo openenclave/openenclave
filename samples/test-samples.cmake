@@ -82,7 +82,9 @@ else ()
         attested_tls
         attested_tls
         attested_tls
+        attested_tls
         attestation
+        file-encryptor
         file-encryptor
         file-encryptor)
       list(
@@ -91,9 +93,11 @@ else ()
         mbedtls
         openssl
         openssl_symcrypt_fips
+        openssl_3
         mbedtls
         mbedtls
-        openssl)
+        openssl
+        openssl_3)
     endif ()
   endif ()
 endif ()
@@ -135,10 +139,18 @@ foreach (i RANGE ${len})
   set(CMAKE_CRYPTO_LIB_DEFINE "")
   set(MAKE_CRYPTO_LIB_DEFINE "")
 
-  if (CRYPTO_LIB MATCHES "openssl")
+  if (CRYPTO_LIB STREQUAL "openssl")
     set(SAMPLE_BUILD_DIR "${SAMPLE_BUILD_DIR}_openssl")
     set(CMAKE_CRYPTO_LIB_DEFINE "-DOE_CRYPTO_LIB=openssl")
     set(MAKE_CRYPTO_LIB_DEFINE "OE_CRYPTO_LIB=openssl")
+  elseif (CRYPTO_LIB STREQUAL "openssl_symcrypt_fips")
+    set(SAMPLE_BUILD_DIR "${SAMPLE_BUILD_DIR}_symcrypt_fips")
+    set(CMAKE_CRYPTO_LIB_DEFINE "-DOE_CRYPTO_LIB=openssl_symcrypt_fips")
+    set(MAKE_CRYPTO_LIB_DEFINE "OE_CRYPTO_LIB=openssl_symcrypt_fips")
+  elseif (CRYPTO_LIB STREQUAL "openssl_3")
+    set(SAMPLE_BUILD_DIR "${SAMPLE_BUILD_DIR}_openssl_3")
+    set(CMAKE_CRYPTO_LIB_DEFINE "-DOE_CRYPTO_LIB=openssl_3")
+    set(MAKE_CRYPTO_LIB_DEFINE "OE_CRYPTO_LIB=openssl_3")
   endif ()
 
   execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory

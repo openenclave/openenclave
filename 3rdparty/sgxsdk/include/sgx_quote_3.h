@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2020 Intel Corporation. All rights reserved.
+ * Copyright (C) 2011-2021 Intel Corporation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -60,7 +60,7 @@ typedef enum {
     PPID_RSA2048_ENCRYPTED = 2, ///< RSA-2048-OAEP Encrypted PPID + CPU_SVN, PvE_SVN, PCE_SVN, PCE_ID
     PPID_RSA3072_ENCRYPTED = 3, ///< RSA-3072-OAEP Encrypted PPID + CPU_SVN, PvE_SVN, PCE_SVN, PCE_ID
     PCK_CLEARTEXT = 4,          ///< Clear PCK Leaf Cert
-    PCK_CERT_CHAIN = 5,         ///< Full PCK Cert chain (trustedRootCaCert||intermediateCa||pckCert)
+    PCK_CERT_CHAIN = 5,         ///< Full PCK Cert chain (PCK Leaf Cert|| Intermediate CA Cert || Root CA Cert)
     ECDSA_SIG_AUX_DATA = 6,     ///< Indicates the contents of the CERTIFICATION_INFO_DATA contains the ECDSA_SIG_AUX_DATA of another Quote.
     QL_CERT_KEY_TYPE_MAX = 16,
 } sgx_ql_cert_key_type_t;
@@ -149,8 +149,8 @@ typedef struct _sgx_ql_certification_data_t {
 typedef struct _sgx_ql_ecdsa_sig_data_t {
     uint8_t               sig[32*2];            ///< Signature over the Quote using the ECDSA Att key. Big Endian.
     uint8_t               attest_pub_key[32*2]; ///< ECDSA Att Public Key.  Hash in QE3Report.ReportData.  Big Endian
-    sgx_report_body_t     qe3_report;           ///< QE3 Report of the QE when the Att key was generated.  The ReportData will contain the ECDSA_ID
-    uint8_t               qe3_report_sig[32*2]; ///< Signature of QE3 Report using the Certification Key (PCK for root signing). Big Endian
+    sgx_report_body_t     qe_report;            ///< QE3 Report of the QE when the Att key was generated.  The ReportData will contain the ECDSA_ID
+    uint8_t               qe_report_sig[32*2];  ///< Signature of QE Report using the Certification Key (PCK for root signing). Big Endian
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning ( disable:4200 )

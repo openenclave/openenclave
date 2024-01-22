@@ -17,6 +17,9 @@
   vars:
     apt_key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
     apt_repository: "{{ llvm_apt_repository }}"
+  when: 
+    - llvm_apt_repository is defined
+    - ansible_distribution_release != 'jammy' # LLVM repo does not have 11 for Jammy but is available via standard Ubuntu repo
 
 - name: Install all the Open Enclave prerequisites APT packages for development
   ansible.builtin.apt:

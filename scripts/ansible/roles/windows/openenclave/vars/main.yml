@@ -1,0 +1,48 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+---
+intel_dcap_url:      "https://registrationcenter-download.intel.com/akdlm/IRC_NAS/d929c03e-d7ab-4c9f-882b-94cb9e35b8b9/Intel_SGX_DCAP_for_Windows_v1.19.100.3.zip"
+intel_dcap_hash:     "60478D69373D1BD9E244DC6442B12D5D8137CA7F3148ED9979FBC0B76915EBF7"
+git_url:             "https://oejenkins.blob.core.windows.net/oejenkins/Git-2.31.1-64-bit.exe"
+git_hash:            "C43611EB73AD1F17F5C8CC82AE51C3041A2E7279E0197CCF5F739E9129CE426E"
+seven_zip_url:       "https://oejenkins.blob.core.windows.net/oejenkins/7z1806-x64.msi"
+seven_zip_hash:      "F00E1588ED54DDF633D8652EB89D0A8F95BD80CCCFC3EED362D81927BEC05AA5"
+vs_buildtools:       "https://oejenkins.blob.core.windows.net/oejenkins/vs_buildtools_2019.exe"
+vs_buildtools_hash:  "50BD88968ED947E13BAF628F5A7DA94E73BF6B84F545B1EE338AA848A9377B76"
+clang_url:           "https://github.com/llvm/llvm-project/releases/download/llvmorg-11.1.0/LLVM-11.1.0-win64.exe"
+clang_hash:          "B5770BBFAC712D273938CD155E232AFAA85C2E8D865C7CA504A104A838568516"
+shellcheck_url:      "https://oejenkins.blob.core.windows.net/oejenkins/shellcheck-v0.7.0.zip"
+shellcheck_hash:     "02CFA14220C8154BB7C97909E80E74D3A7FE2CBB7D80AC32ADCAC7988A95E387"
+nuget_url:           "https://oejenkins.blob.core.windows.net/oejenkins/nuget-3.4.3.nupkg"
+nuget_hash:          "2D4D38666E5C7D27EE487C60C9637BD9DD63795A117F0E0EDC68C55EE6DFB71F"
+devcon_package_url:  "https://oejenkins.blob.core.windows.net/oejenkins/devcon_package.cab"
+devcon_package_hash: "A38E409617FC89D0BA1224C31E42AF4344013FEA046D2248E4B9E03F67D5908A"
+az_dcap_client_url:  "https://www.nuget.org/api/v2/package/Microsoft.Azure.DCAP/1.12.2"
+az_dcap_client_hash: "C35ACC18B9481171EDE6D0DD9672D44DC94BB95B7B2724B3062D01234CCD8B99"
+nsis_url:            "https://oejenkins.blob.core.windows.net/oejenkins/nsis-3.05-setup.exe"
+nsis_hash:           "1A3CC9401667547B9B9327A177B13485F7C59C2303D4B6183E7BC9E6C8D6BFDB"
+
+cmake_target_version: 3.20.21032501
+ninja_target_version: 1.10.2
+clang_target_version: 11.1.0
+
+validation_directories:
+  - "C:\\Program Files\\7-Zip"
+  - "C:\\Program Files\\LLVM\\bin"
+  - "C:\\Program Files\\Git\\bin"
+  - "C:\\Program Files\\Git\\mingw64\\bin"
+  - "C:\\Program Files\\shellcheck"
+  - "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Auxiliary\\Build"
+  - "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\Common7\\Tools"
+
+validation_files:
+  - "C:\\Program Files\\LLVM\\lib\\libclang.lib"
+  - "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Tools\\MSVC\\14.29.30133\\lib\\x64\\vcomp.lib"
+
+validation_binaries:
+  - "C:\\Program Files\\LLVM\\bin\\clang.exe"
+  - "C:\\Program Files\\LLVM\\bin\\llvm-ar.exe"
+  - "C:\\Program Files\\shellcheck\\shellcheck.exe"
+  - "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Tools\\MSVC\\14.29.30133\\bin\\Hostx64\\x64\\link.exe"
+  - "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Tools\\MSVC\\14.29.30133\\bin\\Hostx64\\x64\\cl.exe"

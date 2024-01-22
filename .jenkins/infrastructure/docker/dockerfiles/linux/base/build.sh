@@ -9,7 +9,7 @@ set -e
 
 SOURCE_DIR=$(dirname "$0")
 BUILD_DIR="${PWD}"
-UBUNTU_VERSION="18.04"
+UBUNTU_VERSION="20.04"
 IMAGE_TAG="latest"
 
 usage() {
@@ -18,7 +18,7 @@ usage() {
     echo "  -v     Intel SGX version (Example: 2.15.100)" 1>&2
     echo ""
     echo "Options:" 1>&2
-    echo "  -u     Ubuntu release version [Default: 18.04]" 1>&2
+    echo "  -u     Ubuntu release version [Default: 20.04]" 1>&2
     echo "  -t     Tag for the Docker image [Default: latest]" 1>&2
     exit 1
 }
@@ -61,7 +61,7 @@ done
 
 # Catch extra parameters
 shift "$((OPTIND-1))"
-if [[ ! -z "${1}" ]]; then
+if [[ -n "${1}" ]]; then
     echo "Unknown parameter: ${1}" 1>&2
     exit 1
 fi
@@ -76,6 +76,8 @@ case "${UBUNTU_VERSION}" in
     18.04) UBUNTU_CODENAME="bionic"
            ;;
     20.04) UBUNTU_CODENAME="focal"
+           ;;
+    22.04) UBUNTU_CODENAME="jammy"
            ;;
 esac
 

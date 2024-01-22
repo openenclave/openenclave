@@ -20,6 +20,7 @@ oe_result_t oe_verify_remote_report(
     oe_result_t result = OE_UNEXPECTED;
     oe_report_t oe_report = {0};
     oe_report_header_t* header = (oe_report_header_t*)report;
+    uint32_t verification_result = 0;
 
     if (report == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -38,18 +39,20 @@ oe_result_t oe_verify_remote_report(
         OE_RAISE(OE_UNSUPPORTED);
 
     // Quote attestation can be done entirely on the host side.
-    OE_CHECK(oe_verify_sgx_quote(
+    result = oe_verify_sgx_quote(
         header->report,
         header->report_size,
         endorsement,
         endorsement_size,
-        NULL));
+        NULL,
+        &verification_result);
 
-    // Optionally return parsed report.
+    // Optionally return parsed report and set the verification result
     if (parsed_report != NULL)
-        OE_CHECK(oe_parse_report(report, report_size, parsed_report));
-
-    result = OE_OK;
+    {
+        *parsed_report = oe_report;
+        parsed_report->verification_result = verification_result;
+    }
 
 done:
     return result;

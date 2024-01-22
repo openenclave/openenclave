@@ -71,7 +71,7 @@ typedef sgx_plat_error_t (
     const uint16_t custom_parameters_length,
     sgx_ql_qve_collateral_t** pp_quote_collateral);
 
-typedef void (*sgx_free_quote_verification_collateral_t)(
+typedef sgx_plat_error_t (*sgx_free_quote_verification_collateral_t)(
     sgx_ql_qve_collateral_t* p_qve_collateral);
 
 /*****************************************************************************
@@ -81,7 +81,6 @@ typedef void (*sgx_free_quote_verification_collateral_t)(
 typedef enum _sgx_ql_log_level_t
 {
     SGX_QL_LOG_ERROR,
-    SGX_QL_LOG_WARNING,
     SGX_QL_LOG_INFO,
     SGX_QL_LOG_NONE
 } sgx_ql_log_level_t;
@@ -90,7 +89,12 @@ typedef enum _sgx_ql_log_level_t
 typedef void (
     *sgx_ql_logging_function_t)(sgx_ql_log_level_t level, const char* message);
 
-/// Set the callback used for recording log information.
+/// Set the callback used for recording Intel QPL log information.
+typedef sgx_plat_error_t (*sgx_ql_set_logging_callback_t)(
+    sgx_ql_logging_function_t logger,
+    sgx_ql_log_level_t log_level);
+
+/// Set the callback used for recording az-dcap-client log information.
 typedef sgx_plat_error_t (*sgx_ql_set_logging_function_t)(
     sgx_ql_logging_function_t logger);
 

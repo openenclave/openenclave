@@ -145,6 +145,23 @@ oe_result_t test_abi_roundtrip(oe_enclave_t* enclave)
         set_test_abi_state();
         read_abi_state(&before_ecall_state);
 
+#ifndef _WIN32
+        /* Explicitly poison FLAGS bits 10 (DF) and 15-31 while reserving the
+         * others
+         */
+        uint64_t flags = 0xffff0400;
+#else
+        /* Do not set DF on Windows, which will affect the behavior of
+         * memset_repmovs that is invoked in the critical path on the host */
+        uint64_t flags = 0xffff0000;
+#endif
+        asm volatile("pushfq\n\t"
+                     "or %0, (%%rsp)\n\t"
+                     "popfq\n\t"
+                     :
+                     : "r"(flags)
+                     : "r8");
+
         /* Invoke oe_enter directly to test the ocall transition ABI handling */
         oe_enter(tcs, OE_AEP_ADDRESS, arg1, arg2, &arg3, &arg4, enclave);
 

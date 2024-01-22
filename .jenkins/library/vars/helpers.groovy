@@ -8,9 +8,81 @@ import java.time.format.DateTimeFormatter
 * Shared Library for Helpers and Commands
 ****************************************/
 
-def CmakeArgs(String build_type = "RelWithDebInfo", String code_coverage = "OFF", String debug_malloc = "ON", String lvi_args="", String cmake_args = "") {
-    def args = "-G Ninja -DCMAKE_INSTALL_PREFIX:PATH='/opt/openenclave' -DCPACK_GENERATOR=DEB -DCODE_COVERAGE=${code_coverage} -DUSE_DEBUG_MALLOC=${debug_malloc} -DCMAKE_BUILD_TYPE=${build_type} ${lvi_args} ${cmake_args} -Wdev"
-    return args
+/** Helps create cmake parameters for the build
+ * TODO: Check support for Windows tests
+ *
+ * @param builder                   [string]  The build system to use.
+ *                                            Choice of: Ninja, CMake
+ * @param build_type                [string]  The build type to use.
+ *                                            Choice of: Debug, RelWithDebInfo, Release
+ * @param code_coverage             [boolean] Enable code coverage?
+ *                                            Default: OFF
+ * @param debug_malloc              [boolean] Enable debug malloc?
+ *                                            Default: OFF
+ * @param lvi_mitigation            [string]  The LVI mitigation to use.
+ *                                            Choice of: None, ControlFlow, ControlFlow-Clang, ControlFlow-GNU
+ *                                            Default: None
+ * @param lvi_mitigation_skip_tests [boolean] Skip LVI mitigation tests?
+ *                                            Default: OFF
+ * @param use_snmalloc              [boolean] Use snmalloc?
+ *                                            Default: OFF
+ * @param use_eeid                  [boolean] Use EEID?
+ *                                            Default: OFF
+ */
+def CmakeArgs(Map args) {
+    // Check valid builder parameters
+    if ((args.builder != 'Ninja') &&
+        (args.builder != 'CMake')) {
+        throw new Exception("Unsupported builder: ${args.builder}")
+    }
+    // Set generator for appropriate build system
+    def generator = ""
+    if (args.builder == 'Ninja') {
+        generator = 'Ninja'
+    } else if (args.builder == 'CMake') {
+        generator = 'Unix Makefiles'
+    }
+    // Check valid build_type parameters
+    if ((args.build_type != 'Debug') &&
+        (args.build_type != 'RelWithDebInfo') &&
+        (args.build_type != 'Release')) {
+        throw new Exception("Unsupported build type: ${args.build_type}")
+    }
+    // set code_coverage
+    def code_coverage = 'OFF'
+    if (args.code_coverage) {
+        code_coverage = 'ON'
+    }
+    // set debug_malloc
+    def debug_malloc = 'OFF'
+    if (args.debug_malloc) {
+        debug_malloc = 'ON'
+    }
+    // Check valid lvi_mitigation parameters
+    def lvi_args = ""
+    if ((args.lvi_mitigation == 'ControlFlow') ||
+        (args.lvi_mitigation == 'ControlFlow-GNU')) {
+        lvi_args = "-DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin"
+    } else if ((args.lvi_mitigation != 'None') &&
+               (args.lvi_mitigation != 'ControlFlow-Clang')) {
+        throw new Exception("Unsupported LVI mitigation: ${args.lvi_mitigation}")
+    }
+    // set lvi_mitigation_skip_tests
+    def lvi_mitigation_skip_tests = 'OFF'
+    if (args.lvi_mitigation_skip_tests) {
+        lvi_mitigation_skip_tests = 'ON'
+    }
+    // set use_snmalloc
+    def use_snmalloc = 'OFF'
+    if (args.use_snmalloc) {
+        use_snmalloc = 'ON'
+    }
+    // set use_eeid
+    def use_eeid = 'OFF'
+    if (args.use_eeid) {
+        use_eeid = 'ON'
+    }
+    return "-G '${generator}' -DCMAKE_INSTALL_PREFIX:PATH='/opt/openenclave' -DCPACK_GENERATOR=DEB -DCODE_COVERAGE=${code_coverage} -DUSE_DEBUG_MALLOC=${debug_malloc} -DCMAKE_BUILD_TYPE=${args.build_type} -DLVI_MITIGATION=${args.lvi_mitigation} -DLVI_MITIGATION_SKIP_TESTS=${lvi_mitigation_skip_tests} ${lvi_args} -DUSE_SNMALLOC=${use_snmalloc} -DWITH_EEID=${use_eeid} -Wdev"
 }
 
 def WaitForAptLock() {
@@ -36,34 +108,66 @@ def WaitForAptLock() {
     
 }
 
-def TestCommand() {
-    def testCommand = """
+/* Runs ctest with specific paramters and retry logic
+ * Note: this currently only supports Linux
+ */
+def TestCommand(int test_fail_limit = 10) {
+    return """
         echo "Running Test Command"
-        ctest --output-on-failure --timeout ${globalvars.CTEST_TIMEOUT_SECONDS}
+        ctest --output-on-failure --timeout ${globalvars.CTEST_TIMEOUT_SECONDS} ||
+            if [[ \$(wc -l < Testing/Temporary/LastTestsFailed.log) -le ${test_fail_limit} ]]; then
+                ctest --rerun-failed --output-on-failure --timeout ${globalvars.CTEST_TIMEOUT_SECONDS}
+            else
+                echo "More than 10 tests failed and is likely not a flaky test issue. Not retrying."
+                exit 8
+            fi
     """
-    return testCommand
 }
 
-def InstallBuildCommand() {
-    def installCommand = """
-        echo "Running Install Build Command"
-        cpack -G DEB
-        ${WaitForAptLock()}
+def createOpenEnclavePackageCommand() {
+    if (isUnix()) {
+        return "cpack -G DEB"
+    } else {
+        return "cpack.exe -D CPACK_NUGET_COMPONENT_INSTALL=ON"
+    }
+}
+
+def createHostVerifyPackageCommand() {
+    if (isUnix()) {
+        return "cpack -G DEB -D CPACK_DEB_COMPONENT_INSTALL=ON -DCPACK_COMPONENTS_ALL=OEHOSTVERIFY"
+    } else {
+        return "cpack.exe -D CPACK_NUGET_COMPONENT_INSTALL=ON -DCPACK_COMPONENTS_ALL=OEHOSTVERIFY"
+    }
+}
+
+def makeInstallCommand() {
+    return """
+        sudo make install
+    """
+}
+
+def ninjaInstallCommand() {
+    return """
         sudo ninja -v install
     """
-    return installCommand
 }
 
-def InstallReleaseCommand() {
-    def installCommand = """
+def InstallReleaseCommand(String version) {
+    String codename = ''
+    if (version == '20.04') {
+        codename = 'focal'
+    } else {
+        throw new Exception("Unsupported Ubuntu version: ${version}")
+    }
+    return installCommand = """
         echo "Running Install Release Command"
-        echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu bionic main' | sudo tee /etc/apt/sources.list.d/intel-sgx.list
+        echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu ${codename} main' | sudo tee /etc/apt/sources.list.d/intel-sgx.list
         wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | sudo apt-key add -
 
-        echo "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-7 main" | sudo tee /etc/apt/sources.list.d/llvm-toolchain-bionic-7.list
+        echo "deb http://apt.llvm.org/${codename}/ llvm-toolchain-${codename}-11 main" | sudo tee /etc/apt/sources.list.d/llvm-toolchain-${codename}-11.list
         wget -qO - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
 
-        echo "deb [arch=amd64] https://packages.microsoft.com/ubuntu/18.04/prod bionic main" | sudo tee /etc/apt/sources.list.d/msprod.list
+        echo "deb [arch=amd64] https://packages.microsoft.com/ubuntu/${version}/prod ${codename} main" | sudo tee /etc/apt/sources.list.d/msprod.list
         wget -qO - https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
 
         ${WaitForAptLock()}
@@ -75,7 +179,6 @@ def InstallReleaseCommand() {
         echo "Open Enclave SDK version installed"
         apt list --installed | grep open-enclave
     """
-    return installCommand
 }
 
 /**
@@ -201,23 +304,43 @@ def testSamplesWindows(boolean lvi_mitigation, String oe_package) {
     def cmakeArgs = "-G Ninja \
                     -DNUGET_PACKAGE_PATH=C:\\oe_prereqs \
                     -DCMAKE_PREFIX_PATH=C:\\oe\\${oe_package}\\openenclave\\lib\\openenclave\\cmake ${lvi_args}"
-    bat(
-        returnStdout: false,
-        returnStatus: false,
-        script: """
-            call vcvars64.bat x64
-            @echo on
-            cd C:\\oe\\${oe_package}\\openenclave\\share\\openenclave\\samples
-            for /d %%i in (*) do (
-                cd "C:\\oe\\${oe_package}\\openenclave\\share\\openenclave\\samples\\%%i"
+    def samples = [
+        "attestation",
+        "attested_tls",
+        "data-sealing",
+        "debugmalloc",
+        "file-encryptor",
+        "helloworld",
+        "host_verify",
+        "log_callback",
+        "pluggable_allocator",
+        "switchless"
+    ]
+    samples.each { sample ->
+        bat(
+            returnStdout: false,
+            returnStatus: false,
+            script: """
+                call vcvars64.bat x64
+                @echo on
+                cd C:\\oe\\${oe_package}\\openenclave\\share\\openenclave\\samples\\${sample}
                 mkdir build
                 cd build
-                ${ninjaBuildCommand(cmakeArgs, "..")}
-                ninja run || exit !ERRORLEVEL!
+            """
+        )
+        dir("C:\\oe\\${oe_package}\\openenclave\\share\\openenclave\\samples\\${sample}\\build") {
+            ninjaBuildCommand(cmakeArgs, "C:\\oe\\${oe_package}\\openenclave\\share\\openenclave\\samples\\${sample}")
+            bat(
+                script: """
+                    call vcvars64.bat x64
+                    @echo on
+                    ninja.exe run
+                """
             )
-        """
-    )
+        }
+    }
 }
+
 /**
  * Tests Open Enclave samples on Unix and Windows systems
  *
@@ -233,6 +356,8 @@ def TestSamplesCommand(boolean lvi_mitigation = false, String oe_package = "open
     else {
         if(oe_package == "open-enclave-hostverify") {
             oe_package = "open-enclave.OEHOSTVERIFY"
+            // No tests for open-enclave.OEHOSTVERIFY package. Return true to pass stage.
+            return True
         }
         testSamplesWindows(lvi_mitigation, oe_package)
     }
@@ -253,11 +378,55 @@ def ninjaBuildCommand(String cmake_arguments = "", String build_directory = "${W
             ninja -v
         """
     } else {
+        retry(3) {  
+            try {
+                bat(
+                    script: """
+                        call vcvars64.bat x64
+                        @echo on
+                        setlocal EnableDelayedExpansion
+                        cmake.exe ${build_directory} ${cmake_arguments} || exit !ERRORLEVEL!
+                        ninja.exe -v || exit !ERRORLEVEL!
+                    """
+                )
+            }
+            catch(IOException e) {
+                println("Caught IOException: ${e}")
+                println("An exception was caused by a known issue. Retrying...")
+                if (e.getCause()) {
+                    println(e.getCause().toString())
+                }
+                throw e
+            }
+            catch(Exception e) {
+                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                    error("Caught Exception: ${e}")
+                }
+            }
+        }
+    }
+}
+
+/** Builds Open Enclave using cmake and make
+ *
+ * @param cmake_arguments String of arguments to be passed to cmake
+ * @param build_dir       String that is a path to the directory that contains CMakeList.txt
+ *                        Can be relative to current working directory or an absolute path
+ */
+def makeBuildCommand(String cmake_arguments = "", String build_directory = "${WORKSPACE}") {
+    // Note: make -j seems to cause issues where the agent disconnects and is not reconnectable within 2 hours.
+    if(isUnix()) {
+        return """
+            set -x
+            cmake ${build_directory} ${cmake_arguments}
+            make
+        """
+    } else {
         return """
             @echo on
             setlocal EnableDelayedExpansion
             cmake ${build_directory} ${cmake_arguments} || exit !ERRORLEVEL!
-            ninja -v || exit !ERRORLEVEL!
+            make || exit !ERRORLEVEL!
         """
     }
 }
@@ -283,25 +452,35 @@ def azureContainerDownload(String container_name, String file_pattern, String st
 /**
  * Install Open Enclave dependencies on host machine
  *
- * @param dcap_url      URL of DCAP package, leave blank to use default
- * @param psw_url       URL of PSW package, leave blank to use default
- * @param install_flags Linux: set Ansible environment variables,
- *                      Windows: set additional args for install-windows-prereqs.ps1 script
- * @param build_dir     String that is a path to the directory that contains CMakeList.txt
- *                      Can be relative to current working directory or an absolute path
+ * @param dcap_url        URL of DCAP package, leave blank to use default
+ * @param local_repo_path Local file path to the Intel SGX repository
+ * @param install_flags   Linux: set Ansible environment variables,
+ *                        Windows: set additional args for install-windows-prereqs.ps1 script
+ * @param build_dir       String that is a path to the directory that contains CMakeList.txt
+ *                        Can be relative to current working directory or an absolute path
  */
-def dependenciesInstall(String dcap_url = "", String psw_url = "", String install_flags = "", String build_dir = "${WORKSPACE}") {
+def dependenciesInstall(String dcap_url = "", local_repo_path = "", String install_flags = "", String build_dir = "${WORKSPACE}") {
     if(isUnix()) {
         sh """
             sudo bash ${build_dir}/scripts/ansible/install-ansible.sh
             cp ${WORKSPACE}/scripts/ansible/ansible.cfg ${WORKSPACE}/ansible.cfg
-            ansible-playbook ${build_dir}/scripts/ansible/oe-contributors-acc-setup.yml --extra-vars "intel_sgx_w_flc_driver_url=${dcap_url} intel_sgx1_driver_url=${psw_url} ${install_flags}"
-            apt list --installed | grep libsgx
             ${WaitForAptLock()}
             sudo apt install -y dkms
         """
+        if (local_repo_path) {
+            sh """
+                ansible-playbook ${build_dir}/scripts/ansible/oe-contributors-acc-setup.yml \
+                  --extra-vars "intel_sgx_apt_repository=file://${local_repo_path} intel_sgx_apt_repository_config=\'trusted=yes arch=amd64\' ${install_flags}"
+            """
+        } else {
+            sh """
+                ansible-playbook ${build_dir}/scripts/ansible/oe-contributors-acc-setup.yml --extra-vars "${install_flags}"
+            """
+        }
+        sh 'apt list --installed | grep libsgx'
+        sh 'ls -l /usr/lib/x86_64-linux-gnu | grep libsgx'
     } else {
-        if (dcap_url == "" || psw_url == "") {
+        if (dcap_url == "") {
             powershell """#Requires -RunAsAdministrator
                 ${build_dir}\\scripts\\install-windows-prereqs.ps1 -InstallPath C:\\oe_prereqs -LaunchConfiguration SGX1FLC -DCAPClientType None ${install_flags}
             """
@@ -323,7 +502,7 @@ def dependenciesInstall(String dcap_url = "", String psw_url = "", String instal
  *                          - "open-enclave" [Default]
  *                          - "open-enclave-hostverify"
  * @param os_id            The distribution name (e.g. Ubuntu)
- * @param os_release       The distribution version without "." (e.g. 1804)
+ * @param os_release       The distribution version without "." (e.g. 2004)
  */
 def releaseDownloadLinuxGitHub(String release_version, String oe_package, String os_id, String os_release) {
     sh(
@@ -364,22 +543,24 @@ def releaseDownloadLinuxGitHub(String release_version, String oe_package, String
 /**
  * Downloads an Ubuntu Open Enclave release version from a pre-defined Azure Blob container or GitHub
  *
- * @param release_version  The version of the Open Enclave release to install
- * @param oe_package       Open Enclave package to install
- *                          - "open-enclave" [Default]
- *                          - "open-enclave-hostverify"
- * @param source           Which source to download Open Enclave from
- *                          - "Azure" to download from the Azure blob storage [Default]
- *                          - "GitHub" to download from the Open Enclave Repository
- * @param os_id            The distribution name (e.g. Ubuntu)
- * @param os_release       The distribution version without "." (e.g. 1804)
+ * @param release_version         The version of the Open Enclave release to install
+ * @param oe_package              Open Enclave package to install
+ *                                 - "open-enclave" [Default]
+ *                                 - "open-enclave-hostverify"
+ * @param source                  Which source to download Open Enclave from
+ *                                 - "Azure" to download from the Azure blob storage [Default]
+ *                                 - "GitHub" to download from the Open Enclave Repository
+ * @param os_id                   The distribution name (e.g. Ubuntu)
+ * @param os_release              The distribution version without "." (e.g. 2004)
+ * @param storage_credentials_id  [Optional] Jenkins storage account credential id
+ * @param storage_blob            [Optional] The name of the blob in the Azure storage account
  */
-def releaseDownloadLinux(String release_version, String oe_package, String source, String os_id, String os_release) {
+def releaseDownloadLinux(String release_version, String oe_package, String source, String os_id, String os_release, String storage_credentials_id = "", String storage_blob = "") {
     // Determine distribution and version
     // Note: lsb_release is only available on Ubuntu.
     if(source == "Azure") {
         // Download from Open Enclave storage container
-        azureContainerDownload('releasecandidates', "${release_version}/${os_id}_${os_release}/*", 'openenclavereleaseblobcontainer')
+        azureContainerDownload(storage_blob, "${release_version}/${os_id}_${os_release}/*", storage_credentials_id)
         sh """
             find ${release_version}/${os_id}_${os_release} -name "*"
         """
@@ -437,19 +618,21 @@ def releaseDownloadWindowsGitHub(String release_version, String oe_package) {
 /**
  * Downloads a Windows Open Enclave release version from a pre-defined Azure Blob container or GitHub
  *
- * @param release_version  The version of the Open Enclave release to install
- * @param oe_package       Open Enclave package to install
- *                         - "open-enclave" [Default]
- *                         - "open-enclave.OEHOSTVERIFY"
- * @param source           Which source to download Open Enclave from
- *                         - "Azure" to download from the Azure blob storage [Default]
- *                         - "GitHub" to download from the Open Enclave Repository
- * @param windows_version  The Windows version caption (output of "wmic os get caption")
+ * @param release_version         The version of the Open Enclave release to install
+ * @param oe_package              Open Enclave package to install
+ *                                - "open-enclave" [Default]
+ *                                - "open-enclave.OEHOSTVERIFY"
+ * @param source                  Which source to download Open Enclave from
+ *                                - "Azure" to download from the Azure blob storage [Default]
+ *                                - "GitHub" to download from the Open Enclave Repository
+ * @param windows_version         The Windows version caption (output of "wmic os get caption")
+ * @param storage_credentials_id  [Optional] Jenkins storage account credential id
+ * @param storage_blob            [Optional] The name of the blob in the Azure storage account
  */
-def releaseDownloadWindows(String release_version, String oe_package, String source, String windows_version) {
+def releaseDownloadWindows(String release_version, String oe_package, String source, String windows_version, String storage_credentials_id = "", String storage_blob = "") {
     if(source == "Azure") {
         // Download from Azure storage container
-        azureContainerDownload('releasecandidates', "${release_version}/${windows_version}/*", 'openenclavereleaseblobcontainer')
+        azureContainerDownload(storage_blob, "${release_version}/${windows_version}/*", storage_credentials_id)
     } else if(source == "GitHub") {
         // Download nuget packages from Open Enclave GitHub repository releaases
         releaseDownloadWindowsGitHub(release_version, oe_package)
@@ -462,15 +645,17 @@ def releaseDownloadWindows(String release_version, String oe_package, String sou
  * Downloads and installs an Open Enclave release version for either Windows or Ubuntu
  * Warning: this function must not be called within a shell otherwise a null command would be ran after this function completes.
  *
- * @param release_version  The version of the Open Enclave release to install
- * @param oe_package       Open Enclave package to install
- *                         - "open-enclave" [Default]
- *                         - "open-enclave-hostverify"
- * @param source           Which source to download Open Enclave from
- *                         - "Azure" to download from the Azure blob storage [Default]
- *                         - "GitHub" to download from the Open Enclave Repository
+ * @param release_version         The version of the Open Enclave release to install
+ * @param oe_package              Open Enclave package to install
+ *                                - "open-enclave" [Default]
+ *                                - "open-enclave-hostverify"
+ * @param source                  Which source to download Open Enclave from
+ *                                - "Azure" to download from the Azure blob storage [Default]
+ *                                - "GitHub" to download from the Open Enclave Repository
+ * @param storage_credentials_id  [Optional] Jenkins storage account credential id
+ * @param storage_blob            [Optional] The name of the blob in the Azure storage account
  */
-def releaseInstall(String release_version = null, String oe_package = "open-enclave", String source = "Azure") {
+def releaseInstall(String release_version = null, String oe_package = "open-enclave", String source = "Azure", String storage_credentials_id = "", String storage_blob = "") {
     // Check parameters are valid
     if(!release_version) {
         error("[Error] Invalid Open Enclave release version defined!")
@@ -494,7 +679,7 @@ def releaseInstall(String release_version = null, String oe_package = "open-encl
                 returnStdout: true
             ).trim()
         // Download Open Enclave package
-        def downloadedFiles = releaseDownloadLinux(release_version, oe_package, source, os_id, os_release)
+        def downloadedFiles = releaseDownloadLinux(release_version, oe_package, source, os_id, os_release, storage_credentials_id, storage_blob)
         if(!downloadedFiles) {
             error("[Error] No files were downloaded!")
         } else {
@@ -524,7 +709,7 @@ def releaseInstall(String release_version = null, String oe_package = "open-encl
             oe_package = "open-enclave.OEHOSTVERIFY"
         }
         // Download Open Enclave package
-        releaseDownloadWindows(release_version, oe_package, source, windows_version)     
+        releaseDownloadWindows(release_version, oe_package, source, windows_version, storage_credentials_id, storage_blob)     
         // Set nuget flags
         def nuget_flags = "-OutputDirectory C:\\oe -ExcludeVersion"
         if(source == "Azure") {
@@ -586,8 +771,8 @@ def get_date(String delimiter = "") {
 def getDockerSGXDevices(String os_type, String os_version) {
     def devices = []
     if ( os_type.equalsIgnoreCase('ubuntu') && os_version.equals('20.04') ) {
-        devices.add('/dev/sgx/provision')
-        devices.add('/dev/sgx/enclave')
+        devices.add('/dev/sgx_provision')
+        devices.add('/dev/sgx_enclave')
     }
     else if ( os_type.equalsIgnoreCase('ubuntu') && os_version.equals('18.04') ) {
         devices.add('/dev/sgx')
@@ -634,4 +819,34 @@ def dockerGetAptPackageVersion(String docker_image, String apt_package) {
     ).trim()
     if ( !version ) { version = "N/A" }
     return version
+}
+
+def oeCheckoutScm(String PULL_REQUEST_ID) {
+    /* If a build was triggered with params.PULL_REQUEST_ID set, then we are building a PR.
+    * In this case, we need to checkout the PR merge head.
+    * Otherwise we are building a branch and the branch is already checked out by the SCM plugin.
+    */
+    if ( PULL_REQUEST_ID != null && PULL_REQUEST_ID != "" ) {
+        cleanWs()
+        checkout([$class: 'GitSCM',
+            branches: [[name: "pr/${PULL_REQUEST_ID}"]],
+            doGenerateSubmoduleConfigurations: false,
+            extensions: [[ $class: 'SubmoduleOption',
+                           parentCredentials: true,
+                           reference: '',
+                           disableSubmodules: false,
+                           recursiveSubmodules: true,
+                           trackingSubmodules: false,
+                           timeout: 30,
+                           shallow: true,
+                           depth: 1
+            ]],
+            userRemoteConfigs: [[
+                url: 'https://github.com/openenclave/openenclave',
+                refspec: "+refs/pull/${PULL_REQUEST_ID}/merge:refs/remotes/origin/pr/${PULL_REQUEST_ID}"
+            ]]
+        ])
+    } else {
+        checkout scm
+    }
 }

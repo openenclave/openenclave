@@ -64,6 +64,12 @@ extern FILE* log_file;
 #define INPUT_PARAM_OPTION_SGX_ECDSA "SGX_ECDSA"
 #define INPUT_PARAM_OPTION_SGX_EPID_LINKABLE "SGX_EPID_LINKABLE"
 #define INPUT_PARAM_OPTION_SGX_EPID_UNLINKABLE "SGX_EPID_UNLINKABLE"
+#ifdef OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
+#define INPUT_PARAM_OPTION_ROOT_PUB_KEY "--rootkey"
+#endif
+#ifdef OEUTIL_QUOTE_BYPASS_DATE_CHECK
+#define INPUT_PARAM_OPTION_BYPASS_DATE "--bypass-date-check"
+#endif
 #define SHORT_INPUT_PARAM_OPTION_FORMAT "-f"
 #define SHORT_INPUT_PARAM_OPTION_ENDORSEMENTS_FILENAME "-e"
 #define SHORT_INPUT_PARAM_OPTION_QUOTE_PROC "-p"
@@ -87,6 +93,21 @@ static const oe_uuid_t _sgx_epid_linkable_uuid = {
 static const oe_uuid_t _sgx_epid_unlinkable_uuid = {
     OE_FORMAT_UUID_SGX_EPID_UNLINKABLE};
 
+#ifdef OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
+// Override the root key used in
+// common/sgx/tcbinfo.c:_trusted_root_key_pem
+OE_EXTERNC const char* _trusted_root_key_pem =
+    "-----BEGIN PUBLIC KEY-----\n"
+    "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEC6nEwMDIYZOj/iPWsCzaEKi71OiO\n"
+    "SLRFhWGjbnBVJfVnkY4u3IjkDYYL0MxO4mqsyYjlBalTVYxFP2sJBK5zlA==\n"
+    "-----END PUBLIC KEY-----\n";
+#endif
+
+#ifdef OEUTIL_QUOTE_BYPASS_DATE_CHECK
+// common/sgx/quote.c
+OE_EXTERNC bool _should_skip_date_check = false;
+#endif
+
 // Structure to store input parameters
 typedef struct _input_parameters
 {
@@ -94,6 +115,9 @@ typedef struct _input_parameters
     const char* public_key_filename;
     const char* out_filename;
     const char* log_filename;
+#ifdef OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
+    const char* override_pubkey_filename;
+#endif
     const char* endorsements_filename;
     const char* quote_proc;
     const char* baseline;
@@ -215,7 +239,7 @@ static void oeutil_quote_provider_log(
 {
     if (level < SGX_QL_LOG_ERROR || level > SGX_QL_LOG_NONE)
         level = SGX_QL_LOG_INFO;
-    const char* level_string[] = {"ERROR", "WARN", "INFO", "NONE"};
+    const char* level_string[] = {"ERROR", "INFO", "NONE"};
 
     log("dcap_quoteprov [%s]: %s\n", level_string[level], message);
 }
@@ -299,6 +323,17 @@ static void _display_help(const char* command)
         SHORT_INPUT_PARAM_OPTION_BASELINE,
         INPUT_PARAM_OPTION_BASELINE);
     printf("\t%s: enable verbose output.\n", INPUT_PARAM_OPTION_VERBOSE);
+#ifdef OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
+    printf(
+        "\t%s <pub key>: replace hard-coded Intel trusted public key with "
+        "given one\n",
+        INPUT_PARAM_OPTION_ROOT_PUB_KEY);
+#endif
+#ifdef OEUTIL_QUOTE_BYPASS_DATE_CHECK
+    printf(
+        "\t%s: bypass/ignore quote's date validity check\n",
+        INPUT_PARAM_OPTION_BYPASS_DATE);
+#endif
     printf("Examples:\n");
     printf("\t1. Show the verification results of evidence in SGX_ECDSA "
            "format:\n");
@@ -342,7 +377,7 @@ void parse_certificate_extension(const uint8_t* data, size_t data_len)
     oe_result_t result = OE_FAILURE;
     oe_cert_chain_t cert_chain = {0};
     oe_cert_t leaf_cert = {0};
-    ParsedExtensionInfo extension_info = {{0}};
+    oe_parsed_extension_info_t extension_info = {{0}};
 
     // get leaf cert to parse sgx extension
     oe_cert_chain_read_pem(&cert_chain, data, data_len);
@@ -1130,11 +1165,25 @@ oe_result_t generate_oe_report(
 
         oe_report_t parsed_report;
 
-        OE_CHECK_MSG(
-            oe_verify_report(
-                nullptr, remote_report, report_size, &parsed_report),
-            "Failed to verify report. Error: (%s)\n",
-            oe_result_str(result));
+        result = oe_verify_report(
+            nullptr, remote_report, report_size, &parsed_report);
+
+        if (result == OE_OK)
+        {
+            log("========== TCB is up-to-date\n");
+        }
+        else if (result == OE_TCB_LEVEL_INVALID)
+        {
+            log("========== Non-terminal TCB: 0x:%0x\n",
+                parsed_report.verification_result);
+        }
+        else
+        {
+            OE_CHECK_MSG(
+                result,
+                "Failed to verify report. Error: (%s)\n",
+                oe_result_str(result));
+        }
 
         // verify signer id
         OE_CHECK_MSG(
@@ -1411,6 +1460,9 @@ int _parse_args(int argc, const char* argv[])
     _parameters.out_filename = nullptr;
     _parameters.endorsements_filename = nullptr;
     _parameters.log_filename = DEFAULT_LOG_FILE;
+#ifdef OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
+    _parameters.override_pubkey_filename = nullptr;
+#endif
     _parameters.quote_proc = "";
     _parameters.verify = false;
     _parameters.verbose = false;
@@ -1539,6 +1591,23 @@ int _parse_args(int argc, const char* argv[])
             _parameters.log_filename = argv[i + 1];
             i += 2;
         }
+#ifdef OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
+        else if (strcasecmp(INPUT_PARAM_OPTION_ROOT_PUB_KEY, argv[i]) == 0)
+        {
+            if (argc < i + 2)
+                break;
+
+            _parameters.override_pubkey_filename = argv[i + 1];
+            i += 2;
+        }
+#endif
+#ifdef OEUTIL_QUOTE_BYPASS_DATE_CHECK
+        else if (strcasecmp(INPUT_PARAM_OPTION_BYPASS_DATE, argv[i]) == 0)
+        {
+            _should_skip_date_check = true;
+            i++;
+        }
+#endif
         else if (
             strcasecmp(INPUT_PARAM_OPTION_BASELINE, argv[i]) == 0 ||
             strcasecmp(SHORT_INPUT_PARAM_OPTION_BASELINE, argv[i]) == 0)
@@ -1587,6 +1656,11 @@ int _parse_args(int argc, const char* argv[])
 oe_result_t _process_parameters(oe_enclave_t* enclave)
 {
     oe_result_t result = OE_FAILURE;
+
+#ifdef OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
+    size_t override_public_key_size = 0;
+    uint8_t* override_public_key = nullptr;
+#endif
 
 #if defined(__linux__)
     char* sgx_aesm_env = getenv(SGX_AESM_ADDR);
@@ -1639,6 +1713,18 @@ oe_result_t _process_parameters(oe_enclave_t* enclave)
     {
         printf("Failed to unset environment variable 'SGX_AESM_ADDR'\n");
         goto done;
+    }
+#endif
+
+#ifdef OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
+    // Load public key and assign it to _trusted_root_key_pem
+    if (_parameters.override_pubkey_filename)
+    {
+        OE_CHECK(_read_key(
+            _parameters.override_pubkey_filename,
+            &override_public_key,
+            &override_public_key_size));
+        _trusted_root_key_pem = (const char*)override_public_key;
     }
 #endif
 
