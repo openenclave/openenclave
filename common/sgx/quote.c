@@ -27,12 +27,17 @@
 #include "../../host/sgx/quote.h"
 #endif
 
+#ifdef OEUTIL_TCB_ALLOW_ANY_ROOT_KEY // allow overrode by oeutil
+// Defined by tools/oeutil/host/generate_evidence.cpp
+extern const char* _trusted_root_key_pem;
+#else // use hard-coded value
 // Public key of Intel's root certificate.
-static const char* g_expected_root_certificate_key =
+static const char* _trusted_root_key_pem =
     "-----BEGIN PUBLIC KEY-----\n"
     "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEC6nEwMDIYZOj/iPWsCzaEKi71OiO\n"
     "SLRFhWGjbnBVJfVnkY4u3IjkDYYL0MxO4mqsyYjlBalTVYxFP2sJBK5zlA==\n"
     "-----END PUBLIC KEY-----\n";
+#endif
 
 static const oe_uuid_t _ecdsa_uuid = {OE_FORMAT_UUID_SGX_ECDSA};
 
@@ -305,8 +310,8 @@ static oe_result_t oe_verify_quote_internal(
         OE_CHECK_MSG(
             oe_ec_public_key_read_pem(
                 &expected_root_public_key,
-                (const uint8_t*)g_expected_root_certificate_key,
-                oe_strlen(g_expected_root_certificate_key) + 1),
+                (const uint8_t*)_trusted_root_key_pem,
+                oe_strlen(_trusted_root_key_pem) + 1),
             "Failed to read expected root cert key.",
             NULL);
         OE_CHECK_MSG(
