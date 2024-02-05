@@ -2,8 +2,8 @@
 # Licensed under the MIT License.
 
 ---
-intel_dcap_url:      "https://registrationcenter-download.intel.com/akdlm/IRC_NAS/f034c819-4bf4-46d6-af47-e37795cfd982/Intel_SGX_DCAP_for_Windows_v1.20.100.2.zip"
-intel_dcap_hash:     "44854A23343590C064BDE0DF7F561B7ADA635125B8F6839916A146B5C0390B21"
+intel_dcap_url:      "https://registrationcenter-download.intel.com/akdlm/IRC_NAS/d929c03e-d7ab-4c9f-882b-94cb9e35b8b9/Intel_SGX_DCAP_for_Windows_v1.19.100.3.zip"
+intel_dcap_hash:     "60478D69373D1BD9E244DC6442B12D5D8137CA7F3148ED9979FBC0B76915EBF7"
 git_url:             "https://oejenkins.blob.core.windows.net/oejenkins/Git-2.31.1-64-bit.exe"
 git_hash:            "C43611EB73AD1F17F5C8CC82AE51C3041A2E7279E0197CCF5F739E9129CE426E"
 seven_zip_url:       "https://oejenkins.blob.core.windows.net/oejenkins/7z1806-x64.msi"
