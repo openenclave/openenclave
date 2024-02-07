@@ -21,8 +21,8 @@ Param(
     [string]$DevconURL = 'https://download.microsoft.com/download/7/D/D/7DD48DE6-8BDA-47C0-854A-539A800FAA90/wdk/Installers/787bee96dbd26371076b37b13c405890.cab',
     [string]$DevconHash = 'A38E409617FC89D0BA1224C31E42AF4344013FEA046D2248E4B9E03F67D5908A',
     # Intel PSW 2.22.100.2 is included in DCAP 1.20.100.2
-    [string]$IntelDCAPURL = 'https://registrationcenter-download.intel.com/akdlm/IRC_NAS/f034c819-4bf4-46d6-af47-e37795cfd982/Intel_SGX_DCAP_for_Windows_v1.20.100.2.zip',
-    [string]$IntelDCAPHash = '44854A23343590C064BDE0DF7F561B7ADA635125B8F6839916A146B5C0390B21',
+    [string]$IntelDCAPURL = 'https://registrationcenter-download.intel.com/akdlm/IRC_NAS/f9a43559-9da1-4cb6-840e-9fc670b11a5a/Intel_SGX_DCAP_for_Windows_v1.20.100.2.zip',
+    [string]$IntelDCAPHash = '40E2973959BB90E19D720B7D3B9664FA284F8F023BEFBAE91811E505178E4E28',
     [string]$VCRuntime2012URL = 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe',
     [string]$VCRuntime2012Hash = '681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064',
     [string]$AzureDCAPNupkgURL = 'https://www.nuget.org/api/v2/package/Microsoft.Azure.DCAP/1.12.3',
