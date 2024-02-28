@@ -10,17 +10,12 @@ OETOOLS_REPO = 'oejenkinscidockerregistry.azurecr.io'
 OETOOLS_REPO_CREDENTIALS_ID = 'oejenkinscidockerregistry'
 SERVICE_PRINCIPAL_CREDENTIALS_ID = 'SERVICE_PRINCIPAL_OSTCLAB'
 AZURE_IMAGES_MAP = [
-    "WS19": [
-        "image": "MicrosoftWindowsServer:WindowsServer:2019-datacenter-gensecond:latest",
-        "generation": "V2"
-    ],
     "WS22": [
         "image": "MicrosoftWindowsServer:WindowsServer:2022-datacenter-azure-edition:latest",
         "generation": "V2"
     ]
 ]
 OS_NAME_MAP = [
-    "WS19": "Windows Server 2019",
     "WS22": "Windows Server 2022",
     "ubuntu":  "Ubuntu",
 ]
@@ -83,7 +78,7 @@ def buildLinuxManagedImage(String os_type, String version, String managed_image_
 
 /* This builds a Windows image for Azure Managed Images
  * @param os_series            String for windows OS version that forms part of the image definition in Azure Compute Galleries.
- *                             Options: "WS19", "WS22"
+ *                             Options: "WS22"
  * @param image_type           String for image type that forms part of the image definition in Azure Compute Galleries.
  *                             Options: "nonSGX", "SGX-DCAP"
  * @param launch_configuration String for the configuration used to provision the Windows image for the install-windows-prereqs.ps1 script. 
@@ -112,12 +107,10 @@ def buildWindowsManagedImage(String os_series, String image_type, String launch_
         def jenkins_subnet_name = params.JENKINS_SUBNET_NAME
         def azure_image_id = AZURE_IMAGES_MAP[os_series]["image"]
 
-        if (os_series == "WS19") {
-            gallery_image_definition = "${image_type}-clang-${clang_version_short}"
-        } else if (os_series == "WS22") {
+        if (os_series == "WS22") {
             gallery_image_definition = "${os_series}-${image_type}-clang-${clang_version_short}"
         } else {
-            throw new Exception("Only Windows 2019 and 2022 are supported")
+            throw new Exception("Only Windows 2022 is supported")
         }
 
         try {
@@ -378,8 +371,6 @@ node(params.AGENTS_LABEL) {
         }
         stage("Build images") {
             def windows_images = [
-                "Build WS2019 - nonSGX - clang11"       : { buildWindowsManagedImage("WS19", "nonSGX", "SGX1FLC-NoIntelDrivers", "11.1.0", image_id, image_version) },
-                "Build WS2019 - SGX1FLC DCAP - clang11" : { buildWindowsManagedImage("WS19", "SGX-DCAP", "SGX1FLC", "11.1.0", image_id, image_version) },
                 "Build WS2022 - nonSGX - clang11"       : { buildWindowsManagedImage("WS22", "nonSGX", "SGX1FLC-NoIntelDrivers", "11.1.0", image_id, image_version) },
                 "Build WS2022 - SGX1FLC DCAP - clang11" : { buildWindowsManagedImage("WS22", "SGX-DCAP", "SGX1FLC", "11.1.0", image_id, image_version) }
             ]
