@@ -5,19 +5,19 @@ library "OpenEnclaveJenkinsLibrary@${params.OECI_LIB_VERSION}"
 GLOBAL_ERROR = globalvars.GLOBAL_ERROR
 
 def testing_stages = [
-    "Windows 2019 Install Prerequisites Verification" :                      { tests.windowsPrereqsVerify("acc-win2019-dcap", params.PULL_REQUEST_ID) },
-    "XC Win2019 v2 clang-11 RelWithDebInfo ControlFlow":                     { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'clang-11', 'RelWithDebInfo', 'ControlFlow', '0', 'ON', 'OFF', params.PULL_REQUEST_ID) },
-    "XC Win2019 v2 clang-11 RelWithDebInfo ControlFlow Sim":                 { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'clang-11', 'RelWithDebInfo', 'ControlFlow', '1', 'ON', 'OFF', params.PULL_REQUEST_ID) },
-    "XC Win2019 v2 clang-11 RelWithDebInfo ControlFlow snmalloc":            { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'clang-11', 'RelWithDebInfo', 'ControlFlow', '0', 'ON', 'ON',  params.PULL_REQUEST_ID) },
-    "XC Win2019 v3 clang-11 RelWithDebInfo ControlFlow":                     { tests.windowsCrossCompile(params.WS2019_DCAP_ICX_LABEL, 'clang-11', 'RelWithDebInfo', 'ControlFlow', '0', 'ON', 'OFF', params.PULL_REQUEST_ID) },
-    "XC Win2022 v2 clang-11 Debug ControlFlow":                              { tests.windowsCrossCompile(params.WS2022_DCAP_CFL_LABEL, 'clang-11', 'RelWithDebInfo', 'ControlFlow', '0', 'ON', 'OFF', params.PULL_REQUEST_ID) }
+    "Windows 2022 Install Prerequisites Verification" :                      { tests.windowsPrereqsVerify("acc-win2022-dcap", params.PULL_REQUEST_ID) },
+    "XC Win2022 v2 clang-11 RelWithDebInfo ControlFlow":                     { tests.windowsCrossCompile(params.WS2022_DCAP_CFL_LABEL, 'clang-11', 'RelWithDebInfo', 'ControlFlow', '0', 'ON', 'OFF', params.PULL_REQUEST_ID) },
+    "XC Win2022 v2 clang-11 RelWithDebInfo ControlFlow Sim":                 { tests.windowsCrossCompile(params.WS2022_DCAP_CFL_LABEL, 'clang-11', 'RelWithDebInfo', 'ControlFlow', '1', 'ON', 'OFF', params.PULL_REQUEST_ID) },
+    "XC Win2022 v2 clang-11 RelWithDebInfo ControlFlow snmalloc":            { tests.windowsCrossCompile(params.WS2022_DCAP_CFL_LABEL, 'clang-11', 'RelWithDebInfo', 'ControlFlow', '0', 'ON', 'ON',  params.PULL_REQUEST_ID) },
+    "XC Win2022 v3 clang-11 RelWithDebInfo ControlFlow":                     { tests.windowsCrossCompile(params.WS2022_DCAP_ICX_LABEL, 'clang-11', 'RelWithDebInfo', 'ControlFlow', '0', 'ON', 'OFF', params.PULL_REQUEST_ID) },
+    "XC Win2022 v2 clang-11 Debug ControlFlow":                              { tests.windowsCrossCompile(params.WS2022_DCAP_CFL_LABEL, 'clang-11', 'Debug',          'ControlFlow', '0', 'ON', 'OFF', params.PULL_REQUEST_ID) },
 ]
 if(FULL_TEST_SUITE == "true") {
     testing_stages += [
-        "ELF Win2019 Ubuntu2004 clang-11 Debug":                                 { tests.windowsLinuxElfBuild(params.WS2019_DCAP_CFL_LABEL, params.UBUNTU_2004_NONSGX_LABEL, 'clang-11', 'Debug', params.PULL_REQUEST_ID) },
-        "XC Win2019 v2 clang-11 RelWithDebInfo ControlFlow-Clang":               { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'clang-11', 'RelWithDebInfo', 'ControlFlow-Clang', '0', 'OFF', 'OFF', params.PULL_REQUEST_ID) },
-        "XC Win2019 v2 clang-11 Debug ControlFlow Sim snmalloc":                 { tests.windowsCrossCompile(params.WS2019_DCAP_CFL_LABEL, 'clang-11', 'Debug',          'ControlFlow',       '1', 'OFF', 'ON', params.PULL_REQUEST_ID) },
-        "Cross Platform Win2019":                                                { tests.windowsCrossPlatform(params.WS2019_DCAP_CFL_LABEL, params.PULL_REQUEST_ID) }
+        "ELF Win2022 Ubuntu2004 clang-11 Debug":                                 { tests.windowsLinuxElfBuild(params.WS2022_DCAP_CFL_LABEL, params.UBUNTU_2004_NONSGX_LABEL, 'clang-11', 'Debug', params.PULL_REQUEST_ID) },
+        "XC Win2022 v2 clang-11 RelWithDebInfo ControlFlow-Clang":               { tests.windowsCrossCompile(params.WS2022_DCAP_CFL_LABEL, 'clang-11', 'RelWithDebInfo', 'ControlFlow-Clang', '0', 'OFF', 'OFF', params.PULL_REQUEST_ID) },
+        "XC Win2022 v2 clang-11 Debug ControlFlow Sim snmalloc":                 { tests.windowsCrossCompile(params.WS2022_DCAP_CFL_LABEL, 'clang-11', 'Debug',          'ControlFlow',       '1', 'OFF', 'ON', params.PULL_REQUEST_ID) },
+        "Cross Platform Win2022":                                                { tests.windowsCrossPlatform(params.WS2022_DCAP_CFL_LABEL, params.PULL_REQUEST_ID) }
     ]
 }
 stage("Run tests") {
