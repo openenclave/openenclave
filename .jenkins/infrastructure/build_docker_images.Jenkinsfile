@@ -18,7 +18,7 @@ pipeline {
         string(name: "INTERNAL_REPO", defaultValue: "https://oejenkinscidockerregistry.azurecr.io", description: "Url for internal Docker repository")
         string(name: "INTERNAL_REPO_CRED_ID", defaultValue: "oejenkinscidockerregistry", description: "Credential ID for internal Docker repository")
         string(name: "IMAGES_BUILD_LABEL", defaultValue: "acc-ubuntu-20.04", description: "Label of the agent to use to run Linux container builds")
-        string(name: "WINDOWS_AGENTS_LABEL", defaultValue: "ws2019-nonsgx", description: "Label of the agent to use to run Windows container builds")
+        string(name: "WINDOWS_AGENTS_LABEL", defaultValue: "ws2022-nonsgx", description: "Label of the agent to use to run Windows container builds")
         booleanParam(name: "TAG_LATEST", defaultValue: true, description: "Update the latest tag to the currently built DOCKER_TAG")
         booleanParam(name: "BUILD_WINDOWS", defaultValue: true, description: "Publish Windows Docker images?")
         booleanParam(name: "BUILD_LINUX", defaultValue: true, description: "Publish Linux Docker images?")
