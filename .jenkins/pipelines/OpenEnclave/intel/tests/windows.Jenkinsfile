@@ -28,6 +28,6 @@ properties(
     ]
 )
 
-parallel "Windows Server 2019": { tests.TestIntelRCs(globalvars.AGENTS_LABELS["acc-win2019-dcap-us"], params.OE_RELEASE_VERSION, params.OE_PACKAGE, params.RELEASE_SOURCE, false, params.DCAP_URL, "-SkipVSInstall") }
+parallel "Windows Server 2022": { tests.TestIntelRCs(globalvars.AGENTS_LABELS["acc-win2022-dcap-us"], params.OE_RELEASE_VERSION, params.OE_PACKAGE, params.RELEASE_SOURCE, false, params.DCAP_URL, "-SkipVSInstall") }
 // TODO: enable when we have vanilla Windows ACC image
-//       "Windows Server 2019 - Upgrade": { tests.TestIntelRCs(globalvars.AGENTS_LABELS["acc-win2019-dcap"], params.OE_RELEASE_VERSION, params.OE_PACKAGE, params.RELEASE_SOURCE, false, params.DCAP_URL, params.PSW_URL, true) }
+//       "Windows Server 2022 - Upgrade": { tests.TestIntelRCs(globalvars.AGENTS_LABELS["acc-win2022-dcap"], params.OE_RELEASE_VERSION, params.OE_PACKAGE, params.RELEASE_SOURCE, false, params.DCAP_URL, params.PSW_URL, true) }
