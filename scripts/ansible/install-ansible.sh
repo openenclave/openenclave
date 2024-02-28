@@ -23,21 +23,51 @@ function wait-apt-get {
         i=$((i++))
         sleep 1
     done
-    apt-get "${@}"
+    sudo apt-get "${@}"
 }
 
-if command -v yum > /dev/null; then
-    yum install git python3-pip -y
-elif command -v apt-get > /dev/null; then
-    wait-apt-get update
-    wait-apt-get install libssl-dev libffi-dev python3-pip -y
-else
-    echo "ERROR: Only these package managers are supported: yum, apt-get"
+# Check for a supported python3 version that is already installed.
+# Only Python 3.9 - 3.11 is supported for Ansible 8 or Ansible-core 2.15
+# Ubuntu 20.04 has up to Python 3.9 available through official channels
+# For Ansible Community vs. Ansible-core versions
+# see https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html
+# For Python version compatibility with Ansible versions
+# see https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#support-life
+SUPPORTED_PYTHON_VERSIONS=("3.11" "3.10" "3.9")
+PYTHON_VERSION=$(python3 --version | cut -d " " -f 2 | cut -d "." -f 1,2)
+echo "Your Python3 version is ${PYTHON_VERSION}"
+for version in "${SUPPORTED_PYTHON_VERSIONS[@]}"; do
+    if [[ "$PYTHON_VERSION" == "$version" ]]; then
+        PYTHON_EXECUTABLE="python${PYTHON_VERSION}"
+        echo "Python version $PYTHON_VERSION is supported and will be used to install Ansible."
+        break
+    fi
+done
+
+# Install a supported Python version if it is not already installed.
+wait-apt-get update
+for version in "${SUPPORTED_PYTHON_VERSIONS[@]}"; do
+    if apt-cache show "^python${version}$" > /dev/null; then
+        if command -v apt-get > /dev/null; then
+            wait-apt-get install libssl-dev libffi-dev python3-pip "python${version}" -y
+            PYTHON_EXECUTABLE="python${version}"
+            echo "Python version $version was installed."
+            break
+        else
+            echo "ERROR: No supported Python version was found and only these package managers are supported: apt"
+            exit 1
+        fi
+    fi
+done
+
+if [[ -z ${PYTHON_EXECUTABLE+x} ]]; then
+    echo "ERROR: No supported Python versions could be installed. Please check whether your system can support any of the following Python versions:"
+    printf "Python %s\n" "${SUPPORTED_PYTHON_VERSIONS[@]}"
     exit 1
 fi
 
-pip3 install --upgrade pip
-pip3 install -U -r "$DIR/requirements.txt"
+${PYTHON_EXECUTABLE} -m pip install --upgrade pip
+${PYTHON_EXECUTABLE} -m pip install -U -r "$DIR/requirements.txt"
 
 ansible-galaxy collection install community.general
 ansible-galaxy collection install ansible.windows
