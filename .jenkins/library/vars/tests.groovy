@@ -319,38 +319,12 @@ def ACCHostVerificationTest(String version, String build_type, String compiler, 
         }
     }
 
-    /* Windows 2019 nonSGX stage. */
-    stage("Windows nonSGX Verify Quote") {
-        node(globalvars.AGENTS_LABELS["ws2019-nonsgx"]) {
-            timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
-                cleanWs()
-                helpers.oeCheckoutScm(pr_id)
-                unstash "linux_host_verify-${version}-${build_type}-${BUILD_NUMBER}"
-                def cmakeArgs = "-G Ninja -DBUILD_ENCLAVES=OFF -DCMAKE_BUILD_TYPE=${build_type} -DNUGET_PACKAGE_PATH=C:/oe_prereqs -Wdev"
-                dir('build') {
-                    withCredentials([
-                        string(credentialsId: 'thim-tdx-base-url', variable: 'AZDCAP_BASE_CERT_URL_TDX'),
-                        string(credentialsId: 'thim-tdx-region-url', variable: 'AZDCAP_REGION_URL')
-                    ]) {
-                        helpers.ninjaBuildCommand(cmakeArgs)
-                        bat(
-                            script: """
-                                call vcvars64.bat x64
-                                ctest.exe -V -C ${build_type} -R host_verify --output-on-failure --timeout ${globalvars.CTEST_TIMEOUT_SECONDS} || exit !ERRORLEVEL!
-                            """
-                        )
-                    }
-                }
-            }
-        }
-    }
-
     /* Windows 2022 nonSGX stage. */
     stage("Windows nonSGX Verify Quote") {
         node(globalvars.AGENTS_LABELS["ws2022-nonsgx"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
-                checkout scm
+                helpers.oeCheckoutScm(pr_id)
                 unstash "linux_host_verify-${version}-${build_type}-${BUILD_NUMBER}"
                 def cmakeArgs = "-G Ninja -DBUILD_ENCLAVES=OFF -DCMAKE_BUILD_TYPE=${build_type} -DNUGET_PACKAGE_PATH=C:/oe_prereqs -Wdev"
                 dir('build') {
@@ -483,7 +457,7 @@ def ACCHostVerificationPackageTest(String version, String build_type, String com
 
     /* Windows nonSGX stage. */
     stage("Windows nonSGX Verify Quote") {
-        node(globalvars.AGENTS_LABELS["ws2019-nonsgx"]) {
+        node(globalvars.AGENTS_LABELS["ws2022-nonsgx"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 helpers.oeCheckoutScm(pr_id)

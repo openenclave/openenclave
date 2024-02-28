@@ -34,18 +34,6 @@ pipeline {
                     userRemoteConfigs: [[url: "https://github.com/${params.REPOSITORY_NAME}"]]])
             }
         }
-        stage("Build Windows Server 2019 Docker Image") {
-            steps {
-                powershell """
-                    New-Item -Path build\\scripts -ItemType Directory
-                    Copy-Item -Path scripts\\install-windows-prereqs.ps1 -Destination build\\scripts\\install-windows-prereqs.ps1
-                    cd build
-                """
-                script {
-                    oe2019 = common.dockerImage("oetools-ws2019:${TAG_FULL_IMAGE}", ".jenkins/infrastructure/docker/dockerfiles/windows/Dockerfile")
-                }
-            }
-        }
         stage("Build Windows Server 2022 Docker Image") {
             steps {
                 powershell """
@@ -54,7 +42,7 @@ pipeline {
                     cd build
                 """
                 script {
-                    oe2022 = common.dockerImage("oetools-ws2022:${TAG_FULL_IMAGE}", ".jenkins/infrastructure/docker/dockerfiles/windows/Windows22.Dockerfile")
+                    oe2022 = common.dockerImage("oetools-ws2022:${TAG_FULL_IMAGE}", ".jenkins/infrastructure/docker/dockerfiles/windows/Dockerfile")
                 }
             }
         }
@@ -62,10 +50,6 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry(params.INTERNAL_REPO, params.INTERNAL_REPO_CRED_ID) {
-                        common.exec_with_retry { oe2019.push() }
-                        if ( params.TAG_LATEST ) {
-                            common.exec_with_retry { oe2019.push('latest') }
-                        }
                         common.exec_with_retry { oe2022.push() }
                         if ( params.TAG_LATEST ) {
                             common.exec_with_retry { oe2022.push('latest') }
