@@ -1403,9 +1403,9 @@ void test_verify_report_with_collaterals()
 
         // convert tm to oe_datetime_t
         oe_datetime_t past = {
-            (uint32_t)timeinfo.tm_year + 1890,
+            (uint32_t)timeinfo.tm_year + 1890, // 10 years ago
             (uint32_t)timeinfo.tm_mon + 1,
-            (uint32_t)timeinfo.tm_mday,
+            (uint32_t)10, // using arbitrary day to avoid leap year problem
             (uint32_t)timeinfo.tm_hour,
             (uint32_t)timeinfo.tm_min,
             (uint32_t)timeinfo.tm_sec};
@@ -1420,9 +1420,9 @@ void test_verify_report_with_collaterals()
 
         /* Test with time in the future */
         oe_datetime_t future = {
-            (uint32_t)timeinfo.tm_year + 1910,
+            (uint32_t)timeinfo.tm_year + 1910, // 10 years in the future
             (uint32_t)timeinfo.tm_mon + 1,
-            (uint32_t)timeinfo.tm_mday,
+            (uint32_t)10, // using arbitrary day to avoid leap year problem
             (uint32_t)timeinfo.tm_hour,
             (uint32_t)timeinfo.tm_min,
             (uint32_t)timeinfo.tm_sec};
