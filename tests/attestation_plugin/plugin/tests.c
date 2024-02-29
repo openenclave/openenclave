@@ -714,6 +714,11 @@ static void _test_time(
 
     tmp = *from;
     tmp.year--;
+    // Avoid leap year 2/29
+    if (tmp.month == 2 && tmp.day == 29)
+    {
+        tmp.day = 28;
+    }
     OE_TEST_CODE(
         oe_verify_sgx_quote(
             report_body,
@@ -726,6 +731,11 @@ static void _test_time(
 
     tmp = *until;
     tmp.year++;
+    // Avoid leap year 2/29
+    if (tmp.month == 2 && tmp.day == 29)
+    {
+        tmp.day = 28;
+    }
     OE_TEST_CODE(
         oe_verify_sgx_quote(
             report_body,
