@@ -1477,7 +1477,7 @@ void test_verify_report_with_collaterals()
         memset(&parsed_report, 0, sizeof(parsed_report));
 
         valid_from.year -= 1;
-        // Avoid leap year 2/29
+        // Avoid 2/29 in a leap year
         if (valid_from.month == 2 && valid_from.day == 29)
         {
             valid_from.day = 28;
@@ -1492,7 +1492,7 @@ void test_verify_report_with_collaterals()
                 NULL) == OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD);
 
         valid_until.year += 1;
-        // Avoid leap year 2/29
+        // Avoid 2/29 in a leap year
         if (valid_until.month == 2 && valid_until.day == 29)
         {
             valid_until.day = 28;
