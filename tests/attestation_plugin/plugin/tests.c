@@ -714,7 +714,7 @@ static void _test_time(
 
     tmp = *from;
     tmp.year--;
-    // Avoid leap year 2/29
+    // Avoid 2/29 in a leap year
     if (tmp.month == 2 && tmp.day == 29)
     {
         tmp.day = 28;
@@ -731,7 +731,7 @@ static void _test_time(
 
     tmp = *until;
     tmp.year++;
-    // Avoid leap year 2/29
+    // Avoid 2/29 in a leap year
     if (tmp.month == 2 && tmp.day == 29)
     {
         tmp.day = 28;
@@ -797,6 +797,11 @@ static void _test_time_policy(
 
     dt = *from;
     dt.year--;
+    // Avoid 2/29 in a leap year
+    if (dt.month == 2 && dt.day == 29)
+    {
+        dt.day = 28;
+    }
     OE_TEST_CODE(
         oe_verify_evidence(
             wrapped_with_header ? NULL : format_id,
@@ -812,6 +817,11 @@ static void _test_time_policy(
 
     dt = *until;
     dt.year++;
+    // Avoid 2/29 in a leap year
+    if (dt.month == 2 && dt.day == 29)
+    {
+        dt.day = 28;
+    }
     OE_TEST_CODE(
         oe_verify_evidence(
             wrapped_with_header ? NULL : format_id,
