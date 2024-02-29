@@ -261,8 +261,17 @@ void oe_datetime_log(const char* msg, const oe_datetime_t* date)
     {
         char str[OE_DATETIME_STR_SIZE];
         size_t size = sizeof(str);
-        oe_datetime_to_string(date, str, &size);
-        OE_TRACE_VERBOSE("%s %s\n", msg, str);
+        oe_result_t ret = oe_datetime_to_string(date, str, &size);
+        if (OE_OK != ret)
+        {
+            OE_TRACE_ERROR(
+                "Failed to convert oe_datetime_t to string. Error=%s\n",
+                oe_result_str(ret));
+        }
+        else
+        {
+            OE_TRACE_VERBOSE("%s %s\n", msg, str);
+        }
     }
 }
 
