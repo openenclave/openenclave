@@ -5,9 +5,8 @@
 gcc_target_version: "9.4.0"
 # For specifying distribution-specific packages
 apt_distribution_packages:
-  - "python"
-  - "clang-10"
-  - "clang-format-10"
+  - "python3"
+  - "python-is-python3"
   - "clang-11"
   - "clang-format-11"
 apt_arm_distribution_packages:
