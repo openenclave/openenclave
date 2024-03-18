@@ -72,10 +72,6 @@ RUN /ansible/install-ansible.sh && \
     apt-get clean && \
     rm -rf /ansible /lvi-mitigation /root/.cache /root/.ansible /var/lib/apt/lists/*
 
-# Configure Git in target image to enable merge/rebase actions.
-RUN git config --global user.email "oeciteam@microsoft.com"
-RUN git config --global user.name "OE CI Team"
-
 # Create user
 RUN groupadd --gid ${GID} ${GNAME}
 RUN useradd --create-home --uid ${UID} --gid ${GID} --shell /bin/bash ${UNAME}
