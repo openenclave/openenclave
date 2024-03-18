@@ -23,7 +23,10 @@ function wait-apt-get {
         i=$((i++))
         sleep 1
     done
-    sudo apt-get "${@}"
+    if [[ "$EUID" -ne 0 ]]; then
+        SUDO=sudo
+    fi
+    ${SUDO} apt-get "${@}"
 }
 
 # Check for a supported python3 version that is already installed.
