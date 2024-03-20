@@ -20,12 +20,18 @@
 docker pull openenclavedockerregistry.azurecr.io/oetools-20.04:latest
 ```
 
-4. Run an interactive container of one of these images. If you're using the Intel SGX DCAP driver, for example, you'll want to expose the /dev/sgx device to the container:
+4. Run an interactive container of one of these images. Mount the appropriate devices based on which driver you are running:
+
 ```bash
-sudo docker run --device /dev/sgx:/dev/sgx -i -t openenclavedockerregistry.azurecr.io/oetools-20.04:latest bash
+sudo docker run --device <device> -i -t openenclavedockerregistry.azurecr.io/oetools-20.04:latest bash
 ```
-  - If you're using the Intel SGX (non-DCAP) driver, you'll want to do two things:
-    - The device name is different (isgx as opposed to sgx), so you'll want this option instead:  `--device /dev/isgx:/dev/isgx`
+
+- If you're using the out-of-tree Intel SGX DCAP driver, you'll want to expose the `/dev/sgx` device to the container, by passing `--device /dev/sgx`.
+
+- If you're using the [upstreamed SGX driver](https://www.kernel.org/doc/html/v6.8/arch/x86/sgx.html) that has been part of the Linux kernel since 5.11, you'll need both of the following devices: `--device /dev/sgx_enclave:/dev/sgx_enclave` and `--device /dev/sgx_provision:/dev/sgx_provision`.
+
+- If you're using the Intel SGX (non-DCAP) driver (`isgx`), you'll want to do two things:
+    - The device name is different (isgx as opposed to sgx), so you'll want this option instead: `--device /dev/isgx:/dev/isgx`.
     - The aesm service will need to be running on the container host, and then its socket file directory will need to be exposed to the container as a volume by adding the `-v /var/run/aesmd:/var/run/aesmd` option.
 
 5. Clone the Open Enclave repository from within this container and run the build and tests. For example, if your system has the SGX DCAP driver installed and it has been made available to the container:
