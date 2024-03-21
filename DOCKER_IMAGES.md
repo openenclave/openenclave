@@ -1,6 +1,6 @@
 | Docker Image | Version | Open Enclave version* | Intel SGX PSW version | Intel SGX DCAP version |
 | ------------ | ------- | --------------------- | --------------------- | ---------------------- |
-| Windows Server 2022 | oejenkinscidockerregistry.azurecr.io/oetools-ws2022:2024.02.29134 | v0.19.4 | None | None |
+| Windows Server 2022 | openenclavedockerregistry.azurecr.io/oetools-ws2022:2024.02.29134 | v0.19.4 | None | None |
 | Windows Server 2019 | openenclavedockerregistry.azurecr.io/oetools-ws2019:2024.02.26107 | v0.19.4 | None | None |
 | Base Ubuntu 20.04 | openenclavedockerregistry.azurecr.io/openenclave-base-ubuntu-20.04:2024.02.26107 | v0.19.4 | 2.23.100.2-focal1 | 1.20.100.2-focal1 |
 | Full Ubuntu 20.04 | openenclavedockerregistry.azurecr.io/oetools-20.04:2024.02.26107 | v0.19.4 | 2.23.100.2-focal1 | 1.20.100.2-focal1 |
