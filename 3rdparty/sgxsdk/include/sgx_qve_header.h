@@ -41,30 +41,32 @@
 /** Contains the possible values of the quote verification result. */
 typedef enum _sgx_ql_qv_result_t
 {
-   SGX_QL_QV_RESULT_OK = 0x0000,                                            ///< The Quote verification passed and is at the latest TCB level
-   SGX_QL_QV_RESULT_MIN = SGX_QL_QV_MK_ERROR(0x0001),
-   SGX_QL_QV_RESULT_CONFIG_NEEDED = SGX_QL_QV_MK_ERROR(0x0001),             ///< The Quote verification passed and the platform is patched to
-                                                                            ///< the latest TCB level but additional configuration of the SGX
-                                                                            ///< platform may be needed
-   SGX_QL_QV_RESULT_OUT_OF_DATE = SGX_QL_QV_MK_ERROR(0x0002),               ///< The Quote is good but TCB level of the platform is out of date.
-                                                                            ///< The platform needs patching to be at the latest TCB level
-   SGX_QL_QV_RESULT_OUT_OF_DATE_CONFIG_NEEDED = SGX_QL_QV_MK_ERROR(0x0003), ///< The Quote is good but the TCB level of the platform is out of
-                                                                            ///< date and additional configuration of the SGX Platform at its
-                                                                            ///< current patching level may be needed. The platform needs
-                                                                            ///< patching to be at the latest TCB level
-   SGX_QL_QV_RESULT_INVALID_SIGNATURE = SGX_QL_QV_MK_ERROR(0x0004),         ///< The signature over the application report is invalid
-   SGX_QL_QV_RESULT_REVOKED = SGX_QL_QV_MK_ERROR(0x0005),                   ///< The attestation key or platform has been revoked
-   SGX_QL_QV_RESULT_UNSPECIFIED = SGX_QL_QV_MK_ERROR(0x0006),               ///< The Quote verification failed due to an error in one of the input
-   SGX_QL_QV_RESULT_SW_HARDENING_NEEDED = SGX_QL_QV_MK_ERROR(0x0007),       ///< The TCB level of the platform is up to date, but SGX SW Hardening
-                                                                            ///< is needed
-   SGX_QL_QV_RESULT_CONFIG_AND_SW_HARDENING_NEEDED = SGX_QL_QV_MK_ERROR(0x0008),   ///< The TCB level of the platform is up to date, but additional
-                                                                                   ///< configuration of the platform at its current patching level
-                                                                                   ///< may be needed. Moreove, SGX SW Hardening is also needed
+    SGX_QL_QV_RESULT_OK = 0x0000,                                            ///< The Quote verification passed and is at the latest TCB level
+    SGX_QL_QV_RESULT_MIN = SGX_QL_QV_MK_ERROR(0x0001),
+    SGX_QL_QV_RESULT_CONFIG_NEEDED = SGX_QL_QV_MK_ERROR(0x0001),             ///< The Quote verification passed and the platform is patched to
+                                                                             ///< the latest TCB level but additional configuration of the SGX
+                                                                             ///< platform may be needed
+    SGX_QL_QV_RESULT_OUT_OF_DATE = SGX_QL_QV_MK_ERROR(0x0002),               ///< The Quote is good but TCB level of the platform is out of date.
+                                                                             ///< The platform needs patching to be at the latest TCB level
+    SGX_QL_QV_RESULT_OUT_OF_DATE_CONFIG_NEEDED = SGX_QL_QV_MK_ERROR(0x0003), ///< The Quote is good but the TCB level of the platform is out of
+                                                                             ///< date and additional configuration of the SGX Platform at its
+                                                                             ///< current patching level may be needed. The platform needs
+                                                                             ///< patching to be at the latest TCB level
+    SGX_QL_QV_RESULT_INVALID_SIGNATURE = SGX_QL_QV_MK_ERROR(0x0004),         ///< The signature over the application report is invalid
+    SGX_QL_QV_RESULT_REVOKED = SGX_QL_QV_MK_ERROR(0x0005),                   ///< The attestation key or platform has been revoked
+    SGX_QL_QV_RESULT_UNSPECIFIED = SGX_QL_QV_MK_ERROR(0x0006),               ///< The Quote verification failed due to an error in one of the input
+    SGX_QL_QV_RESULT_SW_HARDENING_NEEDED = SGX_QL_QV_MK_ERROR(0x0007),       ///< The TCB level of the platform is up to date, but SGX SW Hardening
+                                                                             ///< is needed
+    SGX_QL_QV_RESULT_CONFIG_AND_SW_HARDENING_NEEDED = SGX_QL_QV_MK_ERROR(0x0008),   ///< The TCB level of the platform is up to date, but additional
+                                                                                    ///< configuration of the platform at its current patching level
+                                                                                    ///< may be needed. Moreove, SGX SW Hardening is also needed
+    SGX_QL_QV_RESULT_TD_RELAUNCH_ADVISED = SGX_QL_QV_MK_ERROR(0x0009),       ///< For TDX only. All components in the TD’s TCB are latest, including the
+                                                                             ///< TD preserving loaded TDX, but the TD was launched and ran for some time
+                                                                             ///< with out-of-date TDX Module. Relaunching or re-provisioning your TD is advised
 
    SGX_QL_QV_RESULT_MAX = SGX_QL_QV_MK_ERROR(0x00FF),                              ///< Indicate max result to allow better translation
 
 } sgx_ql_qv_result_t;
-
 
 typedef enum _pck_cert_flag_enum_t {
     PCK_FLAG_FALSE = 0,
@@ -126,7 +128,12 @@ typedef struct _sgx_ql_qv_supplemental_t
     pck_cert_flag_enum_t smt_enabled;           ///< Indicate whether a plat form has SMT (simultaneous multithreading) enabled
 
     char sa_list[MAX_SA_LIST_SIZE];             ///< String of comma separated list of Security Advisory IDs
-
+    time_t qe_iden_earliest_issue_date;           ///< Earliest issue date of QEIdentity (UTC)
+    time_t qe_iden_latest_issue_date;             ///< Latest issue date of QEIdentity (UTC)
+    time_t qe_iden_earliest_expiration_date;      ///< Earliest expiration date of QEIdentity (UTC)
+    time_t qe_iden_tcb_level_date_tag;            ///< The SGX TCB of the platform that generated the quote is not vulnerable
+    uint32_t qe_iden_tcb_eval_ref_num;            ///< Lower number of the QEIdentity
+    sgx_ql_qv_result_t qe_iden_status;            /// QEIdentity status
 } sgx_ql_qv_supplemental_t;
 
 #ifdef _MSC_VER
