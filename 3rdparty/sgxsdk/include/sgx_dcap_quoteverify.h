@@ -60,12 +60,12 @@ extern "C" {
  *  SGX_QL_EPHEMERAL_QVE_MULTI_THREAD - QvE is loaded per thread and be unloaded before function exit.
  *  SGX_QL_PERSISTENT_QVE_MULTI_THREAD - QvE is loaded per thread and only be unloaded before thread exit.
  *
- * NOTE: QvE load policy should be only set once in one process, change the policy means all threads will be impacted.
+ * NOTE: QvE load policy should be only set once in one process, otherwise, this function will return error SGX_QL_UNSUPPORTED_LOADING_POLICY.
  *
  * @param policy Sets the requested enclave loading policy to either SGX_QL_PERSISTENT, SGX_QL_EPHEMERAL or SGX_QL_DEFAULT.
  *
  * @return SGX_QL_SUCCESS Successfully set the enclave loading policy for the quoting library's enclaves.
- * @return SGX_QL_UNSUPPORTED_LOADING_POLICY The selected policy is not support by the quoting library.
+ * @return SGX_QL_UNSUPPORTED_LOADING_POLICY The selected policy is not supported or it has been set once.
  *
  **/
 quote3_error_t sgx_qv_set_enclave_load_policy(sgx_ql_request_policy_t policy);
@@ -118,7 +118,6 @@ quote3_error_t sgx_qv_verify_quote(
     sgx_ql_qe_report_info_t *p_qve_report_info,
     uint32_t supplemental_data_size,
     uint8_t *p_supplemental_data);
-
 
 
 /**
