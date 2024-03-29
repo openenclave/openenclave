@@ -50,6 +50,10 @@ static oe_sgx_tcb_status_t _verification_result_to_tcb_status(
             return OE_SGX_TCB_STATUS_SW_HARDENING_NEEDED;
         case SGX_QL_QV_RESULT_CONFIG_AND_SW_HARDENING_NEEDED:
             return OE_SGX_TCB_STATUS_CONFIGURATION_AND_SW_HARDENING_NEEDED;
+        case SGX_QL_QV_RESULT_TD_RELAUNCH_ADVISED:
+            return OE_SGX_TCB_STATUS_TD_RELAUNCH_ADVISED;
+        case SGX_QL_QV_RESULT_TD_RELAUNCH_ADVISED_CONFIG_NEEDED:
+            return OE_SGX_TCB_STATUS_TD_RELAUNCH_ADVISED_CONFIG_NEEDED;
         default:
             return OE_SGX_TCB_STATUS_INVALID;
     }
