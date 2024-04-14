@@ -10,6 +10,7 @@
         - If your device does not support SGX, follow the [instructions for simulation mode](/docs/GettingStartedDocs/install_oe_sdk-Simulation.md). Please see [instructions for determining SGX support](/docs/GettingStartedDocs/SGXSupportLevel.md) on the machine you are using.
 
 ### 1. Configure the Intel and Microsoft APT Repositories
+
 ```bash
 echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu focal main' | sudo tee /etc/apt/sources.list.d/intel-sgx.list
 wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | sudo apt-key add -
