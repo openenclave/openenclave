@@ -342,11 +342,9 @@ node(params.AGENTS_LABEL) {
                         sudo tee /etc/apt/sources.list.d/azure-cli.list
                     ${helpers.WaitForAptLock()}
                     sudo apt-get update
-                    # temporarily pinning to 2.56.0-1~focal to avoid breaking changes in 2.57.0
-                    # can be removed after 2.58 is released (eta 3-5-2024)
                     # see https://github.com/Azure/azure-cli/issues/28397
                     apt-cache show azure-cli | grep Version
-                    sudo apt-get -y install azure-cli=2.56.0-1~focal jq
+                    sudo apt-get -y install azure-cli jq
                 """
             }
         }
