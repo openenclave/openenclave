@@ -8,7 +8,6 @@ GLOBAL_TIMEOUT_MINUTES = 480
 JENKINS_USER_CREDS_ID = 'oeadmin-credentials'
 OETOOLS_REPO = 'oejenkinscidockerregistry.azurecr.io'
 OETOOLS_REPO_CREDENTIALS_ID = 'oejenkinscidockerregistry'
-SERVICE_PRINCIPAL_CREDENTIALS_ID = 'SERVICE_PRINCIPAL_OSTCLAB'
 AZURE_IMAGES_MAP = [
     "WS22": [
         "image": "MicrosoftWindowsServer:WindowsServer:2022-datacenter-azure-edition:latest",
@@ -52,13 +51,10 @@ def buildLinuxManagedImage(String os_type, String version, String managed_image_
                             usernamePassword(credentialsId: OETOOLS_REPO_CREDENTIALS_ID,
                                              usernameVariable: "DOCKER_USER_NAME",
                                              passwordVariable: "DOCKER_USER_PASSWORD"),
-                            usernamePassword(credentialsId: SERVICE_PRINCIPAL_CREDENTIALS_ID,
-                                             passwordVariable: 'SERVICE_PRINCIPAL_PASSWORD',
-                                             usernameVariable: 'SERVICE_PRINCIPAL_ID'),
-                            string(credentialsId: 'openenclaveci-subscription-id', variable: 'SUBSCRIPTION_ID'),
-                            string(credentialsId: 'TenantID', variable: 'TENANT_ID')]) {
+                            string(credentialsId: 'Jenkins-CI-Subscription-Id', variable: 'SUBSCRIPTION_ID'),
+                            string(credentialsId: 'Jenkins-CI-Tenant-Id', variable: 'TENANT_ID')]) {
                         sh '''#!/bin/bash
-                            az login --service-principal -u ${SERVICE_PRINCIPAL_ID} -p ${SERVICE_PRINCIPAL_PASSWORD} --tenant ${TENANT_ID}
+                            az login --identity
                             az account set -s ${SUBSCRIPTION_ID}
                         '''
                         retry(5) {
@@ -350,14 +346,11 @@ node(params.AGENTS_LABEL) {
         }
         stage("Azure CLI Login") {
             withCredentials([
-                    usernamePassword(credentialsId: SERVICE_PRINCIPAL_CREDENTIALS_ID,
-                                     passwordVariable: 'SERVICE_PRINCIPAL_PASSWORD',
-                                     usernameVariable: 'SERVICE_PRINCIPAL_ID'),
-                    string(credentialsId: 'openenclaveci-subscription-id', variable: 'SUBSCRIPTION_ID'),
-                    string(credentialsId: 'TenantID', variable: 'TENANT_ID')]) {
+                    string(credentialsId: 'Jenkins-CI-Subscription-Id', variable: 'SUBSCRIPTION_ID'),
+                    string(credentialsId: 'Jenkins-CI-Tenant-Id', variable: 'TENANT_ID')]) {
                 retry(5) {
                     sh '''#!/bin/bash
-                        az login --service-principal -u ${SERVICE_PRINCIPAL_ID} -p ${SERVICE_PRINCIPAL_PASSWORD} --tenant ${TENANT_ID}
+                        az login --identity
                         az account set -s ${SUBSCRIPTION_ID}
                     '''
                 }
