@@ -25,7 +25,7 @@ def update_production_azure_gallery_images(String image_name) {
                     string(credentialsId: 'openenclaveci-subscription-id', variable: 'SUBSCRIPTION_ID'),
                     string(credentialsId: 'TenantID', variable: 'TENANT_ID')]) {
                 sh '''#!/bin/bash
-                    az login --service-principal -u ${SERVICE_PRINCIPAL_ID} -p ${SERVICE_PRINCIPAL_PASSWORD} --tenant ${TENANT_ID}
+                    az login --identity
                     az account set -s ${SUBSCRIPTION_ID}
                 '''
             }
