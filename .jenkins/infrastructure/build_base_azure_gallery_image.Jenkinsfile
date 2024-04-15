@@ -30,11 +30,7 @@ def buildLinuxVMBaseImage(String os_type, String os_version) {
                 """
             }
             sh '''
-                az login \
-                    --service-principal \
-                    -u ${SERVICE_PRINCIPAL_ID} \
-                    -p ${SERVICE_PRINCIPAL_PASSWORD} \
-                    --tenant ${TENANT_ID}
+                az login --identity
                 az account set -s ${SUBSCRIPTION_ID}
             '''
         }
