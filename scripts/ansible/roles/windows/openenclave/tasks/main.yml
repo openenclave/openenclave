@@ -3,12 +3,6 @@
 
 ---
 
-  - name: OE setup | Set clang 10 version url and hash
-    set_fact:
-      clang_url:  "https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/LLVM-10.0.0-win64.exe"
-      clang_hash: "893F8A12506F8AD29CA464D868FB432FDADD782786A10655B86575FC7FC1A562"
-    when: clang_target_version == "10"
-
   - name: OE setup | Set clang 11 version url and hash
     set_fact:
       clang_url:  "https://github.com/llvm/llvm-project/releases/download/llvmorg-11.1.0/LLVM-11.1.0-win64.exe"
