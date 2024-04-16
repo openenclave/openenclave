@@ -49,7 +49,6 @@ apt_arm_packages:
 validation_distribution_binaries:
   - "/usr/bin/shellcheck"
   - "/usr/bin/clang-11"
-  - "/usr/bin/clang-10"
 
 validation_distribution_files:
   - "/usr/lib/x86_64-linux-gnu/libssl.so"
