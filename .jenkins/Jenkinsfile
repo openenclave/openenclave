@@ -68,7 +68,7 @@ pipeline {
     parameters {
         string(name: 'PULL_REQUEST_ID', defaultValue: '', description: '[Optional] If testing a PR - enter PR #', trim: true)
         string(name: 'REPOSITORY_NAME', defaultValue: 'openenclave/openenclave', description: '[Optional] If testing a branch - enter GitHub repository to checkout', trim: true)
-        string(name: 'BRANCH', defaultValue: 'master', description: '[Optional] If testing a branch - enter branch to checkout', trim: true)
+        string(name: 'BRANCH_NAME', defaultValue: 'master', description: '[Optional] If testing a branch - enter branch to checkout', trim: true)
         booleanParam(name: 'FULL_TEST_SUITE', defaultValue: false, description: 'Run all tests')
         booleanParam(name: 'FORCE_TEST', defaultValue: false, description: 'Force tests to continue even if there are no changes compared to master')
         string(name: 'DOCKER_TAG', defaultValue: 'latest', description: 'Version of Docker image "oetools" to use', trim: true)
@@ -125,11 +125,11 @@ pipeline {
                         } else if ( params.PULL_REQUEST_ID ) {
                             // This is the git ref for a manual PR build
                             SOURCE_BRANCH = "origin/pr/${params.PULL_REQUEST_ID}"
-                        } else if ( params.BRANCH != "master" ) {
+                        } else if ( params.BRANCH_NAME != "master" ) {
                             // This is the git ref for a manual branch build
-                            SOURCE_BRANCH = "origin/${params.BRANCH}"
+                            SOURCE_BRANCH = "origin/${params.BRANCH_NAME}"
                         } else {
-                            error("Invalid branch reference. Did you set the PULL_REQUEST_ID or BRANCH parameters?")
+                            error("Invalid branch reference. Did you set the PULL_REQUEST_ID or BRANCH_NAME parameters?")
                         }
                         CHANGED_FILES = sh(
                             returnStdout: true,
@@ -193,7 +193,7 @@ pipeline {
                             parameters: [
                                 string(name: 'PULL_REQUEST_ID', value: PULL_REQUEST_ID),
                                 string(name: 'REPOSITORY_NAME', value: params.REPOSITORY_NAME),
-                                string(name: 'BRANCH_NAME', value: params.BRANCH),
+                                string(name: 'BRANCH_NAME', value: params.BRANCH_NAME),
                                 string(name: 'DOCKER_TAG', value: params.DOCKER_TAG),
                                 string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["ubuntu-nonsgx"]),
                                 string(name: 'OECI_LIB_VERSION', value: params.OECI_LIB_VERSION),
@@ -207,7 +207,7 @@ pipeline {
                             parameters: [
                                 string(name: 'PULL_REQUEST_ID', value: PULL_REQUEST_ID),
                                 string(name: 'REPOSITORY_NAME', value: params.REPOSITORY_NAME),
-                                string(name: 'BRANCH_NAME', value: params.BRANCH),
+                                string(name: 'BRANCH_NAME', value: params.BRANCH_NAME),
                                 string(name: 'DOCKER_TAG', value: params.DOCKER_TAG),
                                 string(name: 'UBUNTU_2004_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["acc-ubuntu-20.04"]),
                                 string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["ubuntu-nonsgx"]),
@@ -223,7 +223,7 @@ pipeline {
                             parameters: [
                                 string(name: 'PULL_REQUEST_ID', value: PULL_REQUEST_ID),
                                 string(name: 'REPOSITORY_NAME', value: params.REPOSITORY_NAME),
-                                string(name: 'BRANCH_NAME', value: params.BRANCH),
+                                string(name: 'BRANCH_NAME', value: params.BRANCH_NAME),
                                 string(name: 'DOCKER_TAG', value: params.DOCKER_TAG),
                                 string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: globalvars.AGENTS_LABELS["ubuntu-nonsgx"]),
                                 string(name: 'WS2022_DCAP_CFL_LABEL', value: globalvars.AGENTS_LABELS["acc-win2022-dcap"]),
