@@ -26,7 +26,7 @@ pipeline {
     }
     parameters {
         string(name: 'REPOSITORY', defaultValue: 'openenclave/openenclave', description: 'GitHub owner/repository', trim: true)
-        string(name: 'BRANCH', defaultValue: 'master', description: "GitHub repository branch to checkout", trim: true)
+        string(name: 'BRANCH_NAME', defaultValue: 'master', description: "GitHub repository branch to checkout", trim: true)
         string(name: 'SGX_VERSION', defaultValue: '', description: "[Required] For Docker containers only. Choose the Intel SGX version to install (Ex: 2.15.100). For versions see: https://download.01.org/intel-sgx/sgx_repo/ubuntu/apt_preference_files", trim: true)
         string(name: 'RESOURCE_GROUP', defaultValue: 'jenkins-images', description: "The resource group name used for the creation of Azure managed images", trim: true)
         string(name: 'E2E_IMAGES_GALLERY_NAME', defaultValue: 'e2e_images', description: "E2E Azure images gallery name", trim: true)
@@ -47,7 +47,7 @@ pipeline {
                 build job: '/Private/Infrastructure/OpenEnclave-Build-Docker-Images',
                     parameters: [
                         string(name: 'REPOSITORY_NAME', value: env.REPOSITORY),
-                        string(name: 'BRANCH_NAME', value: env.BRANCH),
+                        string(name: 'BRANCH_NAME', value: env.BRANCH_NAME),
                         string(name: 'DOCKER_TAG', value: DOCKER_TAG),
                         string(name: 'BASE_DOCKER_TAG', value: DOCKER_TAG),
                         string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
@@ -75,7 +75,7 @@ pipeline {
                 build job: '/Private/Infrastructure/OpenEnclave-Build-Azure-Managed-Images',
                     parameters: [
                         string(name: 'REPOSITORY_NAME', value: env.REPOSITORY),
-                        string(name: 'BRANCH_NAME', value: env.BRANCH),
+                        string(name: 'BRANCH_NAME', value: env.BRANCH_NAME),
                         string(name: 'OE_DEPLOY_IMAGE', value: "oetools-20.04:${DOCKER_TAG}"),
                         string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
                         string(name: 'RESOURCE_GROUP', value: env.RESOURCE_GROUP),
@@ -93,7 +93,7 @@ pipeline {
             build job: '/Private/OpenEnclave/OpenEnclave-Testing',
                 parameters: [
                     string(name: 'REPOSITORY_NAME', value: env.REPOSITORY),
-                    string(name: 'BRANCH_NAME', value: env.BRANCH),
+                    string(name: 'BRANCH_NAME', value: env.BRANCH_NAME),
                     string(name: 'DOCKER_TAG', value: DOCKER_TAG),
                     string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
                     string(name: 'UBUNTU_2004_CFL_CUSTOM_LABEL', value: params.UBUNTU_2004_CFL_LABEL),
@@ -115,7 +115,7 @@ pipeline {
                 build job: '/Private/Infrastructure/OpenEnclave-Update-Production-Infrastructure',
                     parameters: [
                         string(name: 'REPOSITORY_NAME', value: env.REPOSITORY),
-                        string(name: 'BRANCH_NAME', value: env.BRANCH),
+                        string(name: 'BRANCH_NAME', value: env.BRANCH_NAME),
                         string(name: 'RESOURCE_GROUP', value: env.RESOURCE_GROUP),
                         string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
                         string(name: 'PRODUCTION_IMAGES_GALLERY_NAME', value: env.PRODUCTION_IMAGES_GALLERY_NAME),
