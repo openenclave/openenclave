@@ -940,6 +940,7 @@ def buildCrossPlatform(String version, String compiler, String pr_id = '') {
                            export PACK_PATH=\${sdk_path}/path
                            export OS_CODENAME=${os}
 
+                           sudo scripts/ansible/install-ansible.sh
                            sudo ansible-playbook scripts/ansible/oe-contributors-setup-cross-arm.yml
                            sudo apt install python python3-pyelftools p7zip-full -y
 
