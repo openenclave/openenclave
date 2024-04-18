@@ -6,29 +6,11 @@ library "OpenEnclaveJenkinsLibrary@${params.OECI_LIB_VERSION}"
 
 def buildLinuxVMBaseImage(String os_type, String os_version) {
     stage('Environment setup') {
-        withCredentials([usernamePassword(credentialsId: 'SERVICE_PRINCIPAL_OSTCLAB',
-                                        passwordVariable: 'SERVICE_PRINCIPAL_PASSWORD',
-                                        usernameVariable: 'SERVICE_PRINCIPAL_ID'),
-                        string(credentialsId: 'OSCTLabSubID', variable: 'SUBSCRIPTION_ID'),
-                        string(credentialsId: 'TenantID', variable: 'TENANT_ID'),
+        withCredentials([
+            string(credentialsId: 'Jenkins-CI-Subscription-Id', variable: 'SUBSCRIPTION_ID'),
+            string(credentialsId: 'Jenkins-CI-Tenant-Id', variable: 'TENANT_ID')
         ]) {
-            retry(10) {
-                sh """
-                    sleep 5
-                    ${helpers.WaitForAptLock()}
-                    sudo apt-get update
-                    sudo apt-get -y install ca-certificates curl apt-transport-https lsb-release gnupg
-                    curl -sL https://packages.microsoft.com/keys/microsoft.asc |
-                        gpg --dearmor |
-                        sudo tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null
-                    AZ_REPO=\$(lsb_release -cs)
-                    echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ \$AZ_REPO main" |
-                        sudo tee /etc/apt/sources.list.d/azure-cli.list
-                    ${helpers.WaitForAptLock()}
-                    sudo apt-get update
-                    sudo apt-get -y install azure-cli
-                """
-            }
+            common.installAzureCLI() 
             sh '''
                 az login --identity
                 az account set -s ${SUBSCRIPTION_ID}

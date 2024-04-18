@@ -19,11 +19,9 @@ def update_production_azure_gallery_images(String image_name) {
     timeout(GLOBAL_TIMEOUT_MINUTES) {
         stage("Azure CLI Login") {
             withCredentials([
-                    usernamePassword(credentialsId: 'SERVICE_PRINCIPAL_OSTCLAB',
-                                        passwordVariable: 'SERVICE_PRINCIPAL_PASSWORD',
-                                        usernameVariable: 'SERVICE_PRINCIPAL_ID'),
-                    string(credentialsId: 'openenclaveci-subscription-id', variable: 'SUBSCRIPTION_ID'),
-                    string(credentialsId: 'TenantID', variable: 'TENANT_ID')]) {
+                string(credentialsId: 'Jenkins-CI-Subscription-Id', variable: 'SUBSCRIPTION_ID'),
+                string(credentialsId: 'Jenkins-CI-Tenant-Id', variable: 'TENANT_ID')
+            ]) {
                 sh '''#!/bin/bash
                     az login --identity
                     az account set -s ${SUBSCRIPTION_ID}
@@ -59,7 +57,7 @@ AZURE_IMAGES_MAP.keySet().each {
 
 pipeline {
     agent {
-        label globalvars.AGENTS_LABELS["vanilla-ubuntu-2004"]
+        label globalvars.AGENTS_LABELS["ubuntu-nonsgx"]
     }
     options {
         timeout(time: 240, unit: 'MINUTES')
@@ -78,22 +76,8 @@ pipeline {
     stages {
         stage("Install Azure CLI") {
             steps {
-                retry(10) {
-                    sh """
-                        sleep 5
-                        ${helpers.WaitForAptLock()}
-                        sudo apt-get update
-                        sudo apt-get -y install ca-certificates curl apt-transport-https lsb-release gnupg
-                        curl -sL https://packages.microsoft.com/keys/microsoft.asc |
-                            gpg --dearmor |
-                            sudo tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null
-                        AZ_REPO=\$(lsb_release -cs)
-                        echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ \$AZ_REPO main" |
-                            sudo tee /etc/apt/sources.list.d/azure-cli.list
-                        ${helpers.WaitForAptLock()}
-                        sudo apt-get update
-                        sudo apt-get -y install azure-cli jq
-                    """
+                script {
+                    common.installAzureCLI() 
                 }
             }
         }

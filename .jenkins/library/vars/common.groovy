@@ -31,27 +31,6 @@ def ContainerRun(String imageName, String compiler, String task, String runArgs=
     }
 }
 
-def azureEnvironment(String task, String imageName = "oetools-deploy:latest") {
-    withCredentials([usernamePassword(credentialsId: 'SERVICE_PRINCIPAL_OSTCLAB',
-                                      passwordVariable: 'SERVICE_PRINCIPAL_PASSWORD',
-                                      usernameVariable: 'SERVICE_PRINCIPAL_ID'),
-                     string(credentialsId: 'OSCTLabSubID', variable: 'SUBSCRIPTION_ID'),
-                     string(credentialsId: 'TenantID', variable: 'TENANT_ID')]) {
-        docker.withRegistry("https://oejenkinscidockerregistry.azurecr.io", "oejenkinscidockerregistry") {
-            def image = docker.image("oetools-deploy:latest")
-            image.pull()
-            image.inside {
-                sh """#!/usr/bin/env bash
-                      set -o errexit
-                      set -o pipefail
-                      source /etc/profile
-                      ${task}
-                   """
-            }
-        }
-    }
-}
-
 def runTask(String task) {
     dir("${WORKSPACE}/build") {
         sh """#!/usr/bin/env bash
@@ -114,18 +93,6 @@ def Run(String compiler, String task) {
     }
 }
 
-def deleteRG(List resourceGroups, String imageName = "oetools-deploy:latest") {
-    stage("Delete ${resourceGroups.toString()} resource groups") {
-        resourceGroups.each { rg ->
-            withEnv(["RESOURCE_GROUP=${rg}"]) {
-                dir("${WORKSPACE}/.jenkins/provision") {
-                    azureEnvironment("./cleanup.sh", imageName)
-                }
-            }
-        }
-    }
-}
-
 def emailJobStatus(String status) {
     emailext (
       to: '$DEFAULT_RECIPIENTS',      
@@ -159,7 +126,7 @@ def installAzureCLI() {
                 sudo tee /etc/apt/sources.list.d/azure-cli.list
             ${helpers.WaitForAptLock()}
             sudo apt-get update
-            sudo apt-get -y install azure-cli
+            sudo apt-get -y install azure-cli jq
         """
     }
 }

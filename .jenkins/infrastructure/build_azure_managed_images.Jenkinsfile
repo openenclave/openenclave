@@ -45,14 +45,15 @@ def buildLinuxManagedImage(String os_type, String version, String managed_image_
             stage("Run Packer Job") {
                 timeout(GLOBAL_TIMEOUT_MINUTES) {
                     withCredentials([
-                            usernamePassword(credentialsId: JENKINS_USER_CREDS_ID,
-                                             usernameVariable: "SSH_USERNAME",
-                                             passwordVariable: "SSH_PASSWORD"),
-                            usernamePassword(credentialsId: OETOOLS_REPO_CREDENTIALS_ID,
-                                             usernameVariable: "DOCKER_USER_NAME",
-                                             passwordVariable: "DOCKER_USER_PASSWORD"),
-                            string(credentialsId: 'Jenkins-CI-Subscription-Id', variable: 'SUBSCRIPTION_ID'),
-                            string(credentialsId: 'Jenkins-CI-Tenant-Id', variable: 'TENANT_ID')]) {
+                        usernamePassword(credentialsId: JENKINS_USER_CREDS_ID,
+                                            usernameVariable: "SSH_USERNAME",
+                                            passwordVariable: "SSH_PASSWORD"),
+                        usernamePassword(credentialsId: OETOOLS_REPO_CREDENTIALS_ID,
+                                            usernameVariable: "DOCKER_USER_NAME",
+                                            passwordVariable: "DOCKER_USER_PASSWORD"),
+                        string(credentialsId: 'Jenkins-CI-Subscription-Id', variable: 'SUBSCRIPTION_ID'),
+                        string(credentialsId: 'Jenkins-CI-Tenant-Id', variable: 'TENANT_ID')
+                    ]) {
                         sh '''#!/bin/bash
                             az login --identity
                             az account set -s ${SUBSCRIPTION_ID}
@@ -324,30 +325,13 @@ node(params.AGENTS_LABEL) {
             println("IMAGE_VERSION: ${image_version}\nIMAGE_ID: ${image_id}")
         }
         stage("Install Azure CLI") {
-            retry(10) {
-                sh """
-                    sleep 5
-                    ${helpers.WaitForAptLock()}
-                    sudo apt-get update
-                    sudo apt-get -y install ca-certificates curl apt-transport-https lsb-release gnupg
-                    curl -sL https://packages.microsoft.com/keys/microsoft.asc |
-                        gpg --dearmor |
-                        sudo tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null
-                    AZ_REPO=\$(lsb_release -cs)
-                    echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ \$AZ_REPO main" |
-                        sudo tee /etc/apt/sources.list.d/azure-cli.list
-                    ${helpers.WaitForAptLock()}
-                    sudo apt-get update
-                    # see https://github.com/Azure/azure-cli/issues/28397
-                    apt-cache show azure-cli | grep Version
-                    sudo apt-get -y install azure-cli jq
-                """
-            }
+            common.installAzureCLI() 
         }
         stage("Azure CLI Login") {
             withCredentials([
-                    string(credentialsId: 'Jenkins-CI-Subscription-Id', variable: 'SUBSCRIPTION_ID'),
-                    string(credentialsId: 'Jenkins-CI-Tenant-Id', variable: 'TENANT_ID')]) {
+                string(credentialsId: 'Jenkins-CI-Subscription-Id', variable: 'SUBSCRIPTION_ID'),
+                string(credentialsId: 'Jenkins-CI-Tenant-Id', variable: 'TENANT_ID')
+            ]) {
                 retry(5) {
                     sh '''#!/bin/bash
                         az login --identity
