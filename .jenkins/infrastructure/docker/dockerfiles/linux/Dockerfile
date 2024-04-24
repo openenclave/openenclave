@@ -17,7 +17,7 @@
 #     openenclave$ sudo docker build \
 #         --no-cache=true \
 #         --build-arg ubuntu_version=20.04 \
-#         --build-arg devkits_uri=https://oejenkins.blob.core.windows.net/oejenkins/OE-CI-devkits-d1634ce8.tar.gz \
+#         --build-arg devkits_uri=https://openenclavepublicstorage.blob.core.windows.net/openenclavedependencies/OE-CI-devkits-d1634ce8.tar.gz \
 #         -t oetools-20.04 \
 #         -f .jenkins/infrastructure/docker/dockerfiles/linux/Dockerfile \
 #         .

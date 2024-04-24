@@ -1,15 +1,18 @@
 # Windows Open Enclave SDK Prerequisites
-- [Git v2.31.1](https://github.com/git-for-windows/git/releases/download/v2.31.1.windows.1/Git-2.31.1-64-bit.exe)
-- [OpenSSL 1.1.1](https://oejenkins.blob.core.windows.net/oejenkins/openssl-1.1.1-latest.nupkg)
-- [Visual Studio Build Tools](https://aka.ms/vs/15/release/vs_buildtools.exe)
-- [Clang 10.0.0](https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/LLVM-10.0.0-win64.exe)
-- [ShellCheck v0.7.0](https://oejenkins.blob.core.windows.net/oejenkins/shellcheck-v0.7.0.zip)
+- [Git for Windows](https://github.com/git-for-windows/git/releases/)
+- [OpenSSL 1.1.1](https://openenclavepublicstorage.blob.core.windows.net/openenclavedependencies/openssl.1.1.1579.74.nupkg)
+- [Visual Studio Build Tools](https://aka.ms/vs/16/release/vs_buildtools.exe)
+- [Clang 11.1.0](https://github.com/llvm/llvm-project/releases/download/llvmorg-11.1.0/LLVM-11.1.0-win64.exe)
+- [ShellCheck v0.7.0](https://openenclavepublicstorage.blob.core.windows.net/openenclavedependencies/shellcheck-v0.7.0.zip)
 - [Nuget 3.4.3](https://www.nuget.org/api/v2/package/NuGet.exe/3.4.3)
-- [Python 3](https://www.python.org/ftp/python/3.7.4/python-3.7.4-embed-amd64.zip)
-- [Python pip](https://bootstrap.pypa.io/pip/3.4/get-pip.py)
-- [Intel SGX PSW v2.13.100.2](https://registrationcenter-download.intel.com/akdlm/irc_nas/18000/Intel%20SGX%20PSW%20for%20Windows%20v2.13.100.2.exe)
+- [Python 3](https://www.python.org/downloads/windows/)
+- [Python pip](https://pip.pypa.io/en/stable/installation/)
+- [Intel SGX PSW 2.22.100.2](https://registrationcenter-download.intel.com/akdlm/IRC_NAS/f9a43559-9da1-4cb6-840e-9fc670b11a5a/Intel_SGX_DCAP_for_Windows_v1.20.100.2.zip) (note: this is bundled with Intel SGX DCAP)
+
 
 ## Additional Windows Open Enclave SDK Prerequisites for SGX1 with Flexible Launch Control (FLC)
 - [Devcon](https://download.microsoft.com/download/7/D/D/7DD48DE6-8BDA-47C0-854A-539A800FAA90/wdk/Installers/787bee96dbd26371076b37b13c405890.cab)
-- [Intel SGX DCAP v1.11.100.2](https://registrationcenter-download.intel.com/akdlm/irc_nas/17999/Intel%20SGX%20DCAP%20for%20Windows%20v1.11.100.2.exe)
+- [Intel SGX DCAP v1.20.100.2](https://registrationcenter-download.intel.com/akdlm/IRC_NAS/f9a43559-9da1-4cb6-840e-9fc670b11a5a/Intel_SGX_DCAP_for_Windows_v1.20.100.2.zip)
 - [Azure DCAP 1.10.0](https://www.nuget.org/api/v2/package/Microsoft.Azure.DCAP/1.10.0)
+
+Note: while this list is maintained with best effort, the links here may be outdated. If you encounter a broken link or an outdated version, see the latest used by Open Enclave SDK install scripts here: [install-windows-prereqs.ps1](../../../scripts/install-windows-prereqs.ps1). Use of this script to set up prerequisites is encouraged as well.
