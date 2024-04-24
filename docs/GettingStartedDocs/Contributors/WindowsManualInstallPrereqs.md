@@ -55,6 +55,8 @@ C:\Program Files\Git\bin\bash.exe
 Tools available in the Git bash environment are also used for test and sample
 builds. It is also useful to have the `Git\mingw64\bin` folder added to PATH.
 
+Do not install OpenSSL that comes with Git for Windows, as has been reported to be incompatible with Open Enclave SDK.
+
 ## Clang
 
  Open Enclave SDK uses Clang to build the enclave binaries. Follow these steps to install Clang:
@@ -84,15 +86,16 @@ Python 3 is used as part of the mbedtls tests and for cmake-format.
 
 [ShellCheck](https://www.shellcheck.net/) is used to check the format of shell scripts. Download ShellCheck from [Windows Open Enclave SDK Prerequisites](WindowsPrerequisites.md). 
 
-For example, [ShellCheck v0.7.0](https://oejenkins.blob.core.windows.net/oejenkins/shellcheck-v0.7.0.zip) can be installed as follows.
+For example, [ShellCheck v0.7.0](https://openenclavepublicstorage.blob.core.windows.net/openenclavedependencies/shellcheck-v0.7.0.zip) can be installed as follows.
 
 Download and extract the ShellCheck zip file. Inside it there is shellcheck-v0.7.0.exe which must be copied to a directory in your PATH and renamed to shellcheck.exe.
 
 ## OpenSSL
 
-Download and install OpenSSL for Windows from our [direct download link here](https://oejenkins.blob.core.windows.net/oejenkins/openssl-1.1.1-latest.nupkg) which is distributed under the [dual OpenSSL and SSLeay license](https://www.openssl.org/source/license-openssl-ssleay.txt) without further legal obligations.
+Download and install the latest build of OpenSSL 1.1.1 for Windows from one of the following [locations](https://wiki.openssl.org/index.php/Binaries) or build and install it from source.
 
-Alternatively, you can obtain OpenSSL at one of the [locations listed in the OpenSSL wiki](https://wiki.openssl.org/index.php/Binaries), or build and install it from source.
+Alternatively, you can use a stored version of OpenSSL 1.1.1 [here](https://openenclavepublicstorage.blob.core.windows.net/openenclavedependencies/openssl.1.1.1579.74.nupkg) which is distributed under the [dual OpenSSL and SSLeay license](https://www.openssl.org/source/license-openssl-ssleay.txt) without further legal obligations.
+
 
 After installing OpenSSL, add `openssl` to your `PATH`.
 
