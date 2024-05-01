@@ -5,31 +5,31 @@
 Param(
     [string]$GitURL = 'https://github.com/git-for-windows/git/releases/download/v2.41.0.windows.1/Git-2.41.0-64-bit.exe',
     [string]$GitHash = '45DC30410916B8EC5501BE39D01D5B60535731C04FA68283B4F9DF4920877D4E',
-    [string]$OpenSSLURL = 'https://oejenkinspublicstorage.blob.core.windows.net/dependencies/openssl.1.1.1579.74.nupkg',
+    [string]$OpenSSLURL = 'https://openenclavepublicstorage.blob.core.windows.net/openenclavedependencies/openssl.1.1.1579.74.nupkg',
     [string]$OpenSSLHash = '82678FC7C71CBACA420BC869A1938BC80F2876148A5870D46B4C9A746F6BCEB6',
-    [string]$SevenZipURL = 'https://www.7-zip.org/a/7z2201-x64.msi',
-    [string]$SevenZipHash = 'F4AFBA646166999D6090B5BEDDDE546450262DC595DDDEB62132DA70F70D14CA',
+    [string]$SevenZipURL = 'https://www.7-zip.org/a/7z2301-x64.msi',
+    [string]$SevenZipHash = '0BA639B6DACDF573D847C911BD147C6384381A54DAC082B1E8C77BC73D58958B',
     # We skip the hash check for the vs_buildtools.exe file because it is regularly updated without a change to the URL, unfortunately.
     [string]$VSBuildToolsURL = 'https://aka.ms/vs/16/release/vs_buildtools.exe',
     [string]$VSBuildToolsHash = '',
     [string]$ClangURL = 'https://github.com/llvm/llvm-project/releases/download/llvmorg-11.1.0/LLVM-11.1.0-win64.exe',
     [string]$ClangHash = 'B5770BBFAC712D273938CD155E232AFAA85C2E8D865C7CA504A104A838568516',
-    [string]$ShellCheckURL = 'https://oejenkinspublicstorage.blob.core.windows.net/dependencies/shellcheck-v0.7.0.zip',
+    [string]$ShellCheckURL = 'https://openenclavepublicstorage.blob.core.windows.net/openenclavedependencies/shellcheck-v0.7.0.zip',
     [string]$ShellCheckHash = '02CFA14220C8154BB7C97909E80E74D3A7FE2CBB7D80AC32ADCAC7988A95E387',
     [string]$NugetURL = 'https://www.nuget.org/api/v2/package/NuGet.exe/3.4.3',
     [string]$NugetHash = '2D4D38666E5C7D27EE487C60C9637BD9DD63795A117F0E0EDC68C55EE6DFB71F',
     [string]$DevconURL = 'https://download.microsoft.com/download/7/D/D/7DD48DE6-8BDA-47C0-854A-539A800FAA90/wdk/Installers/787bee96dbd26371076b37b13c405890.cab',
     [string]$DevconHash = 'A38E409617FC89D0BA1224C31E42AF4344013FEA046D2248E4B9E03F67D5908A',
-    # Intel PSW 2.20.100.1 is included in DCAP 1.18.100.1
-    [string]$IntelDCAPURL = 'https://registrationcenter-download.intel.com/akdlm/IRC_NAS/c8fc28e4-bfa9-4e1d-8dc5-502f5e6895a5/Intel_SGX_DCAP_for_Windows_v1.18.100.1.zip',
-    [string]$IntelDCAPHash = 'CDB796B5D97744CE64E8B2B1DEC4EF95ABB2AAE00C74ACD38E70355A5235D06F',
+    # Intel PSW 2.22.100.2 is included in DCAP 1.20.100.2
+    [string]$IntelDCAPURL = 'https://registrationcenter-download.intel.com/akdlm/IRC_NAS/f9a43559-9da1-4cb6-840e-9fc670b11a5a/Intel_SGX_DCAP_for_Windows_v1.20.100.2.zip',
+    [string]$IntelDCAPHash = '40E2973959BB90E19D720B7D3B9664FA284F8F023BEFBAE91811E505178E4E28',
     [string]$VCRuntime2012URL = 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe',
     [string]$VCRuntime2012Hash = '681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064',
-    [string]$AzureDCAPNupkgURL = 'https://www.nuget.org/api/v2/package/Microsoft.Azure.DCAP/1.12.1',
-    [string]$AzureDCAPNupkgHash = '253B2B427BFC75F22B3B6C48340518335F7EA044FAD06670B22F86017560AFD6',
+    [string]$AzureDCAPNupkgURL = 'https://www.nuget.org/api/v2/package/Microsoft.Azure.DCAP/1.12.3',
+    [string]$AzureDCAPNupkgHash = 'A15957E6563418D15DA1585BEB92E6F59B1FB599268FA228306389973FBBF92F',
     [string]$Python3ZipURL = 'https://www.python.org/ftp/python/3.7.4/python-3.7.4-embed-amd64.zip',
     [string]$Python3ZipHash = 'FB65E5CD595AD01049F73B47BC0EE23FD03F0CBADC56CB318990CEE83B37761B',
-    [string]$NSISURL = 'https://oejenkinspublicstorage.blob.core.windows.net/dependencies/nsis-3.05-setup.exe',
+    [string]$NSISURL = 'https://openenclavepublicstorage.blob.core.windows.net/openenclavedependencies/nsis-3.05-setup.exe',
     [string]$NSISHash = '1A3CC9401667547B9B9327A177B13485F7C59C2303D4B6183E7BC9E6C8D6BFDB',
     [string]$GetPipURL = 'https://bootstrap.pypa.io/pip/3.4/get-pip.py',
     [string]$GetPipHash = 'DBD5DAE3D1E7F6DF844D630CDF65E0F0D98E483C9997DAEA17C7C9D86F7B38AD',
@@ -504,7 +504,7 @@ function Install-DCAP-Dependencies {
     $TEMP_NUGET_DIR = "$PACKAGES_DIRECTORY\Azure_DCAP_Client_nupkg"
     New-Directory -Path $OE_NUGET_DIR -RemoveExisting
     New-Directory -Path $TEMP_NUGET_DIR -RemoveExisting
-    $nupkgDir = Get-Item "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel SGX DCAP for Windows *\nuget"
+    $nupkgDir = Get-Item "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel_SGX_DCAP_for_Windows_*\nuget"
     if(!$nupkgDir) {
         Throw "Cannot find the Intel DCAP nupkg directory"
     }
