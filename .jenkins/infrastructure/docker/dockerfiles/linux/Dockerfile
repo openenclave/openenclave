@@ -17,7 +17,7 @@
 #     openenclave$ sudo docker build \
 #         --no-cache=true \
 #         --build-arg ubuntu_version=20.04 \
-#         --build-arg devkits_uri=https://oejenkins.blob.core.windows.net/oejenkins/OE-CI-devkits-d1634ce8.tar.gz \
+#         --build-arg devkits_uri=https://openenclavepublicstorage.blob.core.windows.net/openenclavedependencies/OE-CI-devkits-d1634ce8.tar.gz \
 #         -t oetools-20.04 \
 #         -f .jenkins/infrastructure/docker/dockerfiles/linux/Dockerfile \
 #         .
@@ -64,17 +64,13 @@ RUN echo ${devkits_uri##*/} > /devkits/TARBALL
 # Run Ansible
 COPY ./scripts/ansible /ansible
 COPY ./scripts/lvi-mitigation /lvi-mitigation
-RUN /ansible/install-ansible.sh && \
+RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC /ansible/install-ansible.sh && \
     ansible localhost --playbook-dir=/ansible -m import_role -a "name=linux/docker tasks_from=ci-setup.yml" -vvv && \
     /ansible/remove-ansible.sh && \
     apt-get remove -y python3-pip && \
     apt-get autoremove -y && \
     apt-get clean && \
     rm -rf /ansible /lvi-mitigation /root/.cache /root/.ansible /var/lib/apt/lists/*
-
-# Configure Git in target image to enable merge/rebase actions.
-RUN git config --global user.email "oeciteam@microsoft.com"
-RUN git config --global user.name "OE CI Team"
 
 # Create user
 RUN groupadd --gid ${GID} ${GNAME}

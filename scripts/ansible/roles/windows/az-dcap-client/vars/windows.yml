@@ -3,7 +3,6 @@
 
 ---
 tmp_dir: "C:\\Windows\\Temp"
-devcon_bin_url: 'https://oejenkins.blob.core.windows.net/oejenkins/devcon.exe'
 
 lc_driver:
   reg_path: HKLM:\SYSTEM\CurrentControlSet\Services\sgx_lc_msr\Parameters
