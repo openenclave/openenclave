@@ -10,11 +10,11 @@ export OE_CRYPTO_LIB
 
 TARGETS =
 
-SYMCRYPT_TAR = symcrypt-linux-oe_full-AMD64-103.0.1-69dbff3.tar.gz
-SYMCRYPT_URL = https://github.com/microsoft/SymCrypt/releases/download/v103.0.1/${SYMCRYPT_TAR}
-SYMCRYPT_SHA256 = 27C8C1C309B217E74D6055734D305AA86D8CE9E05D6D75AFD12C885F13CEA710
+SYMCRYPT_TAR = symcrypt-linux-oe_full-amd64-release-103.4.2-171f697.tar.gz
+SYMCRYPT_URL = https://github.com/microsoft/SymCrypt/releases/download/v103.4.2/${SYMCRYPT_TAR}
+SYMCRYPT_SHA256 = AA562EC53CFBA400A2A27027F480BC81DD9C530A5DCA32CC5C6834ED191D03FD
 SYMCRYPT_DIR = SymCrypt
-SYMCRYPT_SO = libsymcrypt.so.103.0.1
+SYMCRYPT_SO = libsymcrypt.so.103.4.2
 # The linker can only resolve up to single number after .so
 SYMCRYPT_LINK_SO = libsymcrypt.so.103
 
