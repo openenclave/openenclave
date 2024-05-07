@@ -106,6 +106,26 @@ int oe_posix_memalign(void** memptr, size_t alignment, size_t size)
     return rc;
 }
 
+void* oe_aligned_alloc(size_t alignment, size_t size)
+{
+    void* ptr = NULL;
+
+    // Alignment must be a power of two and size must be a multiple of alignment
+    if (!oe_is_pow2(alignment) ||
+        !oe_is_size_multiple_alignment(size, alignment))
+        oe_errno = OE_EINVAL;
+    else
+    {
+        ptr = oe_allocator_aligned_alloc(alignment, size);
+        if (!ptr && size)
+        {
+            if (_failure_callback)
+                _failure_callback(__FILE__, __LINE__, __FUNCTION__, size);
+        }
+    }
+    return ptr;
+}
+
 size_t oe_malloc_usable_size(void* ptr)
 {
     return oe_allocator_malloc_usable_size(ptr);
