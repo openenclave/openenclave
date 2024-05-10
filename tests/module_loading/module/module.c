@@ -65,6 +65,7 @@ int test_libc_symbols()
     TEST_SYMBOL(pthread_mutex_lock);
     TEST_SYMBOL(pthread_mutex_unlock);
     TEST_SYMBOL(posix_memalign);
+    TEST_SYMBOL(aligned_alloc);
     TEST_SYMBOL(free);
     TEST_SYMBOL(qsort);
 
