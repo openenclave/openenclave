@@ -1197,6 +1197,13 @@ oe_result_t oe_sgx_get_supported_attester_format_ids(
             index++;
         }
     }
+    else if (!_quote_ex_library.use_dcap_library_instead)
+    {
+        OE_RAISE_MSG(
+            _quote_ex_library.load_result,
+            "Failed to use SGX quote-ex library\n",
+            NULL);
+    }
     else
     {
         // Case when DCAP is used
