@@ -35,10 +35,11 @@ if (OE_SGX AND UNIX)
   endif ()
 endif ()
 
-option(ENABLE_SYMCRYPT_OPENSSL_TESTS "Test OpenSSL with SymCrypt engine" ON)
+option(ENABLE_SYMCRYPT_OPENSSL_TESTS
+       "Test OpenSSL with SymCrypt engine/provider" ON)
 if (ENABLE_SYMCRYPT_OPENSSL_TESTS)
   message(
-    "ENABLE_SYMCRYPT_OPENSSL_TESTS set - test OpenSSL with both default settings and SymCrypt engine"
+    "ENABLE_SYMCRYPT_OPENSSL_TESTS set - test OpenSSL with both default settings and SymCrypt engine/provider"
   )
 else ()
   message(
@@ -202,6 +203,7 @@ if (UNIX
 
     if (BUILD_OPENSSL)
       add_subdirectory(symcrypt_engine)
+      add_subdirectory(symcrypt_provider)
       add_subdirectory(openssl)
       add_subdirectory(openssl_unsupported)
     endif ()
