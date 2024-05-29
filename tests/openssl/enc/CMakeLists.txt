@@ -144,6 +144,12 @@ if (ENABLE_SYMCRYPT_OPENSSL_TESTS)
       ${CMAKE_COMMAND} -E copy
       ${CMAKE_BINARY_DIR}/3rdparty/symcrypt_engine/SymCrypt/lib/${SYMCRYPT_NAME}
       ${CMAKE_CURRENT_BINARY_DIR}/${SYMCRYPT_LINK_NAME})
+  add_custom_command(
+    TARGET openssl_3-support
+    COMMAND
+      ${CMAKE_COMMAND} -E copy
+      ${CMAKE_BINARY_DIR}/3rdparty/symcrypt_provider/SymCrypt/lib/${SYMCRYPT_NAME}
+      ${CMAKE_CURRENT_BINARY_DIR}/${SYMCRYPT_LINK_NAME})
 endif ()
 
 # List the tests that require ssltestlib.c.
@@ -205,12 +211,19 @@ function (add_openssl_test_enc NAME BUILDTEST CRYPTO_LIB)
     set(TEST_OPENSSL_INCLUDE_DIRS
         ${OPENSSL_3_DIR}/include
         ${CMAKE_BINARY_DIR}/3rdparty/openssl/build/include_3)
+  elseif (CRYPTO_LIB STREQUAL "SymCrypt_prov_FIPS")
+    set(TEST_NAME "3-${NAME}_symcrypt")
+    set(TEST_OPENSSL_DIR ${OPENSSL_3_DIR})
+    set(TEST_OPENSSL_INCLUDE_DIRS
+        ${OPENSSL_3_DIR}/include
+        ${CMAKE_BINARY_DIR}/3rdparty/openssl/build/include_3)
   else ()
     message(FATAL_ERROR "${CRYPTO_LIB} is unsupported for OpenSSL tests")
   endif ()
 
   if (BUILDTEST)
-    if (CRYPTO_LIB STREQUAL "OpenSSL_3")
+    if (CRYPTO_LIB STREQUAL "OpenSSL_3" OR CRYPTO_LIB STREQUAL
+                                           "SymCrypt_prov_FIPS")
       list(APPEND TEST_SRC 3-${NAME}.c)
     else ()
       list(APPEND TEST_SRC ${NAME}.c)
@@ -224,7 +237,8 @@ function (add_openssl_test_enc NAME BUILDTEST CRYPTO_LIB)
   endif ()
 
   if ("${NAME}" IN_LIST SSL_TEST_LIST)
-    if (CRYPTO_LIB STREQUAL "OpenSSL_3")
+    if (CRYPTO_LIB STREQUAL "OpenSSL_3" OR CRYPTO_LIB STREQUAL
+                                           "SymCrypt_prov_FIPS")
       list(APPEND TEST_SRC ${TEST_OPENSSL_DIR}/test/helpers/ssltestlib.c)
     else ()
       list(APPEND TEST_SRC ${TEST_OPENSSL_DIR}/test/ssltestlib.c)
@@ -255,7 +269,8 @@ function (add_openssl_test_enc NAME BUILDTEST CRYPTO_LIB)
   endif ()
 
   if ("${NAME}" STREQUAL "ssl_test_ctx_test")
-    if ("${CRYPTO_LIB}" STREQUAL "OpenSSL_3")
+    if ("${CRYPTO_LIB}" STREQUAL "OpenSSL_3" OR "${CRYPTO_LIB}" STREQUAL
+                                                "SymCrypt_prov_FIPS")
       list(APPEND TEST_SRC ${TEST_OPENSSL_DIR}/test/helpers/ssl_test_ctx.c)
     else ()
       list(APPEND TEST_SRC ${TEST_OPENSSL_DIR}/test/ssl_test_ctx.c)
@@ -263,7 +278,8 @@ function (add_openssl_test_enc NAME BUILDTEST CRYPTO_LIB)
   endif ()
 
   if ("${NAME}" STREQUAL "ssl_test")
-    if ("${CRYPTO_LIB}" STREQUAL "OpenSSL_3")
+    if ("${CRYPTO_LIB}" STREQUAL "OpenSSL_3" OR "${CRYPTO_LIB}" STREQUAL
+                                                "SymCrypt_prov_FIPS")
       list(APPEND TEST_SRC ${TEST_OPENSSL_DIR}/test/helpers/ssl_test_ctx.c
            ${TEST_OPENSSL_DIR}/test/helpers/handshake.c)
     else ()
@@ -273,7 +289,8 @@ function (add_openssl_test_enc NAME BUILDTEST CRYPTO_LIB)
   endif ()
 
   if ("${NAME}" STREQUAL "sslapitest")
-    if ("${CRYPTO_LIB}" STREQUAL "OpenSSL_3")
+    if ("${CRYPTO_LIB}" STREQUAL "OpenSSL_3" OR "${CRYPTO_LIB}" STREQUAL
+                                                "SymCrypt_prov_FIPS")
       list(APPEND TEST_SRC ${TEST_OPENSSL_DIR}/test/filterprov.c
            ${TEST_OPENSSL_DIR}/test/tls-provider.c)
     endif ()
@@ -330,7 +347,8 @@ function (add_openssl_test_enc NAME BUILDTEST CRYPTO_LIB)
 
   enclave_include_directories(openssl-${TEST_NAME}_enc PRIVATE ${INCLUDE_PATHS})
 
-  if (CRYPTO_LIB STREQUAL "OpenSSL_3")
+  if (CRYPTO_LIB STREQUAL "OpenSSL_3" OR CRYPTO_LIB STREQUAL
+                                         "SymCrypt_prov_FIPS")
     enclave_link_libraries(openssl-${TEST_NAME}_enc openssl_3-support
                            openssl_3-common oehostsock oehostfs oehostresolver)
   else ()
@@ -419,12 +437,16 @@ foreach (testcase ${alltests})
   get_testcase_name(${testcase} name "../../3rdparty/openssl/openssl_3/test/")
   generate_buildtest(${name} "OpenSSL_3")
   add_openssl_test_enc(${name} TRUE "OpenSSL_3")
-  # OpenSSL_3 doesn't support symcrypt
+  if (ENABLE_SYMCRYPT_OPENSSL_TESTS)
+    add_openssl_test_enc(${name} TRUE "SymCrypt_prov_FIPS")
+  endif ()
 endforeach (testcase)
 
 file(STRINGS "../tests_3.supported" alltests)
 foreach (testcase ${alltests})
   get_testcase_name(${testcase} name "../../3rdparty/openssl/openssl_3/test/")
   add_openssl_test_enc(${name} FALSE "OpenSSL_3")
-  # OpenSSL_3 doesn't support symcrypt
+  if (ENABLE_SYMCRYPT_OPENSSL_TESTS)
+    add_openssl_test_enc(${name} FALSE "SymCrypt_prov_FIPS")
+  endif ()
 endforeach (testcase)

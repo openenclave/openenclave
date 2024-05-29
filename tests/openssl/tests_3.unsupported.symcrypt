@@ -1,0 +1,4 @@
+# Originally, this test assumes that no providers are loaded before it is run. We have to load both SymCrypt-OpenSSL and the default provider in oe_crypto_initialize(), causing the test to fail.
+provider_internal_test
+# OpenSSL has an error mapping string that provides more detailed error messages but is not loaded by default to reduce memory footprint. SCOSSL force loads this map, causing this test to fail.
+errtest

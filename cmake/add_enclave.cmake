@@ -211,6 +211,13 @@ function (add_enclave_sgx)
       ${ENCLAVE_TARGET} oesymcryptengine oecryptoopenssl
       ${CMAKE_BINARY_DIR}/3rdparty/symcrypt_engine/SymCrypt/lib/${SYMCRYPT_NAME}
     )
+  elseif (ENCLAVE_CRYPTO_LIB_LOWER STREQUAL "symcrypt_prov_fips")
+    enclave_link_libraries(
+      ${ENCLAVE_TARGET}
+      oesymcryptprovider
+      oecryptoopenssl_3
+      ${CMAKE_BINARY_DIR}/3rdparty/symcrypt_provider/SymCrypt/lib/${SYMCRYPT_NAME}
+    )
   endif ()
 
   if (ENCLAVE_CXX)

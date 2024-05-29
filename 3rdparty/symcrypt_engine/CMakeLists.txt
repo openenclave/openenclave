@@ -109,11 +109,12 @@ if (CLANG_INTRINSIC_HEADERS_DIR)
     # On Windows, the path includes spaces that the current clangw script cannot handle. As a workaround,
     # we copy the directory to the CMAKE_CURRENT_BINARY_DIR/include
     add_custom_target(
-      clang_intrinsic_headers_copy
+      clang_intrinsic_headers_copy_engine
       COMMAND ${CMAKE_COMMAND} -E copy_directory ${CLANG_INTRINSIC_HEADERS_DIR}
               ${CMAKE_CURRENT_BINARY_DIR}/include)
 
-    add_enclave_dependencies(oesymcryptengine clang_intrinsic_headers_copy)
+    add_enclave_dependencies(oesymcryptengine
+                             clang_intrinsic_headers_copy_engine)
 
     set(CLANG_INTRINSIC_HEADERS_DIR ${CMAKE_CURRENT_BINARY_DIR}/include)
   endif ()
