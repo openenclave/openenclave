@@ -50,7 +50,6 @@
 ../../3rdparty/openssl/openssl_3/test/enginetest.c
 ../../3rdparty/openssl/openssl_3/test/errtest.c
 ../../3rdparty/openssl/openssl_3/test/evp_extra_test.c
-../../3rdparty/openssl/openssl_3/test/evp_extra_test2.c
 ../../3rdparty/openssl/openssl_3/test/evp_fetch_prov_test.c
 ../../3rdparty/openssl/openssl_3/test/evp_kdf_test.c
 ../../3rdparty/openssl/openssl_3/test/evp_libctx_test.c
@@ -118,7 +117,6 @@
 ../../3rdparty/openssl/openssl_3/test/ssl_ctx_test.c
 ../../3rdparty/openssl/openssl_3/test/ssl_test.c
 ../../3rdparty/openssl/openssl_3/test/ssl_test_ctx_test.c
-../../3rdparty/openssl/openssl_3/test/sslapitest.c
 ../../3rdparty/openssl/openssl_3/test/sslbuffertest.c
 ../../3rdparty/openssl/openssl_3/test/sslcorrupttest.c
 ../../3rdparty/openssl/openssl_3/test/stack_test.c

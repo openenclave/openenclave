@@ -19,12 +19,16 @@ set(OECRYPTO_OPENSSL_SOURCE
     entropy.c
     gcm.c
     init.c
-    symcrypt_engine.c)
+    symcrypt_engine.c
+    symcrypt_provider.c)
 
 # key.c requires deprecated APIs that have no direct equivalent in OpenSSL 3
 set_source_files_properties(
   ${PROJECT_SOURCE_DIR}/common/crypto/openssl/key.c
   PROPERTIES COMPILE_FLAGS "-Wno-deprecated-declarations")
+
+set_source_files_properties(symcrypt_provider.c
+                            PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter")
 
 add_enclave_library(oecryptoopenssl STATIC ${OECRYPTO_OPENSSL_SOURCE})
 

@@ -24,6 +24,7 @@ endif ()
 if (BUILD_OPENSSL)
   add_subdirectory(openssl)
   add_subdirectory(symcrypt_engine)
+  add_subdirectory(symcrypt_provider)
 endif ()
 
 if (OE_TRUSTZONE)

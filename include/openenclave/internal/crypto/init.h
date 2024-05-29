@@ -15,5 +15,6 @@ void oe_crypto_initialize(void);
 #define OE_SYMCRYPT_ENGINE_INVALID 3
 
 int oe_is_symcrypt_engine_available();
+int oe_is_symcrypt_provider_available();
 
 #endif /* _OE_INTERNAL_CRYPTO_INIT_H */

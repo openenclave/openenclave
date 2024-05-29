@@ -73,3 +73,6 @@
 ../../3rdparty/openssl/openssl_3/test/fips_version_test.c
 # This test tries to load a hard-coded shared object, which is not supported
 ../../3rdparty/openssl/openssl_3/test/prov_config_test.c
+# Test requires OpenSSL provider to not be explicitly loaded
+../../3rdparty/openssl/openssl_3/test/sslapitest.c
+../../3rdparty/openssl/openssl_3/test/evp_extra_test2.c

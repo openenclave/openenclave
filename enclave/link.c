@@ -11,6 +11,7 @@
 
 /* Forward declarartion for the symcrypt engine initializer */
 int SCOSSL_ENGINE_Initialize();
+int OSSL_provider_init(void* handle, void* in, void** out, void** provctx);
 
 //
 // start.S (the compilation unit containing the entry point) contains a
@@ -37,6 +38,7 @@ const void* oe_link_enclave(void)
         oe_crypto_initialize,
         oe_libc_initialize,
         SCOSSL_ENGINE_Initialize,
+        OSSL_provider_init,
 #if defined(OE_USE_DEBUG_MALLOC)
         oe_debug_malloc_check,
 #endif /* defined(OE_USE_DEBUG_MALLOC) */
