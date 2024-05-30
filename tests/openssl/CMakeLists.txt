@@ -597,8 +597,9 @@ function (add_openssl_test_supported NAME OPENSSL3)
   endif ()
 
   if ("${name}" STREQUAL prov_config_test)
-    add_openssl_test(OPENSSL3 "${name}" "${name}"
-                     ${OPENSSL_TEST_DIR}/default.cnf)
+    add_openssl_test(
+      OPENSSL3 "${name}" "${name}" ${OPENSSL_TEST_DIR}/default.cnf
+      ${OPENSSL_TEST_DIR}/recursive.cnf)
     return()
   endif ()
 
