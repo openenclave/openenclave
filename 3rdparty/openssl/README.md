@@ -4,9 +4,9 @@ OpenSSL
 This directory includes the necessary files to build the OpenSSL libraries, including libcrypto and libssl,
 that work with Open Enclave. The structure of the directory is as follows.
 
-- openssl/ (branch: OpenSSL_1_1_1q)
-  The clone of official OpenSSL repository that is included as a git submodule, which points to
-  a recent release tag. To update the submodule, we use the following procedure:
+- openssl/ (version 1.1.1t)
+  The clone of official OpenSSL repository that is included as a git submodule.
+  To update the submodule, we use the following procedure:
   - Checkout the tag that we want to update to.
     ```
     cd openssl
@@ -17,6 +17,12 @@ that work with Open Enclave. The structure of the directory is as follows.
     git diff <previous tag> <tag> --stat
     ```
   - Ensure the OE SDK builds and tests run successfully.
+
+- openssl_3/ (version 3.1.5)
+  The clone of official OpenSSL repository at version 3, which introduced fundamental changes to
+  the API system and deprecated pevious version's engine system and introduced the new provider
+  system. For backward compatiblity, both the latest releases of versions 1 and 3 are kept.
+  To update the submodule, follow the same procedure for version 1.
 
 - intel-sgx-ssl/
   The clone of Intel SGX SSL that includes the necessary changes to support full LVI mitigation.
