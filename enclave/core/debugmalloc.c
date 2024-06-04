@@ -450,9 +450,7 @@ int oe_debug_posix_memalign(void** memptr, size_t alignment, size_t size)
 void* oe_debug_aligned_alloc(size_t alignment, size_t size)
 {
     const size_t padding_size = _get_padding_size(alignment);
-    const size_t block_size = oe_round_up_to_multiple(
-        _calculate_block_size(alignment, size), alignment);
-
+    const size_t block_size = _calculate_block_size(alignment, size);
     void* block = NULL;
     header_t* header = NULL;
 
