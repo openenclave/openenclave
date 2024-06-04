@@ -974,7 +974,7 @@ if (OE_SGX)
   list(
     APPEND
     DEFAULT_VISIBILITY
-    malloc.c # for aligned_alloc and free that are pulled in as part of openenclave/corelibc/bits/malloc.h inclusion
+    malloc.c # for aligned_alloc and free
     pthread.c # for pthread_mutex_*
     ${MUSLSRC}/string/memcmp.c
     ${MUSLSRC}/string/x86_64/memcpy.s
