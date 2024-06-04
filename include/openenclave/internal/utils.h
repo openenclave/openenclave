@@ -49,15 +49,6 @@ OE_INLINE bool oe_is_ptrsize_multiple(size_t n)
     return (d >= 1 && r == 0);
 }
 
-OE_INLINE bool oe_is_size_multiple_alignment(size_t size, size_t alignment)
-{
-    if (alignment == 0)
-        return false;
-    size_t d = size / alignment;
-    size_t r = size % alignment;
-    return (d >= 1 && r == 0);
-}
-
 OE_INLINE unsigned int oe_checksum(const void* data, size_t size)
 {
     const unsigned char* p = (const unsigned char*)data;
@@ -74,9 +65,9 @@ OE_INLINE uint64_t oe_round_up_to_multiple(uint64_t x, uint64_t m)
     return (x + m - 1) / m * m;
 }
 
-OE_INLINE const void* oe_align_pointer(const void* ptr, size_t alignment)
+OE_INLINE const void* oe_align_pointer(const void* ptr, size_t aligment)
 {
-    return (const void*)oe_round_up_to_multiple((uint64_t)ptr, alignment);
+    return (const void*)oe_round_up_to_multiple((uint64_t)ptr, aligment);
 }
 
 OE_INLINE uint32_t oe_byte_swap32(uint32_t x)

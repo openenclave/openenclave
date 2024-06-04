@@ -41,12 +41,6 @@ int posix_memalign(void** memptr, size_t alignment, size_t size)
 }
 
 OE_INLINE
-void* aligned_alloc(size_t alignment, size_t size)
-{
-    return oe_aligned_alloc(alignment, size);
-}
-
-OE_INLINE
 size_t malloc_usable_size(void* ptr)
 {
     return oe_malloc_usable_size(ptr);
