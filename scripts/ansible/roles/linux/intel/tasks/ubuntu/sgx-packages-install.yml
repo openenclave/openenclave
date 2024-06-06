@@ -20,6 +20,19 @@
     update_cache: yes
     install_recommends: no
 
+- name: Download SGX custom version configuration files
+  ansible.builtin.get_url:
+    url: "https://download.01.org/intel-sgx/sgx_repo/ubuntu/apt_preference_files/99sgx_{{ intel_sgx_psw_version | replace('.', '_') }}_{{ ansible_distribution_release | lower }}_custom_version.cfg"
+    dest: "/etc/apt/preferences.d/intel-sgx.pref"
+    force: yes
+  register: download_result
+  until: download_result is succeeded
+  retries: 3
+  delay: 3
+  when:
+    - intel_sgx_psw_version is defined
+    - intel_sgx_psw_version | default('') | length > 0
+
 - name: Install the Intel libsgx packages
   ansible.builtin.apt:
     name: "{{ intel_sgx_packages }}"
