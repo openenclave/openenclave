@@ -71,3 +71,5 @@
 ../../3rdparty/openssl/openssl_3/test/cmp_hdr_test.c
 # fips is disabled by OE.
 ../../3rdparty/openssl/openssl_3/test/fips_version_test.c
+# This test tries to load a hard-coded shared object, which is not supported
+../../3rdparty/openssl/openssl_3/test/prov_config_test.c
