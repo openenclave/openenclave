@@ -89,7 +89,6 @@
 ../../3rdparty/openssl/openssl_3/test/pkcs12_format_test.c
 ../../3rdparty/openssl/openssl_3/test/pkey_meth_kdf_test.c
 ../../3rdparty/openssl/openssl_3/test/pkey_meth_test.c
-../../3rdparty/openssl/openssl_3/test/prov_config_test.c
 ../../3rdparty/openssl/openssl_3/test/provfetchtest.c
 ../../3rdparty/openssl/openssl_3/test/provider_fallback_test.c
 ../../3rdparty/openssl/openssl_3/test/provider_internal_test.c

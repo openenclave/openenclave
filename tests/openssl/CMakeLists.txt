@@ -596,13 +596,6 @@ function (add_openssl_test_supported NAME OPENSSL3)
     return()
   endif ()
 
-  if ("${name}" STREQUAL prov_config_test)
-    add_openssl_test(
-      OPENSSL3 "${name}" "${name}" ${OPENSSL_TEST_DIR}/default.cnf
-      ${OPENSSL_TEST_DIR}/recursive.cnf)
-    return()
-  endif ()
-
   if ("${name}" STREQUAL provider_internal_test)
     add_openssl_test(OPENSSL3 "${name}" "${name}")
     add_openssl_tests_properties(
