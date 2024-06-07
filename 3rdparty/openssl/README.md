@@ -18,7 +18,7 @@ that work with Open Enclave. The structure of the directory is as follows.
     ```
   - Ensure the OE SDK builds and tests run successfully.
 
-- openssl_3/ (version 3.1.5)
+- openssl_3/ (version 3.1.6)
   The clone of official OpenSSL repository at version 3, which introduced fundamental changes to
   the API system and deprecated pevious version's engine system and introduced the new provider
   system. For backward compatiblity, both the latest releases of versions 1 and 3 are kept.
