@@ -62,6 +62,8 @@
     username: "{{ docker_user_name }}"
     password: "{{ docker_user_password }}"
     reauthorize: yes
+    tls: yes
+    validate_certs: yes
 
 - name: Jenkins | Docker pull images
   community.general.docker_image:
