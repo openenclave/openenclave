@@ -12,12 +12,16 @@ if [[ -d ~/.ansible/collections/ansible_collections/community/general ]]; then
     rm -rf ~/.ansible/collections/ansible_collections/community/general
 fi
 if [[ -d ~/.ansible/collections/ansible_collections/ansible/windows ]]; then
-    echo "Removing ansiblle.windows from Ansible collections..."
+    echo "Removing ansible.windows from Ansible collections..."
     rm -rf ~/.ansible/collections/ansible_collections/ansible/windows
 fi
 if [[ -d ~/.ansible/collections/ansible_collections/community/windows ]]; then
     echo "Removing community.windows from Ansible collections..."
     rm -rf ~/.ansible/collections/ansible_collections/community/windows
+fi
+if [[ -d ~/.ansible/collections/ansible_collections/community/docker ]]; then
+    echo "Removing community.docker from Ansible collections..."
+    rm -rf ~/.ansible/collections/ansible_collections/community/docker
 fi
 if ! command -v ansible; then
     echo "No Ansible installation found!"

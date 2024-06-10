@@ -7,5 +7,10 @@ docker_packages:
   - "docker-ce-cli"
   - "containerd.io"
 
-docker_target_version: "18.09"
-dockerd_target_version: "18.09"
+docker_python_packages:
+  - "docker"
+  - "pyOpenSSL"
+  # Requests 2.32.3 breaks Docker Python and community.docker modules. The error is:
+  # "Error connecting: Error while fetching server API version: Not supported URL scheme http+docker"
+  # See https://github.com/docker/docker-py/issues/3256
+  - "requests>=2.31,<2.32"

@@ -75,5 +75,6 @@ ${PYTHON_EXECUTABLE} -m pip install -U -r "$DIR/requirements.txt"
 ansible-galaxy collection install community.general
 ansible-galaxy collection install ansible.windows
 ansible-galaxy collection install community.windows
-
+ansible-galaxy collection install community.docker
+ansible-galaxy collection list
 ansible --version
