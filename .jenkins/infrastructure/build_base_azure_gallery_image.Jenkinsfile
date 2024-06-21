@@ -6,12 +6,8 @@ library "OpenEnclaveJenkinsLibrary@${params.OECI_LIB_VERSION}"
 
 def buildLinuxVMBaseImage(String os_type, String os_version) {
     stage('Environment setup') {
-        withCredentials([usernamePassword(credentialsId: 'SERVICE_PRINCIPAL_OSTCLAB',
-                                        passwordVariable: 'SERVICE_PRINCIPAL_PASSWORD',
-                                        usernameVariable: 'SERVICE_PRINCIPAL_ID'),
-                        string(credentialsId: 'OSCTLabSubID', variable: 'SUBSCRIPTION_ID'),
-                        string(credentialsId: 'TenantID', variable: 'TENANT_ID'),
-        ]) {
+        withCredentials([string(credentialsId: 'Jenkins-CI-Subscription-Id', variable: 'SUBSCRIPTION_ID'),
+                         string(credentialsId: 'Jenkins-CI-Tenant-Id', variable: 'TENANT_ID')]) {
             retry(10) {
                 sh """
                     sleep 5

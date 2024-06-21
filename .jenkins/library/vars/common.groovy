@@ -32,11 +32,8 @@ def ContainerRun(String imageName, String compiler, String task, String runArgs=
 }
 
 def azureEnvironment(String task, String imageName = "oetools-deploy:latest") {
-    withCredentials([usernamePassword(credentialsId: 'SERVICE_PRINCIPAL_OSTCLAB',
-                                      passwordVariable: 'SERVICE_PRINCIPAL_PASSWORD',
-                                      usernameVariable: 'SERVICE_PRINCIPAL_ID'),
-                     string(credentialsId: 'OSCTLabSubID', variable: 'SUBSCRIPTION_ID'),
-                     string(credentialsId: 'TenantID', variable: 'TENANT_ID')]) {
+    withCredentials([string(credentialsId: 'Jenkins-CI-Subscription-Id', variable: 'SUBSCRIPTION_ID'),
+                     string(credentialsId: 'Jenkins-CI-Tenant-Id', variable: 'TENANT_ID')]) {
         docker.withRegistry("https://oejenkinscidockerregistry.azurecr.io", "oejenkinscidockerregistry") {
             def image = docker.image("oetools-deploy:latest")
             image.pull()
