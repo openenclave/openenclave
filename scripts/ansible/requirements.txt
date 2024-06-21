@@ -6,3 +6,4 @@ ansible>=8.7,<9.0
 ansible-core>=2.15.5,<2.16
 cmake_format==0.6.9
 pywinrm==0.4.3
+requests==2.32.3
