@@ -9,8 +9,6 @@ AZURE_IMAGES_MAP = [
     // Mapping between shared gallery image definition name and
     // generated Azure managed image name
     "ubuntu-20.04":      "",
-    "nonSGX-clang-11":   "",
-    "SGX-DCAP-clang-11": "",
     "WS22-nonSGX-clang-11":   "",
     "WS22-SGX-DCAP-clang-11": "",
 ]
@@ -19,11 +17,8 @@ def update_production_azure_gallery_images(String image_name) {
     timeout(GLOBAL_TIMEOUT_MINUTES) {
         stage("Azure CLI Login") {
             withCredentials([
-                    usernamePassword(credentialsId: 'SERVICE_PRINCIPAL_OSTCLAB',
-                                        passwordVariable: 'SERVICE_PRINCIPAL_PASSWORD',
-                                        usernameVariable: 'SERVICE_PRINCIPAL_ID'),
-                    string(credentialsId: 'openenclaveci-subscription-id', variable: 'SUBSCRIPTION_ID'),
-                    string(credentialsId: 'TenantID', variable: 'TENANT_ID')]) {
+                    string(credentialsId: 'Jenkins-CI-Subscription-Id', variable: 'SUBSCRIPTION_ID'),
+                    string(credentialsId: 'Jenkins-CI-Tenant-Id', variable: 'TENANT_ID')]) {
                 sh '''#!/bin/bash
                     az login --identity
                     az account set -s ${SUBSCRIPTION_ID}
@@ -59,7 +54,7 @@ AZURE_IMAGES_MAP.keySet().each {
 
 pipeline {
     agent {
-        label globalvars.AGENTS_LABELS["vanilla-ubuntu-2004"]
+        label globalvars.AGENTS_LABELS["acc-ubuntu-20.04-vanilla"]
     }
     options {
         timeout(time: 240, unit: 'MINUTES')
