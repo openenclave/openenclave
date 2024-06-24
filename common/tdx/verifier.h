@@ -25,7 +25,10 @@ typedef struct _sgx_cpu_svn_t
     uint8_t svn[SGX_CPUSVN_SIZE];
 } sgx_cpu_svn_t;
 
-/* The following definition is based on sgx_qve_header.h from Intel SGX SDK */
+/* The following definition is based on sgx_qve_header.h from Intel SGX SDK
+ * Version 1.20
+ * https://github.com/intel/SGXDataCenterAttestationPrimitives/releases/tag/DCAP_1.20
+ */
 
 #ifndef SGX_QL_QV_MK_ERROR
 #define SGX_QL_QV_MK_ERROR(x) (0x0000A000 | (x))
@@ -65,7 +68,14 @@ typedef enum _sgx_ql_qv_result_t
                  ///< additional configuration of the platform at its current
                  ///< patching level may be needed. Moreove, SGX SW Hardening is
                  ///< also needed
-
+    SGX_QL_QV_RESULT_TD_RELAUNCH_ADVISED = SGX_QL_QV_MK_ERROR(
+        0x0009), ///< For TDX only. All components in the TD’s TCB are latest,
+                 ///< including the TD preserving loaded TDX, but the TD was
+                 ///< launched and ran for some time with out-of-date TDX
+                 ///< Module. Relaunching or re-provisioning your TD is advised
+    SGX_QL_QV_RESULT_TD_RELAUNCH_ADVISED_CONFIG_NEEDED =
+        SGX_QL_QV_MK_ERROR(0x0010), /// Upcoming change in Intel DCAP 1.21,
+                                    /// manually added, error code could change
     SGX_QL_QV_RESULT_MAX = SGX_QL_QV_MK_ERROR(
         0x00FF), ///< Indicate max result to allow better translation
 
@@ -82,8 +92,15 @@ typedef enum _pck_cert_flag_enum_t
 #define PLATFORM_INSTANCE_ID_SIZE 16
 
 // Each Intel Advisory size is ~16 bytes
-// Assume each TCB level has 10 advisoryIDs at the very most
-#define MAX_SA_LIST_SIZE 160
+// Assume each TCB level has 20 advisoryIDs at the very most
+#define MAX_SA_LIST_SIZE 320
+
+// Nameless struct generates C4201 warning in MS compiler, but it is allowed in
+// c++ 11 standard Should remove the pragma after Microsoft fixes this issue
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4201)
+#endif
 
 /** Contains data that will allow an alternative quote verification policy. */
 typedef struct _sgx_ql_qv_supplemental_t
@@ -98,7 +115,7 @@ typedef struct _sgx_ql_qv_supplemental_t
                 major_version; ///< If this major version doesn't change, the
                                ///< size of the structure may change and new
                                ///< fields appended to the end but old minor
-                               ///< version structure can still be 'cast'. If
+                               ///< version structure can still be 'cast' If
                                ///< this major version does change, then the
                                ///< structure has been modified in a way that
                                ///< makes the older definitions non-backwards
@@ -154,9 +171,24 @@ typedef struct _sgx_ql_qv_supplemental_t
                      ///< Registration Backend
     pck_cert_flag_enum_t smt_enabled; ///< Indicate whether a plat form has SMT
                                       ///< (simultaneous multithreading) enabled
-    char sa_list[MAX_SA_LIST_SIZE];   ///< String of comma separated list of
-                                      ///< Security Advisory IDs
+
+    char sa_list[MAX_SA_LIST_SIZE];     ///< String of comma separated list of
+                                        ///< Security Advisory IDs
+    time_t qe_iden_earliest_issue_date; ///< Earliest issue date of QEIdentity
+                                        ///< (UTC)
+    time_t qe_iden_latest_issue_date; ///< Latest issue date of QEIdentity (UTC)
+    time_t qe_iden_earliest_expiration_date; ///< Earliest expiration date of
+                                             ///< QEIdentity (UTC)
+    time_t
+        qe_iden_tcb_level_date_tag; ///< The SGX TCB of the platform that
+                                    ///< generated the quote is not vulnerable
+    uint32_t qe_iden_tcb_eval_ref_num; ///< Lower number of the QEIdentity
+    sgx_ql_qv_result_t qe_iden_status; /// QEIdentity status
 } sgx_ql_qv_supplemental_t;
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 OE_EXTERNC_END
 
