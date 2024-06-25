@@ -28,13 +28,15 @@ This sample uses the Open Enclave SDK `oeedger8r` tool to generate marshaling co
 and the host. For more information on using the Open Enclave oeedger8r tool refer to
 [Getting started with the Open Enclave edger8r](https://github.com/openenclave/openenclave/tree/master/docs/GettingStartedDocs/Edger8rGettingStarted.md).
 
-First we need to define the functions we want to call between the enclave and host. To do this we create a `helloworld.edl` file:
+First we need to define the functions we want to call between the enclave and host. To do this we create an Enclave-Definition Language (EDL) file named `helloworld.edl`:
 
 ```edl
 enclave {
+    from "openenclave/edl/syscall.edl" import *;
+    from "platform.edl" import *;
+
     trusted {
         public void enclave_helloworld();
-
     };
 
     untrusted {
@@ -43,7 +45,13 @@ enclave {
 };
 ```
 
-In this `helloworld.edl` file we define two different functions.
+Each part in `helloworld.edl` will be described.
+
+```c
+from "openenclave/edl/syscall.edl" import *;
+from "platform.edl" import *;
+```
+`openenclave/edl/syscall.edl` and `platform.edl` are EDLs needed to implement various system operations and SGX-specific operations respectively. It is recommended that you import these EDLs for all applications. Further reading available at [Explicit Enclave Opt-in to System OCalls](https://github.com/openenclave/openenclave/blob/master/docs/DesignDocs/system_ocall_opt_in.md#currently-required-edl-by-all-applications).
 
 ```c
 public void enclave_helloworld();
