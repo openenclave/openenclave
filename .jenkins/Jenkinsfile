@@ -31,31 +31,14 @@ List<String> LIST_IGNORED_DIRS = [
 String IGNORED_DIRS_REGEX = LIST_IGNORED_DIRS.join('|')
 
 List<String> APPROVED_AUTHORS = [
-    'achamayou',
-    'AevaOnline',
-    'anche-is-andy',
-    'gupta-ak',
     'anakrish',
     'asvrada',
-    'Britel',
     'CyanDevs',
     'dcarpente',
-    'dthaler',
-    'HernanGatta',
-    'jiria',
-    'jazzybluesea',
     'justanotherminh',
-    'jxyang',
-    'mikbras',
     'mingweishih',
-    'paulcallen',
     'radhikaj',
-    'salsal97',
-    'shnwc',
-    'shruti25ratnam',
-    'soccerGB',
-    'vtikoo',
-    'yentsanglee'
+    'vtikoo'
 ]
 
 pipeline {
