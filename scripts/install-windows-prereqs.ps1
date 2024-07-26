@@ -16,8 +16,10 @@ Param(
     [string]$ClangHash = 'B5770BBFAC712D273938CD155E232AFAA85C2E8D865C7CA504A104A838568516',
     [string]$ShellCheckURL = 'https://openenclavepublicstorage.blob.core.windows.net/openenclavedependencies/shellcheck-v0.7.0.zip',
     [string]$ShellCheckHash = '02CFA14220C8154BB7C97909E80E74D3A7FE2CBB7D80AC32ADCAC7988A95E387',
-    [string]$NugetURL = 'https://www.nuget.org/api/v2/package/NuGet.exe/3.4.3',
-    [string]$NugetHash = '2D4D38666E5C7D27EE487C60C9637BD9DD63795A117F0E0EDC68C55EE6DFB71F',
+    [string]$Nuget3URL = 'https://www.nuget.org/api/v2/package/NuGet.exe/3.4.3',
+    [string]$Nuget3Hash = '2D4D38666E5C7D27EE487C60C9637BD9DD63795A117F0E0EDC68C55EE6DFB71F',
+    [string]$Nuget6URL = 'https://dist.nuget.org/win-x86-commandline/v6.2.4/nuget.exe',
+    [string]$Nuget6Hash = 'F2B2145244A3FE1E905599CFB3ADE38E3FCE0C00E73532BDE164EE4F8C8EDCEA',
     [string]$DevconURL = 'https://download.microsoft.com/download/7/D/D/7DD48DE6-8BDA-47C0-854A-539A800FAA90/wdk/Installers/787bee96dbd26371076b37b13c405890.cab',
     [string]$DevconHash = 'A38E409617FC89D0BA1224C31E42AF4344013FEA046D2248E4B9E03F67D5908A',
     # Intel PSW 2.23.100.3 is included in DCAP 1.21.100.3
@@ -73,10 +75,15 @@ $PACKAGES = @{
         "hash" = $ShellCheckHash
         "local_file" = Join-Path $PACKAGES_DIRECTORY "shellcheck.zip"
     }
-    "nuget" = @{
-        "url" = $NugetURL
-        "hash" = $NugetHash
-        "local_file" = Join-Path $PACKAGES_DIRECTORY "nuget.zip"
+    "nuget3" = @{
+        "url" = $Nuget3URL
+        "hash" = $Nuget3Hash
+        "local_file" = Join-Path $PACKAGES_DIRECTORY "nuget3.zip"
+    }
+    "nuget6" = @{
+        "url" = $Nuget6URL
+        "hash" = $Nuget6Hash
+        "local_file" = Join-Path $PACKAGES_DIRECTORY "nuget6.exe"
     }
     "devcon" = @{
         "url" = $DevconURL
@@ -311,19 +318,30 @@ function Install-ZipTool {
 }
 
 function Install-Nuget {
-    $tempInstallDir = "$PACKAGES_DIRECTORY\nuget"
-    if(Test-Path -Path $tempInstallDir) {
-        Remove-Item -Path $tempInstallDir -Force -Recurse
-    }
-    Install-ZipTool -ZipPath $PACKAGES["nuget"]["local_file"] `
-                    -InstallDirectory $tempInstallDir `
-                    -EnvironmentPath @("$tempInstallDir")
-    $installDir = Join-Path $env:ProgramFiles "nuget-3.4.3"
+    Param(
+        [Parameter(Mandatory=$true)][string]$Version
+    )
+    $downloadedFile = $PACKAGES["nuget$Version"]["local_file"]
+    $installDir = Join-Path $env:ProgramFiles "nuget$version"
     New-Directory -Path $installDir -RemoveExisting
-    Move-Item -Path "$tempInstallDir\build\native\Nuget.exe" -Destination $installDir
+    if ($downloadedFile -match "\.zip$") {
+        $tempInstallDir = "$PACKAGES_DIRECTORY\nuget$Version"
+        if(Test-Path -Path $tempInstallDir) {
+            Remove-Item -Path $tempInstallDir -Force -Recurse
+        }
+        Install-ZipTool -ZipPath $PACKAGES["nuget$Version"]["local_file"] `
+                        -InstallDirectory $tempInstallDir `
+                        -EnvironmentPath @("$tempInstallDir")
+        Move-Item -Path "$tempInstallDir\build\native\Nuget.exe" -Destination $installDir
+        Install-Tool -InstallerPath $PACKAGES["nuget$Version"]["local_file"] `
+                    -InstallDirectory $env:ProgramFiles `
+                    -ArgumentList @("/install", "/passive") `
+                    -EnvironmentPath @("$env:ProgramFiles\NuGet")
+    } elseif ($downloadedFile -match "\.exe$") {
+        Move-Item -Path $downloadedFile -Destination $installDir
+    }
     Add-ToSystemPath -Path $installDir
 }
-
 function Install-Python3 {
     $tempInstallDir = "$PACKAGES_DIRECTORY\python3"
     if(Test-Path -Path $tempInstallDir) {
@@ -579,7 +597,8 @@ try {
     Start-LocalPackagesDownload
 
     Install-7Zip
-    Install-Nuget
+    Install-Nuget -Version 3
+    Install-Nuget -Version 6
     Install-Python3
     if (!$SkipVSInstall) {
         Install-VisualStudio
