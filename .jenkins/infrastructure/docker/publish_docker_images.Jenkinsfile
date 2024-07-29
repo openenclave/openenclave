@@ -237,8 +237,9 @@ pipeline {
                 stage('Add details') {
                     steps {
                         script {
+                            // This outputs the Docker images in 3 parts: header, new images, and previous versions
                             sh """
-                                echo "\$(head -n 2 DOCKER_IMAGES.md)" > DOCKER_IMAGES_new.md
+                                echo "\$(head -n 3 DOCKER_IMAGES.md)" > DOCKER_IMAGES_new.md
                             """
                             if (params.PUBLISH_WINDOWS) {
                                 sh """
@@ -255,11 +256,11 @@ pipeline {
                                     echo "| Full Ubuntu 20.04 | ${PUBLIC_REPO_NAME}/oetools-20.04:${PUBLIC_LINUX_TAG} | ${OE_VERSION} | ${FULL_2004_PSW} | ${FULL_2004_DCAP} |" >> DOCKER_IMAGES_new.md
                                 """
                             }
+                            sh """
+                                echo "\$(sed -n '/^# Previous versions\$/,\$p' DOCKER_IMAGES.md)" >> DOCKER_IMAGES_new.md
+                                mv DOCKER_IMAGES_new.md DOCKER_IMAGES.md
+                            """
                         }
-                        sh """
-                            echo "\$(tail -n +3 DOCKER_IMAGES.md)" >> DOCKER_IMAGES_new.md
-                            mv DOCKER_IMAGES_new.md DOCKER_IMAGES.md
-                        """
                     }
                 }
                 stage('Commit and push') {
