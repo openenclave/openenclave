@@ -17,6 +17,9 @@
 #define SGX_TCB_STATUS_SW_HARDENING_NEEDED "SWHardeningNeeded"
 #define SGX_TCB_STATUS_CONFIGURATION_AND_SW_HARDENING_NEEDED \
     "ConfigurationAndSWHardeningNeeded"
+#define SGX_TCB_STATUS_TD_RELAUNCH_ADVISED "TDRelaunchAdvised"
+#define SGX_TCB_STATUS_TD_RELAUNCH_ADVISED_CONFIG_NEEDED \
+    "TDRelaunchAdvisedAndConfigurationNeeded"
 #define SGX_TCB_STATUS_INVALID "Invalid"
 
 #ifdef OEUTIL_TCB_ALLOW_ANY_ROOT_KEY // allow overrode by oeutil
@@ -326,6 +329,10 @@ const char* oe_sgx_tcb_status_str(const oe_sgx_tcb_status_t sgx_tcb_status)
             return SGX_TCB_STATUS_SW_HARDENING_NEEDED;
         case OE_SGX_TCB_STATUS_CONFIGURATION_AND_SW_HARDENING_NEEDED:
             return SGX_TCB_STATUS_CONFIGURATION_AND_SW_HARDENING_NEEDED;
+        case OE_SGX_TCB_STATUS_TD_RELAUNCH_ADVISED:
+            return SGX_TCB_STATUS_TD_RELAUNCH_ADVISED;
+        case OE_SGX_TCB_STATUS_TD_RELAUNCH_ADVISED_CONFIG_NEEDED:
+            return SGX_TCB_STATUS_TD_RELAUNCH_ADVISED_CONFIG_NEEDED;
         default:
             break;
     }
