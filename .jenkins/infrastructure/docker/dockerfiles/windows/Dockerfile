@@ -7,7 +7,13 @@
 # like a logical choice to use the same work flow for setting up Docker containers.
 
 FROM mcr.microsoft.com/windows/servercore:ltsc2022
+LABEL org.label-schema.vendor="Microsoft"
+LABEL org.label-schema.url="https://github.com/openenclave/openenclave/blob/master/DOCKER_IMAGES.md"
+LABEL org.label-schema.vcs-url="https://github.com/openenclave/openenclave/blob/master/.jenkins/infrastructure/docker/dockerfiles/windows/Dockerfile"
 
 COPY . oe
-RUN powershell.exe -ExecutionPolicy Unrestricted -NoLogo -NonInteractive -NoProfile -WindowStyle Hidden -File oe\scripts\install-windows-prereqs.ps1 -InstallPath C:\oe_prereqs -LaunchConfiguration SGX1FLC-NoIntelDrivers -DCAPClientType None
-RUN del /s /q oe
+RUN powershell.exe -ExecutionPolicy Unrestricted -NoLogo -NonInteractive -NoProfile -WindowStyle Hidden -File oe\scripts\install-windows-prereqs.ps1 -InstallPath C:\oe_prereqs -LaunchConfiguration SGX1FLC-NoIntelDrivers -DCAPClientType None && \
+    del /s /q oe && \
+    powershell.exe -Command \
+    Remove-Item -Recurse -Force C:\Windows\Temp\* ; \
+    Remove-Item -Recurse -Force C:\Users\ContainerAdministrator\AppData\Local\Temp\*
