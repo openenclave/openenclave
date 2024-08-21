@@ -1,7 +1,9 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-add_subdirectory(oeapkman)
+if (NOT UNIX OR CMAKE_SYSTEM MATCHES "Linux-5*")
+  add_subdirectory(oeapkman)
+endif ()
 
 if (OE_SGX)
   add_subdirectory(oecertdump)
