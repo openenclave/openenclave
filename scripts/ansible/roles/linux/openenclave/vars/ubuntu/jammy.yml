@@ -8,6 +8,5 @@ apt_distribution_packages:
   - "python3"
   - "clang-11"
   - "clang-format-11"
-  - "libssl1.1"
 apt_arm_distribution_packages:
   - "python3-cryptography"
