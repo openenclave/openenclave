@@ -60,6 +60,7 @@
   register: ssl_download
   until: ssl_download is success
   retries: 3
+  when: ansible_distribution_release == 'jammy'
 
 - name: Install libssl1.1 on Jammy
   command: "dpkg -i {{ ssl_download.dest }}"
@@ -74,6 +75,7 @@
   register: azdcap_download
   until: azdcap_download is success
   retries: 3
+  when: ansible_distribution_release == 'jammy'
 
 - name: Install Azure-DCAP-Client on Jammy
   command: "dpkg -i {{ azdcap_download.dest }}"
