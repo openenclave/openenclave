@@ -51,6 +51,7 @@ if (BUILD_ENCLAVES)
   endif ()
 
   if (UNIX)
+    and(CMAKE_SYSTEM MATCHES "Linux-6*")
     list(APPEND SAMPLES_LIST apkman)
     list(APPEND CRYPTO_LIB_LIST mbedtls)
   endif ()
