@@ -18,7 +18,7 @@ SYMCRYPT_SO = libsymcrypt.so.103.4.2
 # The linker can only resolve up to single number after .so
 SYMCRYPT_LINK_SO = libsymcrypt.so.103
 
-ifeq (${OE_CRYPTO_LIB}, openssl_symcrypt_fips)
+ifneq (,$(findstring symcrypt,$(OE_CRYPTO_LIB)))
 	TARGETS += symcrypt
 endif
 

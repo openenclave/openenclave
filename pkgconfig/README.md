@@ -54,6 +54,7 @@ To build an enclave application with a specific crypto library, additional comma
 - `openssl`
 - `openssl_symcrypt_fips`
 - `openssl_3`
+- `openssl_3_symcrypt_prov_fips`
 
 ```
 OE_CRYPTO_LIB=openssl
