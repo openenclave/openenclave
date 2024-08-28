@@ -10,7 +10,7 @@ INCDIR=$(shell pkg-config oehost-$(C_COMPILER) --variable=includedir)
 
 EDL_USE_HOST_ENTROPY =
 
-ifeq (${OE_CRYPTO_LIB}, openssl_symcrypt_fips)
+ifneq (,$(findstring symcrypt,$(OE_CRYPTO_LIB)))
 	EDL_USE_HOST_ENTROPY = -DEDL_USE_HOST_ENTROPY
 endif
 
@@ -22,8 +22,8 @@ build:
 		--search-path $(INCDIR) \
 		--search-path $(INCDIR)/openenclave/edl/sgx \
 		$(EDL_USE_HOST_ENTROPY)
-	$(CC) -c $(CFLAGS) $(CINCLUDES) tls_server_u.c
-	$(CXX) -c $(CXXFLAGS) $(INCLUDES) host.cpp
+	$(CC) -c $(CFLAGS) tls_server_u.c
+	$(CXX) -c $(CXXFLAGS) host.cpp
 	$(CXX) -o tls_server_host host.o tls_server_u.o $(LDFLAGS)
 
 clean:
