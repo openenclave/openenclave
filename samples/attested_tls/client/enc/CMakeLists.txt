@@ -20,8 +20,9 @@ add_custom_command(
     ${CMAKE_SOURCE_DIR}/client/enc/private.pem)
 
 if (${OE_CRYPTO_LIB} STREQUAL "openssl"
-    OR ${OE_CRYPTO_LIB} STREQUAL "openssl_symcrypt_fips"
-    OR ${OE_CRYPTO_LIB} STREQUAL "openssl_3")
+    OR ${OE_CRYPTO_LIB} STREQUAL "symcrypt_fips"
+    OR ${OE_CRYPTO_LIB} STREQUAL "openssl_3"
+    OR ${OE_CRYPTO_LIB} STREQUAL "symcrypt_prov_fips")
   add_executable(
     tls_client_enc
     ecalls.cpp
@@ -69,7 +70,7 @@ elseif (${OE_CRYPTO_LIB} STREQUAL "mbedtls")
   target_link_libraries(
     tls_client_enc openenclave::oeenclave openenclave::oecryptombedtls
     openenclave::oelibcxx openenclave::oehostsock openenclave::oehostresolver)
-elseif (${OE_CRYPTO_LIB} STREQUAL "openssl_symcrypt_fips")
+elseif (${OE_CRYPTO_LIB} STREQUAL "symcrypt_fips")
   add_custom_command(
     TARGET tls_client_enc
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/libsymcrypt.so.103
@@ -80,6 +81,23 @@ elseif (${OE_CRYPTO_LIB} STREQUAL "openssl_symcrypt_fips")
     openenclave::oeenclave
     openenclave::oesymcryptengine
     openenclave::oecryptoopenssl
+    # Workaround: refer to the root of the build location so that we don't rely on the
+    # order of copy
+    ${CMAKE_BINARY_DIR}/libsymcrypt.so.103
+    openenclave::oelibcxx
+    openenclave::oehostsock
+    openenclave::oehostresolver)
+elseif (${OE_CRYPTO_LIB} STREQUAL "symcrypt_prov_fips")
+  add_custom_command(
+    TARGET tls_client_enc
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/libsymcrypt.so.103
+            ${CMAKE_CURRENT_BINARY_DIR}/libsymcrypt.so.103)
+
+  target_link_libraries(
+    tls_client_enc
+    openenclave::oeenclave
+    openenclave::oesymcryptprovider
+    openenclave::oecryptoopenssl_3
     # Workaround: refer to the root of the build location so that we don't rely on the
     # order of copy
     ${CMAKE_BINARY_DIR}/libsymcrypt.so.103

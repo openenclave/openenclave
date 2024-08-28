@@ -93,11 +93,11 @@ Note: Both of them can run on the same machine or separate machines.
   make run
   ```
 
-- Use FIPS-enabled OpenSSL based on SymCrypt
+- Use FIPS-enabled OpenSSL based on SymCrypt engine
   ```bash
   mkdir build
   cd build
-  cmake -DOE_CRYPTO_LIB=openssl_symcrypt_fips ..
+  cmake -DOE_CRYPTO_LIB=symcrypt_fips ..
   make
   make run
   ```
@@ -107,6 +107,15 @@ Note: Both of them can run on the same machine or separate machines.
   mkdir build
   cd build
   cmake -DOE_CRYPTO_LIB=openssl_3 ..
+  make
+  make run
+  ```
+
+- Use FIPS-enabled OpenSSL 3 based on SymCrypt provider
+  ```bash
+  mkdir build
+  cd build
+  cmake -DOE_CRYPTO_LIB=symcrypt_prov_fips ..
   make
   make run
   ```
@@ -123,15 +132,21 @@ Note: Both of them can run on the same machine or separate machines.
   make run
   ```
 
-- Use FIPS-enabled OpenSSL based on SymCrypt
+- Use FIPS-enabled OpenSSL based on SymCrypt engine
   ```bash
-  make OE_CRYPTO_LIB=openssl_symcrypt_fips build
+  make OE_CRYPTO_LIB=symcrypt_fips build
   make run
   ```
 
 - Use OpenSSL 3.0
   ```bash
   make OE_CRYPTO_LIB=openssl_3 build
+  make run
+  ```
+
+- Use FIPS-enabled OpenSSL 3 based on SymCrypt provider
+  ```bash
+  make OE_CRYPTO_LIB=symcrypt_prov_fips build
   make run
   ```
 
@@ -155,11 +170,11 @@ Note: Both of them can run on the same machine or separate machines.
   ninja run
   ```
 
-- Use FIPS-enabled OpenSSL based on SymCrypt
+- Use FIPS-enabled OpenSSL based on SymCrypt engine
   ```bash
   mkdir build
   cd build
-  cmake -G Ninja -DOE_CRYPTO_LIB=openssl_symcrypt_fips ..
+  cmake -G Ninja -DOE_CRYPTO_LIB=symcrypt_fips ..
   ninja
   ninja run
   ```
@@ -169,6 +184,15 @@ Note: Both of them can run on the same machine or separate machines.
   mkdir build
   cd build
   cmake -G Ninja -DOE_CRYPTO_LIB=openssl_3 ..
+  ninja
+  ninja run
+  ```
+
+- Use FIPS-enabled OpenSSL 3 based on SymCrypt provider
+  ```bash
+  mkdir build
+  cd build
+  cmake -G Ninja -DOE_CRYPTO_LIB=symcrypt_prov_fips ..
   ninja
   ninja run
   ```
