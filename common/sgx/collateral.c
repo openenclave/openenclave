@@ -329,7 +329,8 @@ oe_result_t oe_validate_revocation_list(
                     &crls[j],
                     sgx_endorsements->items[i].data,
                     sgx_endorsements->items[i].size),
-                "Failed to read CRL. %s",
+                "Failed to read v1/v2 CRL No=%d. %s",
+                j,
                 oe_result_str(result));
         }
         /*
@@ -379,7 +380,8 @@ oe_result_t oe_validate_revocation_list(
 
             OE_CHECK_MSG(
                 oe_crl_read_der(&crls[j], der_data, der_data_size),
-                "Failed to read CRL. %s",
+                "Failed to read v3 CRL No=%d. %s",
+                j,
                 oe_result_str(result));
             if (ishex)
                 oe_free(der_data);
