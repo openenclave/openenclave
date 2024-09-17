@@ -235,6 +235,33 @@ done:
     return result;
 }
 
+// User should free *pem_data after use.
+static oe_result_t _ec_public_key_write_pem(
+    const oe_ec_public_key_t* public_key,
+    uint8_t** pem_data,
+    size_t* pem_size)
+{
+    // First call to get key_size
+    oe_result_t result =
+        oe_ec_public_key_write_pem(public_key, *pem_data, pem_size);
+
+    if (result == OE_OK)
+        OE_RAISE(OE_UNEXPECTED);
+
+    if (result != OE_BUFFER_TOO_SMALL)
+        OE_RAISE(result);
+
+    // Call again to get key
+    *pem_data = (uint8_t*)oe_malloc(*pem_size);
+    if (*pem_data == NULL)
+        OE_RAISE(OE_OUT_OF_MEMORY);
+
+    result = oe_ec_public_key_write_pem(public_key, *pem_data, pem_size);
+
+done:
+    return result;
+}
+
 static oe_result_t oe_verify_quote_internal(
     const uint8_t* quote,
     size_t quote_size)
@@ -320,10 +347,36 @@ static oe_result_t oe_verify_quote_internal(
             "Failed to compare keys.",
             NULL);
         if (!key_equal)
+        {
+            // Convert public keys to PEM format for logging.
+            uint8_t* key = NULL;
+            size_t key_size = 0;
+
+            oe_result_t ret =
+                _ec_public_key_write_pem(&root_public_key, &key, &key_size);
+
+            if (ret == OE_OK)
+            {
+                OE_TRACE_VERBOSE(
+                    "Expected root public key:\n%s\nActual root public "
+                    "key:\n%s\n",
+                    _trusted_root_key_pem,
+                    key);
+            }
+            else
+            {
+                OE_TRACE_ERROR(
+                    "Failed to convert public key to PEM format. error=%s\n",
+                    oe_result_str(ret));
+            }
+
+            oe_free(key);
+
             OE_RAISE_MSG(
                 OE_QUOTE_VERIFICATION_ERROR,
                 "Failed to verify root public key.",
                 NULL);
+        }
     }
 
     // Quote validations.
