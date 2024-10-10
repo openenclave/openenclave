@@ -32,6 +32,7 @@ String IGNORED_DIRS_REGEX = LIST_IGNORED_DIRS.join('|')
 
 List<String> APPROVED_AUTHORS = [
     'anakrish',
+    'arlynch',
     'asvrada',
     'CyanDevs',
     'dcarpente',
