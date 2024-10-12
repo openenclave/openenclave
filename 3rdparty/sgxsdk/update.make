@@ -4,7 +4,7 @@
 # Licensed under the MIT License.
 
 SDK_VERSION=sgx_2.10
-DCAP_VERSION=DCAP_1.18
+DCAP_VERSION=DCAP_1.20
 
 all: update-sgxsdk-headers
 	echo "All done - please review changes"
