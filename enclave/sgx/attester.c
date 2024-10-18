@@ -19,6 +19,7 @@
 #include "../common/attest_plugin.h"
 #include "../common/sgx/endorsements.h"
 #include "../core/sgx/report.h"
+#include "../core/sgx/tracee.h"
 #include "platform_t.h"
 
 /**
@@ -438,6 +439,10 @@ oe_result_t oe_attester_initialize(void)
 
 done:
     oe_mutex_unlock(&mutex);
+    if (result == OE_SERVICE_UNAVAILABLE && oe_sgx_is_in_simulation_mode())
+    {
+        result = OE_UNSUPPORTED;
+    }
     return result;
 }
 
