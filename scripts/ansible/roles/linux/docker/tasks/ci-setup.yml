@@ -43,7 +43,6 @@
   ansible.builtin.import_role:
     name: linux/az-dcap-client
     tasks_from: stable-install.yml
-  when: ansible_distribution_release != 'jammy'
 
 - name: Install Azure CLI
   ansible.builtin.import_role:
