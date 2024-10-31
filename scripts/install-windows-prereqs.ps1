@@ -229,6 +229,7 @@ function Start-FileDownload {
     Start-ExecuteWithRetry -ScriptBlock {
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
         $wc = New-Object System.Net.WebClient
+        $wc.Headers.Add("user-agent", "curl");
         $wc.DownloadFile($URL, $Destination)
     } -MaxRetryCount $RetryCount -RetryInterval 3 -RetryMessage "Failed to download $URL. Retrying"
 }
