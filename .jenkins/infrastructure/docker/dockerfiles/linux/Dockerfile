@@ -65,7 +65,8 @@ RUN echo ${devkits_uri##*/} > /devkits/TARBALL
 # Run Ansible
 COPY ./scripts/ansible /ansible
 COPY ./scripts/lvi-mitigation /lvi-mitigation
-RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC /ansible/install-ansible.sh && \
+RUN chmod +x /ansible/install-ansible.sh /ansible/remove-ansible.sh && \
+    DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC /ansible/install-ansible.sh && \
     ansible localhost --playbook-dir=/ansible -m import_role -a "name=linux/docker tasks_from=ci-setup.yml" -vvv && \
     /ansible/remove-ansible.sh && \
     apt-get remove -y python3-pip && \
