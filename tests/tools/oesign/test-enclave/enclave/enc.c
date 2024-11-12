@@ -13,11 +13,10 @@
 #include "oesign_test_t.h"
 
 /* Null-terminated hex string buffer size with 2 char per byte */
-const size_t OE_KSS_ID_HEX_BUFFER_SIZE = sizeof(oe_uuid_t) * 2 + 1;
+#define OE_KSS_ID_HEX_BUFFER_SIZE (sizeof(oe_uuid_t) * 2 + 1)
 /* Null-terminated hex string buffer size with 2 char per byte and 4 formatting
  * chars */
-const size_t FORMATTED_OE_KSS_ID_HEX_BUFFER_SIZE =
-    OE_KSS_ID_HEX_BUFFER_SIZE + 4;
+#define FORMATTED_OE_KSS_ID_HEX_BUFFER_SIZE (OE_KSS_ID_HEX_BUFFER_SIZE + 4)
 
 static const oe_uuid_t _ecdsa_uuid = {OE_FORMAT_UUID_SGX_ECDSA};
 
