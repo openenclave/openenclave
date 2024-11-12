@@ -470,6 +470,8 @@ oe_result_t oe_sgx_create_enclave(
         else
             secs->base = (uint64_t)image_base;
     }
+#else
+    OE_UNUSED(ex_features);
 #endif // !defined(OEHOSTMR)
     *enclave_addr = image_base ? (uint64_t)image_base : secs->base;
     context->state = OE_SGX_LOAD_STATE_ENCLAVE_CREATED;

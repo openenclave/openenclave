@@ -36,6 +36,7 @@ void _initialize_exception_handler(void)
 {
     oe_result_t result;
     result = oe_add_vectored_exception_handler(false, test_pfgp_handler);
+    OE_UNUSED(result);
 }
 
 int test_enclave_memory_access(uint64_t address, bool* exception)
