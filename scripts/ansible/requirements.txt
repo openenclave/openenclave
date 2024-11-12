@@ -1,9 +1,9 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
-cryptography==42.0.5
-pyOpenSSL==24.0.0
+cryptography==43.0.3
+pyOpenSSL==24.2.1
 ansible>=8.7,<9.0
-ansible-core>=2.15.5,<2.16
-cmake_format==0.6.9
-pywinrm==0.4.3
+ansible-core>=2.15.13,<2.16
+cmake_format==0.6.13
+pywinrm==0.5.0
 requests==2.32.3

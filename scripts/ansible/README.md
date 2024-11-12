@@ -5,7 +5,7 @@ This directory contains the Ansible work used to automate all the required tasks
 
 To quickly install / uninstall Ansible, the script `install-ansible.sh` / `remove-ansible.sh` can be used.
 
-Supported Ansible version >= 2.7.10
+Supported Ansible version: 8.x
 
 # Open Enclave Deployment Options via Ansible
 
@@ -37,25 +37,7 @@ On the target machine where Open Enclave is desired to be configured, you may se
 
     This assumes that the inventory was properly set up with the `windows-agents` machines.
 
-# Configure new Jenkins slaves
-
-The playbook `jenkins-setup.yml` can be used to set up new Jenkin slaves.
-
-Before anything else, make sure you configure your [inventory](/scripts/ansible/inventory) accordingly to target the new machines.
-
-As a good practice, it is advised to address the nodes via their hostnames directly (for simplicity purposes). If the hostnames are not resolvable by the configured DNS server, before running the playbook append a new line to /etc/hosts containing `"NEW_SLAVE_IP"    "NEW_SLAVE_NAME"`. For example:
-
-```
-10.0.28.143    ACC-1604-5
-```
-
-The playbook can be started with:
-
-```
-ansible-playbook jenkins-setup.yml
-```
-
 # Supported platforms by the Ansible playbooks
 
 * Ubuntu 20.04
-* Windows Server 2019 (ACC VM)
+* Windows Server 2022 (SGX-enabled)

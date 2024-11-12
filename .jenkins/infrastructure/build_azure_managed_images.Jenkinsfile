@@ -212,6 +212,8 @@ def buildWindowsManagedImage(String os_series, String image_type, String launch_
                             -i ${WORKSPACE}/scripts/ansible/inventory/hosts-${vm_name} \
                             --extra-vars \"clang_target_version=${clang_version_short}\" \
                             --extra-vars \"is_azure_vm=yes\" \
+                            --extra-vars \"ci_team_email=oeciteam@microsoft.com" \
+                            --extra-vars \"ci_team_name=OE CI Team\" \
                             oe-windows-acc-setup.yml \
                             jenkins-packer.yml
 
