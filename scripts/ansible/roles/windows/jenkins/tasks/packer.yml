@@ -28,10 +28,12 @@
 - name: Configure Git in target image to enable merge/rebase actions - email
   ansible.windows.win_shell: |
     git config --system user.email '{{ ci_team_email }}'
+  when: ci_team_name is defined and ci_team_email is defined
 
 - name: Configure Git in target image to enable merge/rebase actions - name
   ansible.windows.win_shell: |
     git config --system user.name '{{ ci_team_name }}'
+  when: ci_team_name is defined and ci_team_email is defined
 
 - name: Install Docker-ce
   ansible.windows.win_powershell:
