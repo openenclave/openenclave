@@ -89,7 +89,7 @@ int enc_test(bool* caught, bool* dynamic_cast_works, size_t* n_constructions)
     /* Try strings */
     {
         string s = "hello world";
-        s.find("world");
+        OE_TEST(s.find("world") == 6);
     }
 
     /* Try vectors */
