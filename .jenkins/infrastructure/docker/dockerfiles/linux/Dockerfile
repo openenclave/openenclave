@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
@@ -38,7 +39,7 @@
 ARG ubuntu_version=20.04
 ARG ubuntu_source_repo=""
 
-FROM ${ubuntu_source_repo}ubuntu:${ubuntu_version}
+FROM ${ubuntu_source_repo}ubuntu:${ubuntu_version} as build
 
 ARG UNAME=jenkins
 ARG GNAME=jenkins
@@ -65,7 +66,8 @@ RUN echo ${devkits_uri##*/} > /devkits/TARBALL
 # Run Ansible
 COPY ./scripts/ansible /ansible
 COPY ./scripts/lvi-mitigation /lvi-mitigation
-RUN chmod +x /ansible/install-ansible.sh /ansible/remove-ansible.sh && \
+RUN --mount=type=secret,id=pip_index_url,env=PIP_INDEX_URL \
+    chmod +x /ansible/install-ansible.sh /ansible/remove-ansible.sh && \
     DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC /ansible/install-ansible.sh && \
     ansible localhost --playbook-dir=/ansible -m import_role -a "name=linux/docker tasks_from=ci-setup.yml" -vvv && \
     /ansible/remove-ansible.sh && \
@@ -78,6 +80,14 @@ RUN chmod +x /ansible/install-ansible.sh /ansible/remove-ansible.sh && \
 RUN groupadd --gid ${GID} ${GNAME}
 RUN useradd --create-home --uid ${UID} --gid ${GID} --shell /bin/bash ${UNAME}
 RUN echo "${UNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+
+ARG ubuntu_version=20.04
+ARG ubuntu_source_repo=""
+
+# Final stage of the image build
+FROM ${ubuntu_source_repo}ubuntu:${ubuntu_version}
+
+COPY --from=build . .
 
 # Set up out-of-proc attestation
 ENV SGX_AESM_ADDR=1
