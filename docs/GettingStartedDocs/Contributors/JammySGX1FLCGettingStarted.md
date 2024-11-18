@@ -10,7 +10,7 @@
 Use the following command to download the source code.
 
 ```bash
-git clone --recursive https://github.com/justanotherminh/openenclave.git
+git clone --recursive https://github.com/openenclave/openenclave.git
 git checkout ubuntu-22.04
 ```
 
