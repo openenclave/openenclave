@@ -6,8 +6,15 @@ tmp_dir: "C:\\Windows\\Temp"
 shellcheck_dest: "C:\\Program Files\\shellcheck"
 jenkins_agent_root_dir: "C:/Jenkins"
 servicewrapper_url: "https://github.com/cloudbase/OpenStackService/releases/download/v0.1/service-wrapper-sdk10-x64.zip"
-jdk_url: "https://jenkinsprivatestorage.blob.core.windows.net/oraclejdk/jdk-11.0.16.1_windows-x64_bin.exe"
+# From https://learn.microsoft.com/en-us/java/openjdk/download#openjdk-17
+jdk_url: "https://aka.ms/download-jdk/microsoft-jdk-17.0.13-windows-x64.msi"
+# From https://aka.ms/download-jdk/microsoft-jdk-17.0.13-windows-x64.msi.sha256sum.txt
+jdk_checksum: "186ef846423e498ef401aad1ffd92992546aa7e14702ffb90a2389ea51ae1b7a"
+jdk_path: "C:\\Program Files\\Microsoft\\jdk-17.0.13.11-hotspot\\bin\\java.exe"
+# This GUID is determined by installing jdk and then running the Powershell command:
+# `Get-WmiObject Win32_Product | Format-Table IdentifyingNumber, Name`
+jdk_productcode: "879C3E29-AA5D-4009-B30D-7F4C8EC13044"
 
 validation_binaries:
-  - "C:\\Program Files\\Java\\jdk-11.0.16.1\\bin\\java.exe"
+  - "{{ jdk_path }}"
   - "C:\\Windows\\System32\\docker.exe"
