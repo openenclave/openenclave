@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased][Unreleased_log]
 --------------
+### Security
+- Updated mbedtls from version 2.28.1 to 2.28.9
 
 ### Added
 - (#4832) OE SDK now accepts environment variable `OE_INTEL_QVL_LOAD_POLICY`, which can be used to specify the policy for loading [Intel DCAP's QvE](https://github.com/intel/SGXDataCenterAttestationPrimitives) (Quote Verification) for SGX/TDX quote verification. The value can be one of the following:
