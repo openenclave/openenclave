@@ -7,6 +7,8 @@ aes.xts
 asn1parse
 asn1write
 base64
+bignum.generated
+bignum.misc
 ccm
 cipher.aes
 cipher.ccm
@@ -15,6 +17,9 @@ cipher.gcm
 cipher.misc
 cipher.padding
 cmac
+config.mbedtls_boolean
+config.psa_boolean
+config.tls_combinations
 ctr_drbg
 debug
 des
@@ -37,7 +42,6 @@ hmac_drbg.nopr
 hmac_drbg.pr
 md
 mdx
-mpi
 oid
 pem
 pkcs1_v15
@@ -46,6 +50,7 @@ pkcs5
 pkcs12
 pk
 pkparse
+platform_printf
 random
 shax
 rsa
