@@ -51,3 +51,19 @@
     - cmake
     - cpack
     - ctest
+
+- name: Download libssl1.1 Debian package
+  ansible.builtin.get_url:
+    url: "{{ ssl_package_url }}"
+    dest: "{{ package_dest_path }}"
+    checksum: "sha256:5ee003b8cb132a05e05a01f313c50d3d1fa90d4503bd45daa2a1d672ea73a6c1"
+  register: ssl_download
+  until: ssl_download is success
+  retries: 3
+  when: ansible_distribution_release == 'jammy'
+
+- name: Install libssl1.1 on Jammy
+  command: "dpkg -i {{ ssl_download.dest }}"
+  when:
+    - ansible_distribution_release == 'jammy'
+    - not ssl_download.failed|bool
