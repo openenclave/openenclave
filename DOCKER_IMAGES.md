@@ -1,16 +1,19 @@
 # Latest versions
 | Docker Image | Version | Open Enclave version* | Intel SGX PSW version | Intel SGX DCAP version |
 | ------------ | ------- | --------------------- | --------------------- | ---------------------- |
+| Windows Server 2022 | openenclavedockerregistry.azurecr.io/oetools-ws2022:2025.01.03139 | v0.19.8 | None | None |
+| Base Ubuntu 20.04 | openenclavedockerregistry.azurecr.io/openenclave-base-ubuntu-20.04:2025.01.03139 | v0.19.8 | 2.25.100.3-focal1 | 1.22.100.3-focal1 |
+| Full Ubuntu 20.04 | openenclavedockerregistry.azurecr.io/oetools-20.04:2025.01.03139 | v0.19.8 | 2.25.100.3-focal1 | 1.22.100.3-focal1 |
+
+# Previous versions
+| Docker Image | Version | Open Enclave version* | Intel SGX PSW version | Intel SGX DCAP version |
+| ------------ | ------- | --------------------- | --------------------- | ---------------------- |
 | Windows Server 2022 | openenclavedockerregistry.azurecr.io/oetools-ws2022:2024.10.2391 | v0.19.8 | None | None |
 | Base Ubuntu 20.04 | openenclavedockerregistry.azurecr.io/openenclave-base-ubuntu-20.04:2024.10.2391 | v0.19.8 | 2.25.100.3-focal1 | 1.22.100.3-focal1 |
 | Full Ubuntu 20.04 | openenclavedockerregistry.azurecr.io/oetools-20.04:2024.10.2391 | v0.19.8 | 2.25.100.3-focal1 | 1.22.100.3-focal1 |
 | Windows Server 2022 | openenclavedockerregistry.azurecr.io/oetools-ws2022:2024.10.09135 | v0.19.8 | None | None |
 | Base Ubuntu 20.04 | openenclavedockerregistry.azurecr.io/openenclave-base-ubuntu-20.04:2024.10.09135 | v0.19.8 | 2.24.100.3-focal1 | 1.21.100.3-focal1 |
 | Full Ubuntu 20.04 | openenclavedockerregistry.azurecr.io/oetools-20.04:2024.10.09135 | v0.19.8 | 2.24.100.3-focal1 | 1.21.100.3-focal1 |
-
-# Previous versions
-| Docker Image | Version | Open Enclave version* | Intel SGX PSW version | Intel SGX DCAP version |
-| ------------ | ------- | --------------------- | --------------------- | ---------------------- |
 | Windows Server 2022 | openenclavedockerregistry.azurecr.io/oetools-ws2022:2024.09.18134 | v0.19.8 | None | None |
 | Base Ubuntu 20.04 | openenclavedockerregistry.azurecr.io/openenclave-base-ubuntu-20.04:2024.09.18134 | v0.19.8 | 2.24.100.3-focal1 | 1.21.100.3-focal1 |
 | Full Ubuntu 20.04 | openenclavedockerregistry.azurecr.io/oetools-20.04:2024.09.18134 | v0.19.8 | 2.24.100.3-focal1 | 1.21.100.3-focal1 |
