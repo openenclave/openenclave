@@ -314,6 +314,8 @@ static const char* get_quote3_error_t_string(quote3_error_t error)
             SGX_QL_SUPPLEMENTAL_DATA_VERSION_NOT_SUPPORTED);
         CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ROOT_CA_UNTRUSTED);
         CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_TCB_NOT_SUPPORTED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_CONFIG_INVALID_JSON);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_RESULT_INVALID_SIGNATURE);
 
         // return the error number as is in the default case
         default:
@@ -446,6 +448,7 @@ static oe_result_t get_oe_result_t(quote3_error_t error)
             return OE_INVALID_ENDORSEMENT;
 
         case SGX_QL_QUOTE_FORMAT_UNSUPPORTED:
+        case SGX_QL_RESULT_INVALID_SIGNATURE:
         case SGX_QL_QE_REPORT_INVALID_SIGNATURE:
         case SGX_QL_QE_REPORT_UNSUPPORTED_FORMAT:
         case SGX_QL_QUOTE_CERTIFICATION_DATA_UNSUPPORTED:
@@ -1384,6 +1387,8 @@ oe_result_t oe_sgx_verify_quote(
 
         oe_free(p_sgx_endorsements);
 
+        OE_TRACE_INFO("verification status=0x%X", *p_quote_verification_result);
+
         // To align with current quote verification logic, only accept TCB
         // status
         // - UpToDate
@@ -1397,8 +1402,6 @@ oe_result_t oe_sgx_verify_quote(
                 "_sgx_qv_verify_quote failed with quote3_error_t=%s\n",
                 get_quote3_error_t_string(error));
         }
-
-        OE_TRACE_INFO("verification status=%d", *p_quote_verification_result);
     }
     else
     {
@@ -1595,6 +1598,8 @@ oe_result_t oe_tdx_verify_quote(
         (sgx_ql_qe_report_info_t*)p_qve_report_info,
         (uint8_t*)&supp_data);
 
+    OE_TRACE_INFO("verification status=0x%X", *p_quote_verification_result);
+
     // Only accept TCB status with UpToUpdate for now
     if (error != SGX_QL_SUCCESS)
     {
@@ -1613,8 +1618,6 @@ oe_result_t oe_tdx_verify_quote(
             "quote3_error_t=%s\n",
             get_quote3_error_t_string(error));
     }
-
-    OE_TRACE_INFO("verification status=%d", *p_quote_verification_result);
 
     result = OE_OK;
 
