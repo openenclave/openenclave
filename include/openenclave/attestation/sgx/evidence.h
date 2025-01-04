@@ -208,6 +208,23 @@ typedef enum _oe_sgx_tcb_status
     OE_SGX_TCB_STATUS_CONFIGURATION_AND_SW_HARDENING_NEEDED = 6,
 
     /**
+     * For TDX only. All components in the TD’s TCB are latest, including the
+     * TD preserving loaded TDX, but the TD was launched and ran for some time
+     * with out-of-date TDX Module. Relaunching or re-provisioning your TD is
+     * advised
+     */
+    OE_SGX_TCB_STATUS_TD_RELAUNCH_ADVISED = 7,
+
+    /**
+     * The TDX platform firmware and TDX platform software are at the latest
+     * security patching level but there are platform hardware configurations
+     * that may expose the TD to vulnerabilities. In addition, the TD was
+     * launched prior to the application of new TDX TCB components using a TD
+     * Preserving update.
+     */
+    OE_SGX_TCB_STATUS_TD_RELAUNCH_ADVISED_CONFIG_NEEDED = 8,
+
+    /**
      * TCB level is not valid.
      */
     OE_SGX_TCB_STATUS_INVALID = OE_ENUM_MAX,
