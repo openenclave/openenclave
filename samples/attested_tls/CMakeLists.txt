@@ -21,7 +21,7 @@ set(CMAKE_CXX_STANDARD 11)
 # set OE_CRYPTO_LIB to either "mbedtls" or "openssl" based on the crypto wrapper to be used.
 # OE_CRYPTO_LIB is case sensitive. Use all lowercase letters.
 set(OE_CRYPTO_LIB
-    mbedtls
+    openssl_3
     CACHE STRING "Crypto library used by enclaves.")
 
 find_package(OpenEnclave CONFIG REQUIRED)
@@ -31,8 +31,7 @@ if (OE_CRYPTO_LIB MATCHES ".*symcrypt.*")
   include(FetchContent)
   FetchContent_Declare(
     symcrypt_pkg
-    SOURCE_DIR
-    ${CMAKE_BINARY_DIR}/SymCrypt
+    SOURCE_DIR ${CMAKE_BINARY_DIR}/SymCrypt
     URL https://github.com/microsoft/SymCrypt/releases/download/v103.4.2/symcrypt-linux-oe_full-amd64-release-103.4.2-171f697.tar.gz
     URL_HASH
       SHA256=AA562EC53CFBA400A2A27027F480BC81DD9C530A5DCA32CC5C6834ED191D03FD)

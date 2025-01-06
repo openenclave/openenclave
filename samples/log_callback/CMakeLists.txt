@@ -29,7 +29,7 @@ find_package(OpenEnclave CONFIG REQUIRED)
 
 set(CMAKE_CXX_STANDARD 11)
 set(OE_CRYPTO_LIB
-    mbedtls
+    openssl_3
     CACHE STRING "Crypto library used by enclaves.")
 
 add_subdirectory(enclave)

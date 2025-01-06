@@ -13,7 +13,7 @@ project("OEAPKMAN Sample" LANGUAGES C)
 find_package(OpenEnclave CONFIG REQUIRED)
 
 set(OE_CRYPTO_LIB
-    mbedtls
+    openssl_3
     CACHE STRING "Crypto library used by enclaves.")
 
 add_subdirectory(enclave)

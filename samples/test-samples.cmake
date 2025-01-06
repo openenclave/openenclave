@@ -42,17 +42,17 @@ endif ()
 if (BUILD_ENCLAVES)
   set(SAMPLES_LIST debugmalloc file-encryptor helloworld log_callback
                    switchless)
-  set(CRYPTO_LIB_LIST mbedtls mbedtls mbedtls mbedtls mbedtls)
+  set(CRYPTO_LIB_LIST openssl_3 openssl_3 openssl_3 openssl_3 openssl_3)
   # Debug malloc will set allocated memory to a fixed pattern.
   # Hence do not enable pluggable_allocator test under USE_DEBUG_MALLOC.
   if (COMPILER_SUPPORTS_SNMALLOC AND NOT USE_DEBUG_MALLOC)
     list(APPEND SAMPLES_LIST pluggable_allocator)
-    list(APPEND CRYPTO_LIB_LIST mbedtls)
+    list(APPEND CRYPTO_LIB_LIST openssl_3)
   endif ()
 
   if (UNIX)
     list(APPEND SAMPLES_LIST apkman)
-    list(APPEND CRYPTO_LIB_LIST mbedtls)
+    list(APPEND CRYPTO_LIB_LIST openssl_3)
   endif ()
 endif ()
 
@@ -71,7 +71,7 @@ else ()
   # that cause they directly interface with the AESM service.
   if (BUILD_ENCLAVES)
     list(APPEND SAMPLES_LIST data-sealing)
-    list(APPEND CRYPTO_LIB_LIST mbedtls)
+    list(APPEND CRYPTO_LIB_LIST openssl_3)
 
     # These tests can only run with SGX-FLC, meaning they were built
     # against SGX.
@@ -83,21 +83,17 @@ else ()
         attested_tls
         attested_tls
         attested_tls
-        attested_tls
         attestation
-        file-encryptor
         file-encryptor
         file-encryptor)
       list(
         APPEND
         CRYPTO_LIB_LIST
-        mbedtls
         openssl
         openssl_symcrypt_fips
         openssl_3
         openssl_3_symcrypt_prov_fips
-        mbedtls
-        mbedtls
+        openssl_3
         openssl
         openssl_3)
     endif ()
