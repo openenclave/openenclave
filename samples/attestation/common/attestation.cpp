@@ -73,7 +73,7 @@ bool Attestation::generate_attestation_evidence(
          .value_size = sizeof(custom_claim1_value)},
         {.name = custom_claim2_name, .value = nullptr, .value_size = 0}};
 
-    if (m_crypto->Sha256(data, data_size, hash) != 0)
+    if (m_crypto->Sha256(data, data_size, hash) != true)
     {
         TRACE_ENCLAVE("data hashing failed");
         goto exit;
@@ -295,7 +295,7 @@ bool Attestation::attest_attestation_evidence(
         goto exit;
     }
 
-    if (m_crypto->Sha256(data, data_size, hash) != 0)
+    if (m_crypto->Sha256(data, data_size, hash) != true)
     {
         goto exit;
     }

@@ -292,7 +292,7 @@ int ecall_dispatcher::process_encrypted_message(message_t* message)
     }
 
     data_size = sizeof(data);
-    if (m_crypto->decrypt(message->data, message->size, data, &data_size))
+    if (m_crypto->Decrypt(message->data, message->size, data, &data_size))
     {
         // This is where the business logic for verifying the data should be.
         // In this sample, both enclaves start with identical data in

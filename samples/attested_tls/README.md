@@ -9,11 +9,9 @@ It has the following properties:
 - Demonstrates attested TLS feature
   - between two enclaves
   - between an enclave application and a non enclave application
-- Use of MbedTLS/OpenSSL crypto libraries within enclaves for TLS
-- Select between MbedTLS and OpenSSL crypto libraries by setting an environment variable `OE_CRYPTO_LIB` to `mbedtls` or `openssl` at build time (Note that `OE_CRYPTO_LIB` is case sensitive).
-- If the `OE_CRYPTO_LIB` not set, Mbed TLS will be used by default (see [Makefile](Makefile#L8) and [CMakeLists.txt](CMakeLists.txt#L10)).
+- Use of OpenSSL crypto libraries within enclaves for TLS
+- If the `OE_CRYPTO_LIB` not set, OpenSSL 3 will be used by default (see [Makefile](Makefile#L8) and [CMakeLists.txt](CMakeLists.txt#L10)).
 - To use FIPS-enabled OpenSSL based on SymCrypt engine, set the `OE_CRYPTO_LIB` to `openssl_symcrypt_fips`
-- To use OpenSSL 3.0, set the `OE_CRYPTO_LIB` to `openssl_3`
 - To use FIPS-enabled OpenSSL 3 based on SymCrypt provider, set the `OE_CRYPTO_LIB` to `openssl_3_symcrypt_prov_fips`
 - Configure both the server and the client with recommended cipher suites and elliptic curves (refer to the [section](#recommended-tls-configurations-when-using-openssl) for more details).
 - Use of following Enclave APIs
@@ -41,7 +39,7 @@ Note: Both of them can run on the same machine or separate machines.
     - Instantiate an enclave before transitioning the control into the enclave via an ecall.
   - Enclave (tls_server_enclave.signed)
     - Call oe_get_attestation_certificate_with_evidence to generate an certificate
-    - Use the MbedTLS/OpenSSL API to configure a TLS server using the generated certificate
+    - Use the OpenSSL API to configure a TLS server using the generated certificate
     - Launch a TLS server and wait for client connection request
     - Read client payload and reply with server payload
   - How to launch a server instance
@@ -53,7 +51,7 @@ Note: Both of them can run on the same machine or separate machines.
     - Instantiate an enclave before transitioning the control into the enclave via an ecall.
   - Enclave (tls_client_enclave.signed)
     - Call oe_get_attestation_certificate_with_evidence to generate an certificate
-    - Use MbedTLS/OpenSSL API to configure an TLS client after configuring above certificate as the client's certificate
+    - Use OpenSSL API to configure an TLS client after configuring above certificate as the client's certificate
     - Launch a TLS client and connect to the server
     - Send client payload and wait for server's payload
   - How to launch a client instance
@@ -77,14 +75,6 @@ Note: Both of them can run on the same machine or separate machines.
 ### Linux
 
 #### CMake
-- Use Mbed TLS
-  ```bash
-  mkdir build
-  cd build
-  cmake -DOE_CRYPTO_LIB=mbedtls ..
-  make
-  make run
-  ```
 - Use OpenSSL
   ```bash
   mkdir build
@@ -122,11 +112,6 @@ Note: Both of them can run on the same machine or separate machines.
   ```
 
 #### GNU Make
-- Use Mbed TLS
-  ```bash
-  make OE_CRYPTO_LIB=mbedtls build
-  make run
-  ```
 - Use OpenSSL
   ```bash
   make OE_CRYPTO_LIB=openssl build
@@ -154,14 +139,6 @@ Note: Both of them can run on the same machine or separate machines.
 ### Windows
 
 #### CMake
-- Use Mbed TLS
-  ```bash
-  mkdir build
-  cd build
-  cmake -G Ninja -DOE_CRYPTO_LIB=mbedtls ..
-  ninja
-  ninja run
-  ```
 - Use OpenSSL
   ```bash
   mkdir build

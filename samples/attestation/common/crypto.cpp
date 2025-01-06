@@ -2,96 +2,91 @@
 // Licensed under the MIT License.
 
 #include "crypto.h"
-#include <mbedtls/pk.h>
-#include <mbedtls/rsa.h>
 #include <openenclave/enclave.h>
+#include <openssl/bio.h>
+#include <openssl/crypto.h>
+#include <openssl/evp.h>
+#include <openssl/pem.h>
+#include <openssl/rsa.h>
 #include <stdlib.h>
 #include <string.h>
 
 Crypto::Crypto()
 {
-    m_initialized = init_mbedtls();
+    m_initialized = init_openssl3();
 }
 
 Crypto::~Crypto()
 {
-    cleanup_mbedtls();
+    cleanup_openssl3();
 }
 
 /**
- * init_mbedtls initializes the crypto module.
- * mbedtls initialization. Please refer to mbedtls documentation for detailed
+ * init_openssl3 initializes the crypto module.
+ * openssl 3 initialization. Please refer to openssl documentation for detailed
  * information about the functions used.
  */
-bool Crypto::init_mbedtls(void)
+bool Crypto::init_openssl3(void)
 {
     bool ret = false;
-    int res = -1;
+    BIO* mem = nullptr;
+    size_t numbytes = 0;
+    EVP_PKEY_CTX* ctx = nullptr;
+    char* bio_ptr = nullptr;
 
-    mbedtls_ctr_drbg_init(&m_ctr_drbg_contex);
-    mbedtls_entropy_init(&m_entropy_context);
-    mbedtls_pk_init(&m_pk_context);
-
-    // Initialize entropy.
-    res = mbedtls_ctr_drbg_seed(
-        &m_ctr_drbg_contex,
-        mbedtls_entropy_func,
-        &m_entropy_context,
-        nullptr,
-        0);
-    if (res != 0)
+    if (!(ctx = EVP_PKEY_CTX_new_from_name(NULL, "RSA", NULL)))
     {
-        TRACE_ENCLAVE("mbedtls_ctr_drbg_seed failed.");
+        TRACE_ENCLAVE("EVP_PKEY_CTX_new_from_name failed!\n");
         goto exit;
     }
-
-    // Initialize RSA context.
-    res = mbedtls_pk_setup(
-        &m_pk_context, mbedtls_pk_info_from_type(MBEDTLS_PK_RSA));
-    if (res != 0)
+    if (!EVP_PKEY_keygen_init(ctx))
     {
-        TRACE_ENCLAVE("mbedtls_pk_setup failed (%d).", res);
+        TRACE_ENCLAVE("EVP_PKEY_keygen_init failed!\n");
         goto exit;
     }
-
-    // Generate an ephemeral 2048-bit RSA key pair with
-    // exponent 65537 for the enclave.
-    res = mbedtls_rsa_gen_key(
-        mbedtls_pk_rsa(m_pk_context),
-        mbedtls_ctr_drbg_random,
-        &m_ctr_drbg_contex,
-        2048,
-        65537);
-    if (res != 0)
+    // default key size 2048 bits, default exponent 65537
+    if (!EVP_PKEY_generate(ctx, &rsa_pkey))
     {
-        TRACE_ENCLAVE("mbedtls_rsa_gen_key failed (%d)\n", res);
+        TRACE_ENCLAVE("EVP_PKEY_generate failed!\n");
         goto exit;
     }
-
-    // Write out the public key in PEM format for exchange with other enclaves.
-    res = mbedtls_pk_write_pubkey_pem(
-        &m_pk_context, m_public_key, sizeof(m_public_key));
-    if (res != 0)
+    mem = BIO_new(BIO_s_mem());
+    if (mem == NULL)
     {
-        TRACE_ENCLAVE("mbedtls_pk_write_pubkey_pem failed (%d)\n", res);
+        TRACE_ENCLAVE("BIO_new failed!\n");
         goto exit;
     }
+    ret = PEM_write_bio_PUBKEY(mem, rsa_pkey);
+    if (ret == 0)
+    {
+        TRACE_ENCLAVE("PEM_write_bio_PUBKEY failed!\n");
+        goto exit;
+    }
+    numbytes = (size_t)BIO_get_mem_data(mem, &bio_ptr);
+    if (numbytes == 0)
+    {
+        TRACE_ENCLAVE("BIO_get_mem_data failed!\n");
+        goto exit;
+    }
+    memcpy(&m_public_key[0], bio_ptr, numbytes);
     ret = true;
-    TRACE_ENCLAVE("mbedtls initialized.");
+    TRACE_ENCLAVE("openssl 3 initialized.");
 exit:
+    if (mem)
+        BIO_free(mem);
+    if (ctx)
+        EVP_PKEY_CTX_free(ctx);
     return ret;
 }
 
 /**
  * mbedtls cleanup during shutdown.
  */
-void Crypto::cleanup_mbedtls(void)
+void Crypto::cleanup_openssl3(void)
 {
-    mbedtls_pk_free(&m_pk_context);
-    mbedtls_entropy_free(&m_entropy_context);
-    mbedtls_ctr_drbg_free(&m_ctr_drbg_contex);
-
-    TRACE_ENCLAVE("mbedtls cleaned up.");
+    if (rsa_pkey)
+        EVP_PKEY_free(rsa_pkey);
+    TRACE_ENCLAVE("openssl 3 cleaned up.");
 }
 
 /**
@@ -103,27 +98,39 @@ void Crypto::retrieve_public_key(uint8_t pem_public_key[512])
 }
 
 // Compute the sha256 hash of given data.
-int Crypto::Sha256(const uint8_t* data, size_t data_size, uint8_t sha256[32])
+bool Crypto::Sha256(const uint8_t* data, size_t data_size, uint8_t sha256[32])
 {
-    int ret = 0;
-    mbedtls_sha256_context ctx;
+    int ret = false;
+    EVP_MD_CTX* ctx = nullptr;
 
-    mbedtls_sha256_init(&ctx);
-
-    ret = mbedtls_sha256_starts_ret(&ctx, 0);
-    if (ret)
+    if (!(ctx = EVP_MD_CTX_new()))
+    {
+        TRACE_ENCLAVE("EVP_MD_CTX_new failed!");
         goto exit;
+    }
 
-    ret = mbedtls_sha256_update_ret(&ctx, data, data_size);
-    if (ret)
+    if (!EVP_DigestInit_ex(ctx, EVP_sha256(), NULL))
+    {
+        TRACE_ENCLAVE("EVP_DigestInit_ex failed!");
         goto exit;
+    }
 
-    ret = mbedtls_sha256_finish_ret(&ctx, sha256);
-    if (ret)
+    if (!EVP_DigestUpdate(ctx, data, data_size))
+    {
+        TRACE_ENCLAVE("EVP_DigestUpdate failed!");
         goto exit;
+    }
 
+    if (!EVP_DigestFinal_ex(ctx, sha256, NULL))
+    {
+        TRACE_ENCLAVE("EVP_DigestFinal_ex failed!");
+        goto exit;
+    }
+
+    ret = true;
 exit:
-    mbedtls_sha256_free(&ctx);
+    if (ctx)
+        EVP_MD_CTX_free(ctx);
     return ret;
 }
 
@@ -138,103 +145,124 @@ bool Crypto::Encrypt(
     uint8_t* encrypted_data,
     size_t* encrypted_data_size)
 {
+    BIO* mem = nullptr;
+    EVP_PKEY* pkey = nullptr;
+    EVP_PKEY_CTX* ctx = nullptr;
     bool result = false;
-    mbedtls_pk_context key;
-    size_t key_size = 0;
-    int res = -1;
-    mbedtls_rsa_context* rsa_context;
 
-    mbedtls_pk_init(&key);
-
-    if (!m_initialized)
-        goto exit;
-
-    // Read the given public key.
-    key_size = strlen((const char*)pem_public_key) + 1; // Include ending '\0'.
-    res = mbedtls_pk_parse_public_key(&key, pem_public_key, key_size);
-    if (res != 0)
+    if (!(mem = BIO_new(BIO_s_mem())))
     {
-        TRACE_ENCLAVE("mbedtls_pk_parse_public_key failed.");
+        TRACE_ENCLAVE("BIO_new failed!");
         goto exit;
     }
-
-    rsa_context = mbedtls_pk_rsa(key);
-    rsa_context->padding = MBEDTLS_RSA_PKCS_V21;
-    rsa_context->hash_id = MBEDTLS_MD_SHA256;
-
-    if (rsa_context->padding == MBEDTLS_RSA_PKCS_V21)
+    if (!BIO_write(mem, pem_public_key, 512))
     {
-        TRACE_ENCLAVE("Padding used: MBEDTLS_RSA_PKCS_V21 for OAEP or PSS");
-    }
-
-    if (rsa_context->padding == MBEDTLS_RSA_PKCS_V15)
-    {
-        TRACE_ENCLAVE("New MBEDTLS_RSA_PKCS_V15  for 1.5 padding");
-    }
-
-    // Encrypt the data.
-    res = mbedtls_rsa_pkcs1_encrypt(
-        rsa_context,
-        mbedtls_ctr_drbg_random,
-        &m_ctr_drbg_contex,
-        MBEDTLS_RSA_PUBLIC,
-        data_size,
-        data,
-        encrypted_data);
-    if (res != 0)
-    {
-        TRACE_ENCLAVE("mbedtls_rsa_pkcs1_encrypt failed with %d\n", res);
+        TRACE_ENCLAVE("BIO_write failed!");
         goto exit;
     }
-
-    *encrypted_data_size = rsa_context->len;
+    if (!(pkey = PEM_read_bio_PUBKEY(mem, NULL, NULL, NULL)))
+    {
+        TRACE_ENCLAVE("PEM_read_bio_PUBKEY failed!");
+        goto exit;
+    }
+    if (!(ctx = EVP_PKEY_CTX_new(pkey, NULL)))
+    {
+        TRACE_ENCLAVE("EVP_PKEY_CTX_new failed!");
+        goto exit;
+    }
+    if (!EVP_PKEY_encrypt_init(ctx))
+    {
+        TRACE_ENCLAVE("EVP_PKEY_encrypt_init failed!");
+        goto exit;
+    }
+    if (!EVP_PKEY_CTX_set_rsa_padding(ctx, RSA_PKCS1_OAEP_PADDING))
+    {
+        TRACE_ENCLAVE("EVP_PKEY_CTX_set_rsa_padding failed!");
+        goto exit;
+    }
+    if (!EVP_PKEY_encrypt(
+            ctx, NULL, encrypted_data_size, (unsigned char*)data, data_size))
+    {
+        TRACE_ENCLAVE("EVP_PKEY_encrypt failed!");
+        goto exit;
+    }
+    if (!(encrypted_data = (uint8_t*)OPENSSL_malloc(*encrypted_data_size)))
+    {
+        TRACE_ENCLAVE("OPENSSL_malloc failed!");
+        goto exit;
+    }
+    if (!EVP_PKEY_encrypt(
+            ctx,
+            encrypted_data,
+            encrypted_data_size,
+            (unsigned char*)data,
+            data_size))
+    {
+        TRACE_ENCLAVE("EVP_PKEY_encrypt failed!");
+        goto exit;
+    }
     result = true;
 exit:
-    mbedtls_pk_free(&key);
+    if (mem)
+        BIO_free(mem);
+    if (ctx)
+        EVP_PKEY_CTX_free(ctx);
+    if (pkey)
+        EVP_PKEY_free(pkey);
     return result;
 }
-
 /**
  * decrypt the given data using current enclave's private key.
  * Used to receive encrypted data from another enclave.
  */
-bool Crypto::decrypt(
+bool Crypto::Decrypt(
     const uint8_t* encrypted_data,
     size_t encrypted_data_size,
     uint8_t* data,
     size_t* data_size)
 {
     bool ret = false;
-    size_t output_size = 0;
-    int res = 0;
-    mbedtls_rsa_context* rsa_context;
+    EVP_PKEY_CTX* ctx = nullptr;
 
-    if (!m_initialized)
-        goto exit;
-
-    mbedtls_pk_rsa(m_pk_context)->len = encrypted_data_size;
-    rsa_context = mbedtls_pk_rsa(m_pk_context);
-    rsa_context->padding = MBEDTLS_RSA_PKCS_V21;
-    rsa_context->hash_id = MBEDTLS_MD_SHA256;
-
-    output_size = *data_size;
-    res = mbedtls_rsa_pkcs1_decrypt(
-        rsa_context,
-        mbedtls_ctr_drbg_random,
-        &m_ctr_drbg_contex,
-        MBEDTLS_RSA_PRIVATE,
-        &output_size,
-        encrypted_data,
-        data,
-        output_size);
-    if (res != 0)
+    if (!(ctx = EVP_PKEY_CTX_new(rsa_pkey, NULL)))
     {
-        TRACE_ENCLAVE("mbedtls_rsa_pkcs1_decrypt failed with %d\n", res);
+        TRACE_ENCLAVE("EVP_PKEY_CTX_new failed!");
         goto exit;
     }
-    *data_size = output_size;
+    if (!EVP_PKEY_CTX_set_rsa_padding(ctx, RSA_PKCS1_OAEP_PADDING))
+    {
+        TRACE_ENCLAVE("EVP_PKEY_CTX_set_rsa_padding failed!");
+        goto exit;
+    }
+    if (!EVP_PKEY_decrypt(
+            ctx,
+            NULL,
+            data_size,
+            (unsigned char*)encrypted_data,
+            encrypted_data_size))
+    {
+        TRACE_ENCLAVE("EVP_PKEY_decrypt failed!");
+        goto exit;
+    }
+    if (!(data = (uint8_t*)OPENSSL_malloc(*data_size)))
+    {
+        TRACE_ENCLAVE("OPENSSL_malloc failed!");
+        goto exit;
+    }
+    if (!EVP_PKEY_decrypt(
+            ctx,
+            data,
+            data_size,
+            (unsigned char*)encrypted_data,
+            encrypted_data_size))
+    {
+        TRACE_ENCLAVE("EVP_PKEY_decrypt failed!");
+        goto exit;
+    }
     ret = true;
 
 exit:
+    if (ctx)
+        EVP_PKEY_CTX_free(ctx);
     return ret;
 }
