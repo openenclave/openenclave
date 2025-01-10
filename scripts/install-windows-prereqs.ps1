@@ -39,7 +39,6 @@ Param(
     # SGX1 and SGX1-NoIntelDrivers will be deprecated.
     [Parameter(mandatory=$true)][ValidateSet("SGX1FLC", "SGX1", "SGX1FLC-NoIntelDrivers", "SGX1-NoIntelDrivers")][string]$LaunchConfiguration,
     [Parameter(mandatory=$true)][ValidateSet("None", "Azure")][string]$DCAPClientType,
-    [Parameter(mandatory=$false)][switch]$InstallDocker=$false,
     [Parameter(mandatory=$false)][switch]$SkipVSInstall=$false,
     [Parameter(mandatory=$false)][switch]$VerificationOnly=$false,
     [Parameter(mandatory=$false)][string[]]$SkipTask=@()
@@ -585,22 +584,13 @@ function Install-NSIS {
                  -EnvironmentPath @($installDir, "${installDir}\Bin")
 }
 
-function Install-Docker {
-    Write-Output '[WARNING] Docker is no longer a prerequisite and installation thereof is deprecated.'
-}
-
-function Validate-SkipTasks {
-    Param(
-        [Parameter(Mandatory=$true)][array]$SkipTaskLower
-    )
-    $ValidSet = @("Nuget3", "Nuget6", "Python", "VisualStudio", "LLVM", "Git", "Shellcheck", "NSIS", "Docker", "OpenSSL", "VCRuntime")
-    foreach($item in $SkipTaskLower) {
-        if($ValidSet -notcontains $item) {
-            Write-Output "$item is not a valid package to skip."
-            return
+function Confirm-SkipTasks {
+    $ValidSet = @("Nuget3", "Nuget6", "Python", "VisualStudio", "LLVM", "Git", "Shellcheck", "NSIS", "OpenSSL", "VCRuntime")
+    foreach($item in $SkipTask) {
+        if($ValidSet -inotcontains $item) {
+            Write-Warning "$item is not a valid package to skip."
         }
-        Write-Output "Skipping $PackageToInstall"
-        return
+        Write-Information "Skipping $PackageToInstall"
     }
 }
 
@@ -609,64 +599,17 @@ try {
         Write-Output 'Verification only - Complete'
         Exit 0
     }
-    $lowercaseSkipTask = $SkipTask.ForEach({$_.ToLower()})
-    Validate-SkipTasks -SkipTaskLower $lowercaseSkipTask
+    Confirm-SkipTasks
     Start-LocalPackagesDownload
     Install-7Zip
-    if($lowercaseSkipTask -contains "nuget3") {
-        Write-Output "Skipping Nuget3"
-    }
-    else {
-        Install-Nuget -Version 3
-    }
-    if($lowercaseSkipTask -contains "nuget6") {
-        Write-Output "Skipping Nuget6"
-    }
-    else {
-        Install-Nuget -Version 6
-    }
-    if($lowercaseSkipTask -contains "python") {
-        Write-Output "Skipping Python"
-    }
-    else {
-        Install-Python3
-    }
-    if ($lowercaseSkipTask -contains "visualstudio" -or $SkipVSInstall) {
-        Write-Output "Skipping VisualStudio"
-    }
-    else{
-        Install-VisualStudio
-    }
-    if ($lowercaseSkipTask -contains "llvm") {
-        Write-Output "Skipping LLVM"
-    }
-    else {
-        Install-LLVM
-    }
-    if ($lowercaseSkipTask -contains "git") {
-        Write-Output "Skipping Git"
-    }
-    else {
-        Install-Git
-    }
-    if ($lowercaseSkipTask -contains "shellcheck") {
-        Write-Output "Skipping Shellcheck"
-    }
-    else {
-        Install-Shellcheck
-    }
-    if ($lowercaseSkipTask -contains "nsis") {
-        Write-Output "Skipping NSIS"
-    }
-    else {
-        Install-NSIS
-    }
-    if($lowercaseSkipTask -contains "docker" -or !$InstallDocker) {
-        Write-Output "Skipping Docker"
-    }
-    else {
-        Install-Docker
-    }
+    if ($SkipTask -inotcontains "nuget3") { Install-Nuget -Version 3 }
+    if ($SkipTask -inotcontains "nuget6") { Install-Nuget -Version 6 }
+    if ($SkipTask -inotcontains "python") { Install-Python3 }
+    if ($SkipTask -inotcontains "visualstudio" -and !$SkipVSInstall) { Install-VisualStudio }
+    if ($SkipTask -inotcontains "llvm") { Install-LLVM }
+    if ($SkipTask -inotcontains "git") { Install-Git }
+    if ($SkipTask -inotcontains "shellcheck") { Install-Shellcheck }
+    if ($SkipTask -inotcontains "nsis") { Install-NSIS }
 
     if (($LaunchConfiguration -ne "SGX1FLC-NoIntelDrivers") -and ($LaunchConfiguration -ne "SGX1-NoIntelDrivers") -or ($DCAPClientType -eq "Azure")) {
         Install-DCAP-Dependencies
@@ -674,18 +617,8 @@ try {
     # There is a bug with the dcap dependency installation where it will overwrite the installation path folder. 
     # This is a bug in the upstream DCAP package itself. 
     # As we want OpenSSL installed in the same location to be picked up automatically by cmake, just install after dcap installation.
-    if($lowercaseSkipTask -contains "openssl") {
-        Write-Output "Skipping OpenSSL"
-    }
-    else {
-        Install-OpenSSL
-    }
-    if($lowercaseSkipTask -contains "vcruntime") {
-        Write-Output "Skipping VC Runtime"
-    }
-    else {
-        Install-VCRuntime
-    }
+    if ($SkipTask -inotcontains "openssl") { Install-OpenSSL }
+    if ($SkipTask -inotcontains "vcruntime") { Install-VCRuntime }
 
     # The Open Enclave source directory tree might have file paths exceeding
     # the default limit of 260 characters (especially the 3rd party libraries
