@@ -18,7 +18,7 @@ RUN powershell.exe -ExecutionPolicy Unrestricted -NoLogo -NonInteractive -NoProf
 ARG windows_source_repo="mcr.microsoft.com/windows/"
 
 FROM ${windows_source_repo}servercore:ltsc2022
-COPY scripts./install-windows-prereqs.ps1 oe/scripts/install-windows-prereqs.ps1
+COPY scripts/install-windows-prereqs.ps1 oe/scripts/install-windows-prereqs.ps1
 COPY --from=build ["Program Files/python-3.7.4", "Program Files/python-3.7.4"]
 RUN powershell.exe -ExecutionPolicy Unrestricted -NoLogo -NonInteractive -NoProfile -WindowStyle Hidden -File oe\scripts\install-windows-prereqs.ps1 -InstallPath C:\oe_prereqs -LaunchConfiguration SGX1FLC-NoIntelDrivers -DCAPClientType None -SkipTask Python
 RUN setx path /M "%path%;C:\Users\ContainerAdministrator\AppData\Local\Temp\packages\python3;C:\Program Files\python-3.7.4\Scripts;C:\Program Files\python-3.7.4"
