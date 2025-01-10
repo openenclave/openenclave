@@ -35,12 +35,10 @@ jobs:
         submodules: recursive
 
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3.27.9
+      uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
         config-file: .github/codeql/codeql-config.yml
-        # Hardcode the CodeQL bundle version to 2.15.0, as 2.15.1 contains a breaking change that will need to be addressed before updating.
-        tools: https://github.com/github/codeql-action/releases/download/codeql-bundle-v2.15.0/codeql-bundle-linux64.tar.gz
 
     - name: Build
       run: |
@@ -50,4 +48,4 @@ jobs:
        make -j8
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3.27.9
+      uses: github/codeql-action/analyze@v3
