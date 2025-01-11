@@ -16,9 +16,9 @@ Param(
     [string]$ClangHash = 'B5770BBFAC712D273938CD155E232AFAA85C2E8D865C7CA504A104A838568516',
     [string]$ShellCheckURL = 'https://openenclavepublicstorage.blob.core.windows.net/openenclavedependencies/shellcheck-v0.7.0.zip',
     [string]$ShellCheckHash = '02CFA14220C8154BB7C97909E80E74D3A7FE2CBB7D80AC32ADCAC7988A95E387',
-    [string]$Nuget3URL = 'https://www.nuget.org/api/v2/package/NuGet.exe/3.4.3',
+    [string]$Nuget3URL = 'https://openenclavepublicstorage.blob.core.windows.net/openenclavedependencies/nuget.exe.3.4.3.nupkg',
     [string]$Nuget3Hash = '2D4D38666E5C7D27EE487C60C9637BD9DD63795A117F0E0EDC68C55EE6DFB71F',
-    [string]$Nuget6URL = 'https://dist.nuget.org/win-x86-commandline/v6.2.4/nuget.exe',
+    [string]$Nuget6URL = 'https://openenclavepublicstorage.blob.core.windows.net/openenclavedependencies/nuget6.exe',
     [string]$Nuget6Hash = 'F2B2145244A3FE1E905599CFB3ADE38E3FCE0C00E73532BDE164EE4F8C8EDCEA',
     [string]$DevconURL = 'https://download.microsoft.com/download/7/D/D/7DD48DE6-8BDA-47C0-854A-539A800FAA90/wdk/Installers/787bee96dbd26371076b37b13c405890.cab',
     [string]$DevconHash = 'A38E409617FC89D0BA1224C31E42AF4344013FEA046D2248E4B9E03F67D5908A',
@@ -27,9 +27,9 @@ Param(
     [string]$IntelDCAPHash = 'E65061221BF22C1C52E0AF9F610CE53288AA34543A0E152DA2FE755B7079EB93',
     [string]$VCRuntime2012URL = 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe',
     [string]$VCRuntime2012Hash = '681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064',
-    [string]$AzureDCAPNupkgURL = 'https://www.nuget.org/api/v2/package/Microsoft.Azure.DCAP/1.12.3',
+    [string]$AzureDCAPNupkgURL = 'https://openenclavepublicstorage.blob.core.windows.net/openenclavedependencies/microsoft.azure.dcap.1.12.3.nupkg',
     [string]$AzureDCAPNupkgHash = 'A15957E6563418D15DA1585BEB92E6F59B1FB599268FA228306389973FBBF92F',
-    [string]$Python3ZipURL = 'https://www.python.org/ftp/python/3.7.4/python-3.7.4-embed-amd64.zip',
+    [string]$Python3ZipURL = 'https://openenclavepublicstorage.blob.core.windows.net/openenclavedependencies/python-3.7.4-embed-amd64.zip',
     [string]$Python3ZipHash = 'FB65E5CD595AD01049F73B47BC0EE23FD03F0CBADC56CB318990CEE83B37761B',
     [string]$NSISURL = 'https://openenclavepublicstorage.blob.core.windows.net/openenclavedependencies/nsis-3.05-setup.exe',
     [string]$NSISHash = '1A3CC9401667547B9B9327A177B13485F7C59C2303D4B6183E7BC9E6C8D6BFDB',
@@ -39,9 +39,9 @@ Param(
     # SGX1 and SGX1-NoIntelDrivers will be deprecated.
     [Parameter(mandatory=$true)][ValidateSet("SGX1FLC", "SGX1", "SGX1FLC-NoIntelDrivers", "SGX1-NoIntelDrivers")][string]$LaunchConfiguration,
     [Parameter(mandatory=$true)][ValidateSet("None", "Azure")][string]$DCAPClientType,
-    [Parameter(mandatory=$false)][switch]$InstallDocker=$false,
     [Parameter(mandatory=$false)][switch]$SkipVSInstall=$false,
-    [Parameter(mandatory=$false)][switch]$VerificationOnly=$false
+    [Parameter(mandatory=$false)][switch]$VerificationOnly=$false,
+    [Parameter(mandatory=$false)][string[]]$SkipTask=@()
 )
 
 $ErrorActionPreference = "Stop"
@@ -584,34 +584,32 @@ function Install-NSIS {
                  -EnvironmentPath @($installDir, "${installDir}\Bin")
 }
 
-function Install-Docker {
-    Write-Output '[WARNING] Docker is no longer a prerequisite and installation thereof is deprecated.'
+function Confirm-SkipTasks {
+    $ValidSet = @("Nuget3", "Nuget6", "Python", "VisualStudio", "LLVM", "Git", "Shellcheck", "NSIS", "OpenSSL", "VCRuntime")
+    foreach($item in $SkipTask) {
+        if($ValidSet -inotcontains $item) {
+            Write-Warning "$item is not a valid package to skip."
+        }
+        Write-Information "Skipping $PackageToInstall"
+    }
 }
 
 try {
-
     if ($VerificationOnly) {
         Write-Output 'Verification only - Complete'
         Exit 0
     }
-
+    Confirm-SkipTasks
     Start-LocalPackagesDownload
-
     Install-7Zip
-    Install-Nuget -Version 3
-    Install-Nuget -Version 6
-    Install-Python3
-    if (!$SkipVSInstall) {
-        Install-VisualStudio
-    }
-    Install-LLVM
-    Install-Git
-    Install-Shellcheck
-    Install-NSIS
-
-    if ($InstallDocker) {
-        Install-Docker
-    }
+    if ($SkipTask -inotcontains "nuget3") { Install-Nuget -Version 3 }
+    if ($SkipTask -inotcontains "nuget6") { Install-Nuget -Version 6 }
+    if ($SkipTask -inotcontains "python") { Install-Python3 }
+    if ($SkipTask -inotcontains "visualstudio" -and !$SkipVSInstall) { Install-VisualStudio }
+    if ($SkipTask -inotcontains "llvm") { Install-LLVM }
+    if ($SkipTask -inotcontains "git") { Install-Git }
+    if ($SkipTask -inotcontains "shellcheck") { Install-Shellcheck }
+    if ($SkipTask -inotcontains "nsis") { Install-NSIS }
 
     if (($LaunchConfiguration -ne "SGX1FLC-NoIntelDrivers") -and ($LaunchConfiguration -ne "SGX1-NoIntelDrivers") -or ($DCAPClientType -eq "Azure")) {
         Install-DCAP-Dependencies
@@ -619,8 +617,8 @@ try {
     # There is a bug with the dcap dependency installation where it will overwrite the installation path folder. 
     # This is a bug in the upstream DCAP package itself. 
     # As we want OpenSSL installed in the same location to be picked up automatically by cmake, just install after dcap installation.
-    Install-OpenSSL
-    Install-VCRuntime
+    if ($SkipTask -inotcontains "openssl") { Install-OpenSSL }
+    if ($SkipTask -inotcontains "vcruntime") { Install-VCRuntime }
 
     # The Open Enclave source directory tree might have file paths exceeding
     # the default limit of 260 characters (especially the 3rd party libraries
