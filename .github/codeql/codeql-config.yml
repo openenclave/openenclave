@@ -4,4 +4,4 @@
 name: "CodeQL config"
 disable-default-queries: true
 queries:
-  - uses: "openenclave/openenclave-security/src/static/codeql/queries/cpp/suites/oe-codeql-security-queries.qls@main"
+  - uses: "asvrada/openenclave-security/src/static/codeql/queries/cpp/suites/oe-codeql-security-queries.qls@main"
