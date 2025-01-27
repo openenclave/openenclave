@@ -60,12 +60,12 @@ extern "C" {
  *  SGX_QL_EPHEMERAL_QVE_MULTI_THREAD - QvE is loaded per thread and be unloaded before function exit.
  *  SGX_QL_PERSISTENT_QVE_MULTI_THREAD - QvE is loaded per thread and only be unloaded before thread exit.
  *
- * NOTE: QvE load policy should be only set once in one process, change the policy means all threads will be impacted.
+ * NOTE: QvE load policy should be only set once in one process, otherwise, this function will return error SGX_QL_UNSUPPORTED_LOADING_POLICY.
  *
  * @param policy Sets the requested enclave loading policy to either SGX_QL_PERSISTENT, SGX_QL_EPHEMERAL or SGX_QL_DEFAULT.
  *
  * @return SGX_QL_SUCCESS Successfully set the enclave loading policy for the quoting library's enclaves.
- * @return SGX_QL_UNSUPPORTED_LOADING_POLICY The selected policy is not support by the quoting library.
+ * @return SGX_QL_UNSUPPORTED_LOADING_POLICY The selected policy is not supported or it has been set once.
  *
  **/
 quote3_error_t sgx_qv_set_enclave_load_policy(sgx_ql_request_policy_t policy);
@@ -120,7 +120,6 @@ quote3_error_t sgx_qv_verify_quote(
     uint8_t *p_supplemental_data);
 
 
-
 /**
  * Call quote provider library to get QvE identity.
  *
@@ -165,6 +164,51 @@ typedef enum
 
 quote3_error_t sgx_qv_set_path(sgx_qv_path_type_t path_type,
                                    const char *p_path);
+
+/**
+ * Perform ECDSA quote verification and get quote verification result token.
+ *
+ * @param p_quote[IN] - Pointer to SGX or TDX Quote.
+ * @param quote_size[IN] - Size of the buffer pointed to by p_quote (in bytes).
+ * @param p_quote_collateral[IN] - The parameter is optional. This is a pointer to the Quote Certification Collateral provided by the caller.
+ * @param p_qve_report_info[IN/OUT] - This parameter can be used in 2 ways.
+ *        If p_qve_report_info is NOT NULL, the API will use Intel QvE to perform quote verification, and QvE will generate a report using the target_info in sgx_ql_qe_report_info_t structure.
+ *        if p_qve_report_info is NULL, the API will use QVL library to perform quote verification, note that the results can not be cryptographically authenticated in this mode.
+ * @param p_user_data[IN] - User data.
+ * @param p_verification_result_token_buffer_size[OUT] - Size of the buffer pointed to by verification_result_token (in bytes).
+ * @param p_verification_result_token[OUT] - Pointer to the verification_result_token.
+ *
+ * @return Status code of the operation, one of:
+ *      - SGX_QL_SUCCESS
+ *      - SGX_QL_ERROR_INVALID_PARAMETER
+ *      - SGX_QL_QUOTE_FORMAT_UNSUPPORTED
+ *      - SGX_QL_QUOTE_CERTIFICATION_DATA_UNSUPPORTED
+ *      - SGX_QL_UNABLE_TO_GENERATE_REPORT
+ *      - SGX_QL_CRL_UNSUPPORTED_FORMAT
+ *      - SGX_QL_ERROR_UNEXPECTED
+ **/
+quote3_error_t  tee_verify_quote_qvt(
+    const uint8_t *p_quote,
+    uint32_t quote_size,
+    const sgx_ql_qve_collateral_t *p_quote_collateral,
+    sgx_ql_qe_report_info_t *p_qve_report_info,
+    const uint8_t *p_user_data,
+    uint32_t *p_verification_result_token_buffer_size,
+    uint8_t **p_verification_result_token);
+
+/**
+ * Free quote verification result token buffer, which returned by `tee_verify_quote_qvt`
+ *
+ * @param p_verification_result_token[IN] - Pointer to verification result token
+ * @param p_verification_result_token_buffer_size[IN] - Pointer to verification result token size
+ *
+ * @return Status code of the operation, one of:
+ *      - SGX_QL_SUCCESS
+ *      - SGX_QL_ERROR_INVALID_PARAMETER
+ **/
+quote3_error_t tee_free_verify_quote_qvt(
+    uint8_t *p_verification_result_token,
+    uint32_t *p_verification_result_token_buffer_size);
 #endif
 
 
