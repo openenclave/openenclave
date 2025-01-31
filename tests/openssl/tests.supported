@@ -64,7 +64,6 @@
 ../../3rdparty/openssl/openssl/test/recordlentest.c
 ../../3rdparty/openssl/openssl/test/rsa_complex.c
 ../../3rdparty/openssl/openssl/test/rsa_mp_test.c
-../../3rdparty/openssl/openssl/test/rsa_test.c
 ../../3rdparty/openssl/openssl/test/sanitytest.c
 ../../3rdparty/openssl/openssl/test/servername_test.c
 ../../3rdparty/openssl/openssl/test/srptest.c
