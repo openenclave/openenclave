@@ -10,3 +10,5 @@ evp_test-evpciph
 evp_test-evppkey
 # SCOSSL v1.3.0 only supports HMAC with SHA1, SHA256, SHA384, or SHA512
 evp_test-evpmac
+# RSA padding required for test not supported by SymCrypt
+rsa_test
