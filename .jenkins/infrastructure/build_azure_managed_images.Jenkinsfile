@@ -19,7 +19,7 @@ OS_NAME_MAP = [
     "ubuntu":  "Ubuntu",
 ]
 
-def buildLinuxManagedImage(String os_type, String version, String managed_image_name_id, String gallery_image_version) {
+def buildLinuxManagedImage(String os_type, String version, String gallery_image_version) {
     stage('Install prerequisites') {
         retry(10) {
             sh """#!/bin/bash
@@ -36,7 +36,7 @@ def buildLinuxManagedImage(String os_type, String version, String managed_image_
     stage("${OS_NAME_MAP[os_type]} ${version} Build") {
         withEnv([
                 "DOCKER_REGISTRY=${OETOOLS_REPO}",
-                "MANAGED_IMAGE_NAME_ID=${managed_image_name_id}",
+                "MANAGED_IMAGE_NAME_ID=${gallery_image_version}",
                 "GALLERY_IMAGE_VERSION=${gallery_image_version}",
                 "RESOURCE_GROUP=${params.RESOURCE_GROUP}",
                 "GALLERY_NAME=${params.GALLERY_NAME}",
@@ -81,18 +81,16 @@ def buildLinuxManagedImage(String os_type, String version, String managed_image_
  *                             Options: "SGX1FLC-NoIntelDrivers", "SGX1FLC"
  * @param clang_version        String for the clang version.
  *                             Options: "11.1.0", "10.0.0"
- * @param image_id
+ * @param image_id             
  * @param image_version
  */
  
-def buildWindowsManagedImage(String os_series, String image_type, String launch_configuration, String clang_version, String image_id, String image_version) {
+def buildWindowsManagedImage(String os_series, String image_type, String launch_configuration, String clang_version, String gallery_image_version) {
 
     stage("${launch_configuration} Build") {
 
-        def managed_image_name_id = image_id
-        def gallery_image_version = image_version
         def gallery_image_definition
-        def vm_rg_name = "build-${managed_image_name_id}-${os_series}-${image_type}-${clang_version}-${BUILD_NUMBER}"
+        def vm_rg_name = "build-${gallery_image_version}-${os_series}-${image_type}-${clang_version}-${BUILD_NUMBER}"
         def clang_version_short = clang_version.take(2)
         def os_series_short = os_series[-2..-1]
         def image_type_short = image_type.take(3)
@@ -249,11 +247,11 @@ def buildWindowsManagedImage(String os_series, String image_type, String launch_
                             # will not fail because it is idempotent.
                             az image delete \
                                 --resource-group ${RESOURCE_GROUP} \
-                                --name ${managed_image_name_id}-${image_type}-${clang_version}
+                                --name ${gallery_image_version}-${image_type}-${clang_version}
 
                             az image create \
                                 --resource-group ${RESOURCE_GROUP} \
-                                --name ${managed_image_name_id}-${image_type}-${clang_version} \
+                                --name ${gallery_image_version}-${image_type}-${clang_version} \
                                 --hyper-v-generation ${AZURE_IMAGES_MAP[os_series]["generation"]} \
                                 --source \$VM_ID
                         """
@@ -267,7 +265,7 @@ def buildWindowsManagedImage(String os_series, String image_type, String launch_
                         sh """
                             MANAGED_IMG_ID=\$(az image show \
                                 --resource-group ${RESOURCE_GROUP} \
-                                --name ${managed_image_name_id}-${image_type}-${clang_version} \
+                                --name ${gallery_image_version}-${image_type}-${clang_version} \
                                 | jq -r '.id' )
 
                             # If the target image version doesn't exist, the below
@@ -296,7 +294,7 @@ def buildWindowsManagedImage(String os_series, String image_type, String launch_
                     az group delete --name ${vm_rg_name} --yes
                     az image delete \
                         --resource-group ${RESOURCE_GROUP} \
-                        --name ${managed_image_name_id}-${image_type}-${clang_version}
+                        --name ${gallery_image_version}-${image_type}-${clang_version}
                 """
             }
         }
@@ -313,17 +311,13 @@ node(params.AGENTS_LABEL) {
                 extensions: [],
                 userRemoteConfigs: [[url: "https://github.com/${params.REPOSITORY_NAME}"]]])
 
-            commit_id = helpers.get_commit_id()
-
             if (params.IMAGE_VERSION) {
                 image_version = params.IMAGE_VERSION
             } else {
                 image_version = helpers.get_date(".") + "${BUILD_NUMBER}"
             }
-            
-            image_id = params.IMAGE_ID ?: "${image_version}-${commit_id}"
 
-            println("IMAGE_VERSION: ${image_version}\nIMAGE_ID: ${image_id}")
+            println("IMAGE_VERSION: ${image_version}")
         }
         stage("Install Azure CLI") {
             retry(10) {
@@ -368,11 +362,12 @@ node(params.AGENTS_LABEL) {
         }
         stage("Build images") {
             def windows_images = [
-                "Build WS2022 - nonSGX - clang11"       : { buildWindowsManagedImage("WS22", "nonSGX", "SGX1FLC-NoIntelDrivers", "11.1.0", image_id, image_version) },
-                "Build WS2022 - SGX1FLC DCAP - clang11" : { buildWindowsManagedImage("WS22", "SGX-DCAP", "SGX1FLC", "11.1.0", image_id, image_version) }
+                "Build WS2022 - nonSGX - clang11"       : { buildWindowsManagedImage("WS22", "nonSGX", "SGX1FLC-NoIntelDrivers", "11.1.0", image_version) },
+                "Build WS2022 - SGX1FLC DCAP - clang11" : { buildWindowsManagedImage("WS22", "SGX-DCAP", "SGX1FLC", "11.1.0", image_version) }
             ]
             def linux_images = [
-                "Build Ubuntu 20.04" : { buildLinuxManagedImage("ubuntu", "20.04", image_id, image_version) }
+                "Build Ubuntu 20.04" : { buildLinuxManagedImage("ubuntu", "20.04", image_version) },
+                "Build Ubuntu 22.04" : { buildLinuxManagedImage("ubuntu", "22.04", image_version) }
             ]
             def images = [:]
             if (params.BUILD_WINDOWS_IMAGES) {
