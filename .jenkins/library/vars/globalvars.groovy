@@ -13,6 +13,7 @@ import groovy.transform.Field
 @Field AGENTS_LABELS = [
     // ACC VMs
     "acc-ubuntu-20.04":            env.UBUNTU_2004_CUSTOM_LABEL ?: "ACC-2004",
+    "acc-ubuntu-22.04":            "ACC-2204",
     "acc-v3-ubuntu-20.04":         env.UBUNTU_2004_ICX_CUSTOM_LABEL ?: "ACC-v3-2004",
     "acc-win2022-dcap":            env.WS2022_DCAP_CUSTOM_LABEL ?: "SGXFLC-Windows-2022-DCAP-v2",
     "acc-v3-win2022-dcap":         env.WS2022_DCAP_ICX_CUSTOM_LABEL ?: "SGXFLC-Windows-2022-DCAP-v3",

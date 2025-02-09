@@ -7,7 +7,7 @@ ARG UBUNTU_SOURCE_REPO=""
 FROM ${UBUNTU_SOURCE_REPO}ubuntu:${UBUNTU_CODENAME}
 ARG UBUNTU_VERSION
 ARG UBUNTU_CODENAME
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 
 # Copy apt preferences to pin to a specific Intel SGX version
 COPY --chmod=644 apt_preference_files/intel-sgx.pref /etc/apt/preferences.d/intel-sgx.pref
@@ -36,7 +36,7 @@ RUN apt-get update && \
       libsgx-qe3-logic \
       libsgx-dcap-ql \
       libsgx-quote-ex \
-      libsgx-urts \
-      libssl1.1 && \
+      libsgx-urts && \
+    if [ "${UBUNTU_VERSION}" = "20.04" ]; then apt-get install -y libssl1.1; else apt-get install -y libssl3; fi && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
