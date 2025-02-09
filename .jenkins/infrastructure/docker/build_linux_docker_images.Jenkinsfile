@@ -55,8 +55,8 @@ pipeline {
                             dir(env.BASE_DOCKERFILE_DIR) {
                                 sh """
                                     chmod +x ./build.sh
-                                    mkdir build
-                                    cd build
+                                    mkdir "build-${UBUNTU_RELEASE}"
+                                    cd "build-${UBUNTU_RELEASE}"
                                     ../build.sh -v "${params.SGX_VERSION}" -u "${UBUNTU_RELEASE}" -t "${TAG_BASE_IMAGE}"
                                 """
                             }
@@ -89,7 +89,6 @@ pipeline {
                                         base_image.push('latest')
                                     }
                                 }
-                                sh "docker logout ${params.INTERNAL_REPO}"
                             }
                         }
                     }
@@ -144,6 +143,11 @@ pipeline {
                     }
                 }
             }
+        }
+    }
+    post {
+        always {
+                sh "docker logout ${params.INTERNAL_REPO}"
         }
     }
 }
