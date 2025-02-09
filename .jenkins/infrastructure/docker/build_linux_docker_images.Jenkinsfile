@@ -75,12 +75,13 @@ pipeline {
                                 ) {
                                     sh """
                                         apt update
-                                        apt install -y build-essential pkgconf curl libssl-dev cmake
+                                        apt install -y build-essential curl libssl-dev cmake
                                     """
-                                    // TODO: Automated testing is unavailable until first release is available
-                                    // helpers.releaseInstall("latest", "open-enclave", "GitHub")
-                                    // helpers.TestSamplesCommand(false, "open-enclave")
-
+                                    // TODO: For 22.04, automated testing is unavailable until first release is available
+                                    if(UBUNTU_RELEASE == "20.04") {
+                                        helpers.releaseInstall("latest", "open-enclave", "GitHub")
+                                        helpers.TestSamplesCommand(false, "open-enclave")
+                                    }
                                 }
                                 docker.withRegistry(params.INTERNAL_REPO, params.INTERNAL_REPO_CRED_ID) {
                                     base_image.push()
@@ -109,10 +110,7 @@ pipeline {
                                         --device /dev/sgx_provision:/dev/sgx_provision \
                                         --device /dev/sgx_enclave:/dev/sgx_enclave \
                                         --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
-                                sh """
-                                    apt update
-                                    apt install -y build-essential open-enclave libssl-dev
-                                """
+                                
                                 helpers.TestSamplesCommand(false, "open-enclave")
                             }
                             docker.withRegistry(params.INTERNAL_REPO, params.INTERNAL_REPO_CRED_ID) {
@@ -132,29 +130,16 @@ pipeline {
                                 "devkits_uri=${params.DEVKITS_URI}"
                             )
                             oe2204 = common.dockerImage("oetools-22.04:${TAG_FULL_IMAGE}", LINUX_DOCKERFILE, "${buildArgs}")
-                            oe2204.inside("--user root:root \
-                                        --cap-add=SYS_PTRACE \
-                                        --device /dev/sgx_provision:/dev/sgx_provision \
-                                        --device /dev/sgx_enclave:/dev/sgx_enclave \
-                                        --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
-                                try {
-                                    helpers.releaseInstall("latest", "open-enclave", "GitHub")
-                                    helpers.TestSamplesCommand(false, "open-enclave")
-                                }  catch (Exception e) {
-                                    println "Installing from GitHub failed: ${e}\nTrying to build OE instead..."
-                                    // For first Ubuntu 22.04 we do a full compile of OE + run samples
-                                    // as a test because there is no release package available. This could
-                                    // be removed or used in the event it fails to install OE.
-                                    sh """
-                                        git clone --recursive https://github.com/openenclave/openenclave
-                                        cd openenclave
-                                        mkdir build
-                                        cd build
-                                        cmake .. -G Ninja
-                                        ninja
-                                        ctest -R samples
-                                    """
-                                }
+                            oe2204.inside(
+                                "--user root:root \
+                                 --cap-add=SYS_PTRACE \
+                                 --device /dev/sgx_provision:/dev/sgx_provision \
+                                 --device /dev/sgx_enclave:/dev/sgx_enclave \
+                                 --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket"
+                            ) {
+                                sh 'echo "TODO: enable tests after Ubuntu 22.04 release deb is available"'
+                                // helpers.releaseInstall("latest", "open-enclave", "GitHub")
+                                // helpers.TestSamplesCommand(false, "open-enclave")
                             }
                             docker.withRegistry(params.INTERNAL_REPO, params.INTERNAL_REPO_CRED_ID) {
                                 common.exec_with_retry { oe2204.push() }
