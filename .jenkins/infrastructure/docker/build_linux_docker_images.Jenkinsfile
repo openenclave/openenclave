@@ -42,47 +42,55 @@ pipeline {
             }
         }
         stage("Base Image") {
-            stages {
-                stage('Build Base') {
-                    steps {
-                        dir(env.BASE_DOCKERFILE_DIR) {
-                            sh """
-                                chmod +x ./build.sh
-                                mkdir build
-                                cd build
-                                ../build.sh -v "${params.SGX_VERSION}" -u "20.04" -t "${TAG_BASE_IMAGE}"
-                            """
-                        }
+            matrix {
+                axes {
+                    axis {
+                        name 'UBUNTU_RELEASE'
+                        values '20.04', '22.04'
                     }
                 }
-                stage("Test Base - 20.04") {
-                    steps {
-                        script {
-                            base_2004_image = docker.image("openenclave-base-ubuntu-20.04:${TAG_BASE_IMAGE}")
-                            base_2004_image.inside("--user root:root \
-                                                    --cap-add=SYS_PTRACE \
-                                                    --device /dev/sgx_enclave:/dev/sgx_enclave \
-                                                    --device /dev/sgx_provision:/dev/sgx_provision \
-                                                    --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
+                stages {
+                    stage("Build Base") {
+                        steps {
+                            dir(env.BASE_DOCKERFILE_DIR) {
                                 sh """
-                                    apt update
-                                    apt install -y build-essential open-enclave libssl-dev curl
+                                    chmod +x ./build.sh
+                                    mkdir build
+                                    cd build
+                                    ../build.sh -v "${params.SGX_VERSION}" -u "${UBUNTU_RELEASE}" -t "${TAG_BASE_IMAGE}"
                                 """
-                                helpers.TestSamplesCommand(false, "open-enclave")
                             }
                         }
                     }
-                }
-                stage('Push to internal repository') {
-                    steps {
-                        script {
-                            docker.withRegistry(params.INTERNAL_REPO, params.INTERNAL_REPO_CRED_ID) {
-                                base_2004_image.push()
-                                if ( params.TAG_LATEST ) {
-                                    base_2004_image.push('latest')
+                    stage("Test Base") {
+                        steps {
+                            script {
+                                base_image = docker.image("openenclave-base-ubuntu-${UBUNTU_RELEASE}:${TAG_BASE_IMAGE}")
+                                base_image.inside("--user root:root \
+                                                        --cap-add=SYS_PTRACE \
+                                                        --device /dev/sgx_enclave:/dev/sgx_enclave \
+                                                        --device /dev/sgx_provision:/dev/sgx_provision \
+                                                        --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
+                                    sh """
+                                        apt update
+                                        apt install -y build-essential open-enclave libssl-dev curl
+                                    """
+                                    helpers.TestSamplesCommand(false, "open-enclave")
                                 }
                             }
-                            sh "docker logout ${params.INTERNAL_REPO}"
+                        }
+                    }
+                    stage('Push to internal repository') {
+                        steps {
+                            script {
+                                docker.withRegistry(params.INTERNAL_REPO, params.INTERNAL_REPO_CRED_ID) {
+                                    base_image.push()
+                                    if ( params.TAG_LATEST ) {
+                                        base_image.push('latest')
+                                    }
+                                }
+                                sh "docker logout ${params.INTERNAL_REPO}"
+                            }
                         }
                     }
                 }
