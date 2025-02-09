@@ -136,7 +136,7 @@ def ACCUpgradeTest(String version, String compiler, String lvi_mitigation, boole
                     use_snmalloc: false,
                     use_eeid: false)
                 println "Install latest open-enclave release"
-                sh("${helpers.InstallReleaseCommand(version)}")
+                helpers.releaseInstall("latest", "open-enclave", "GitHub")
                 helpers.TestSamplesCommand()
                 println "Build and install current open-enclave build"
                 def task = """

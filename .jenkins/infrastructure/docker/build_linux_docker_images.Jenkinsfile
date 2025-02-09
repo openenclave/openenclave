@@ -65,24 +65,23 @@ pipeline {
                     stage("Test Base") {
                         steps {
                             script {
-                                base_image = docker.image("openenclave-base-ubuntu-${UBUNTU_RELEASE}:${TAG_BASE_IMAGE}")
-                                base_image.inside("--user root:root \
-                                                        --cap-add=SYS_PTRACE \
-                                                        --device /dev/sgx_enclave:/dev/sgx_enclave \
-                                                        --device /dev/sgx_provision:/dev/sgx_provision \
-                                                        --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
+                                def base_image = docker.image("openenclave-base-ubuntu-${UBUNTU_RELEASE}:${TAG_BASE_IMAGE}")
+                                base_image.inside(
+                                    "--user root:root \
+                                     --cap-add=SYS_PTRACE \
+                                     --device /dev/sgx_enclave:/dev/sgx_enclave \
+                                     --device /dev/sgx_provision:/dev/sgx_provision \
+                                     --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket"
+                                ) {
                                     sh """
                                         apt update
-                                        apt install -y build-essential open-enclave libssl-dev curl
+                                        apt install -y build-essential pkgconf curl libssl-dev cmake
                                     """
-                                    helpers.TestSamplesCommand(false, "open-enclave")
+                                    // TODO: Automated testing is unavailable until first release is available
+                                    // helpers.releaseInstall("latest", "open-enclave", "GitHub")
+                                    // helpers.TestSamplesCommand(false, "open-enclave")
+
                                 }
-                            }
-                        }
-                    }
-                    stage('Push to internal repository') {
-                        steps {
-                            script {
                                 docker.withRegistry(params.INTERNAL_REPO, params.INTERNAL_REPO_CRED_ID) {
                                     base_image.push()
                                     if ( params.TAG_LATEST ) {
@@ -133,6 +132,30 @@ pipeline {
                                 "devkits_uri=${params.DEVKITS_URI}"
                             )
                             oe2204 = common.dockerImage("oetools-22.04:${TAG_FULL_IMAGE}", LINUX_DOCKERFILE, "${buildArgs}")
+                            oe2204.inside("--user root:root \
+                                        --cap-add=SYS_PTRACE \
+                                        --device /dev/sgx_provision:/dev/sgx_provision \
+                                        --device /dev/sgx_enclave:/dev/sgx_enclave \
+                                        --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
+                                try {
+                                    helpers.releaseInstall("latest", "open-enclave", "GitHub")
+                                    helpers.TestSamplesCommand(false, "open-enclave")
+                                }  catch (Exception e) {
+                                    println "Installing from GitHub failed: ${e}\nTrying to build OE instead..."
+                                    // For first Ubuntu 22.04 we do a full compile of OE + run samples
+                                    // as a test because there is no release package available. This could
+                                    // be removed or used in the event it fails to install OE.
+                                    sh """
+                                        git clone --recursive https://github.com/openenclave/openenclave
+                                        cd openenclave
+                                        mkdir build
+                                        cd build
+                                        cmake .. -G Ninja
+                                        ninja
+                                        ctest -R samples
+                                    """
+                                }
+                            }
                             docker.withRegistry(params.INTERNAL_REPO, params.INTERNAL_REPO_CRED_ID) {
                                 common.exec_with_retry { oe2204.push() }
                                 if ( params.TAG_LATEST ) {

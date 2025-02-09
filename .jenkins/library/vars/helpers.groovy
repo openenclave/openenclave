@@ -152,35 +152,6 @@ def ninjaInstallCommand() {
     """
 }
 
-def InstallReleaseCommand(String version) {
-    String codename = ''
-    if (version == '20.04') {
-        codename = 'focal'
-    } else {
-        throw new Exception("Unsupported Ubuntu version: ${version}")
-    }
-    return installCommand = """
-        echo "Running Install Release Command"
-        echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu ${codename} main' | sudo tee /etc/apt/sources.list.d/intel-sgx.list
-        wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | sudo apt-key add -
-
-        echo "deb http://apt.llvm.org/${codename}/ llvm-toolchain-${codename}-11 main" | sudo tee /etc/apt/sources.list.d/llvm-toolchain-${codename}-11.list
-        wget -qO - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-
-        echo "deb [arch=amd64] https://packages.microsoft.com/ubuntu/${version}/prod ${codename} main" | sudo tee /etc/apt/sources.list.d/msprod.list
-        wget -qO - https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
-
-        ${WaitForAptLock()}
-        sudo apt update
-
-        ${WaitForAptLock()}
-        sudo apt install -y open-enclave
-
-        echo "Open Enclave SDK version installed"
-        apt list --installed | grep open-enclave
-    """
-}
-
 /**
  * Returns Windows current working directory path
 */
@@ -229,6 +200,7 @@ def testSamplesLinux(boolean lvi_mitigation, String oe_package) {
         for i in *; do
             if [[ \${BUILD_SYSTEM} == "CMAKE" ]]; then
                 if [[ -d \${i} ]] && [[ -f \${i}/CMakeLists.txt ]]; then
+                    echo "Running sample: \${i}"
                     cd \${i}
                     mkdir build
                     cd build
@@ -239,6 +211,7 @@ def testSamplesLinux(boolean lvi_mitigation, String oe_package) {
                 fi
             elif [[ \${BUILD_SYSTEM} == "MAKE" ]]; then
                 if [[ -d \${i} ]] && [[ -f \${i}/Makefile ]]; then
+                    echo "Running sample: \${i}"
                     cd \${i}
                     make build
                     make run
@@ -497,7 +470,9 @@ def dependenciesInstall(String dcap_url = "", local_repo_path = "", String insta
 /**
  * Downloads an Ubuntu Open Enclave release version from GitHub and returns a list of downloaded files
  *
- * @param release_version  The version of the Open Enclave release to install
+ * @param release_version  The version of the Open Enclave release to install. Examples:
+ *                          - latest
+ *                          - 0.19.8
  * @param oe_package       Open Enclave package to install
  *                          - "open-enclave" [Default]
  *                          - "open-enclave-hostverify"
@@ -509,9 +484,19 @@ def releaseDownloadLinuxGitHub(String release_version, String oe_package, String
         label: "Install pre-requisites",
         script: """
             ${WaitForAptLock()}
-            sudo apt-get install -y jq
+            apt-get install -y jq wget curl
         """
     )
+    if(release_version == 'latest') {
+        release_version = sh(
+            label: "Checking latest Open Enclave release",
+            script: """#!/bin/bash
+                curl -sS https://api.github.com/repos/openenclave/openenclave/releases | jq --raw-output --compact-output '.[0].tag_name'
+            """,
+            returnStdout: true
+        ).trim().replaceFirst('v', '')
+        println "releaseDownloadLinuxGithub: found ${release_version} as the latest release"
+    }
     def downloadedFiles = sh(
         label: "Download files from GitHub using regex ${os_id}(_|-)${os_release}(_|-)${oe_package}(_|-)${release_version}",
         script: """#!/bin/bash
@@ -645,7 +630,9 @@ def releaseDownloadWindows(String release_version, String oe_package, String sou
  * Downloads and installs an Open Enclave release version for either Windows or Ubuntu
  * Warning: this function must not be called within a shell otherwise a null command would be ran after this function completes.
  *
- * @param release_version         The version of the Open Enclave release to install
+ * @param release_version         The version of the Open Enclave release to install. Examples:
+ *                                - latest (when source=GithHub)
+ *                                - 0.19.8
  * @param oe_package              Open Enclave package to install
  *                                - "open-enclave" [Default]
  *                                - "open-enclave-hostverify"
@@ -668,6 +655,10 @@ def releaseInstall(String release_version = null, String oe_package = "open-encl
     }
     // For *nix
     if(isUnix()) {
+        sh """
+            apt update
+            apt-get install -y lsb-release
+        """
         // Get distribution name
         def os_id = sh(
                 script: "lsb_release --id --short",
@@ -689,7 +680,7 @@ def releaseInstall(String release_version = null, String oe_package = "open-encl
         for(file in downloadedFiles) {
             sh """
                 ${WaitForAptLock()}
-                sudo dpkg -i "${file}"
+                dpkg -i "${file}"
             """
         }
     // For Windows
@@ -749,13 +740,17 @@ def get_date(String delimiter = "") {
  * @param os_version The OS distribution version ("18.04", "20.04")
  */
  def getAzureImageUrn(String os_type, String os_version) {
-    if (os_type.toLowerCase() != 'ubuntu' || ! os_version.matches('20.04|18.04')) {
-            error("Unsupported OS (${os_type}) or version (${os_version})")
+    if (os_type.toLowerCase() != 'ubuntu') {
+        error("Unsupported OS: ${os_type}")
     }
-    if (os_version == '20.04') {
+    if (os_version == '22.04') {
+        return "Canonical:0001-com-ubuntu-server-jammy:22_04-lts-gen2:latest"
+    } else if (os_version == '20.04') {
         return "Canonical:0001-com-ubuntu-server-focal:20_04-lts-gen2:latest"
     } else if (os_version == '18.04') {
         return "Canonical:UbuntuServer:18_04-lts-gen2:latest"
+    } else {
+        error("Unsupported OS version: ${os_version}")
     }
  }
 
