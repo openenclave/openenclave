@@ -384,6 +384,12 @@ function Install-Git {
 function Install-OpenSSL {
     $installDir = Join-Path $InstallPath "OpenSSL"
     nuget.exe install openssl -Source $PACKAGES_DIRECTORY -OutputDirectory $InstallPath -ExcludeVersion
+    # Add OpenSSL x86 to beginning of the path so OpenSSL 1 is used by default (x64 bin is currently broken)
+    [Environment]::SetEnvironmentVariable(
+    "Path",
+    "$installDir\x86\release\bin;" + [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine),
+    [EnvironmentVariableTarget]::Machine
+    )
     Add-ToSystemPath -Path @("$installDir\bin")
 }
 
