@@ -110,7 +110,7 @@ pipeline {
                                         --device /dev/sgx_provision:/dev/sgx_provision \
                                         --device /dev/sgx_enclave:/dev/sgx_enclave \
                                         --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
-                                
+                                helpers.releaseInstall("latest", "open-enclave", "GitHub")
                                 helpers.TestSamplesCommand(false, "open-enclave")
                             }
                             docker.withRegistry(params.INTERNAL_REPO, params.INTERNAL_REPO_CRED_ID) {
