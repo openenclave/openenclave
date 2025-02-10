@@ -645,10 +645,14 @@ def windowsLinuxElfBuild(String windows_label, String ubuntu_label, String compi
                                ${extra_cmake_args.join(' ')}
                            ninja -v
                            """
-                if (! ubuntu_label.contains("2004")) {
-                    println("Unable to determine version from Ubuntu agent label. Defaulting to Ubuntu 20.04")
+                def imageName
+                if (! ubuntu_label.contains("2004") && ! ubuntu_label.contains("2204")) {
+                    println("Unable to determine version from Ubuntu agent label. Defaulting to Ubuntu 22.04")
+                    imageName = "oetools-22.04"
+                } else {
+                    def match_version = (ubuntu_label =~ /2\d{2}4/)[0]
+                    imageName = "oetools-${match_version}"
                 }
-                def imageName = "oetools-20.04"
                 common.ContainerRun("${imageName}:${DOCKER_TAG}", compiler, task, runArgs)
                 sh 'sudo chown -R oeadmin:oeadmin ${WORKSPACE}/build/tests'
                 stash includes: 'build/tests/**', name: "linux-${windows_label}-${compiler}-${build_type}-lvi_mitigation=${lvi_mitigation}-${ubuntu_label}-${BUILD_NUMBER}"

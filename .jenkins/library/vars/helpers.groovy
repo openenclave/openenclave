@@ -656,6 +656,7 @@ def releaseInstall(String release_version = null, String oe_package = "open-encl
     // For *nix
     if(isUnix()) {
         sh """
+            ${helpers.WaitForAptLock()}
             apt update
             apt-get install -y lsb-release
         """
