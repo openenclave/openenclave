@@ -754,6 +754,18 @@ def get_date(String delimiter = "") {
     }
  }
 
+/* Returns codename given release version (eg. 20.04)
+ *
+ * @param os_version The OS distribution version ("18.04", "20.04")
+ */
+ def getUbuntuCodename(String os_version) {
+    switch(os_version) {
+        case "18.04": return "bionic"
+        case "20.04": return "focal"
+        case "22.04": return "jammy"
+    }
+ }
+
 /*
  * Determine correct Intel SGX devices to mount for Docker
  * Returns in the format of --device=<DEVICE1> --device=<DEVICE2>...

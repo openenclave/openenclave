@@ -67,8 +67,7 @@ pipeline {
                             script {
                                 def base_image = docker.image("openenclave-base-ubuntu-${UBUNTU_RELEASE}:${TAG_BASE_IMAGE}")
                                 base_image.inside(
-                                    "--user root:root \
-                                     --cap-add=SYS_PTRACE \
+                                     "--cap-add=SYS_PTRACE \
                                      --device /dev/sgx_enclave:/dev/sgx_enclave \
                                      --device /dev/sgx_provision:/dev/sgx_provision \
                                      --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket"
@@ -105,8 +104,8 @@ pipeline {
                                 "devkits_uri=${params.DEVKITS_URI}"
                             )
                             oe2004 = common.dockerImage("oetools-20.04:${TAG_FULL_IMAGE}", LINUX_DOCKERFILE, "${buildArgs}")
-                            oe2004.inside("--user root:root \
-                                        --cap-add=SYS_PTRACE \
+                            oe2004.inside(
+                                        "--cap-add=SYS_PTRACE \
                                         --device /dev/sgx_provision:/dev/sgx_provision \
                                         --device /dev/sgx_enclave:/dev/sgx_enclave \
                                         --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
@@ -131,8 +130,7 @@ pipeline {
                             )
                             oe2204 = common.dockerImage("oetools-22.04:${TAG_FULL_IMAGE}", LINUX_DOCKERFILE, "${buildArgs}")
                             oe2204.inside(
-                                "--user root:root \
-                                 --cap-add=SYS_PTRACE \
+                                 "--cap-add=SYS_PTRACE \
                                  --device /dev/sgx_provision:/dev/sgx_provision \
                                  --device /dev/sgx_enclave:/dev/sgx_enclave \
                                  --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket"
