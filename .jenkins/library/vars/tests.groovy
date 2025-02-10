@@ -260,10 +260,11 @@ def ACCHostVerificationTest(String version, String build_type, String compiler, 
                            openssl ec -in keyec.pem -pubout -out publicec.pem
                            openssl genrsa -out keyrsa.pem 2048
                            openssl rsa -in keyrsa.pem -outform PEM -pubout -out publicrsa.pem
-                           while \$try -lt 10; do
+                           try=0
+                           while [ \$try -lt 10]; do
                              ../../../output/bin/oeutil gen --format cert keyec.pem publicec.pem --out sgx_cert_ec.der --verify
                              if [ ! -f sgx_cert_ec.der ]; then
-                                 try=$((try + 1))
+                                 try=\$((try + 1))
                                  sleep 5
                              else
                                  break
@@ -949,7 +950,7 @@ def buildCrossPlatform(String version, String compiler, String pr_id = '') {
 
                            sudo scripts/ansible/install-ansible.sh
                            sudo ansible-playbook scripts/ansible/oe-contributors-setup-cross-arm.yml
-                           sudo apt install python3 python3-pyelftools p7zip-full -y
+                           sudo apt install python python3-pyelftools p7zip-full -y
 
                            bash devex/cross-nuget/standalone-builds/linux/build-optee.sh
                            bash devex/cross-nuget/standalone-builds/linux/runner.sh

@@ -11,7 +11,8 @@ try{
         "Check CI":                                { tests.checkCI('clang-11', params.PULL_REQUEST_ID) },
         "Check Developer Experience Ubuntu 20.04": { tests.checkDevFlows('20.04', 'clang-11', params.PULL_REQUEST_ID) },
         "Ubuntu 2004 Cross Platform Build":        { tests.buildCrossPlatform("20.04", 'clang-11', params.PULL_REQUEST_ID) },
-        "Ubuntu 2204 Cross Platform Build":        { tests.buildCrossPlatform("22.04", 'clang-11', params.PULL_REQUEST_ID) },
+        // Disabled as OP-TEE build needs to be upgraded to use Python3
+        // "Ubuntu 2204 Cross Platform Build":        { tests.buildCrossPlatform("22.04", 'clang-11', params.PULL_REQUEST_ID) },
         "Sim 2004 clang-11 SGX1FLC RelWithDebInfo":          { tests.simulationContainerTest('20.04', 'RelWithDebInfo', 'clang-11', ['-DHAS_QUOTE_PROVIDER=ON', '-DLVI_MITIGATION=None', "-DLVI_MITIGATION_SKIP_TESTS=${SKIP_LVI_MITIGATION_TESTS}"], params.PULL_REQUEST_ID) },
         "Sim 2204 clang-11 SGX1FLC RelWithDebInfo":          { tests.simulationContainerTest('22.04', 'RelWithDebInfo', 'clang-11', ['-DHAS_QUOTE_PROVIDER=ON', '-DLVI_MITIGATION=None', "-DLVI_MITIGATION_SKIP_TESTS=${SKIP_LVI_MITIGATION_TESTS}"], params.PULL_REQUEST_ID) },
         "Sim 2004 clang-11 SGX1FLC RelWithDebInfo snmalloc": { tests.simulationContainerTest('20.04', 'RelWithDebInfo', 'clang-11', ['-DHAS_QUOTE_PROVIDER=ON', '-DLVI_MITIGATION=None', "-DLVI_MITIGATION_SKIP_TESTS=${SKIP_LVI_MITIGATION_TESTS}", '-DUSE_SNMALLOC=ON'], params.PULL_REQUEST_ID) },
