@@ -260,6 +260,8 @@ def ACCHostVerificationTest(String version, String build_type, String compiler, 
                            openssl ec -in keyec.pem -pubout -out publicec.pem
                            openssl genrsa -out keyrsa.pem 2048
                            openssl rsa -in keyrsa.pem -outform PEM -pubout -out publicrsa.pem
+                           # Adding retry for first cert gen, as SGX quote-ex init can sometimes
+                           # return SGX_ERROR_SERVICE_TIMEOUT. This seems to only happen in the beginning.
                            try=0
                            while [ \$try -lt 10]; do
                              ../../../output/bin/oeutil gen --format cert keyec.pem publicec.pem --out sgx_cert_ec.der --verify
