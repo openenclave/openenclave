@@ -80,8 +80,7 @@ def buildLinuxManagedImage(String os_type, String version, String gallery_image_
  * @param launch_configuration String for the configuration used to provision the Windows image for the install-windows-prereqs.ps1 script. 
  *                             Options: "SGX1FLC-NoIntelDrivers", "SGX1FLC"
  * @param clang_version        String for the clang version.
- *                             Options: "11.1.0", "10.0.0"
- * @param image_id             
+ *                             Options: "11.1.0", "10.0.0"          
  * @param image_version
  */
  

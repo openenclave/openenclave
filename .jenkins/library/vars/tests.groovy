@@ -253,6 +253,13 @@ def ACCHostVerificationTest(String version, String build_type, String compiler, 
                 def runArgs = "--cap-add=SYS_PTRACE ${devices} --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket"
                 println("ACC-${version} running Docker container with ${devices}")
                 println("Generating certificates and reports ...")
+                def oeutil_path =  '../../../output/bin/oeutil'
+                def oeutilGenCertCmds = helpers.oeutilGenCert('cert keyec.pem publicec.pem', oeutil_path, 'sgx_cert_ec.der', '', '', true) +
+                                        helpers.oeutilGenCert('cert keyrsa.pem publicrsa.pem', oeutil_path, 'sgx_cert_rsa.der', '', '', true) +
+                                        helpers.oeutilGenCert('legacy_report_remote', oeutil_path, 'sgx_report.bin', '', '', true) +
+                                        helpers.oeutilGenCert('sgx_ecdsa', oeutil_path, 'sgx_evidence.bin', 'sgx_endorsements.bin', '', true) +
+                                        helpers.oeutilGenCert('sgx_ecdsa', oeutil_path, '', '', 'in', true) +
+                                        helpers.oeutilGenCert('sgx_ecdsa', oeutil_path, '', '', 'out', true)
                 def task = """
                            ${helpers.ninjaBuildCommand(cmakeArgs)}
                            cd tests/host_verify/host
@@ -260,23 +267,7 @@ def ACCHostVerificationTest(String version, String build_type, String compiler, 
                            openssl ec -in keyec.pem -pubout -out publicec.pem
                            openssl genrsa -out keyrsa.pem 2048
                            openssl rsa -in keyrsa.pem -outform PEM -pubout -out publicrsa.pem
-                           # Adding retry for first cert gen, as SGX quote-ex init can sometimes
-                           # return SGX_ERROR_SERVICE_TIMEOUT. This seems to only happen in the beginning.
-                           try=0
-                           while [ \$try -lt 10]; do
-                             ../../../output/bin/oeutil gen --format cert keyec.pem publicec.pem --out sgx_cert_ec.der --verify
-                             if [ ! -f sgx_cert_ec.der ]; then
-                                 try=\$((try + 1))
-                                 sleep 5
-                             else
-                                 break
-                             fi
-                           done
-                           ../../../output/bin/oeutil gen --format cert keyrsa.pem publicrsa.pem --out sgx_cert_rsa.der --verify
-                           ../../../output/bin/oeutil gen --format legacy_report_remote --out sgx_report.bin --verify
-                           ../../../output/bin/oeutil gen --format sgx_ecdsa --out sgx_evidence.bin --endorsements sgx_endorsements.bin --verify
-                           ../../../output/bin/oeutil gen --format sgx_ecdsa --quote-proc in --verify
-                           ../../../output/bin/oeutil gen --format sgx_ecdsa --quote-proc out --verify
+                           ${oeutilGenCertCmds}
                            """
                 common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", compiler, task, runArgs)
 
@@ -368,6 +359,7 @@ def ACCHostVerificationTest(String version, String build_type, String compiler, 
  */
 
 def ACCHostVerificationPackageTest(String version, String build_type, String compiler, String pr_id = '') {
+    // TODO: This and ACCHOstVerificationTest can be refactored since they are very similar
     stage("ACC-${version} Generate Quote") {
         node(globalvars.AGENTS_LABELS["acc-ubuntu-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
@@ -378,20 +370,21 @@ def ACCHostVerificationPackageTest(String version, String build_type, String com
                 def runArgs = "--cap-add=SYS_PTRACE ${devices} --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket"
                 println("ACC-${version} running Docker container with ${devices}")
                 println("Generating certificates and reports ...")
+                def oeutil_path =  '../../../output/bin/oeutil'
+                def oeutilGenCertCmds = helpers.oeutilGenCert('cert keyec.pem publicec.pem', oeutil_path, 'sgx_cert_ec.der', '', '', true) +
+                                        helpers.oeutilGenCert('cert keyrsa.pem publicrsa.pem', oeutil_path, 'sgx_cert_rsa.der', '', '', true) +
+                                        helpers.oeutilGenCert('legacy_report_remote', oeutil_path, 'sgx_report.bin', '', '', true) +
+                                        helpers.oeutilGenCert('sgx_ecdsa', oeutil_path, 'sgx_evidence.bin', 'sgx_endorsements.bin', '', true) +
+                                        helpers.oeutilGenCert('sgx_ecdsa', oeutil_path, '', '', 'in', true) +
+                                        helpers.oeutilGenCert('sgx_ecdsa', oeutil_path, '', '', 'out', true)
                 def task = """
                            ${helpers.ninjaBuildCommand(cmakeArgs)}
-                           pushd tests/host_verify/host
+                           cd tests/host_verify/host
                            openssl ecparam -name prime256v1 -genkey -noout -out keyec.pem
                            openssl ec -in keyec.pem -pubout -out publicec.pem
                            openssl genrsa -out keyrsa.pem 2048
                            openssl rsa -in keyrsa.pem -outform PEM -pubout -out publicrsa.pem
-                           ../../../output/bin/oeutil gen --format cert keyec.pem publicec.pem --out sgx_cert_ec.der --verify
-                           ../../../output/bin/oeutil gen --format cert keyrsa.pem publicrsa.pem --out sgx_cert_rsa.der --verify
-                           ../../../output/bin/oeutil gen --format legacy_report_remote --out sgx_report.bin --verify
-                           ../../../output/bin/oeutil gen --format sgx_ecdsa --out sgx_evidence.bin --endorsements sgx_endorsements.bin --verify
-                           ../../../output/bin/oeutil gen --format sgx_ecdsa --quote-proc in --verify
-                           ../../../output/bin/oeutil gen --format sgx_ecdsa --quote-proc out --verify
-                           popd
+                           ${oeutilGenCertCmds}
                            """
                 common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", compiler , task, runArgs)
 
@@ -651,7 +644,14 @@ def windowsLinuxElfBuild(String windows_label, String ubuntu_label, String compi
                     imageName = "oetools-22.04"
                 } else {
                     def match_version = (ubuntu_label =~ /2\d{2}4/)[0]
-                    imageName = "oetools-${match_version}"
+                    switch(match_version) {
+                        case "2004":
+                            imageName = "oetools-20.04"
+                            break
+                        case "2204":
+                            imageName = "oetools-22.04"
+                            break
+                    }
                 }
                 common.ContainerRun("${imageName}:${DOCKER_TAG}", compiler, task, runArgs)
                 sh 'sudo chown -R oeadmin:oeadmin ${WORKSPACE}/build/tests'

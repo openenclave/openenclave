@@ -62,8 +62,8 @@ pipeline {
                                             docker push ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.PUBLIC_LINUX_TAG}
                                             docker push ${PUBLIC_REPO_NAME}/oetools-20.04:${params.PUBLIC_LINUX_TAG}
 
-                                            docker tag ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.INTERNAL_LINUX_TAG} ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.PUBLIC_LINUX_TAG}
-                                            docker tag ${INTERNAL_REPO_NAME}/oetools-22.04:${params.INTERNAL_LINUX_TAG} ${PUBLIC_REPO_NAME}/oetools-20.04:${params.PUBLIC_LINUX_TAG}
+                                            docker tag ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.INTERNAL_LINUX_TAG} ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.PUBLIC_LINUX_TAG}
+                                            docker tag ${INTERNAL_REPO_NAME}/oetools-22.04:${params.INTERNAL_LINUX_TAG} ${PUBLIC_REPO_NAME}/oetools-22.04:${params.PUBLIC_LINUX_TAG}
                                             docker push ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.PUBLIC_LINUX_TAG}
                                             docker push ${PUBLIC_REPO_NAME}/oetools-22.04:${params.PUBLIC_LINUX_TAG}
 
@@ -85,8 +85,8 @@ pipeline {
                                             docker push ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-20.04:latest
                                             docker push ${PUBLIC_REPO_NAME}/oetools-20.04:latest
 
-                                            docker tag ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.PUBLIC_LINUX_TAG} ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-20.04:latest
-                                            docker tag ${PUBLIC_REPO_NAME}/oetools-22.04:${params.PUBLIC_LINUX_TAG} ${PUBLIC_REPO_NAME}/oetools-20.04:latest
+                                            docker tag ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.PUBLIC_LINUX_TAG} ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-22.04:latest
+                                            docker tag ${PUBLIC_REPO_NAME}/oetools-22.04:${params.PUBLIC_LINUX_TAG} ${PUBLIC_REPO_NAME}/oetools-22.04:latest
                                             docker push ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-22.04:latest
                                             docker push ${PUBLIC_REPO_NAME}/oetools-22.04:latest
                                         """
@@ -107,8 +107,8 @@ pipeline {
                                             docker push ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.PUBLIC_LINUX_TAG}
                                             docker push ${INTERNAL_REPO_NAME}/oetools-20.04:${params.PUBLIC_LINUX_TAG}
 
-                                            docker tag ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.INTERNAL_LINUX_TAG} ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.PUBLIC_LINUX_TAG}
-                                            docker tag ${INTERNAL_REPO_NAME}/oetools-22.04:${params.INTERNAL_LINUX_TAG} ${INTERNAL_REPO_NAME}/oetools-20.04:${params.PUBLIC_LINUX_TAG}
+                                            docker tag ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.INTERNAL_LINUX_TAG} ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.PUBLIC_LINUX_TAG}
+                                            docker tag ${INTERNAL_REPO_NAME}/oetools-22.04:${params.INTERNAL_LINUX_TAG} ${INTERNAL_REPO_NAME}/oetools-22.04:${params.PUBLIC_LINUX_TAG}
                                             docker push ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.PUBLIC_LINUX_TAG}
                                             docker push ${INTERNAL_REPO_NAME}/oetools-22.04:${params.PUBLIC_LINUX_TAG}
                                         """
@@ -129,8 +129,8 @@ pipeline {
                                             docker push ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-20.04:latest
                                             docker push ${INTERNAL_REPO_NAME}/oetools-20.04:latest
 
-                                            docker tag ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.PUBLIC_LINUX_TAG} ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-20.04:latest
-                                            docker tag ${INTERNAL_REPO_NAME}/oetools-22.04:${params.PUBLIC_LINUX_TAG} ${INTERNAL_REPO_NAME}/oetools-20.04:latest
+                                            docker tag ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.PUBLIC_LINUX_TAG} ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-22.04:latest
+                                            docker tag ${INTERNAL_REPO_NAME}/oetools-22.04:${params.PUBLIC_LINUX_TAG} ${INTERNAL_REPO_NAME}/oetools-22.04:latest
                                             docker push ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-22.04:latest
                                             docker push ${INTERNAL_REPO_NAME}/oetools-22.04:latest
                                         """

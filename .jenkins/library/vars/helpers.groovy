@@ -87,14 +87,15 @@ def CmakeArgs(Map args) {
 
 def WaitForAptLock() {
     return """
+        ${needSudo()}
         counter=0
         max=600
         step=5
         echo "Checking for locks..."
-        while sudo fuser /var/lib/dpkg/lock > /dev/null 2>&1 ||
-              sudo fuser /var/lib/dpkg/lock-frontend > /dev/null 2>&1 ||
-              sudo fuser /var/lib/apt/lists/lock > /dev/null 2>&1 ||
-              sudo ps aux | grep -E "[a]pt|[d]pkg"; do
+        while \${maybesudo} fuser /var/lib/dpkg/lock > /dev/null 2>&1 ||
+              \${maybesudo} fuser /var/lib/dpkg/lock-frontend > /dev/null 2>&1 ||
+              \${maybesudo} fuser /var/lib/apt/lists/lock > /dev/null 2>&1 ||
+              \${maybesudo} ps aux | grep -E "[a]pt|[d]pkg"; do
             # Wait up to 600 seconds to lock to be released
             if (( \${counter} > \${max} )); then
                 echo "Timeout waiting for lock."
@@ -105,7 +106,6 @@ def WaitForAptLock() {
             sleep \${step}
         done
     """
-    
 }
 
 /* Runs ctest with specific paramters and retry logic
@@ -434,11 +434,12 @@ def azureContainerDownload(String container_name, String file_pattern, String st
  */
 def dependenciesInstall(String dcap_url = "", local_repo_path = "", String install_flags = "", String build_dir = "${WORKSPACE}") {
     if(isUnix()) {
-        sh """
+        sh """#!/usr/bin/env bash
             sudo bash ${build_dir}/scripts/ansible/install-ansible.sh
             cp ${WORKSPACE}/scripts/ansible/ansible.cfg ${WORKSPACE}/ansible.cfg
             ${WaitForAptLock()}
-            sudo apt install -y dkms
+            ${needSudo()}
+            \${maybesudo} apt install -y dkms
         """
         if (local_repo_path) {
             sh """
@@ -482,9 +483,10 @@ def dependenciesInstall(String dcap_url = "", local_repo_path = "", String insta
 def releaseDownloadLinuxGitHub(String release_version, String oe_package, String os_id, String os_release) {
     sh(
         label: "Install pre-requisites",
-        script: """
+        script: """#!/usr/bin/env bash
             ${WaitForAptLock()}
-            apt-get install -y jq wget curl
+            ${needSudo()}
+            \${maybesudo} apt-get install -y jq wget curl
         """
     )
     if(release_version == 'latest') {
@@ -655,10 +657,11 @@ def releaseInstall(String release_version = null, String oe_package = "open-encl
     }
     // For *nix
     if(isUnix()) {
-        sh """
-            ${helpers.WaitForAptLock()}
-            apt update
-            apt-get install -y lsb-release
+        sh """#!/usr/bin/env bash
+            ${needSudo()}
+            ${WaitForAptLock()}
+            \${maybesudo} apt update
+            \${maybesudo} apt-get install -y lsb-release
         """
         // Get distribution name
         def os_id = sh(
@@ -679,9 +682,10 @@ def releaseInstall(String release_version = null, String oe_package = "open-encl
         }
         // Install Open Enclave package
         for(file in downloadedFiles) {
-            sh """
+            sh """#!/usr/bin/env bash
                 ${WaitForAptLock()}
-                dpkg -i "${file}"
+                ${needSudo()}
+                \${maybesudo} dpkg -i "${file}"
             """
         }
     // For Windows
@@ -859,4 +863,74 @@ def oeCheckoutScm(String PULL_REQUEST_ID) {
     } else {
         checkout scm
     }
+}
+
+/**
+ * Use oeutil to generate certs
+ *
+ * @param oeutil_path  Path to oeutil binary (default: "./output/bin/oeutil")
+ * @param format       Format of the certificate (or report, or evidence)
+ * @param outfile      Output file (default: "")
+ * @param endorsements File to output endorsements to (default: "")
+ * @param quoteproc    Use SGX in-process or out-of-process quoting (default: "")
+ * @param verify       Verify the certificate (default: true)
+ * @param verbose      Verbose output (default: false)
+ */
+def oeutilGenCert(String format, String oeutil_path="./output/bin/oeutil", String outfile="", String endorsements="", String quoteproc="", boolean verify=true, boolean verbose=false) {
+    def cmd = "${oeutil_path} gen --format ${format}"
+    if (outfile) {
+        cmd += " --out ${outfile}"
+    }
+    if (endorsements) {
+        cmd += " --endorsements ${endorsements}"
+    }
+    if (quoteproc) {
+        cmd += " --quote-proc ${quoteproc}"
+    }
+    if (verify) {
+        cmd += " --verify"
+    }
+    if (verbose) {
+        cmd += " --verbose"
+    }
+    // SGX quote-ex init can sometimes return SGX_ERROR_SERVICE_TIMEOUT.
+    // Subsequent tries should not have this issue.
+    return """
+        # In case of failure we want to continue on to retry
+        set +x
+        attempt=1
+        max_attempts=10
+        while [ \${attempt} -le \${max_attempts} ]; do
+            ${cmd}
+            # Check for general failure
+            if [ \$? -ne 0 ]; then
+                attempt=\$((\${attempt}+1))
+            # Check if outfile was created, if one is defined
+            elif [ "${outfile}" ] && [ ! -f "${outfile}" ]; then
+                attempt=\$((\${attempt}+1))
+            else
+                break
+            fi
+            if [ \${attempt} -gt \${max_attempts} ]; then
+                echo "Failed to generate certificate after \${max_attempts} tries"
+                echo "oeutil command: ${cmd}"
+            fi
+            sleep 3
+        done
+    """
+}
+
+/* Determines if sudo is needed based on current uid.
+ * This allows flexibility in using the same commands between VMs and containers.
+ * To use this function, use \${maybesudo} in place of sudo
+ * When Jenkins uses sh without #!/bin/bash, uid is not set so we default to 9999
+ */
+def needSudo() {
+    return """
+        if [ \${UID:-9999} -ne 0 ]; then
+            maybesudo="sudo"
+        else
+            maybesudo=""
+        fi
+    """
 }

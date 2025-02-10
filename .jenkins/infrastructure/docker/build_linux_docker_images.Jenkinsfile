@@ -67,7 +67,8 @@ pipeline {
                             script {
                                 def base_image = docker.image("openenclave-base-ubuntu-${UBUNTU_RELEASE}:${TAG_BASE_IMAGE}")
                                 base_image.inside(
-                                     "--cap-add=SYS_PTRACE \
+                                     "--user root:root \
+                                     --cap-add=SYS_PTRACE \
                                      --device /dev/sgx_enclave:/dev/sgx_enclave \
                                      --device /dev/sgx_provision:/dev/sgx_provision \
                                      --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket"

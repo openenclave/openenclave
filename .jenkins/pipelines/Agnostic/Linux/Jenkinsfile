@@ -6,7 +6,9 @@ GLOBAL_ERROR = globalvars.GLOBAL_ERROR
 SKIP_LVI_MITIGATION_TESTS="ON"
 
 try{
-    if(FULL_TEST_SUITE == "true") { SKIP_LVI_MITIGATION_TESTS=OFF }
+    if(FULL_TEST_SUITE == "true") {
+        SKIP_LVI_MITIGATION_TESTS="OFF"
+    }
     def testing_stages = [
         "Check CI":                                { tests.checkCI('clang-11', params.PULL_REQUEST_ID) },
         "Check Developer Experience Ubuntu 20.04": { tests.checkDevFlows('20.04', 'clang-11', params.PULL_REQUEST_ID) },
