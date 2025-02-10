@@ -773,12 +773,14 @@ def getDockerSGXDevices(String os_type, String os_version) {
             devices.add('/dev/sgx_enclave')
         }
     } else {
-        error("getDockerSGXDevices(): Unknown OS: ${os_type}")
+        error("getDockerSGXDevices: Unknown OS: ${os_type}")
     }
     String returnDevices = ""
     for (device in devices) {
         if ( fileExists("${device}") ) {
             returnDevices += " --device=${device}:${device} "
+        } else {
+            error("getDockerSGXDevices: ${device} does not exist!")
         }
     }
     return returnDevices
