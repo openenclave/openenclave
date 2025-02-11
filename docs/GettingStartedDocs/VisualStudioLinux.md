@@ -9,6 +9,7 @@ Studio Code on a development machine running either Windows or Linux, see the
 
 To install the Open Enclave Host-Verify SDK instead, see the document for your platform:
  - [installation instructions for Ubuntu 20.04](https://github.com/microsoft/openenclave/blob/master/docs/GettingStartedDocs/install_host_verify_Ubuntu_20.04.md).
+ - [installation instructions for Ubuntu 22.04](https://github.com/microsoft/openenclave/blob/master/docs/GettingStartedDocs/install_host_verify_Ubuntu_22.04.md).
 
 To develop Linux applications using a Windows development machine, you will need the following:
 
@@ -24,7 +25,7 @@ To develop Linux applications using a Windows development machine, you will need
   Visual Studio.  (Do Extensions -> Manage Extensions -> Online -> search for "enclave".)  You must restart Visual Studio after
   installing the extension.
 
-You will also need a build machine running Ubuntu 20.04. This can be
+You will also need a build machine running Ubuntu 20.04 or 22.04. This can be
 any of the following:
 - a remote Linux machine
 - an [Azure Confidential Computing VM](https://azure.microsoft.com/en-us/solutions/confidential-compute/)
@@ -36,7 +37,8 @@ but a non-SGX machine can still be used:
  - if you would like to install the Open Enclave Host-Verify SDK and build evidence verification applications without enclaves.
 
 On the Linux build machine, or after opening an ssh session into the VM, install the Open Enclave SDK.  See the appropriate document for your platform:
-  - [installation instructions for Ubuntu 20.04](https://github.com/microsoft/openenclave/blob/master/docs/GettingStartedDocs/install_oe_sdk-Ubuntu_20.04.md) or
+  - [installation instructions for Ubuntu 20.04](https://github.com/microsoft/openenclave/blob/master/docs/GettingStartedDocs/install_oe_sdk-Ubuntu_20.04.md)
+  - [installation instructions for Ubuntu 22.04](https://github.com/microsoft/openenclave/blob/master/docs/GettingStartedDocs/install_oe_sdk-Ubuntu_22.04.md)
   - [SGX1 instructions](https://github.com/microsoft/openenclave/blob/master/docs/GettingStartedDocs/Contributors/SGX1GettingStarted.md).
 
 Finally, configure Visual Studio with the address (or name) of your Linux build machine,

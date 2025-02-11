@@ -17,12 +17,12 @@
 
 3. Pull the latest "Full" image for Open Enclave for your appropriate distribution from [this table](https://github.com/openenclave/openenclave/blob/master/DOCKER_IMAGES.md). Example:
 ```bash
-docker pull openenclavedockerregistry.azurecr.io/oetools-20.04:latest
+docker pull openenclavedockerregistry.azurecr.io/oetools-22.04:latest
 ```
 
-4. Run an interactive container of one of these images. If you're using the Intel SGX DCAP driver, for example, you'll want to expose the /dev/sgx device to the container:
+4. Run an interactive container of one of these images. If you're using the Intel SGX DCAP driver, for example, you'll want to expose the /dev/sgx_enclave and /dev/sgx_provision devices to the container:
 ```bash
-sudo docker run --device /dev/sgx:/dev/sgx -i -t openenclavedockerregistry.azurecr.io/oetools-20.04:latest bash
+sudo docker run --device /dev/sgx_enclave:/dev/sgx_enclave --device /dev/sgx_provision:/dev/sgx_provision -i -t openenclavedockerregistry.azurecr.io/oetools-22.04:latest bash
 ```
   - If you're using the Intel SGX (non-DCAP) driver, you'll want to do two things:
     - The device name is different (isgx as opposed to sgx), so you'll want this option instead:  `--device /dev/isgx:/dev/isgx`
