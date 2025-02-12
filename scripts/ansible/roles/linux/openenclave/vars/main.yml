@@ -24,9 +24,3 @@ validation_binaries:
   - "/usr/bin/pkg-config"
   - "/usr/bin/git"
   - "/usr/bin/svn"
-
-dcap_package_url: https://packages.microsoft.com/ubuntu/20.04/prod/pool/main/a/az-dcap-client/az-dcap-client_1.12.3_amd64.deb
-
-ssl_package_url: http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2.23_amd64.deb
-
-package_dest_path: "/tmp/"

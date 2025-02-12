@@ -65,6 +65,8 @@ if (BUILD_ENCLAVES)
     list(APPEND CRYPTO_LIB_LIST openssl_3)
   endif ()
 
+  # Alpine Linux, which oeapkman relies on, no longer installs properly
+  # (sqlite3 header files missing)
   if (UNIX AND NOT IS_JAMMY)
     list(APPEND SAMPLES_LIST apkman)
     list(APPEND CRYPTO_LIB_LIST openssl_3)

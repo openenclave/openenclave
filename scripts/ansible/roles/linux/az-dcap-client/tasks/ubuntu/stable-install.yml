@@ -19,21 +19,3 @@
     name: "az-dcap-client={{ az_dcap_client_version }}"
     state: present
     update_cache: yes
-  # az-dcap-client is not available for Ubuntu 22.04
-  when: ansible_distribution_release != 'jammy'
-
-- name: Download Azure-DCAP-Client
-  ansible.builtin.get_url:
-    url: "{{ dcap_package_url }}"
-    dest: "{{ package_dest_path }}"
-    checksum: "sha256:2fd26633ef0d8e279353a43a65779fb38d95fbfe43f4c934fbee3938756deddc"
-  register: azdcap_download
-  until: azdcap_download is success
-  retries: 3
-  when: ansible_distribution_release == 'jammy'
-
-- name: Install Azure-DCAP-Client on Jammy
-  command: "dpkg -i {{ azdcap_download.dest }}"
-  when:
-    - ansible_distribution_release == 'jammy'
-    - not azdcap_download.failed|bool
