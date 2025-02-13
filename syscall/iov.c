@@ -162,7 +162,8 @@ int oe_iov_sync(
                 if (src_size != dest_size)
                     goto done;
 
-                if (src < (uint8_t*)buf || (size_t)src + src_size < src ||
+                if (src < (uint8_t*)buf ||
+                    (size_t)src + src_size < (size_t)src ||
                     src + src_size > (uint8_t*)buf + buf_size)
                     goto done;
 
