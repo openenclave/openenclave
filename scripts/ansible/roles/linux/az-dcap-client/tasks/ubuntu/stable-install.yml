@@ -19,5 +19,3 @@
     name: "az-dcap-client={{ az_dcap_client_version }}"
     state: present
     update_cache: yes
-  # az-dcap-client is not available for Ubuntu 22.04
-  when: ansible_distribution_release != 'jammy'

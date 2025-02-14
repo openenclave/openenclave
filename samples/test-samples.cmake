@@ -38,6 +38,21 @@ else ()
   )
 endif ()
 
+set(IS_JAMMY FALSE)
+
+if (UNIX)
+  set(OS_INFO "")
+  file(READ "/etc/os-release" OS_INFO)
+  if (OS_INFO STREQUAL "")
+    message(FATAL_ERROR "Failed to read /etc/os-release")
+  endif ()
+  set(STRPOS -1)
+  string(FIND "${OS_INFO}" "UBUNTU_CODENAME=jammy" STRPOS)
+  if (NOT STRPOS EQUAL -1)
+    set(IS_JAMMY TRUE)
+  endif ()
+endif ()
+
 # Set SAMPLES_LIST so that helloworld becomes the first if BUILD_ENCLAVES=ON.
 if (BUILD_ENCLAVES)
   set(SAMPLES_LIST debugmalloc file-encryptor helloworld log_callback
@@ -50,7 +65,9 @@ if (BUILD_ENCLAVES)
     list(APPEND CRYPTO_LIB_LIST openssl_3)
   endif ()
 
-  if (UNIX)
+  # Alpine Linux, which oeapkman relies on, no longer installs properly
+  # (sqlite3 header files missing)
+  if (UNIX AND NOT IS_JAMMY)
     list(APPEND SAMPLES_LIST apkman)
     list(APPEND CRYPTO_LIB_LIST openssl_3)
   endif ()
