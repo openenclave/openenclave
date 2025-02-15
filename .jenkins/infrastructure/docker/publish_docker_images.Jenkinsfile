@@ -253,34 +253,59 @@ pipeline {
                             fi
                         """
                         script {
-                            OE_VERSION = sh(script: "grep --max-count=1 --only-matching --perl-regexp 'v\\d+\\.\\d+\\.\\d+(?=_log)' CHANGELOG.md", returnStdout: true).trim()
+                            OE_VERSION = helpers.getLatestOpenEnclaveRelease()
                         }
                     }
                 }
                 stage('Add details') {
                     steps {
                         script {
+                            // Compose the new DOCKER_IMAGES.md file in 3 sections:
+                            // 1. "Current versions" header (first 3 lines)
+                            // 2. New images
+                            // 3. "Previous versions" header
+                            // 4. Current images -> Previous images
+                            // 5. Previous images
+
+                            // Add "Current versions" header
                             sh """
-                                echo "\$(head -n 2 DOCKER_IMAGES.md)" > DOCKER_IMAGES_new.md
+                                head -n 3 DOCKER_IMAGES.md > DOCKER_IMAGES_new.md
                             """
+                            // Add new images
                             if (params.PUBLISH_WINDOWS) {
                                 sh """
                                     echo "| Windows Server 2022 | ${PUBLIC_REPO_NAME}/oetools-ws2022:${PUBLIC_WINDOWS_TAG} | ${OE_VERSION} | None | None |" >> DOCKER_IMAGES_new.md
                                 """
                             }
                             if (params.PUBLISH_LINUX) {
+                                // The PSW and DCAP versions between full, base, and Ubuntu versions should always be the same
+                                // But we do this as a quick and easy check to ensure all versions are consistent
+                                // Ubuntu 22.04
+                                BASE_2204_PSW  = helpers.dockerGetAptPackageVersion("${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.PUBLIC_LINUX_TAG}", "libsgx-enclave-common")
+                                BASE_2204_DCAP = helpers.dockerGetAptPackageVersion("${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.PUBLIC_LINUX_TAG}", "libsgx-ae-id-enclave")
+                                FULL_2204_PSW  = helpers.dockerGetAptPackageVersion("${PUBLIC_REPO_NAME}/oetools-22.04:${params.PUBLIC_LINUX_TAG}", "libsgx-enclave-common")
+                                FULL_2204_DCAP = helpers.dockerGetAptPackageVersion("${PUBLIC_REPO_NAME}/oetools-22.04:${params.PUBLIC_LINUX_TAG}", "libsgx-ae-id-enclave")
+                                // Ubuntu 20.04
                                 BASE_2004_PSW  = helpers.dockerGetAptPackageVersion("${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.PUBLIC_LINUX_TAG}", "libsgx-enclave-common")
                                 BASE_2004_DCAP = helpers.dockerGetAptPackageVersion("${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.PUBLIC_LINUX_TAG}", "libsgx-ae-id-enclave")
                                 FULL_2004_PSW  = helpers.dockerGetAptPackageVersion("${PUBLIC_REPO_NAME}/oetools-20.04:${params.PUBLIC_LINUX_TAG}", "libsgx-enclave-common")
                                 FULL_2004_DCAP = helpers.dockerGetAptPackageVersion("${PUBLIC_REPO_NAME}/oetools-20.04:${params.PUBLIC_LINUX_TAG}", "libsgx-ae-id-enclave")
+
                                 sh """
+                                    echo "| Base Ubuntu 22.04 | ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-22.04:${PUBLIC_LINUX_TAG} | ${OE_VERSION} | ${BASE_2204_PSW} | ${BASE_2204_DCAP} |" >> DOCKER_IMAGES_new.md
+                                    echo "| Full Ubuntu 22.04 | ${PUBLIC_REPO_NAME}/oetools-22.04:${PUBLIC_LINUX_TAG} | ${OE_VERSION} | ${FULL_2204_PSW} | ${FULL_2204_DCAP} |" >> DOCKER_IMAGES_new.md
                                     echo "| Base Ubuntu 20.04 | ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-20.04:${PUBLIC_LINUX_TAG} | ${OE_VERSION} | ${BASE_2004_PSW} | ${BASE_2004_DCAP} |" >> DOCKER_IMAGES_new.md
                                     echo "| Full Ubuntu 20.04 | ${PUBLIC_REPO_NAME}/oetools-20.04:${PUBLIC_LINUX_TAG} | ${OE_VERSION} | ${FULL_2004_PSW} | ${FULL_2004_DCAP} |" >> DOCKER_IMAGES_new.md
                                 """
                             }
                         }
+                        // Add "Previous versions" header, current images, and previous images
                         sh """
-                            echo "\$(tail -n +3 DOCKER_IMAGES.md)" >> DOCKER_IMAGES_new.md
+                            # Find the line number of the "Previous versions" header
+                            line_prev_ver=\$(awk '/^# Previous versions\$/ {print FNR}' DOCKER_IMAGES.md)
+                            tail +\$((line_prev_ver - 1)) DOCKER_IMAGES.md | head -n 4 >> DOCKER_IMAGES_new.md
+                            head -n \$((line_prev_ver - 2 )) DOCKER_IMAGES.md | tail +4 >> DOCKER_IMAGES_new.md
+                            tail -n +\$((line_prev_ver + 3)) DOCKER_IMAGES.md >> DOCKER_IMAGES_new.md
                             mv DOCKER_IMAGES_new.md DOCKER_IMAGES.md
                         """
                     }

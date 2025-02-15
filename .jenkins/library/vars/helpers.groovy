@@ -226,6 +226,27 @@ def testSamplesLinux(boolean lvi_mitigation, String oe_package) {
     """   
 }
 
+/**
+ * Returns the latest Open Enclave release version
+ */
+def getLatestOpenEnclaveRelease() {
+    sh(
+        label: "Install pre-requisites",
+        script: """#!/usr/bin/env bash
+            ${WaitForAptLock()}
+            ${needSudo()}
+            \${maybesudo} apt-get install -y jq wget curl
+        """
+    )
+    return sh(
+        label: "Get latest Open Enclave release",
+        script: """#!/bin/bash
+            curl -sS https://api.github.com/repos/openenclave/openenclave/releases | jq --raw-output --compact-output '.[0].tag_name'
+        """,
+        returnStdout: true
+    ).trim().replaceFirst('v', '')
+}
+
 /** Returns current Windows Intel SGX PSW version */
 def getPSWversion() {
     return powershell(
@@ -490,13 +511,7 @@ def releaseDownloadLinuxGitHub(String release_version, String oe_package, String
         """
     )
     if(release_version == 'latest') {
-        release_version = sh(
-            label: "Checking latest Open Enclave release",
-            script: """#!/bin/bash
-                curl -sS https://api.github.com/repos/openenclave/openenclave/releases | jq --raw-output --compact-output '.[0].tag_name'
-            """,
-            returnStdout: true
-        ).trim().replaceFirst('v', '')
+        release_version = getLatestOpenEnclaveRelease()
         println "releaseDownloadLinuxGithub: found ${release_version} as the latest release"
     }
     def downloadedFiles = sh(
