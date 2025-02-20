@@ -42,47 +42,54 @@ pipeline {
             }
         }
         stage("Base Image") {
-            stages {
-                stage('Build Base') {
-                    steps {
-                        dir(env.BASE_DOCKERFILE_DIR) {
-                            sh """
-                                chmod +x ./build.sh
-                                mkdir build
-                                cd build
-                                ../build.sh -v "${params.SGX_VERSION}" -u "20.04" -t "${TAG_BASE_IMAGE}"
-                            """
-                        }
+            matrix {
+                axes {
+                    axis {
+                        name 'UBUNTU_RELEASE'
+                        values '20.04', '22.04'
                     }
                 }
-                stage("Test Base - 20.04") {
-                    steps {
-                        script {
-                            base_2004_image = docker.image("openenclave-base-ubuntu-20.04:${TAG_BASE_IMAGE}")
-                            base_2004_image.inside("--user root:root \
-                                                    --cap-add=SYS_PTRACE \
-                                                    --device /dev/sgx_enclave:/dev/sgx_enclave \
-                                                    --device /dev/sgx_provision:/dev/sgx_provision \
-                                                    --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
+                stages {
+                    stage("Build Base") {
+                        steps {
+                            dir(env.BASE_DOCKERFILE_DIR) {
                                 sh """
-                                    apt update
-                                    apt install -y build-essential open-enclave libssl-dev curl
+                                    chmod +x ./build.sh
+                                    mkdir "build-${UBUNTU_RELEASE}"
+                                    cd "build-${UBUNTU_RELEASE}"
+                                    ../build.sh -v "${params.SGX_VERSION}" -u "${UBUNTU_RELEASE}" -t "${TAG_BASE_IMAGE}"
                                 """
-                                helpers.TestSamplesCommand(false, "open-enclave")
                             }
                         }
                     }
-                }
-                stage('Push to internal repository') {
-                    steps {
-                        script {
-                            docker.withRegistry(params.INTERNAL_REPO, params.INTERNAL_REPO_CRED_ID) {
-                                base_2004_image.push()
-                                if ( params.TAG_LATEST ) {
-                                    base_2004_image.push('latest')
+                    stage("Test Base") {
+                        steps {
+                            script {
+                                def base_image = docker.image("openenclave-base-ubuntu-${UBUNTU_RELEASE}:${TAG_BASE_IMAGE}")
+                                base_image.inside(
+                                     "--user root:root \
+                                     --cap-add=SYS_PTRACE \
+                                     --device /dev/sgx_enclave:/dev/sgx_enclave \
+                                     --device /dev/sgx_provision:/dev/sgx_provision \
+                                     --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket"
+                                ) {
+                                    sh """
+                                        apt update
+                                        apt install -y build-essential curl libssl-dev cmake
+                                    """
+                                    // TODO: For 22.04, automated testing is unavailable until first release is available
+                                    if(UBUNTU_RELEASE == "20.04") {
+                                        helpers.releaseInstall("latest", "open-enclave", "GitHub")
+                                        helpers.TestSamplesCommand(false, "open-enclave")
+                                    }
+                                }
+                                docker.withRegistry(params.INTERNAL_REPO, params.INTERNAL_REPO_CRED_ID) {
+                                    base_image.push()
+                                    if ( params.TAG_LATEST ) {
+                                        base_image.push('latest')
+                                    }
                                 }
                             }
-                            sh "docker logout ${params.INTERNAL_REPO}"
                         }
                     }
                 }
@@ -98,15 +105,12 @@ pipeline {
                                 "devkits_uri=${params.DEVKITS_URI}"
                             )
                             oe2004 = common.dockerImage("oetools-20.04:${TAG_FULL_IMAGE}", LINUX_DOCKERFILE, "${buildArgs}")
-                            oe2004.inside("--user root:root \
-                                        --cap-add=SYS_PTRACE \
+                            oe2004.inside(
+                                        "--cap-add=SYS_PTRACE \
                                         --device /dev/sgx_provision:/dev/sgx_provision \
                                         --device /dev/sgx_enclave:/dev/sgx_enclave \
                                         --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket") {
-                                sh """
-                                    apt update
-                                    apt install -y build-essential open-enclave libssl-dev
-                                """
+                                helpers.releaseInstall("latest", "open-enclave", "GitHub")
                                 helpers.TestSamplesCommand(false, "open-enclave")
                             }
                             docker.withRegistry(params.INTERNAL_REPO, params.INTERNAL_REPO_CRED_ID) {
@@ -126,6 +130,16 @@ pipeline {
                                 "devkits_uri=${params.DEVKITS_URI}"
                             )
                             oe2204 = common.dockerImage("oetools-22.04:${TAG_FULL_IMAGE}", LINUX_DOCKERFILE, "${buildArgs}")
+                            oe2204.inside(
+                                 "--cap-add=SYS_PTRACE \
+                                 --device /dev/sgx_provision:/dev/sgx_provision \
+                                 --device /dev/sgx_enclave:/dev/sgx_enclave \
+                                 --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket"
+                            ) {
+                                sh 'echo "TODO: enable tests after Ubuntu 22.04 release deb is available"'
+                                // helpers.releaseInstall("latest", "open-enclave", "GitHub")
+                                // helpers.TestSamplesCommand(false, "open-enclave")
+                            }
                             docker.withRegistry(params.INTERNAL_REPO, params.INTERNAL_REPO_CRED_ID) {
                                 common.exec_with_retry { oe2204.push() }
                                 if ( params.TAG_LATEST ) {
@@ -136,6 +150,11 @@ pipeline {
                     }
                 }
             }
+        }
+    }
+    post {
+        always {
+                sh "docker logout ${params.INTERNAL_REPO}"
         }
     }
 }

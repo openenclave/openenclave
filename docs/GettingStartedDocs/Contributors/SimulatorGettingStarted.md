@@ -2,7 +2,7 @@
 
 ## Platform requirement
 
-- Ubuntu 20.04 64-bit.
+- Ubuntu 20.04 or 22.04 64-bit.
 - A machine with an Intel processor
 
 ## Clone Open Enclave SDK repo from GitHub

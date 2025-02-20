@@ -87,14 +87,15 @@ def CmakeArgs(Map args) {
 
 def WaitForAptLock() {
     return """
+        ${needSudo()}
         counter=0
         max=600
         step=5
         echo "Checking for locks..."
-        while sudo fuser /var/lib/dpkg/lock > /dev/null 2>&1 ||
-              sudo fuser /var/lib/dpkg/lock-frontend > /dev/null 2>&1 ||
-              sudo fuser /var/lib/apt/lists/lock > /dev/null 2>&1 ||
-              sudo ps aux | grep -E "[a]pt|[d]pkg"; do
+        while \${maybesudo} fuser /var/lib/dpkg/lock > /dev/null 2>&1 ||
+              \${maybesudo} fuser /var/lib/dpkg/lock-frontend > /dev/null 2>&1 ||
+              \${maybesudo} fuser /var/lib/apt/lists/lock > /dev/null 2>&1 ||
+              \${maybesudo} ps aux | grep -E "[a]pt|[d]pkg"; do
             # Wait up to 600 seconds to lock to be released
             if (( \${counter} > \${max} )); then
                 echo "Timeout waiting for lock."
@@ -105,7 +106,6 @@ def WaitForAptLock() {
             sleep \${step}
         done
     """
-    
 }
 
 /* Runs ctest with specific paramters and retry logic
@@ -149,35 +149,6 @@ def makeInstallCommand() {
 def ninjaInstallCommand() {
     return """
         sudo ninja -v install
-    """
-}
-
-def InstallReleaseCommand(String version) {
-    String codename = ''
-    if (version == '20.04') {
-        codename = 'focal'
-    } else {
-        throw new Exception("Unsupported Ubuntu version: ${version}")
-    }
-    return installCommand = """
-        echo "Running Install Release Command"
-        echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu ${codename} main' | sudo tee /etc/apt/sources.list.d/intel-sgx.list
-        wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | sudo apt-key add -
-
-        echo "deb http://apt.llvm.org/${codename}/ llvm-toolchain-${codename}-11 main" | sudo tee /etc/apt/sources.list.d/llvm-toolchain-${codename}-11.list
-        wget -qO - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-
-        echo "deb [arch=amd64] https://packages.microsoft.com/ubuntu/${version}/prod ${codename} main" | sudo tee /etc/apt/sources.list.d/msprod.list
-        wget -qO - https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
-
-        ${WaitForAptLock()}
-        sudo apt update
-
-        ${WaitForAptLock()}
-        sudo apt install -y open-enclave
-
-        echo "Open Enclave SDK version installed"
-        apt list --installed | grep open-enclave
     """
 }
 
@@ -229,6 +200,7 @@ def testSamplesLinux(boolean lvi_mitigation, String oe_package) {
         for i in *; do
             if [[ \${BUILD_SYSTEM} == "CMAKE" ]]; then
                 if [[ -d \${i} ]] && [[ -f \${i}/CMakeLists.txt ]]; then
+                    echo "Running sample: \${i}"
                     cd \${i}
                     mkdir build
                     cd build
@@ -239,6 +211,7 @@ def testSamplesLinux(boolean lvi_mitigation, String oe_package) {
                 fi
             elif [[ \${BUILD_SYSTEM} == "MAKE" ]]; then
                 if [[ -d \${i} ]] && [[ -f \${i}/Makefile ]]; then
+                    echo "Running sample: \${i}"
                     cd \${i}
                     make build
                     make run
@@ -251,6 +224,27 @@ def testSamplesLinux(boolean lvi_mitigation, String oe_package) {
         cd ~
         rm -rf ~/samples
     """   
+}
+
+/**
+ * Returns the latest Open Enclave release version
+ */
+def getLatestOpenEnclaveRelease() {
+    sh(
+        label: "Install pre-requisites",
+        script: """#!/usr/bin/env bash
+            ${WaitForAptLock()}
+            ${needSudo()}
+            \${maybesudo} apt-get install -y jq wget curl
+        """
+    )
+    return sh(
+        label: "Get latest Open Enclave release",
+        script: """#!/bin/bash
+            curl -sS https://api.github.com/repos/openenclave/openenclave/releases | jq --raw-output --compact-output '.[0].tag_name'
+        """,
+        returnStdout: true
+    ).trim().replaceFirst('v', '')
 }
 
 /** Returns current Windows Intel SGX PSW version */
@@ -461,11 +455,12 @@ def azureContainerDownload(String container_name, String file_pattern, String st
  */
 def dependenciesInstall(String dcap_url = "", local_repo_path = "", String install_flags = "", String build_dir = "${WORKSPACE}") {
     if(isUnix()) {
-        sh """
+        sh """#!/usr/bin/env bash
             sudo bash ${build_dir}/scripts/ansible/install-ansible.sh
             cp ${WORKSPACE}/scripts/ansible/ansible.cfg ${WORKSPACE}/ansible.cfg
             ${WaitForAptLock()}
-            sudo apt install -y dkms
+            ${needSudo()}
+            \${maybesudo} apt install -y dkms
         """
         if (local_repo_path) {
             sh """
@@ -497,7 +492,9 @@ def dependenciesInstall(String dcap_url = "", local_repo_path = "", String insta
 /**
  * Downloads an Ubuntu Open Enclave release version from GitHub and returns a list of downloaded files
  *
- * @param release_version  The version of the Open Enclave release to install
+ * @param release_version  The version of the Open Enclave release to install. Examples:
+ *                          - latest
+ *                          - 0.19.8
  * @param oe_package       Open Enclave package to install
  *                          - "open-enclave" [Default]
  *                          - "open-enclave-hostverify"
@@ -507,11 +504,16 @@ def dependenciesInstall(String dcap_url = "", local_repo_path = "", String insta
 def releaseDownloadLinuxGitHub(String release_version, String oe_package, String os_id, String os_release) {
     sh(
         label: "Install pre-requisites",
-        script: """
+        script: """#!/usr/bin/env bash
             ${WaitForAptLock()}
-            sudo apt-get install -y jq
+            ${needSudo()}
+            \${maybesudo} apt-get install -y jq wget curl
         """
     )
+    if(release_version == 'latest') {
+        release_version = getLatestOpenEnclaveRelease()
+        println "releaseDownloadLinuxGithub: found ${release_version} as the latest release"
+    }
     def downloadedFiles = sh(
         label: "Download files from GitHub using regex ${os_id}(_|-)${os_release}(_|-)${oe_package}(_|-)${release_version}",
         script: """#!/bin/bash
@@ -645,7 +647,9 @@ def releaseDownloadWindows(String release_version, String oe_package, String sou
  * Downloads and installs an Open Enclave release version for either Windows or Ubuntu
  * Warning: this function must not be called within a shell otherwise a null command would be ran after this function completes.
  *
- * @param release_version         The version of the Open Enclave release to install
+ * @param release_version         The version of the Open Enclave release to install. Examples:
+ *                                - latest (when source=GithHub)
+ *                                - 0.19.8
  * @param oe_package              Open Enclave package to install
  *                                - "open-enclave" [Default]
  *                                - "open-enclave-hostverify"
@@ -668,6 +672,12 @@ def releaseInstall(String release_version = null, String oe_package = "open-encl
     }
     // For *nix
     if(isUnix()) {
+        sh """#!/usr/bin/env bash
+            ${needSudo()}
+            ${WaitForAptLock()}
+            \${maybesudo} apt update
+            \${maybesudo} apt-get install -y lsb-release
+        """
         // Get distribution name
         def os_id = sh(
                 script: "lsb_release --id --short",
@@ -687,9 +697,10 @@ def releaseInstall(String release_version = null, String oe_package = "open-encl
         }
         // Install Open Enclave package
         for(file in downloadedFiles) {
-            sh """
+            sh """#!/usr/bin/env bash
                 ${WaitForAptLock()}
-                sudo dpkg -i "${file}"
+                ${needSudo()}
+                \${maybesudo} dpkg -i "${file}"
             """
         }
     // For Windows
@@ -749,13 +760,29 @@ def get_date(String delimiter = "") {
  * @param os_version The OS distribution version ("18.04", "20.04")
  */
  def getAzureImageUrn(String os_type, String os_version) {
-    if (os_type.toLowerCase() != 'ubuntu' || ! os_version.matches('20.04|18.04')) {
-            error("Unsupported OS (${os_type}) or version (${os_version})")
+    if (os_type.toLowerCase() != 'ubuntu') {
+        error("Unsupported OS: ${os_type}")
     }
-    if (os_version == '20.04') {
+    if (os_version == '22.04') {
+        return "Canonical:0001-com-ubuntu-server-jammy:22_04-lts-gen2:latest"
+    } else if (os_version == '20.04') {
         return "Canonical:0001-com-ubuntu-server-focal:20_04-lts-gen2:latest"
     } else if (os_version == '18.04') {
         return "Canonical:UbuntuServer:18_04-lts-gen2:latest"
+    } else {
+        error("Unsupported OS version: ${os_version}")
+    }
+ }
+
+/* Returns codename given release version (eg. 20.04)
+ *
+ * @param os_version The OS distribution version ("18.04", "20.04")
+ */
+ def getUbuntuCodename(String os_version) {
+    switch(os_version) {
+        case "18.04": return "bionic"
+        case "20.04": return "focal"
+        case "22.04": return "jammy"
     }
  }
 
@@ -770,20 +797,22 @@ def get_date(String delimiter = "") {
  */
 def getDockerSGXDevices(String os_type, String os_version) {
     def devices = []
-    if ( os_type.equalsIgnoreCase('ubuntu') && os_version.equals('20.04') ) {
-        devices.add('/dev/sgx_provision')
-        devices.add('/dev/sgx_enclave')
-    }
-    else if ( os_type.equalsIgnoreCase('ubuntu') && os_version.equals('18.04') ) {
-        devices.add('/dev/sgx')
-    }
-    else {
-        error("getDockerSGXDevices(): Unknown OS (${os_type}) or version (${os_version})")
+    if (os_type.equalsIgnoreCase('ubuntu')) {
+        if (os_version.equals('18.04')) {
+            devices.add('/dev/sgx')
+        } else {
+            devices.add('/dev/sgx_provision')
+            devices.add('/dev/sgx_enclave')
+        }
+    } else {
+        error("getDockerSGXDevices: Unknown OS: ${os_type}")
     }
     String returnDevices = ""
     for (device in devices) {
         if ( fileExists("${device}") ) {
             returnDevices += " --device=${device}:${device} "
+        } else {
+            error("getDockerSGXDevices: ${device} does not exist!")
         }
     }
     return returnDevices
@@ -849,4 +878,74 @@ def oeCheckoutScm(String PULL_REQUEST_ID) {
     } else {
         checkout scm
     }
+}
+
+/**
+ * Use oeutil to generate certs
+ *
+ * @param oeutil_path  Path to oeutil binary (default: "./output/bin/oeutil")
+ * @param format       Format of the certificate (or report, or evidence)
+ * @param outfile      Output file (default: "")
+ * @param endorsements File to output endorsements to (default: "")
+ * @param quoteproc    Use SGX in-process or out-of-process quoting (default: "")
+ * @param verify       Verify the certificate (default: true)
+ * @param verbose      Verbose output (default: false)
+ */
+def oeutilGenCert(String format, String oeutil_path="./output/bin/oeutil", String outfile="", String endorsements="", String quoteproc="", boolean verify=true, boolean verbose=false) {
+    def cmd = "${oeutil_path} gen --format ${format}"
+    if (outfile) {
+        cmd += " --out ${outfile}"
+    }
+    if (endorsements) {
+        cmd += " --endorsements ${endorsements}"
+    }
+    if (quoteproc) {
+        cmd += " --quote-proc ${quoteproc}"
+    }
+    if (verify) {
+        cmd += " --verify"
+    }
+    if (verbose) {
+        cmd += " --verbose"
+    }
+    // SGX quote-ex init can sometimes return SGX_ERROR_SERVICE_TIMEOUT.
+    // Subsequent tries should not have this issue.
+    return """
+        # In case of failure we want to continue on to retry
+        set +x
+        attempt=1
+        max_attempts=10
+        while [ \${attempt} -le \${max_attempts} ]; do
+            ${cmd}
+            # Check for general failure
+            if [ \$? -ne 0 ]; then
+                attempt=\$((\${attempt}+1))
+            # Check if outfile was created, if one is defined
+            elif [ "${outfile}" ] && [ ! -f "${outfile}" ]; then
+                attempt=\$((\${attempt}+1))
+            else
+                break
+            fi
+            if [ \${attempt} -gt \${max_attempts} ]; then
+                echo "Failed to generate certificate after \${max_attempts} tries"
+                echo "oeutil command: ${cmd}"
+            fi
+            sleep 3
+        done
+    """
+}
+
+/* Determines if sudo is needed based on current uid.
+ * This allows flexibility in using the same commands between VMs and containers.
+ * To use this function, use \${maybesudo} in place of sudo
+ * When Jenkins uses sh without #!/bin/bash, uid is not set so we default to 9999
+ */
+def needSudo() {
+    return """
+        if [ \${UID:-9999} -ne 0 ]; then
+            maybesudo="sudo"
+        else
+            maybesudo=""
+        fi
+    """
 }

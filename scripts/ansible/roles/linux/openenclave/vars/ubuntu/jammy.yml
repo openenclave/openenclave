@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 ---
-gcc_target_version: "11.3.0"
+gcc_target_version: "11.4.0"
 # For specifying distribution-specific packages
 apt_distribution_packages:
   - "python3"

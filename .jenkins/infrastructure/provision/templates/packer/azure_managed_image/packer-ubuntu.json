@@ -37,13 +37,10 @@
       "replication_regions": "{{ user `replication_regions` }}"
     },
 
-    "shared_image_gallery": {
-      "subscription": "{{ user `subscription_id` }}",
-      "resource_group": "{{ user `resource_group` }}",
-      "gallery_name": "{{ user `base_gallery_name` }}",
-      "image_name": "{{ user `base_gallery_image_name` }}",
-      "image_version": "{{ user `base_gallery_image_version` }}"
-    },
+    "image_publisher": "{{ user `image_publisher` }}",
+    "image_offer": "{{ user `image_offer` }}",
+    "image_sku": "{{ user `image_sku` }}",
+    "image_version": "latest",
 
     "shared_image_gallery_timeout": "180m",
 
