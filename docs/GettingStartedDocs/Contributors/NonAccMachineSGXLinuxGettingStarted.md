@@ -4,7 +4,7 @@
 This document is to provide a viable solution to enable Open Enclave SGX DCAP remote attestation to run on non-Azure Confidential Computing (ACC) machines. It relies on several Intel components and services which are subject to Intel's changes.
 
 ## 1. Platform requirements
-- Ubuntu 20.04-LTS 64-bit.
+- Ubuntu 20.04 or 22.04 LTS 64-bit.
 - SGX1 capable system with Flexible Launch Control support. This feature is only available on Intel Coffee Lake processor (8th gen) or newer.
 - It is strongly recommended to update your BIOS to newest version before start. With the setup described by this document, all attestation will be against the most recent collateral. Old BIOS versions, which may have lower CPU SVN, will cause attestation to fail.
 
@@ -50,9 +50,9 @@ sudo apt install libsgx-dcap-default-qpl
 
 NOTE: In case the Intel SGX APT source repository is not added to your system. Run the following commands to add it.
 
-On Ubuntu 20.04:
+On Ubuntu:
 ```bash
-echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu focal main' | sudo tee /etc/apt/sources.list.d/intel-sgx.list
+echo "deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu $(lsb_release --codename --short) main" | sudo tee /etc/apt/sources.list.d/intel-sgx.list
 ```
 
 Add the key to the list of trusted keys used by the apt to authenticate packages:
@@ -69,6 +69,7 @@ sudo apt-get update
 
 Intel DCAP Quote Provider package can be installed manually by finding the appropriate libsgx-dcap-default-qpl package in [the Intel SGX DCAP repository](https://download.01.org/intel-sgx/sgx-dcap/). As there are multiple different versions available, please download the version that matches Intel SGX version and your OS version. 
 
+##### Ubuntu 20.04 instructions
 For Ubuntu 20.04 (code name [Focal Fossa](https://wiki.ubuntu.com/FocalFossa)), please download the sgx_debian_local_repo for the latest supported version of Intel DCAP. Afterwards, extract the tgz and install `sgx_debian_local_repo/pool/main/libs/libsgx-dcap-default-qpl/libsgx-dcap-default-qpl_{VERSION}-focal1_amd64.deb`.
 
 In this document, we use Ubuntu 20.04 and Intel DCAP 1.16 as an example, so we will use [sgx_debian_local_repo.tgz](https://download.01.org/intel-sgx/sgx-dcap/1.16/linux/distro/ubuntu20.04-server/sgx_debian_local_repo.tgz)
@@ -88,8 +89,28 @@ tar xvzf sgx_debian_local_repo.tgz
 sudo dpkg -i sgx_debian_local_repo/pool/main/libs/libsgx-dcap-default-qpl/libsgx-dcap-default-qpl_1.16.100.2-focal1_amd64.deb
 ```
 
+##### Ubuntu 22.04 instructions
+For Ubuntu 22.04, please download the sgx_debian_local_repo for the latest supported version of Intel DCAP. Afterwards, extract the tgz and install `sgx_debian_local_repo/pool/main/libs/libsgx-dcap-default-qpl/libsgx-dcap-default-qpl_{VERSION}-jammy1_amd64.deb`.
+
+Below we use Intel DCAP 1.22 as an example.
+
+1. Download the package.
+```bash
+cd ~
+wget hhttps://download.01.org/intel-sgx/sgx-dcap/1.22/linux/distro/ubuntu22.04-server/sgx_debian_local_repo.tgz
+```
+2. Extract the package.
+```bash
+tar xvzf sgx_debian_local_repo.tgz
+```
+
+3. Install the package.
+```bash
+sudo dpkg -i sgx_debian_local_repo/pool/main/libs/libsgx-dcap-default-qpl/libsgx-dcap-default-qpl-dev_1.22.100.3-jammy1_amd64
+```
+
 ### 3.2 Create a soft link
-OE expects the file name of the QPL to be libdcap_quoteprov.so. But libsgx-dcap-default-qpl only creates libdcap_quoteprov.so.1 and libdcap_quoteprov.so.1.13.103.2 of which libdcap_quoteprov.so.1 is a soft link to libdcap_quoteprov.so.1.13.103.2. To allow OE to work properly, we need to create the other soft link called libdcap_quoteprov.so to link to libdcap_quoteprov.so.1.13.103.2
+OE expects the file name of the QPL to be libdcap_quoteprov.so. But libsgx-dcap-default-qpl only creates files such as libdcap_quoteprov.so.1 and libdcap_quoteprov.so.1.13.103.2 of which libdcap_quoteprov.so.1 is a soft link to libdcap_quoteprov.so.1.13.103.2. To allow OE to work properly, we need to create the other soft link called libdcap_quoteprov.so to link to libdcap_quoteprov.so.1.13.103.2
 
 Check where those files are installed.
 ```bash
@@ -176,27 +197,7 @@ NOTE: In case the Intel SGX APT source repository is not added to your system. S
 
 #### Option 2: Install PCCS with dpkg manually
 
-PCCS can be installed manually by finding the appropriate sgx-dcap-pccs package in [the Intel SGX DCAP repository](https://download.01.org/intel-sgx/sgx-dcap/). As there are multiple different versions available, please download the version that matches Intel SGX version and your OS version. 
-
-For Ubuntu 20.04 (code name [Focal Fossa](https://wiki.ubuntu.com/FocalFossa)), please download the sgx_debian_local_repo.tgz for the latest supported version of Intel DCAP. Afterwards, extract the tgz and install `sgx_debian_local_repo/pool/main/s/sgx-dcap-pccs/sgx-dcap-pccs_{VERSION}-focal1_amd64.deb`. 
-
-In this document, we use Ubuntu 20.04 and Intel DCAP 1.16 as an example so we will use [sgx_debian_local_repo.tgz](https://download.01.org/intel-sgx/sgx-dcap/1.16/linux/distro/ubuntu20.04-server/sgx_debian_local_repo.tgz)
-
-1. Download the package
-```bash
-cd ~
-wget https://download.01.org/intel-sgx/sgx-dcap/1.16/linux/distro/ubuntu20.04-server/sgx_debian_local_repo.tgz
-```
-
-2. Extract the package
-```bash
-tar xvzf sgx_debian_local_repo.tgz
-```
-
-3. Install the package.
-```bash
-sudo dpkg -i sgx_debian_local_repo/pool/main/s/sgx-dcap-pccs/sgx-dcap-pccs_1.16.100.2-focal1_amd64.deb
-```
+PCCS can be installed manually by following Appendix 2 of the [Intel SGX SW Installation Guide for Linux](https://download.01.org/intel-sgx/sgx-dcap/1.22/linux/docs/Intel_SGX_SW_Installation_Guide_for_Linux.pdf) and obtaining the appropriate package in [the Intel SGX DCAP repository](https://download.01.org/intel-sgx/sgx_repo/ubuntu/pool/main/web/sgx-dcap-pccs/). As there are multiple different versions available, please download the version that matches your Intel SGX DCAP version and your OS version.
 
 You will be asked to finish the configuration during the installation process.
 

@@ -4,15 +4,21 @@
 # Helper to obtain the version of glibc.
 macro (get_glibc_version)
   execute_process(
-    COMMAND ${CMAKE_C_COMPILER} -print-file-name=libc.so.6
-    OUTPUT_VARIABLE GLIBC_PATH
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
-  get_filename_component(GLIBC_PATH ${GLIBC_PATH} REALPATH)
-  get_filename_component(GLIBC_VERSION ${GLIBC_PATH} NAME)
-  string(REGEX REPLACE "libc-(.*).so" \\1 GLIBC_VERSION ${GLIBC_VERSION})
-  if (NOT GLIBC_VERSION MATCHES "^[0-9]+\.[0-9]+$")
+    COMMAND ldd --version
+    OUTPUT_VARIABLE LDD_OUTPUT
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_VARIABLE LDD_ERROR
+    ERROR_STRIP_TRAILING_WHITESPACE
+  )
+  if (LDD_ERROR)
+    message(FATAL_ERROR "Failed to get glibc version: ${LDD_ERROR}")
+  endif ()
+  string(REGEX MATCH "GLIBC ([0-9]+\\.[0-9]+)" _ ${LDD_OUTPUT})
+  set(GLIBC_VERSION ${CMAKE_MATCH_1})
+  if (NOT GLIBC_VERSION MATCHES "^[0-9]+\\.[0-9]+$")
     message(FATAL_ERROR "Glibc version is unknown: ${GLIBC_VERSION}")
   endif ()
+  message(VERBOSE "Found Glibc version: ${GLIBC_VERSION}")
 endmacro ()
 
 # Usage

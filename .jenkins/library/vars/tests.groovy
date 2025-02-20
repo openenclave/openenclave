@@ -136,7 +136,7 @@ def ACCUpgradeTest(String version, String compiler, String lvi_mitigation, boole
                     use_snmalloc: false,
                     use_eeid: false)
                 println "Install latest open-enclave release"
-                sh("${helpers.InstallReleaseCommand(version)}")
+                helpers.releaseInstall("latest", "open-enclave", "GitHub")
                 helpers.TestSamplesCommand()
                 println "Build and install current open-enclave build"
                 def task = """
@@ -176,7 +176,7 @@ def ACCContainerTest(String version, String compiler, String lvi_mitigation, boo
                     use_snmalloc: false,
                     use_eeid: false)
                 def devices = helpers.getDockerSGXDevices("ubuntu", helpers.getUbuntuReleaseVer())
-                def runArgs = "--user root:root --cap-add=SYS_PTRACE ${devices} --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket"
+                def runArgs = "--cap-add=SYS_PTRACE ${devices} --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket"
                 println("${globalvars.AGENTS_LABELS["acc-ubuntu-${version}"]} running Docker container with ${devices}")
                 def task = """
                            ${helpers.ninjaBuildCommand(cmakeArgs)}
@@ -250,23 +250,24 @@ def ACCHostVerificationTest(String version, String build_type, String compiler, 
                 helpers.oeCheckoutScm(pr_id)
                 def cmakeArgs = "-G Ninja -DCMAKE_BUILD_TYPE=${build_type} -Wdev"
                 def devices = helpers.getDockerSGXDevices("ubuntu", helpers.getUbuntuReleaseVer())
-                def runArgs = "--user root:root --cap-add=SYS_PTRACE ${devices} --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket"
+                def runArgs = "--cap-add=SYS_PTRACE ${devices} --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket"
                 println("ACC-${version} running Docker container with ${devices}")
                 println("Generating certificates and reports ...")
+                def oeutil_path =  '../../../output/bin/oeutil'
+                def oeutilGenCertCmds = helpers.oeutilGenCert('cert keyec.pem publicec.pem', oeutil_path, 'sgx_cert_ec.der', '', '', true) +
+                                        helpers.oeutilGenCert('cert keyrsa.pem publicrsa.pem', oeutil_path, 'sgx_cert_rsa.der', '', '', true) +
+                                        helpers.oeutilGenCert('legacy_report_remote', oeutil_path, 'sgx_report.bin', '', '', true) +
+                                        helpers.oeutilGenCert('sgx_ecdsa', oeutil_path, 'sgx_evidence.bin', 'sgx_endorsements.bin', '', true) +
+                                        helpers.oeutilGenCert('sgx_ecdsa', oeutil_path, '', '', 'in', true) +
+                                        helpers.oeutilGenCert('sgx_ecdsa', oeutil_path, '', '', 'out', true)
                 def task = """
                            ${helpers.ninjaBuildCommand(cmakeArgs)}
-                           pushd tests/host_verify/host
+                           cd tests/host_verify/host
                            openssl ecparam -name prime256v1 -genkey -noout -out keyec.pem
                            openssl ec -in keyec.pem -pubout -out publicec.pem
                            openssl genrsa -out keyrsa.pem 2048
                            openssl rsa -in keyrsa.pem -outform PEM -pubout -out publicrsa.pem
-                           ../../../output/bin/oeutil gen --format cert keyec.pem publicec.pem --out sgx_cert_ec.der --verify
-                           ../../../output/bin/oeutil gen --format cert keyrsa.pem publicrsa.pem --out sgx_cert_rsa.der --verify
-                           ../../../output/bin/oeutil gen --format legacy_report_remote --out sgx_report.bin --verify
-                           ../../../output/bin/oeutil gen --format sgx_ecdsa --out sgx_evidence.bin --endorsements sgx_endorsements.bin --verify
-                           ../../../output/bin/oeutil gen --format sgx_ecdsa --quote-proc in --verify
-                           ../../../output/bin/oeutil gen --format sgx_ecdsa --quote-proc out --verify
-                           popd
+                           ${oeutilGenCertCmds}
                            """
                 common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", compiler, task, runArgs)
 
@@ -308,7 +309,7 @@ def ACCHostVerificationTest(String version, String build_type, String compiler, 
                 helpers.oeCheckoutScm(pr_id)
                 unstash "linux_host_verify-${version}-${build_type}-${BUILD_NUMBER}"
                 def cmakeArgs = "-G Ninja -DBUILD_ENCLAVES=OFF -DCMAKE_BUILD_TYPE=${build_type} -Wdev"
-                def runArgs = "--user root:root --cap-add=SYS_PTRACE"
+                def runArgs = "--cap-add=SYS_PTRACE"
                 def task = """
                            ${helpers.ninjaBuildCommand(cmakeArgs)}
                            ctest -R host_verify --output-on-failure --timeout ${globalvars.CTEST_TIMEOUT_SECONDS} || ctest --rerun-failed --output-on-failure --timeout ${globalvars.CTEST_TIMEOUT_SECONDS}
@@ -358,6 +359,7 @@ def ACCHostVerificationTest(String version, String build_type, String compiler, 
  */
 
 def ACCHostVerificationPackageTest(String version, String build_type, String compiler, String pr_id = '') {
+    // TODO: This and ACCHOstVerificationTest can be refactored since they are very similar
     stage("ACC-${version} Generate Quote") {
         node(globalvars.AGENTS_LABELS["acc-ubuntu-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
@@ -365,23 +367,24 @@ def ACCHostVerificationPackageTest(String version, String build_type, String com
                 helpers.oeCheckoutScm(pr_id)
                 def cmakeArgs = "-G Ninja -DCMAKE_BUILD_TYPE=${build_type} -Wdev"
                 def devices = helpers.getDockerSGXDevices("ubuntu", helpers.getUbuntuReleaseVer())
-                def runArgs = "--user root:root --cap-add=SYS_PTRACE ${devices} --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket"
+                def runArgs = "--cap-add=SYS_PTRACE ${devices} --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket"
                 println("ACC-${version} running Docker container with ${devices}")
                 println("Generating certificates and reports ...")
+                def oeutil_path =  '../../../output/bin/oeutil'
+                def oeutilGenCertCmds = helpers.oeutilGenCert('cert keyec.pem publicec.pem', oeutil_path, 'sgx_cert_ec.der', '', '', true) +
+                                        helpers.oeutilGenCert('cert keyrsa.pem publicrsa.pem', oeutil_path, 'sgx_cert_rsa.der', '', '', true) +
+                                        helpers.oeutilGenCert('legacy_report_remote', oeutil_path, 'sgx_report.bin', '', '', true) +
+                                        helpers.oeutilGenCert('sgx_ecdsa', oeutil_path, 'sgx_evidence.bin', 'sgx_endorsements.bin', '', true) +
+                                        helpers.oeutilGenCert('sgx_ecdsa', oeutil_path, '', '', 'in', true) +
+                                        helpers.oeutilGenCert('sgx_ecdsa', oeutil_path, '', '', 'out', true)
                 def task = """
                            ${helpers.ninjaBuildCommand(cmakeArgs)}
-                           pushd tests/host_verify/host
+                           cd tests/host_verify/host
                            openssl ecparam -name prime256v1 -genkey -noout -out keyec.pem
                            openssl ec -in keyec.pem -pubout -out publicec.pem
                            openssl genrsa -out keyrsa.pem 2048
                            openssl rsa -in keyrsa.pem -outform PEM -pubout -out publicrsa.pem
-                           ../../../output/bin/oeutil gen --format cert keyec.pem publicec.pem --out sgx_cert_ec.der --verify
-                           ../../../output/bin/oeutil gen --format cert keyrsa.pem publicrsa.pem --out sgx_cert_rsa.der --verify
-                           ../../../output/bin/oeutil gen --format legacy_report_remote --out sgx_report.bin --verify
-                           ../../../output/bin/oeutil gen --format sgx_ecdsa --out sgx_evidence.bin --endorsements sgx_endorsements.bin --verify
-                           ../../../output/bin/oeutil gen --format sgx_ecdsa --quote-proc in --verify
-                           ../../../output/bin/oeutil gen --format sgx_ecdsa --quote-proc out --verify
-                           popd
+                           ${oeutilGenCertCmds}
                            """
                 common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", compiler , task, runArgs)
 
@@ -432,7 +435,7 @@ def ACCHostVerificationPackageTest(String version, String build_type, String com
                                        -DBUILD_ENCLAVES=OFF \
                                        -DCMAKE_BUILD_TYPE=${build_type} \
                                        -Wdev"
-                def runArgs = "--user root:root --cap-add=SYS_PTRACE"
+                def runArgs = "--cap-add=SYS_PTRACE"
                 def task = """
                            ${helpers.ninjaBuildCommand(cmakeArgs)}
                            cpack -G DEB -D CPACK_DEB_COMPONENT_INSTALL=ON -D CPACK_COMPONENTS_ALL=OEHOSTVERIFY
@@ -623,7 +626,7 @@ def windowsLinuxElfBuild(String windows_label, String ubuntu_label, String compi
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 helpers.oeCheckoutScm(pr_id)
-                def runArgs = "--user root:root --cap-add=SYS_PTRACE"
+                def runArgs = "--cap-add=SYS_PTRACE"
                 def task = """
                            cmake ${WORKSPACE}                                           \
                                -G Ninja                                                 \
@@ -635,10 +638,21 @@ def windowsLinuxElfBuild(String windows_label, String ubuntu_label, String compi
                                ${extra_cmake_args.join(' ')}
                            ninja -v
                            """
-                if (! ubuntu_label.contains("2004")) {
-                    println("Unable to determine version from Ubuntu agent label. Defaulting to Ubuntu 20.04")
+                def imageName
+                if (! ubuntu_label.contains("2004") && ! ubuntu_label.contains("2204")) {
+                    println("Unable to determine version from Ubuntu agent label. Defaulting to Ubuntu 22.04")
+                    imageName = "oetools-22.04"
+                } else {
+                    def match_version = (ubuntu_label =~ /2\d{2}4/)[0]
+                    switch(match_version) {
+                        case "2004":
+                            imageName = "oetools-20.04"
+                            break
+                        case "2204":
+                            imageName = "oetools-22.04"
+                            break
+                    }
                 }
-                def imageName = "oetools-20.04"
                 common.ContainerRun("${imageName}:${DOCKER_TAG}", compiler, task, runArgs)
                 sh 'sudo chown -R oeadmin:oeadmin ${WORKSPACE}/build/tests'
                 stash includes: 'build/tests/**', name: "linux-${windows_label}-${compiler}-${build_type}-lvi_mitigation=${lvi_mitigation}-${ubuntu_label}-${BUILD_NUMBER}"
@@ -897,7 +911,7 @@ def simulationContainerTest(String version, String build_type, String compiler, 
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 helpers.oeCheckoutScm(pr_id)
-                def runArgs = "--user root:root --cap-add=SYS_PTRACE"
+                def runArgs = "--cap-add=SYS_PTRACE"
                 def task = """
                            cmake ${WORKSPACE}                                           \
                                -G Ninja                                                 \
@@ -918,7 +932,7 @@ def simulationContainerTest(String version, String build_type, String compiler, 
 
 /* Builds OP-TEE inside a container
  *
- * @param version  [string]  Version of Ubuntu to use
+ * @param version  [string]  Version of Ubuntu to use (e.g. 20.04)
  * @param compiler [string]  Compiler to use
  * @param pr_id    [string] Optional - to checkout a specific oe pull request merge head
  */
@@ -928,8 +942,8 @@ def buildCrossPlatform(String version, String compiler, String pr_id = '') {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 helpers.oeCheckoutScm(pr_id)
-                def runArgs = "--user root:root --cap-add=SYS_PTRACE"
-                def os = version == "20.04" ? "focal" : "bionic"
+                def runArgs = "--cap-add=SYS_PTRACE"
+                def os_codename = helpers.getUbuntuCodename(version)
                 def task = """
                            cd ${WORKSPACE}
 
@@ -938,7 +952,7 @@ def buildCrossPlatform(String version, String compiler, String pr_id = '') {
                            export BUILD_PATH=\${sdk_path}/build
                            export OPTEE_BUILD_PATH=\${sdk_path}/build/optee
                            export PACK_PATH=\${sdk_path}/path
-                           export OS_CODENAME=${os}
+                           export OS_CODENAME=${os_codename}
 
                            sudo scripts/ansible/install-ansible.sh
                            sudo ansible-playbook scripts/ansible/oe-contributors-setup-cross-arm.yml
@@ -967,7 +981,7 @@ def AArch64GNUTest(String version, String build_type, String pr_id = '') {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 helpers.oeCheckoutScm(pr_id)
-                def runArgs = "--user root:root --cap-add=SYS_PTRACE"
+                def runArgs = "--cap-add=SYS_PTRACE"
                 def task = """
                             cmake ${WORKSPACE}                                                     \
                                 -G Ninja                                                           \
@@ -990,7 +1004,7 @@ def checkDevFlows(String version, String compiler, String pr_id = '') {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 helpers.oeCheckoutScm(pr_id)
-                def runArgs = "--user root:root --cap-add=SYS_PTRACE"
+                def runArgs = "--cap-add=SYS_PTRACE"
                 def task = """
                            cmake ${WORKSPACE} -G Ninja -DHAS_QUOTE_PROVIDER=OFF -Wdev --warn-uninitialized -Werror=dev
                            ninja -v
@@ -1007,7 +1021,7 @@ def checkCI(String compiler, String pr_id = '') {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 helpers.oeCheckoutScm(pr_id)
-                def runArgs = "--user root:root --cap-add=SYS_PTRACE"
+                def runArgs = "--cap-add=SYS_PTRACE"
                 def task = """
                     git config --global --add safe.directory ${WORKSPACE}
                     cd ${WORKSPACE}

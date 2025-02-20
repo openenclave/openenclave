@@ -1,11 +1,11 @@
 {
-    "managed_image_name_suffix": "ubuntu-20.04-SGX",
+    "managed_image_name_suffix": "ubuntu-22.04-SGX",
     "os_type": "Linux",
-    "gallery_image_name": "ubuntu-20.04",
+    "gallery_image_name": "ubuntu-22.04",
     "vm_size": "Standard_DC2s_v3",
     "ansible_group": "linux-agents",
     "playbook_file_name": "oe-linux-acc-setup.yml",
     "image_publisher": "canonical",
-    "image_offer": "0001-com-ubuntu-server-focal",
-    "image_sku": "20_04-lts-gen2"
+    "image_offer": "0001-com-ubuntu-server-jammy",
+    "image_sku": "22_04-lts-gen2"
 }
