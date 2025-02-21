@@ -3,8 +3,8 @@
 
 # The Hash parameter defaults below are calculated using Get-FileHash with the default SHA256 hashing algorithm
 Param(
-    [string]$GitURL = 'https://github.com/git-for-windows/git/releases/download/v2.47.0.windows.2/Git-2.47.0.2-64-bit.exe',
-    [string]$GitHash = '83C618DCC50B63F0F7AFC86A7A125169BD59559FF680683F1D915C45E05FF4CC',
+    [string]$GitURL = 'https://github.com/git-for-windows/git/releases/download/v2.41.0.windows.1/Git-2.41.0-64-bit.exe',
+    [string]$GitHash = '45DC30410916B8EC5501BE39D01D5B60535731C04FA68283B4F9DF4920877D4E',
     [string]$OpenSSLURL = 'https://openenclavepublicstorage.blob.core.windows.net/openenclavedependencies/openssl.1.1.1579.74.nupkg',
     [string]$OpenSSLHash = '82678FC7C71CBACA420BC869A1938BC80F2876148A5870D46B4C9A746F6BCEB6',
     [string]$SevenZipURL = 'https://www.7-zip.org/a/7z2408-x64.msi',
@@ -384,12 +384,19 @@ function Install-Git {
 function Install-OpenSSL {
     $installDir = Join-Path $InstallPath "OpenSSL"
     nuget.exe install openssl -Source $PACKAGES_DIRECTORY -OutputDirectory $InstallPath -ExcludeVersion
-    # Add OpenSSL x86 to beginning of the path so OpenSSL 1 is used by default (x64 bin is currently broken)
-    [Environment]::SetEnvironmentVariable(
-    "Path",
-    "$installDir\x86\release\bin;" + [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine),
-    [EnvironmentVariableTarget]::Machine
-    )
+    # This OpenSSL install (1.1.1l) is now mainly used to provide necessary library (libcrypto_static.dll) for oeutil.
+    #   - The OpenSSL install is not added to the system path as we use OpenSSL 1.1.1u provided by Git v2.41.0
+    #   - However if you want to use this OpenSSL install, you can uncomment the code below to override 
+    #     the Git-provided OpenSSL binaries.
+    # Other notes about this package: 
+    #   - x64\release is broken when specifying the `-out` option, so use x64\debug (for debugging)
+    #   - Ensure that the binaries are added to the system path, ahead of Git-provided binaries
+    #   - Set OPENSSLDIR to a directory that contains an OpenSSL configuration file (openssl.cnf)
+    # [Environment]::SetEnvironmentVariable(
+    # "Path",
+    # "$installDir\x64\debug\bin;" + [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine),
+    # [EnvironmentVariableTarget]::Machine
+    # )
     Add-ToSystemPath -Path @("$installDir\bin")
 }
 
