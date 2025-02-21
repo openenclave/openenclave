@@ -9,6 +9,7 @@ AZURE_IMAGES_MAP = [
     // Mapping between shared gallery image definition name and
     // generated Azure managed image name
     "ubuntu-20.04":      "",
+    "ubuntu-22.04":      "",
     "WS22-nonSGX-clang-11":   "",
     "WS22-SGX-DCAP-clang-11": "",
 ]
