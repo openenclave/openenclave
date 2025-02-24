@@ -23,6 +23,7 @@ import groovy.transform.Field
     // Non SGX VMs
     "ubuntu-nonsgx":               env.UBUNTU_NONSGX_CUSTOM_LABEL ?: "nonSGX-ubuntu-2004",
     "ubuntu-nonsgx-20.04":         env.UBUNTU_NONSGX_CUSTOM_LABEL ?: "nonSGX-ubuntu-2004",
+    "ubuntu-nonsgx-22.04":         env.UBUNTU_NONSGX_CUSTOM_LABEL ?: "nonSGX-ubuntu-2204",
     "ws2022-nonsgx":               env.WS2022_NONSGX_CUSTOM_LABEL ?: "nonSGX-Windows-2022",
     // Plain VMs
     "acc-ubuntu-22.04-vanilla":    "ACC-marketplace-ubuntu-2204",
