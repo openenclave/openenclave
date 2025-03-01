@@ -620,24 +620,23 @@ def windowsPrereqsVerify(String label, String pr_id = '') {
  * @param extra_cmake_args           [string]  Add custom cmake args
  * @param pr_id                      [string]  Optional - to checkout a specific oe pull request merge head
  */
-def windowsLinuxElfBuild(String windows_label, String ubuntu_label, String compiler, String build_type, String lvi_mitigation = 'None', String lvi_mitigation_skip_tests = 'OFF', List extra_cmake_args = [], String pr_id = '') {
+def windowsLinuxElfBuild(String windows_label, String ubuntu_label, String compiler, String build_type, String lvi_mitigation = 'None', String lvi_mitigation_skip_tests = 'OFF', String pr_id = '') {
     stage("${ubuntu_label} ${compiler} ${build_type} LVI_MITIGATION=${lvi_mitigation}") {
         node(ubuntu_label) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 helpers.oeCheckoutScm(pr_id)
                 def runArgs = "--cap-add=SYS_PTRACE"
-                def task = """
-                           cmake ${WORKSPACE}                                           \
-                               -G Ninja                                                 \
-                               -DCMAKE_BUILD_TYPE=${build_type}                         \
-                               -DLVI_MITIGATION=${lvi_mitigation}                       \
-                               -DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin    \
-                               -DLVI_MITIGATION_SKIP_TESTS=${lvi_mitigation_skip_tests} \
-                               -Wdev                                                    \
-                               ${extra_cmake_args.join(' ')}
-                           ninja -v
-                           """
+                def cmakeArgs = helpers.CmakeArgs(
+                               builder: 'Ninja',
+                               build_type: build_type,
+                               code_coverage: false,
+                               debug_malloc: false,
+                               lvi_mitigation: lvi_mitigation,
+                               lvi_mitigation_skip_tests: lvi_mitigation_skip_tests,
+                               use_snmalloc: false,
+                               use_eeid: false)
+                def task = "${helpers.ninjaBuildCommand(cmakeArgs)}"
                 def imageName
                 if (! ubuntu_label.contains("2004") && ! ubuntu_label.contains("2204")) {
                     println("Unable to determine version from Ubuntu agent label. Defaulting to Ubuntu 22.04")
@@ -678,7 +677,7 @@ def windowsLinuxElfBuild(String windows_label, String ubuntu_label, String compi
                                 call vcvars64.bat x64
                                 setlocal EnableDelayedExpansion
                                 cmake.exe ${WORKSPACE} -G Ninja -DADD_WINDOWS_ENCLAVE_TESTS=ON -DBUILD_ENCLAVES=OFF -DCMAKE_BUILD_TYPE=${build_type} -DLINUX_BIN_DIR=${WORKSPACE}\\linuxbin\\tests -DLVI_MITIGATION=${lvi_mitigation} -DLVI_MITIGATION_SKIP_TESTS=${lvi_mitigation_skip_tests} -DNUGET_PACKAGE_PATH=C:/oe_prereqs -Wdev || exit !ERRORLEVEL!
-                                ninja -v || exit !ERRORLEVEL!
+                                ninja.exe -v || exit !ERRORLEVEL!
                                 ctest.exe -V -C ${build_type} --timeout ${ globalvars.CTEST_TIMEOUT_SECONDS * 2.2 } || exit !ERRORLEVEL!
                             """
                         )
@@ -898,28 +897,34 @@ def windowsCrossPlatform(String label, String pr_id = '') {
 
 /* Builds OE in Simulation mode inside a containar
  *
- * @param version           [string]  Version of Ubuntu to use
- * @param build_type        [string]  The build type to use.
- *                                    Choice of: Debug, Release, or RelWithDebInfo
- * @param compiler          [string]  Compiler to use
- * @param extra_cmake_args  [string]  Add custom cmake args
- * @param pr_id             [string]  Optional - to checkout a specific oe pull request merge head
+ * @param version                    [string]  Version of Ubuntu to use
+ * @param build_type                 [string]  The build type to use.
+ *                                             Choice of: Debug, Release, or RelWithDebInfo
+ * @param compiler                   [string]  Compiler to use
+ * @param extra_cmake_args           [string]  Add custom cmake args
+ * @param lvi_mitigation             [string]  build enclave libraries with LVI mitigation.
+ *                                             Choice of: None, ControlFlow, ControlFlow-Clang
+ * @param skip_lvi_mitigation_tests  [boolean] Whether to skip LVI mitigation tests
+ * @param use_snmalloc               [string]  Use snmalloc as the default malloc implementation
+ * @param pr_id                      [string]  Optional - to checkout a specific oe pull request merge head
  */
-def simulationContainerTest(String version, String build_type, String compiler, List extra_cmake_args = [], String pr_id = '') {
+def simulationContainerTest(String version, String build_type, String compiler, String lvi_mitigation, boolean skip_lvi_mitigation_tests, boolean use_snmalloc, String pr_id = '') {
     stage("Simulation Ubuntu ${version} clang-${compiler} ${build_type}, extra_cmake_args: ${extra_cmake_args}") {
         node(globalvars.AGENTS_LABELS["ubuntu-nonsgx-${version}"]) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 helpers.oeCheckoutScm(pr_id)
                 def runArgs = "--cap-add=SYS_PTRACE"
+                def cmakeArgs = helpers.CmakeArgs(
+                                 builder: 'Ninja',
+                                 build_type: build_type,
+                                 code_coverage: false,
+                                 debug_malloc: false,
+                                 lvi_mitigation: lvi_mitigation,
+                                 lvi_mitigation_skip_tests: skip_lvi_mitigation_tests,
+                                 use_snmalloc: use_snmalloc)
                 def task = """
-                           cmake ${WORKSPACE}                                           \
-                               -G Ninja                                                 \
-                               -DCMAKE_BUILD_TYPE=${build_type}                         \
-                               -DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin    \
-                               ${extra_cmake_args.join(' ')}                            \
-                               -Wdev
-                           ninja -v
+                           ${helpers.ninjaBuildCommand(cmakeArgs)}
                            ${helpers.TestCommand()}
                            """
                 withEnv(["OE_SIMULATION=1"]) {
@@ -982,16 +987,20 @@ def AArch64GNUTest(String version, String build_type, String pr_id = '') {
                 cleanWs()
                 helpers.oeCheckoutScm(pr_id)
                 def runArgs = "--cap-add=SYS_PTRACE"
-                def task = """
-                            cmake ${WORKSPACE}                                                     \
-                                -G Ninja                                                           \
-                                -DCMAKE_BUILD_TYPE=${build_type}                                   \
-                                -DCMAKE_TOOLCHAIN_FILE=${WORKSPACE}/cmake/arm-cross.cmake          \
-                                -DOE_TA_DEV_KIT_DIR=/devkits/vexpress-qemu_armv8a/export-ta_arm64  \
-                                -DHAS_QUOTE_PROVIDER=OFF                                           \
-                                -Wdev
-                            ninja -v
-                            """
+                def cmakeArgs = helpers.CmakeArgs(
+                                  builder: 'Ninja',
+                                  build_type: build_type,
+                                  code_coverage: false,
+                                  debug_malloc: false,
+                                  lvi_mitigation: 'None',
+                                  lvi_mitigation_skip_tests: 'ON',
+                                  use_snmalloc: false)
+                // Add custom cmake args that are used only for this test
+                cmakeArgs += """
+                               -DCMAKE_TOOLCHAIN_FILE=${WORKSPACE}/cmake/arm-cross.cmake
+                               -DOE_TA_DEV_KIT_DIR=/devkits/vexpress-qemu_armv8a/export-ta_arm64
+                             """
+                def task = "${helpers.ninjaBuildCommand(cmakeArgs)}"
                 common.ContainerRun("oetools-${version}:${DOCKER_TAG}", "cross", task, runArgs)
             }
         }
@@ -1005,10 +1014,20 @@ def checkDevFlows(String version, String compiler, String pr_id = '') {
                 cleanWs()
                 helpers.oeCheckoutScm(pr_id)
                 def runArgs = "--cap-add=SYS_PTRACE"
-                def task = """
-                           cmake ${WORKSPACE} -G Ninja -DHAS_QUOTE_PROVIDER=OFF -Wdev --warn-uninitialized -Werror=dev
-                           ninja -v
-                           """
+                def cmakeArgs = helpers.CmakeArgs(
+                                  builder: 'Ninja',
+                                  build_type: 'Debug',
+                                  code_coverage: false,
+                                  debug_malloc: false,
+                                  lvi_mitigation: 'None',
+                                  lvi_mitigation_skip_tests: 'ON',
+                                  use_snmalloc: false)
+                // Add custom cmake args that are used only for this test
+                cmakeArgs += """
+                               --warn-uninitialized
+                               -Werror=dev
+                             """
+                def task = "${helpers.ninjaBuildCommand(cmakeArgs)}"
                 common.ContainerRun("oetools-${version}:${DOCKER_TAG}", compiler, task, runArgs)
             }
         }

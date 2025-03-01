@@ -363,13 +363,31 @@ def TestSamplesCommand(boolean lvi_mitigation = false, String oe_package = "open
  * @param cmake_arguments String of arguments to be passed to cmake
  * @param build_dir       String that is a path to the directory that contains CMakeList.txt
  *                        Can be relative to current working directory or an absolute path
+ *
+ * Note: Openssl version 3.0.2 has a known issue with the genrsa command that has chance to fail.
+ *       In Ubuntu 22.04, the latest available openssl version is 3.0.2 via official apt repostories as of 28-02-2025.
+ *       https://github.com/openssl/openssl/issues/18321
  */
 def ninjaBuildCommand(String cmake_arguments = "", String build_directory = "${WORKSPACE}") {
     if(isUnix()) {
         return """
             set -x
             cmake ${build_directory} ${cmake_arguments}
-            ninja -v
+            try=0
+            max_tries=3
+            while [ \$try -lt \$max_tries ]; do
+                ninja -v |& tee build.log
+                if [ \$? -ne 0 ]; then
+                    if grep -q "genrsa: Error generating RSA key" build.log; then
+                        echo "Caught genrsa: Error generating RSA key error. Retrying..."
+                        try=\$((\$try+1))
+                    else
+                        exit 1
+                    fi
+                else
+                    break
+                fi
+            done
         """
     } else {
         retry(3) {  
