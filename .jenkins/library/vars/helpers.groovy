@@ -109,18 +109,37 @@ def WaitForAptLock() {
 }
 
 /* Runs ctest with specific paramters and retry logic
+ *
+ * @param regex            [string]  The regex to run matching tests by name
+ * @param test_fail_limit  [int]     The maximum number of failed tests before giving up
+ *
+ * Note: Openssl version 3.0.2 has a known issue with the genrsa command that has a chance to fail.
+ *       In Ubuntu 22.04, the latest available openssl version is 3.0.2 via official apt repostories as of 28-02-2025.
+ *       https://github.com/openssl/openssl/issues/18321
  * Note: this currently only supports Linux
  */
-def TestCommand(int test_fail_limit = 10) {
+def TestCommand(String regex='', int test_fail_limit = 10) {
+    if (regex != '') {
+        regex = '--tests-regex \'${regex}\''
+    }
     return """
+        try=0
+        max_tries=3
         echo "Running Test Command"
-        ctest --output-on-failure --timeout ${globalvars.CTEST_TIMEOUT_SECONDS} ||
-            if [[ \$(wc -l < Testing/Temporary/LastTestsFailed.log) -le ${test_fail_limit} ]]; then
-                ctest --rerun-failed --output-on-failure --timeout ${globalvars.CTEST_TIMEOUT_SECONDS}
-            else
-                echo "More than 10 tests failed and is likely not a flaky test issue. Not retrying."
-                exit 8
-            fi
+        if ! ctest ${regex} --output-on-failure --timeout ${globalvars.CTEST_TIMEOUT_SECONDS}; then
+            while [ \$try -lt \$max_tries ]; do
+                if [[ \$(wc -l < Testing/Temporary/LastTestsFailed.log) -le ${test_fail_limit} ]]; then
+                    echo "Retrying failed tests..."
+                    try=\$((\$try+1))
+                    if ctest ${regex} --rerun-failed --output-on-failure --timeout ${globalvars.CTEST_TIMEOUT_SECONDS}; then
+                        break
+                    fi
+                else
+                    echo "More than 10 tests failed and is likely not a flaky test issue. Not retrying."
+                    exit 8
+                fi
+            done
+        fi
     """
 }
 
@@ -363,13 +382,33 @@ def TestSamplesCommand(boolean lvi_mitigation = false, String oe_package = "open
  * @param cmake_arguments String of arguments to be passed to cmake
  * @param build_dir       String that is a path to the directory that contains CMakeList.txt
  *                        Can be relative to current working directory or an absolute path
+ *
+ * Note: Openssl version 3.0.2 has a known issue with the genrsa command that has a chance to fail.
+ *       In Ubuntu 22.04, the latest available openssl version is 3.0.2 via official apt repostories as of 28-02-2025.
+ *       https://github.com/openssl/openssl/issues/18321
  */
 def ninjaBuildCommand(String cmake_arguments = "", String build_directory = "${WORKSPACE}") {
     if(isUnix()) {
         return """
             set -x
             cmake ${build_directory} ${cmake_arguments}
-            ninja -v
+            try=0
+            max_tries=3
+            set +o pipefail
+            while [ \$try -lt \$max_tries ]; do
+                if ! (set +e -xo pipefail; ninja -v |& tee build.log); then
+                    if grep -q "genrsa: Error generating RSA key" build.log; then
+                        echo "Caught genrsa: Error generating RSA key error. Retrying..."
+                        try=\$((\$try+1))
+                    else
+                        echo "Error: ninja build failed. Please check logs."
+                        exit 1
+                    fi
+                else
+                    break
+                fi
+            done
+            set -o pipefail
         """
     } else {
         retry(3) {  
