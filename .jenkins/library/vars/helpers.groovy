@@ -18,7 +18,7 @@ import java.time.format.DateTimeFormatter
  * @param code_coverage             [boolean] Enable code coverage?
  *                                            Default: OFF
  * @param debug_malloc              [boolean] Enable debug malloc?
- *                                            Default: OFF
+ *                                            Default: ON
  * @param lvi_mitigation            [string]  The LVI mitigation to use.
  *                                            Choice of: None, ControlFlow, ControlFlow-Clang, ControlFlow-GNU
  *                                            Default: None
@@ -54,9 +54,9 @@ def CmakeArgs(Map args) {
         code_coverage = 'ON'
     }
     // set debug_malloc
-    def debug_malloc = 'OFF'
-    if (args.debug_malloc) {
-        debug_malloc = 'ON'
+    def debug_malloc = 'ON'
+    if (args.debug_malloc == false) {
+        debug_malloc = 'OFF'
     }
     // Check valid lvi_mitigation parameters
     def lvi_args = ""

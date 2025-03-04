@@ -25,7 +25,7 @@ def ACCCodeCoverageTest(String version, String compiler, String build_type, Stri
                     builder: 'Ninja',
                     build_type: build_type,
                     code_coverage: true,
-                    debug_malloc: false,
+                    debug_malloc: true,
                     lvi_mitigation: 'None',
                     lvi_mitigation_skip_tests: true,
                     use_snmalloc: false,
@@ -94,7 +94,7 @@ def ACCTest(String label, String compiler, String build_type, String lvi_mitigat
                     builder: 'Ninja',
                     build_type: build_type,
                     code_coverage: false,
-                    debug_malloc: false,
+                    debug_malloc: true,
                     lvi_mitigation: lvi_mitigation,
                     lvi_mitigation_skip_tests: lvi_mitigation_skip_tests,
                     use_snmalloc: use_snmalloc,
@@ -130,7 +130,7 @@ def ACCUpgradeTest(String version, String compiler, String lvi_mitigation, boole
                     builder: 'Ninja',
                     build_type: 'RelWithDebInfo',
                     code_coverage: false,
-                    debug_malloc: false,
+                    debug_malloc: true,
                     lvi_mitigation: lvi_mitigation,
                     lvi_mitigation_skip_tests: lvi_mitigation_skip_tests,
                     use_snmalloc: false,
@@ -170,7 +170,7 @@ def ACCContainerTest(String version, String compiler, String lvi_mitigation, boo
                     builder: 'Ninja',
                     build_type: 'RelWithDebInfo',
                     code_coverage: false,
-                    debug_malloc: false,
+                    debug_malloc: true,
                     lvi_mitigation: lvi_mitigation,
                     lvi_mitigation_skip_tests: lvi_mitigation_skip_tests,
                     use_snmalloc: false,
@@ -209,7 +209,7 @@ def ACCPackageTest(String version, String build_type, String lvi_mitigation, boo
                     builder: 'CMake',
                     build_type: build_type,
                     code_coverage: false,
-                    debug_malloc: false,
+                    debug_malloc: true,
                     lvi_mitigation: lvi_mitigation,
                     lvi_mitigation_skip_tests: lvi_mitigation_skip_tests,
                     use_snmalloc: use_snmalloc,
@@ -630,7 +630,7 @@ def windowsLinuxElfBuild(String windows_label, String ubuntu_label, String compi
                                builder: 'Ninja',
                                build_type: build_type,
                                code_coverage: false,
-                               debug_malloc: false,
+                               debug_malloc: true,
                                lvi_mitigation: lvi_mitigation,
                                lvi_mitigation_skip_tests: lvi_mitigation_skip_tests,
                                use_snmalloc: false,
@@ -918,7 +918,7 @@ def simulationContainerTest(String version, String build_type, String compiler, 
                                  builder: 'Ninja',
                                  build_type: build_type,
                                  code_coverage: false,
-                                 debug_malloc: false,
+                                 debug_malloc: true,
                                  lvi_mitigation: lvi_mitigation,
                                  lvi_mitigation_skip_tests: skip_lvi_mitigation_tests,
                                  use_snmalloc: use_snmalloc)
@@ -983,15 +983,12 @@ def checkDevFlows(String version, String compiler, String pr_id = '') {
                                   builder: 'Ninja',
                                   build_type: 'Debug',
                                   code_coverage: false,
-                                  debug_malloc: false,
+                                  debug_malloc: true,
                                   lvi_mitigation: 'None',
                                   lvi_mitigation_skip_tests: 'ON',
                                   use_snmalloc: false)
                 // Add custom cmake args that are used only for this test
-                cmakeArgs += """
-                               --warn-uninitialized
-                               -Werror=dev
-                             """
+                cmakeArgs += " --warn-uninitialized -Werror=dev"
                 def task = "${helpers.ninjaBuildCommand(cmakeArgs)}"
                 common.ContainerRun("oetools-${version}:${DOCKER_TAG}", compiler, task, runArgs)
             }
