@@ -25,7 +25,9 @@ def ACCCodeCoverageTest(String version, String compiler, String build_type, Stri
                     builder: 'Ninja',
                     build_type: build_type,
                     code_coverage: true,
-                    debug_malloc: true,
+                    //  The CODE_COVERAGE option currently is not supported when the
+                    //  USE_DEBUG_MALLOC option is ON
+                    debug_malloc: false,
                     lvi_mitigation: 'None',
                     lvi_mitigation_skip_tests: true,
                     use_snmalloc: false,
