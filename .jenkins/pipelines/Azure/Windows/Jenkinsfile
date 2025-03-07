@@ -14,7 +14,7 @@ def testing_stages = [
 ]
 if(FULL_TEST_SUITE == "true") {
     testing_stages += [
-        "ELF Win2022 Ubuntu2004 clang-11 Debug":                                 { tests.windowsLinuxElfBuild(params.WS2022_DCAP_CFL_LABEL, params.UBUNTU_2004_NONSGX_LABEL, 'clang-11', 'Debug', 'None', 'OFF', [], params.PULL_REQUEST_ID) },
+        "ELF Win2022 Ubuntu2004 clang-11 Debug":                                 { tests.windowsLinuxElfBuild(params.WS2022_DCAP_CFL_LABEL, params.UBUNTU_2004_NONSGX_LABEL, 'clang-11', 'Debug', 'None', 'OFF', params.PULL_REQUEST_ID) },
         "XC Win2022 v2 clang-11 RelWithDebInfo ControlFlow-Clang":               { tests.windowsCrossCompile(params.WS2022_DCAP_CFL_LABEL, 'clang-11', 'RelWithDebInfo', 'ControlFlow-Clang', '0', 'OFF', 'OFF', params.PULL_REQUEST_ID) },
         "XC Win2022 v2 clang-11 Debug ControlFlow Sim snmalloc":                 { tests.windowsCrossCompile(params.WS2022_DCAP_CFL_LABEL, 'clang-11', 'Debug',          'ControlFlow',       '1', 'OFF', 'ON', params.PULL_REQUEST_ID) },
         "Cross Platform Win2022":                                                { tests.windowsCrossPlatform(params.WS2022_DCAP_CFL_LABEL, params.PULL_REQUEST_ID) }

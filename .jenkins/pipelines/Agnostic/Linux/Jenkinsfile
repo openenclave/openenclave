@@ -3,11 +3,11 @@
 
 library "OpenEnclaveJenkinsLibrary@${params.OECI_LIB_VERSION}"
 GLOBAL_ERROR = globalvars.GLOBAL_ERROR
-SKIP_LVI_MITIGATION_TESTS="ON"
+SKIP_LVI_MITIGATION_TESTS=true
 
 try{
     if(FULL_TEST_SUITE == "true") {
-        SKIP_LVI_MITIGATION_TESTS="OFF"
+        SKIP_LVI_MITIGATION_TESTS=false
     }
     def testing_stages = [
         "Check CI":                                { tests.checkCI('clang-11', params.PULL_REQUEST_ID) },
@@ -15,16 +15,17 @@ try{
         "Ubuntu 2004 Cross Platform Build":        { tests.buildCrossPlatform("20.04", 'clang-11', params.PULL_REQUEST_ID) },
         // Disabled as OP-TEE build needs to be upgraded to use Python3
         // "Ubuntu 2204 Cross Platform Build":        { tests.buildCrossPlatform("22.04", 'clang-11', params.PULL_REQUEST_ID) },
-        "Sim 2004 clang-11 SGX1FLC RelWithDebInfo":          { tests.simulationContainerTest('20.04', 'RelWithDebInfo', 'clang-11', ['-DHAS_QUOTE_PROVIDER=ON', '-DLVI_MITIGATION=None', "-DLVI_MITIGATION_SKIP_TESTS=${SKIP_LVI_MITIGATION_TESTS}"], params.PULL_REQUEST_ID) },
-        "Sim 2204 clang-11 SGX1FLC RelWithDebInfo":          { tests.simulationContainerTest('22.04', 'RelWithDebInfo', 'clang-11', ['-DHAS_QUOTE_PROVIDER=ON', '-DLVI_MITIGATION=None', "-DLVI_MITIGATION_SKIP_TESTS=${SKIP_LVI_MITIGATION_TESTS}"], params.PULL_REQUEST_ID) },
-        "Sim 2004 clang-11 SGX1FLC RelWithDebInfo snmalloc": { tests.simulationContainerTest('20.04', 'RelWithDebInfo', 'clang-11', ['-DHAS_QUOTE_PROVIDER=ON', '-DLVI_MITIGATION=None', "-DLVI_MITIGATION_SKIP_TESTS=${SKIP_LVI_MITIGATION_TESTS}", '-DUSE_SNMALLOC=ON'], params.PULL_REQUEST_ID) },
-        "Sim 2204 clang-11 SGX1FLC RelWithDebInfo snmalloc": { tests.simulationContainerTest('22.04', 'RelWithDebInfo', 'clang-11', ['-DHAS_QUOTE_PROVIDER=ON', '-DLVI_MITIGATION=None', "-DLVI_MITIGATION_SKIP_TESTS=${SKIP_LVI_MITIGATION_TESTS}", '-DUSE_SNMALLOC=ON'], params.PULL_REQUEST_ID) }
+        //                                                                            Ubuntu Version, Build Type, Compiler, LVI Mitigation, Skip LVI Mitigation Tests, Use snmalloc, PR ID
+        "Sim 2004 clang-11 SGX1FLC RelWithDebInfo":          { tests.simulationContainerTest('20.04', 'RelWithDebInfo', 'clang-11', 'None', SKIP_LVI_MITIGATION_TESTS, false, params.PULL_REQUEST_ID) },
+        "Sim 2204 clang-11 SGX1FLC RelWithDebInfo":          { tests.simulationContainerTest('22.04', 'RelWithDebInfo', 'clang-11', 'None', SKIP_LVI_MITIGATION_TESTS, false, params.PULL_REQUEST_ID) },
+        "Sim 2004 clang-11 SGX1FLC RelWithDebInfo snmalloc": { tests.simulationContainerTest('20.04', 'RelWithDebInfo', 'clang-11', 'None', SKIP_LVI_MITIGATION_TESTS, true, params.PULL_REQUEST_ID) },
+        "Sim 2204 clang-11 SGX1FLC RelWithDebInfo snmalloc": { tests.simulationContainerTest('22.04', 'RelWithDebInfo', 'clang-11', 'None', SKIP_LVI_MITIGATION_TESTS, true, params.PULL_REQUEST_ID) }
     ]
     if(FULL_TEST_SUITE == "true") {
         stage("Full Test Suite") {
             testing_stages += [
-                "Sim 2004 clang-11 SGX1FLC Debug snmalloc":  { tests.simulationContainerTest('20.04', 'Debug',          'clang-11', ['-DHAS_QUOTE_PROVIDER=ON', '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON'], params.PULL_REQUEST_ID) },
-                "Sim 2204 clang-11 SGX1FLC Debug snmalloc":  { tests.simulationContainerTest('22.04', 'Debug',          'clang-11', ['-DHAS_QUOTE_PROVIDER=ON', '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON'], params.PULL_REQUEST_ID) }
+                "Sim 2004 clang-11 SGX1FLC Debug snmalloc":  { tests.simulationContainerTest('20.04', 'Debug',          'clang-11', 'None', SKIP_LVI_MITIGATION_TESTS, true, params.PULL_REQUEST_ID) },
+                "Sim 2204 clang-11 SGX1FLC Debug snmalloc":  { tests.simulationContainerTest('22.04', 'Debug',          'clang-11', 'None', SKIP_LVI_MITIGATION_TESTS, true, params.PULL_REQUEST_ID) }
             ]
             parallel testing_stages
         }
