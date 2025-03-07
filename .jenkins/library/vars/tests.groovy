@@ -31,7 +31,7 @@ def ACCCodeCoverageTest(String version, String compiler, String build_type, Stri
                     use_snmalloc: false,
                     use_eeid: false)
                 def task = """
-                           ${helpers.ninjaBuildCommand(cmakeArgs)}
+                           ${helpers.buildCommand(cmakeArgs, 'Ninja')}
                            ${helpers.TestCommand()}
                            ninja code_coverage
 
@@ -100,7 +100,7 @@ def ACCTest(String label, String compiler, String build_type, String lvi_mitigat
                     use_snmalloc: use_snmalloc,
                     use_eeid: use_eeid)
                 def task = """
-                           ${helpers.ninjaBuildCommand(cmakeArgs)}
+                           ${helpers.buildCommand(cmakeArgs, 'Ninja')}
                            ${helpers.TestCommand()}
                            """
                 common.Run(compiler, task)
@@ -140,7 +140,7 @@ def ACCUpgradeTest(String version, String compiler, String lvi_mitigation, boole
                 helpers.TestSamplesCommand()
                 println "Build and install current open-enclave build"
                 def task = """
-                           ${helpers.ninjaBuildCommand(cmakeArgs)}
+                           ${helpers.buildCommand(cmakeArgs, 'Ninja')}
                            ${helpers.TestCommand()}
                            ${helpers.ninjaInstallCommand()}
                            """
@@ -179,7 +179,7 @@ def ACCContainerTest(String version, String compiler, String lvi_mitigation, boo
                 def runArgs = "--cap-add=SYS_PTRACE ${devices} --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket"
                 println("${globalvars.AGENTS_LABELS["acc-ubuntu-${version}"]} running Docker container with ${devices}")
                 def task = """
-                           ${helpers.ninjaBuildCommand(cmakeArgs)}
+                           ${helpers.buildCommand(cmakeArgs, 'Ninja')}
                            ${helpers.TestCommand()}
                            """
                 common.ContainerRun("oetools-${version}:${params.DOCKER_TAG}", compiler, task, runArgs)
@@ -206,7 +206,7 @@ def ACCPackageTest(String version, String build_type, String lvi_mitigation, boo
                 cleanWs()
                 helpers.oeCheckoutScm(pr_id)
                 def cmakeArgs = helpers.CmakeArgs(
-                    builder: 'CMake',
+                    builder: 'Make',
                     build_type: build_type,
                     code_coverage: false,
                     debug_malloc: true,
@@ -220,7 +220,7 @@ def ACCPackageTest(String version, String build_type, String lvi_mitigation, boo
                     "oetools-${version}:${params.DOCKER_TAG}",
                     globalvars.COMPILER,
                     """
-                        ${helpers.makeBuildCommand(cmakeArgs)}
+                        ${helpers.buildCommand(cmakeArgs, 'Make')}
                         ${helpers.createOpenEnclavePackageCommand()}
                         ${helpers.createHostVerifyPackageCommand()}
                         ${helpers.makeInstallCommand()}
@@ -261,7 +261,7 @@ def ACCHostVerificationTest(String version, String build_type, String compiler, 
                                         helpers.oeutilGenCert('sgx_ecdsa', oeutil_path, '', '', 'in', true) +
                                         helpers.oeutilGenCert('sgx_ecdsa', oeutil_path, '', '', 'out', true)
                 def task = """
-                           ${helpers.ninjaBuildCommand(cmakeArgs)}
+                           ${helpers.buildCommand(cmakeArgs, 'Ninja')}
                            cd tests/host_verify/host
                            openssl ecparam -name prime256v1 -genkey -noout -out keyec.pem
                            openssl ec -in keyec.pem -pubout -out publicec.pem
@@ -311,7 +311,7 @@ def ACCHostVerificationTest(String version, String build_type, String compiler, 
                 def cmakeArgs = "-G Ninja -DBUILD_ENCLAVES=OFF -DCMAKE_BUILD_TYPE=${build_type} -Wdev"
                 def runArgs = "--cap-add=SYS_PTRACE"
                 def task = """
-                           ${helpers.ninjaBuildCommand(cmakeArgs)}
+                           ${helpers.buildCommand(cmakeArgs, 'Ninja')}
                            ${helpers.TestCommand('host_verify')}
                            """
                 // Note: Include the commands to build and run the quote verification test above
@@ -333,7 +333,7 @@ def ACCHostVerificationTest(String version, String build_type, String compiler, 
                         string(credentialsId: 'thim-tdx-base-url', variable: 'AZDCAP_BASE_CERT_URL_TDX'),
                         string(credentialsId: 'thim-tdx-region-url', variable: 'AZDCAP_REGION_URL')
                     ]) {
-                        helpers.ninjaBuildCommand(cmakeArgs)
+                        helpers.buildCommand(cmakeArgs, 'Ninja')
                         bat(
                             script: """
                                 call vcvars64.bat x64
@@ -378,7 +378,7 @@ def ACCHostVerificationPackageTest(String version, String build_type, String com
                                         helpers.oeutilGenCert('sgx_ecdsa', oeutil_path, '', '', 'in', true) +
                                         helpers.oeutilGenCert('sgx_ecdsa', oeutil_path, '', '', 'out', true)
                 def task = """
-                           ${helpers.ninjaBuildCommand(cmakeArgs)}
+                           ${helpers.buildCommand(cmakeArgs, 'Ninja')}
                            cd tests/host_verify/host
                            openssl ecparam -name prime256v1 -genkey -noout -out keyec.pem
                            openssl ec -in keyec.pem -pubout -out publicec.pem
@@ -437,7 +437,7 @@ def ACCHostVerificationPackageTest(String version, String build_type, String com
                                        -Wdev"
                 def runArgs = "--cap-add=SYS_PTRACE"
                 def task = """
-                           ${helpers.ninjaBuildCommand(cmakeArgs)}
+                           ${helpers.buildCommand(cmakeArgs, 'Ninja')}
                            cpack -G DEB -D CPACK_DEB_COMPONENT_INSTALL=ON -D CPACK_COMPONENTS_ALL=OEHOSTVERIFY
                            if [ -d /opt/openenclave ]; then sudo rm -r /opt/openenclave; fi
                            sudo dpkg -i open-enclave-hostverify*.deb
@@ -446,7 +446,7 @@ def ACCHostVerificationPackageTest(String version, String build_type, String com
                            pushd ${WORKSPACE}/samples/host_verify
                            if [ ! -d build ]; then mkdir build; fi
                            cd build
-                           ${helpers.ninjaBuildCommand(cmakeArgs, "..")}
+                           ${helpers.buildCommand(cmakeArgs, 'Ninja', "..")}
                            ./host_verify -r ../sgx_report.bin
                            ./host_verify -c ../sgx_cert_ec.der
                            ./host_verify -c ../sgx_cert_rsa.der
@@ -483,7 +483,7 @@ def ACCHostVerificationPackageTest(String version, String build_type, String com
                     if ( PACKAGE_BUILT ) {
                         unstash "windows_host_verify-${version}-${build_type}-${BUILD_NUMBER}"
                     } else {
-                        helpers.ninjaBuildCommand(cmakeArgs)
+                        helpers.buildCommand(cmakeArgs, 'Ninja')
                         bat(
                             script: """
                                 call vcvars64.bat x64
@@ -512,7 +512,7 @@ def ACCHostVerificationPackageTest(String version, String build_type, String com
                     )
                 }
                 dir("${WORKSPACE}\\samples\\host_verify\\build") {
-                    helpers.ninjaBuildCommand(cmakeArgsHostVerify, "..")
+                    helpers.buildCommand(cmakeArgsHostVerify, 'Ninja', "..")
                     bat(
                         script: """
                             .\\host_verify.exe -r ../sgx_report.bin
@@ -635,7 +635,7 @@ def windowsLinuxElfBuild(String windows_label, String ubuntu_label, String compi
                                lvi_mitigation_skip_tests: lvi_mitigation_skip_tests,
                                use_snmalloc: false,
                                use_eeid: false)
-                def task = "${helpers.ninjaBuildCommand(cmakeArgs)}"
+                def task = "${helpers.buildCommand(cmakeArgs, 'Ninja')}"
                 def imageName
                 if (! ubuntu_label.contains("2004") && ! ubuntu_label.contains("2204")) {
                     println("Unable to determine version from Ubuntu agent label. Defaulting to Ubuntu 22.04")
@@ -923,7 +923,7 @@ def simulationContainerTest(String version, String build_type, String compiler, 
                                  lvi_mitigation_skip_tests: skip_lvi_mitigation_tests,
                                  use_snmalloc: use_snmalloc)
                 def task = """
-                           ${helpers.ninjaBuildCommand(cmakeArgs)}
+                           ${helpers.buildCommand(cmakeArgs, 'Ninja')}
                            ${helpers.TestCommand()}
                            """
                 withEnv(["OE_SIMULATION=1"]) {
@@ -989,7 +989,7 @@ def checkDevFlows(String version, String compiler, String pr_id = '') {
                                   use_snmalloc: false)
                 // Add custom cmake args that are used only for this test
                 cmakeArgs += " --warn-uninitialized -Werror=dev"
-                def task = "${helpers.ninjaBuildCommand(cmakeArgs)}"
+                def task = "${helpers.buildCommand(cmakeArgs, 'Ninja')}"
                 common.ContainerRun("oetools-${version}:${DOCKER_TAG}", compiler, task, runArgs)
             }
         }
