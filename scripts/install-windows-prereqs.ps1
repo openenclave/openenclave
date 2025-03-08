@@ -7,8 +7,8 @@ Param(
     [string]$GitHash = '45DC30410916B8EC5501BE39D01D5B60535731C04FA68283B4F9DF4920877D4E',
     [string]$OpenSSLURL = 'https://openenclavepublicstorage.blob.core.windows.net/openenclavedependencies/openssl.1.1.1579.74.nupkg',
     [string]$OpenSSLHash = '82678FC7C71CBACA420BC869A1938BC80F2876148A5870D46B4C9A746F6BCEB6',
-    [string]$SevenZipURL = 'https://www.7-zip.org/a/7z2408-x64.msi',
-    [string]$SevenZipHash = '98330E7E6DB3507B444D576DC437A9AC4D82333A88A6BB6EF36A91FE3D85FA92',
+    [string]$SevenZipURL = 'https://www.7-zip.org/a/7z2409-x64.msi',
+    [string]$SevenZipHash = 'EC6AF1EA0367D16DDE6639A89A080A524CEBC4D4BEDFE00ED0CAC4B865A918D8',
     # We skip the hash check for the vs_buildtools.exe file because it is regularly updated without a change to the URL, unfortunately.
     [string]$VSBuildToolsURL = 'https://aka.ms/vs/16/release/vs_buildtools.exe',
     [string]$VSBuildToolsHash = '',
