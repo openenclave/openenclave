@@ -32,14 +32,14 @@ import java.time.format.DateTimeFormatter
 def CmakeArgs(Map args) {
     // Check valid builder parameters
     if ((args.builder != 'Ninja') &&
-        (args.builder != 'CMake')) {
+        (args.builder != 'Make')) {
         throw new Exception("Unsupported builder: ${args.builder}")
     }
     // Set generator for appropriate build system
     def generator = ""
     if (args.builder == 'Ninja') {
         generator = 'Ninja'
-    } else if (args.builder == 'CMake') {
+    } else if (args.builder == 'Make') {
         generator = 'Unix Makefiles'
     }
     // Check valid build_type parameters
@@ -118,9 +118,12 @@ def WaitForAptLock() {
  *       https://github.com/openssl/openssl/issues/18321
  * Note: this currently only supports Linux
  */
-def TestCommand(String regex='', int test_fail_limit = 10) {
+def TestCommand(String regex='', int test_fail_limit = 10, boolean debug = false) {
     if (regex != '') {
         regex = '--tests-regex \'${regex}\''
+    }
+    if (debug) {
+        regex += '-VV --debug'
     }
     return """
         try=0
@@ -131,7 +134,7 @@ def TestCommand(String regex='', int test_fail_limit = 10) {
                 if [[ \$(wc -l < Testing/Temporary/LastTestsFailed.log) -le ${test_fail_limit} ]]; then
                     echo "Retrying failed tests..."
                     try=\$((\$try+1))
-                    if ctest ${regex} --rerun-failed --output-on-failure --timeout ${globalvars.CTEST_TIMEOUT_SECONDS}; then
+                    if ctest ${regex} ${debug} --rerun-failed --output-on-failure --timeout ${globalvars.CTEST_TIMEOUT_SECONDS}; then
                         break
                     fi
                 else
@@ -376,18 +379,29 @@ def TestSamplesCommand(boolean lvi_mitigation = false, String oe_package = "open
     }
 }
 
-/**
- * Builds Open Enclave using cmake and Ninja.
+/** Builds Open Enclave using cmake to generate files for the build system 
+ *  and then using the specified build tool to build
  *
- * @param cmake_arguments String of arguments to be passed to cmake
- * @param build_dir       String that is a path to the directory that contains CMakeList.txt
- *                        Can be relative to current working directory or an absolute path
+ * @param cmake_arguments [string]  Arguments to be passed to cmake
+ * @param build_tool      [string]  The build system to use.
+ *                                  Choice of: Ninja, CMake
+ * @param build_dir       [string]  Path to the directory that contains CMakeList.txt
+ *                                  Can be relative to current working directory or an absolute path
  *
  * Note: Openssl version 3.0.2 has a known issue with the genrsa command that has a chance to fail.
  *       In Ubuntu 22.04, the latest available openssl version is 3.0.2 via official apt repostories as of 28-02-2025.
  *       https://github.com/openssl/openssl/issues/18321
  */
-def ninjaBuildCommand(String cmake_arguments = "", String build_directory = "${WORKSPACE}") {
+def buildCommand(String cmake_arguments, String build_tool, String build_directory = "${WORKSPACE}") {
+    // Check valid build_tool parameters
+    def build_tool_cmd
+    if (build_tool == 'Ninja') {
+        build_tool_cmd = 'ninja -v'
+    } else if (build_tool == 'Make') {
+        build_tool_cmd = 'make --debug=v'
+    } else {
+        throw new Exception("Unsupported build tool: ${build_tool}")
+    }
     if(isUnix()) {
         return """
             set -x
@@ -396,12 +410,12 @@ def ninjaBuildCommand(String cmake_arguments = "", String build_directory = "${W
             max_tries=3
             set +o pipefail
             while [ \$try -lt \$max_tries ]; do
-                if ! (set +e -xo pipefail; ninja -v |& tee build.log); then
+                if ! (set +e -xo pipefail; ${build_tool_cmd} |& tee build.log); then
                     if grep -q "genrsa: Error generating RSA key" build.log; then
                         echo "Caught genrsa: Error generating RSA key error. Retrying..."
                         try=\$((\$try+1))
                     else
-                        echo "Error: ninja build failed. Please check logs."
+                        echo "Error: ${build_tool} build failed. Please check logs."
                         exit 1
                     fi
                 else
@@ -419,7 +433,7 @@ def ninjaBuildCommand(String cmake_arguments = "", String build_directory = "${W
                         @echo on
                         setlocal EnableDelayedExpansion
                         cmake.exe ${build_directory} ${cmake_arguments} || exit !ERRORLEVEL!
-                        ninja.exe -v || exit !ERRORLEVEL!
+                        ${build_tool_cmd} || exit !ERRORLEVEL!
                     """
                 )
             }
@@ -437,30 +451,6 @@ def ninjaBuildCommand(String cmake_arguments = "", String build_directory = "${W
                 }
             }
         }
-    }
-}
-
-/** Builds Open Enclave using cmake and make
- *
- * @param cmake_arguments String of arguments to be passed to cmake
- * @param build_dir       String that is a path to the directory that contains CMakeList.txt
- *                        Can be relative to current working directory or an absolute path
- */
-def makeBuildCommand(String cmake_arguments = "", String build_directory = "${WORKSPACE}") {
-    // Note: make -j seems to cause issues where the agent disconnects and is not reconnectable within 2 hours.
-    if(isUnix()) {
-        return """
-            set -x
-            cmake ${build_directory} ${cmake_arguments}
-            make
-        """
-    } else {
-        return """
-            @echo on
-            setlocal EnableDelayedExpansion
-            cmake ${build_directory} ${cmake_arguments} || exit !ERRORLEVEL!
-            make || exit !ERRORLEVEL!
-        """
     }
 }
 

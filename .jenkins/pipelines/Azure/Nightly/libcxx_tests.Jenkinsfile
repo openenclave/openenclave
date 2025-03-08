@@ -28,10 +28,19 @@ def ACCLibcxxTest(String label, String compiler, String build_type) {
                         credentialsId: 'github-oeciteam-user-pat'
                     ]]
                 ])
+                def cmakeArgs = helpers.CmakeArgs(
+                    builder: 'Make',
+                    build_type: build_type,
+                    code_coverage: false,
+                    debug_malloc: true,
+                    lvi_mitigation: 'None',
+                    lvi_mitigation_skip_tests: true,
+                    use_snmalloc: false,
+                    use_eeid: false)
+                cmakeArgs += " -DENABLE_FULL_LIBCXX_TESTS=ON"
                 def task = """
-                           cmake .. -DCMAKE_BUILD_TYPE=${build_type} -DHAS_QUOTE_PROVIDER=ON -DENABLE_FULL_LIBCXX_TESTS=ON
-                           make
-                           ctest -VV -debug --timeout ${CTEST_TIMEOUT_SECONDS}
+                           ${helpers.buildCommand(cmakeArgs, 'Make')}
+                           ${helpers.TestCommand()}
                            """
                 common.Run(compiler, task)
             }
