@@ -20,7 +20,9 @@ enclave {
         public oe_result_t verify_plugin_evidence(
           [in] const oe_uuid_t* format_id,
           [in, count=evidence_size] uint8_t* evidence_in,
-          size_t evidence_size
+          size_t evidence_size,
+          [in, count=endorsement_size] uint8_t* endorsement_in,
+          size_t endorsement_size,
         );
     };
 };

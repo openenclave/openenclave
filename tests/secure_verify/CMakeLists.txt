@@ -77,12 +77,26 @@ if (BUILD_ENCLAVES)
   add_test(
     NAME tests/secure_verify_tdx_v5_openssl
     COMMAND $<TARGET_FILE:secure_verify> secure_verify_enc_openssl.signed
-            ${CMAKE_CURRENT_SOURCE_DIR}/data/tdx_quote_v5 -f tdx_quote_v5
+            ${CMAKE_CURRENT_SOURCE_DIR}/data/tdx_quote_v5 -f tdx_quote
     WORKING_DIRECTORY $<TARGET_FILE_DIR:secure_verify>)
   add_test(
     NAME tests/secure_verify_tdx_v5_mbedtls
     COMMAND $<TARGET_FILE:secure_verify> secure_verify_enc_mbedtls.signed
-            ${CMAKE_CURRENT_SOURCE_DIR}/data/tdx_quote_v5 -f tdx_quote_v5
+            ${CMAKE_CURRENT_SOURCE_DIR}/data/tdx_quote_v5 -f tdx_quote
     WORKING_DIRECTORY $<TARGET_FILE_DIR:secure_verify>)
 
+  # Test case where we should see status code SGX_QL_QV_RESULT_TD_RELAUNCH_ADVISED
+  add_test(
+    NAME tests/secure_verify_tdx_openssl_td_relaunch_advised
+    COMMAND
+      $<TARGET_FILE:secure_verify> secure_verify_enc_openssl.signed
+      ${CMAKE_CURRENT_SOURCE_DIR}/data/tdx_quote-moduleupdate-seamldr5.dat -f
+      tdx_quote -e ${CMAKE_CURRENT_SOURCE_DIR}/data/tdx_endorsement_data.bin
+    WORKING_DIRECTORY $<TARGET_FILE_DIR:secure_verify>)
+
+  # The test binary will dump all claims
+  # Expected to see tcb_status: 07000000
+  set_tests_properties(
+    tests/secure_verify_tdx_openssl_td_relaunch_advised
+    PROPERTIES PASS_REGULAR_EXPRESSION "tcb_status: 07000000")
 endif ()
