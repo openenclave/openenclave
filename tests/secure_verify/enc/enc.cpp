@@ -46,7 +46,9 @@ static void _dump_claims(oe_claim_t* claims, size_t claims_length)
 oe_result_t verify_plugin_evidence(
     const oe_uuid_t* format_id,
     uint8_t* evidence,
-    size_t evidence_size)
+    size_t evidence_size,
+    uint8_t* endorsement,
+    size_t endorsement_size)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_claim_t* claims = NULL;
@@ -60,8 +62,8 @@ oe_result_t verify_plugin_evidence(
             format_id,
             evidence,
             evidence_size,
-            nullptr,
-            0,
+            endorsement,
+            endorsement_size,
             NULL,
             0,
             &claims,

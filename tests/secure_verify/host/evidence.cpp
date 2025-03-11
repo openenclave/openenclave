@@ -168,11 +168,15 @@ exit:
 oe_result_t verify_oe_evidence(
     oe_enclave_t* enclave,
     const oe_uuid_t* foramt_id,
-    const char* evidence_filename)
+    const char* evidence_filename,
+    const char* endorsement_filename)
 {
     oe_result_t result = OE_UNEXPECTED;
     size_t evidence_file_size = 0;
     uint8_t* evidence_data = NULL;
+
+    size_t endorsement_file_size = 0;
+    uint8_t* endorsement_data = NULL;
 
     if (!read_binary_file(
             evidence_filename, &evidence_data, &evidence_file_size))
@@ -181,8 +185,22 @@ oe_result_t verify_oe_evidence(
         goto done;
     }
 
+    if (endorsement_filename &&
+        !read_binary_file(
+            endorsement_filename, &endorsement_data, &endorsement_file_size))
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
     verify_plugin_evidence(
-        enclave, &result, foramt_id, evidence_data, evidence_file_size);
+        enclave,
+        &result,
+        foramt_id,
+        evidence_data,
+        evidence_file_size,
+        endorsement_data,
+        endorsement_file_size);
 
     OE_CHECK_MSG(
         result,
