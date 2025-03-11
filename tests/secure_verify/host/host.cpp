@@ -23,7 +23,7 @@
 
 #include "evidence.h"
 
-//#include "../../../../common/sgx/endorsements.h"
+// #include "../../../../common/sgx/endorsements.h"
 
 #define ENCLAVE_FILENAME_SUFFIX "_enc.signed"
 #define DEFAULT_LOG_FILE "secure_verify.log"
@@ -36,6 +36,7 @@
 #define INPUT_PARAM_EVIDENCE_FORMAT_SGX_CERT "sgx_cert"
 #define INPUT_PARAM_EVIDENCE_FORMAT_TDX_QUOTE "tdx_quote"
 #define INPUT_PARAM_OPTION_VERBOSE "--verbose"
+#define INPUT_PARAM_OPTION_ENDORSEMENT_FILE "-e"
 
 #define OE_FORMAT_UUID_CERT                                               \
     {                                                                     \
@@ -57,6 +58,7 @@ typedef struct _input_params
 {
     const char* enclave_filename;
     const char* evidence_filename;
+    const char* endorsement_filename;
     const oe_uuid_t* evidence_format;
     const char* log_filename;
     bool verbose;
@@ -75,6 +77,7 @@ static void _display_help(const char* cmd)
 {
     printf(
         "\nUsage: %s <enclave_file> <evidence_file> %s <evidence_format> "
+        "<endorsement_file> "
         "[options]\n\n",
         cmd,
         INPUT_PARAM_EVIDENCE_FORMAT);
@@ -86,6 +89,8 @@ static void _display_help(const char* cmd)
         INPUT_PARAM_EVIDENCE_FORMAT_SGX_CERT,
         INPUT_PARAM_EVIDENCE_FORMAT_TDX_QUOTE);
     printf("options:\n");
+    printf(
+        "\t%s <endorsement filename>\n", INPUT_PARAM_OPTION_ENDORSEMENT_FILE);
     printf(
         "\t%s <log filename> (default: %s)\n",
         INPUT_PARAM_OPTION_LOG_FILE,
@@ -162,6 +167,13 @@ static int _parse_args(int argc, const char* argv[])
 
             i += 2;
         }
+        else if (strcmp(INPUT_PARAM_OPTION_ENDORSEMENT_FILE, argv[i]) == 0)
+        {
+            if (argc < i + 2)
+                break;
+            _params.endorsement_filename = argv[i + 1];
+            i += 2;
+        }
         else if (strcmp(INPUT_PARAM_OPTION_LOG_FILE, argv[i]) == 0)
         {
             if (argc < i + 2)
@@ -210,7 +222,10 @@ static oe_result_t _verify_evidence(oe_enclave_t* enclave)
     else
     {
         result = verify_oe_evidence(
-            enclave, _params.evidence_format, _params.evidence_filename);
+            enclave,
+            _params.evidence_format,
+            _params.evidence_filename,
+            _params.endorsement_filename);
     }
 
     return result;
