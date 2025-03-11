@@ -43,6 +43,9 @@
 #define TDX_QUOTE_FILENAME "tdx_quote.bin"
 #define TDX_QUOTE_v5_FILENAME "tdx_quote_v5.bin"
 
+#define TDX_QUOTE_RELAUNCH_FILENAME "tdx_quote-moduleupdate-seamldr5.dat"
+#define TDX_QUOTE_RELAUNCH_ENDORSEMENTS_FILENAME "tdx_endorsement.bin"
+
 static const oe_uuid_t _sgx_ecdsa_uuid = {OE_FORMAT_UUID_SGX_ECDSA};
 static const oe_uuid_t _tdx_quote_uuid = {OE_FORMAT_UUID_TDX_QUOTE_ECDSA};
 
@@ -68,6 +71,21 @@ oe_result_t enclave_identity_verifier(oe_identity_t* identity, void* arg)
         OE_TRACE_INFO("0x%0x ", (uint8_t)identity->product_id[i]);
 
     return OE_OK;
+}
+
+// Find and dump the tcb_status claim
+static void _dump_claims_tcb_status(oe_claim_t* claims, size_t claims_length)
+{
+    for (size_t i = 0; i < claims_length; i++)
+    {
+        if (strcmp(claims[i].name, OE_CLAIM_TCB_STATUS) == 0)
+        {
+            printf("%s: ", claims[i].name);
+            for (size_t j = 0; j < claims[i].value_size; j++)
+                printf("%02x", claims[i].value[j]);
+            printf("\n");
+        }
+    }
 }
 
 static bool _validate_file(const char* filename, bool assert)
@@ -279,6 +297,7 @@ static int _verify_report(
     return ret;
 }
 
+// claim_count: if NULL, dump claim, otherwise, will be filled with claim count
 static int _verify_evidence(
     const oe_uuid_t* format_id,
     const char* evidence_filename,
@@ -311,8 +330,8 @@ static int _verify_evidence(
         format_id,
         evidence,
         evidence_size,
-        NULL,
-        0,
+        endorsements,
+        endorsements_size,
         NULL,
         0,
         &claims,
@@ -320,6 +339,11 @@ static int _verify_evidence(
 
     if (claim_count != NULL)
         *claim_count = claims_length;
+    else
+    {
+        // Dump claim
+        _dump_claims_tcb_status(claims, claims_length);
+    }
 
     if (!expect_failure)
         OE_TEST(result == OE_OK);
@@ -415,6 +439,18 @@ int main()
         "claims\n\n",
         tdx_v4_claim_count,
         tdx_v5_claim_count);
+
+    // TD Relaunch error code test
+    if (_validate_file(TDX_QUOTE_RELAUNCH_FILENAME, true) &&
+        _validate_file(TDX_QUOTE_RELAUNCH_ENDORSEMENTS_FILENAME, true))
+    {
+        _verify_evidence(
+            &_tdx_quote_uuid,
+            TDX_QUOTE_RELAUNCH_FILENAME,
+            TDX_QUOTE_RELAUNCH_ENDORSEMENTS_FILENAME,
+            NULL,
+            false);
+    }
 
     return 0;
 }
