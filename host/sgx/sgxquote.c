@@ -37,6 +37,7 @@ OE_STATIC_ASSERT(sizeof(sgx_att_key_id_ext_t) == sizeof(sgx_att_key_id_t));
 // Redefine the collateral version string for TDX collateral
 #define SGX_QL_QVE_COLLATERAL_VERSION_3_0 (0x00000003)
 #define SGX_QL_QVE_COLLATERAL_VERSION_3_1 (0x00010003)
+#define SGX_QL_QVE_COLLATERAL_VERSION_4_0 (0x00000004)
 
 // Facilitate writing switch statement for quote3_error_t and sgx_status_t
 // values
@@ -1472,7 +1473,8 @@ static oe_result_t _unserialize_tdx_quote_collateral(
 
     /* Support the following versions for now */
     if (collateral_out->version != SGX_QL_QVE_COLLATERAL_VERSION_3_0 &&
-        collateral_out->version != SGX_QL_QVE_COLLATERAL_VERSION_3_1)
+        collateral_out->version != SGX_QL_QVE_COLLATERAL_VERSION_3_1 &&
+        collateral_out->version != SGX_QL_QVE_COLLATERAL_VERSION_4_0)
     {
         OE_RAISE_MSG(
             OE_INVALID_ENDORSEMENT,
@@ -1638,7 +1640,8 @@ static oe_result_t _serialize_tdx_quote_collateral(
 
     /* Support the following versions for now */
     if (p_collateral->version != SGX_QL_QVE_COLLATERAL_VERSION_3_0 &&
-        p_collateral->version != SGX_QL_QVE_COLLATERAL_VERSION_3_1)
+        p_collateral->version != SGX_QL_QVE_COLLATERAL_VERSION_3_1 &&
+        p_collateral->version != SGX_QL_QVE_COLLATERAL_VERSION_4_0)
     {
         OE_RAISE_MSG(
             OE_INVALID_ENDORSEMENT,
