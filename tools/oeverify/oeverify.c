@@ -150,7 +150,8 @@ oe_result_t print_and_verify_claims(
             strcmp(claim->name, OE_CLAIM_SIGNER_ID) == 0 ||
             strcmp(claim->name, OE_CLAIM_UNIQUE_ID) == 0 ||
             strcmp(claim->name, OE_CLAIM_PRODUCT_ID) == 0 ||
-            strcmp(claim->name, OE_CLAIM_SGX_REPORT_DATA) == 0)
+            strcmp(claim->name, OE_CLAIM_SGX_REPORT_DATA) == 0 ||
+            strcmp(claim->name, OE_CLAIM_TCB_STATUS) == 0)
         {
             fprintf(stdout, "Enclave %s: 0x", claim->name);
             for (size_t j = 0; j < claim->value_size; j++)
