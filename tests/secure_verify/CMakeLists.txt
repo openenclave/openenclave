@@ -98,5 +98,7 @@ if (BUILD_ENCLAVES)
   # Expected to see tcb_status: 07000000
   set_tests_properties(
     tests/secure_verify_tdx_openssl_td_relaunch_advised
-    PROPERTIES PASS_REGULAR_EXPRESSION "tcb_status: 07000000")
+    PROPERTIES
+      PASS_REGULAR_EXPRESSION
+      "(secure_verify not supported in simulation mode|tcb_status: 07000000)")
 endif ()
