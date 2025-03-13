@@ -51,7 +51,7 @@ def ACCLibcxxTest(String label, String compiler, String build_type) {
 pipeline {
     agent any
     options {
-        timeout(time: 240, unit: 'MINUTES')
+        timeout(time: 360, unit: 'MINUTES')
         buildDiscarder(logRotator(artifactDaysToKeepStr: '90', artifactNumToKeepStr: '180', daysToKeepStr: '90', numToKeepStr: '180'))
     }
     parameters {

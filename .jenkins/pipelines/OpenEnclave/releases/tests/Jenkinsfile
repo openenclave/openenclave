@@ -5,4 +5,7 @@ library "OpenEnclaveJenkinsLibrary@${params.OECI_LIB_VERSION}"
 
 parallel "Ubuntu 20.04":        { tests.OEReleaseTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04"], params.OE_RELEASE_VERSION, params.OE_PACKAGE, params.RELEASE_SOURCE, params.STORAGE_CREDENTIALS_ID, params.STORAGE_BLOB, false) },
          "Ubuntu 20.04 w/ LVI": { tests.OEReleaseTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04"], params.OE_RELEASE_VERSION, params.OE_PACKAGE, params.RELEASE_SOURCE, params.STORAGE_CREDENTIALS_ID, params.STORAGE_BLOB, true)  },
+         "Ubuntu 22.04":        { tests.OEReleaseTest(globalvars.AGENTS_LABELS["acc-ubuntu-22.04"], params.OE_RELEASE_VERSION, params.OE_PACKAGE, params.RELEASE_SOURCE, params.STORAGE_CREDENTIALS_ID, params.STORAGE_BLOB, false) },
+         "Ubuntu 22.04 w/ LVI": { tests.OEReleaseTest(globalvars.AGENTS_LABELS["acc-ubuntu-22.04"], params.OE_RELEASE_VERSION, params.OE_PACKAGE, params.RELEASE_SOURCE, params.STORAGE_CREDENTIALS_ID, params.STORAGE_BLOB, true)  },
+
          "Windows Server 2022": { tests.OEReleaseTest(globalvars.AGENTS_LABELS["acc-win2022-dcap"], params.OE_RELEASE_VERSION, params.OE_PACKAGE, params.RELEASE_SOURCE, params.STORAGE_CREDENTIALS_ID, params.STORAGE_BLOB, false) }
