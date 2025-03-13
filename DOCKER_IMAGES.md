@@ -1,15 +1,20 @@
 # Latest versions
 | Docker Image | Version | Open Enclave version* | Intel SGX PSW version | Intel SGX DCAP version |
 | ------------ | ------- | --------------------- | --------------------- | ---------------------- |
+| Windows Server 2022 | openenclavedockerregistry.azurecr.io/oetools-ws2022:2025.03.13148 | 0.19.10 | None | None |
+| Base Ubuntu 22.04 | openenclavedockerregistry.azurecr.io/openenclave-base-ubuntu-22.04:2025.03.13148 | 0.19.10 | 2.25.100.3-jammy1 | 1.22.100.3-jammy1 |
+| Full Ubuntu 22.04 | openenclavedockerregistry.azurecr.io/oetools-22.04:2025.03.13148 | 0.19.10 | 2.25.100.3-jammy1 | 1.22.100.3-jammy1 |
+| Base Ubuntu 20.04 | openenclavedockerregistry.azurecr.io/openenclave-base-ubuntu-20.04:2025.03.13148 | 0.19.10 | 2.25.100.3-focal1 | 1.22.100.3-focal1 |
+| Full Ubuntu 20.04 | openenclavedockerregistry.azurecr.io/oetools-20.04:2025.03.13148 | 0.19.10 | 2.25.100.3-focal1 | 1.22.100.3-focal1 |
+
+# Previous versions
+| Docker Image | Version | Open Enclave version* | Intel SGX PSW version | Intel SGX DCAP version |
+| ------------ | ------- | --------------------- | --------------------- | ---------------------- |
 | Windows Server 2022 | openenclavedockerregistry.azurecr.io/oetools-ws2022:2025.02.2195 | 0.19.9 | None | None |
 | Base Ubuntu 22.04 | openenclavedockerregistry.azurecr.io/openenclave-base-ubuntu-22.04:2025.02.2195 | 0.19.9 | 2.25.100.3-jammy1 | 1.22.100.3-jammy1 |
 | Full Ubuntu 22.04 | openenclavedockerregistry.azurecr.io/oetools-22.04:2025.02.2195 | 0.19.9 | 2.25.100.3-jammy1 | 1.22.100.3-jammy1 |
 | Base Ubuntu 20.04 | openenclavedockerregistry.azurecr.io/openenclave-base-ubuntu-20.04:2025.02.2195 | 0.19.9 | 2.25.100.3-focal1 | 1.22.100.3-focal1 |
 | Full Ubuntu 20.04 | openenclavedockerregistry.azurecr.io/oetools-20.04:2025.02.2195 | 0.19.9 | 2.25.100.3-focal1 | 1.22.100.3-focal1 |
-
-# Previous versions
-| Docker Image | Version | Open Enclave version* | Intel SGX PSW version | Intel SGX DCAP version |
-| ------------ | ------- | --------------------- | --------------------- | ---------------------- |
 | Windows Server 2022 | openenclavedockerregistry.azurecr.io/oetools-ws2022:2025.02.14143 | 0.19.9 | None | None |
 | Base Ubuntu 22.04 | openenclavedockerregistry.azurecr.io/openenclave-base-ubuntu-22.04:2025.02.14143 | 0.19.9 | 2.25.100.3-jammy1 | 1.22.100.3-jammy1 |
 | Full Ubuntu 22.04 | openenclavedockerregistry.azurecr.io/oetools-22.04:2025.02.14143 | 0.19.9 | 2.25.100.3-jammy1 | 1.22.100.3-jammy1 |
