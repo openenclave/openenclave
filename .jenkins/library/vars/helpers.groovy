@@ -345,7 +345,7 @@ def testSamplesWindows(boolean lvi_mitigation, String oe_package) {
             """
         )
         dir("C:\\oe\\${oe_package}\\openenclave\\share\\openenclave\\samples\\${sample}\\build") {
-            buildCommand(cmakeArgs, "C:\\oe\\${oe_package}\\openenclave\\share\\openenclave\\samples\\${sample}")
+            buildCommand(cmakeArgs, 'Ninja', "C:\\oe\\${oe_package}\\openenclave\\share\\openenclave\\samples\\${sample}")
             bat(
                 script: """
                     call vcvars64.bat x64
