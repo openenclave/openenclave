@@ -29,14 +29,27 @@ function wait-apt-get {
     ${SUDO} apt-get "${@}"
 }
 
+wait-apt-get update
+wait-apt-get install -y lsb-release
+
 # Check for a supported python3 version that is already installed.
-# Only Python 3.9 - 3.11 is supported for Ansible 8 or Ansible-core 2.15
-# Ubuntu 20.04 has up to Python 3.9 available through official channels
 # For Ansible Community vs. Ansible-core versions
 # see https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html
 # For Python version compatibility with Ansible versions
 # see https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#support-life
-SUPPORTED_PYTHON_VERSIONS=("3.11" "3.10" "3.9")
+if [ "$(lsb_release -cs)" == "focal" ]; then
+    # Ubuntu 20.04 has up to Python 3.9 available through official channels
+    # Python 3.9 - 3.11 (Controller) is supported for Ansible 8 or Ansible-core 2.15
+    SUPPORTED_PYTHON_VERSIONS=("3.11" "3.10" "3.9")
+elif [ "$(lsb_release -cs)" == "jammy" ]; then
+    # Ubuntu 22.04 has up to Python 3.10 available through official channels
+    # Python 3.10 - 3.12 (Controller) is supported for Ansible 9 or Ansible-core 2.16
+    SUPPORTED_PYTHON_VERSIONS=("3.12" "3.11" "3.10")
+else
+    echo "ERROR: Unsupported distribution. Open Enclave SDK requires Ubuntu 20.04 or 22.04."
+    exit 1
+fi
+
 PYTHON_VERSION=$(python3 --version | cut -d " " -f 2 | cut -d "." -f 1,2)
 echo "Your Python3 version is ${PYTHON_VERSION}"
 for version in "${SUPPORTED_PYTHON_VERSIONS[@]}"; do
@@ -69,8 +82,16 @@ if [[ -z ${PYTHON_EXECUTABLE+x} ]]; then
     exit 1
 fi
 
+if [ "$(lsb_release -cs)" == "focal" ]; then
+    REQUIREMENTS_FILE="requirements-ubuntu2004.txt"
+elif [ "$(lsb_release -cs)" == "jammy" ]; then
+    REQUIREMENTS_FILE="requirements.txt"
+else
+    echo "ERROR: Unsupported distribution. Open Enclave SDK requires Ubuntu 20.04 or 22.04."
+    exit 1
+fi
 ${PYTHON_EXECUTABLE} -m pip install --upgrade pip
-${PYTHON_EXECUTABLE} -m pip install -U -r "$DIR/requirements.txt"
+${PYTHON_EXECUTABLE} -m pip install -U -r "${DIR}/${REQUIREMENTS_FILE}"
 
 ansible-galaxy collection install community.general
 ansible-galaxy collection install ansible.windows
