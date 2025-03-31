@@ -10,7 +10,7 @@ Param(
     [string]$SevenZipURL = 'https://www.7-zip.org/a/7z2409-x64.msi',
     [string]$SevenZipHash = 'EC6AF1EA0367D16DDE6639A89A080A524CEBC4D4BEDFE00ED0CAC4B865A918D8',
     # We skip the hash check for the vs_buildtools.exe file because it is regularly updated without a change to the URL, unfortunately.
-    [string]$VSBuildToolsURL = 'https://aka.ms/vs/16/release/vs_buildtools.exe',
+    [string]$VSBuildToolsURL = 'https://aka.ms/vs/17/release/vs_buildtools.exe',
     [string]$VSBuildToolsHash = '',
     [string]$ClangURL = 'https://github.com/llvm/llvm-project/releases/download/llvmorg-11.1.0/LLVM-11.1.0-win64.exe',
     [string]$ClangHash = 'B5770BBFAC712D273938CD155E232AFAA85C2E8D865C7CA504A104A838568516',
@@ -22,7 +22,7 @@ Param(
     [string]$Nuget6Hash = 'F2B2145244A3FE1E905599CFB3ADE38E3FCE0C00E73532BDE164EE4F8C8EDCEA',
     [string]$DevconURL = 'https://download.microsoft.com/download/7/D/D/7DD48DE6-8BDA-47C0-854A-539A800FAA90/wdk/Installers/787bee96dbd26371076b37b13c405890.cab',
     [string]$DevconHash = 'A38E409617FC89D0BA1224C31E42AF4344013FEA046D2248E4B9E03F67D5908A',
-    # Intel PSW 2.23.100.3 is included in DCAP 1.21.100.3
+    # Intel PSW 2.25.100.1 is included in DCAP 1.22.100.3
     [string]$IntelDCAPURL = 'https://downloadmirror.intel.com/834564/Intel_SGX_DCAP_for_Windows_v1.22.100.3.zip',
     [string]$IntelDCAPHash = 'E65061221BF22C1C52E0AF9F610CE53288AA34543A0E152DA2FE755B7079EB93',
     [string]$VCRuntime2012URL = 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe',
@@ -409,20 +409,24 @@ function Install-7Zip {
 }
 
 function Install-VisualStudio {
+    # Component IDs for Visual Studio Build Tools 2022
+    # from https://learn.microsoft.com/en-us/visualstudio/install/workload-component-id-vs-enterprise?view=vs-2022
     $installerArguments = @(
         "-q", "--wait", "--norestart",
         "--add Microsoft.VisualStudio.Workload.VCTools",
         "--add Microsoft.VisualStudio.Component.VC.CMake.Project"
-        "--add Microsoft.VisualStudio.Component.Windows10SDK.17134"
-        "--add Microsoft.VisualStudio.Component.VC.v141.ARM.Spectre"
-        "--add Microsoft.VisualStudio.Component.VC.v141.ARM64.Spectre"
+        "--add Microsoft.VisualStudio.Component.Windows11SDK.26100"
+        # MSVC v143 - VS 2022 C++ ARM/ARM64 Spectre-mitigated libs (v14.43-17.13)
+        "--add Microsoft.VisualStudio.Component.VC.14.43.17.13.ARM.Spectre"
+        "--add Microsoft.VisualStudio.Component.VC.14.43.17.13.ARM64.Spectre"
         "--includeRecommended"
+   
     )
 
     Install-Tool -InstallerPath $PACKAGES["vs_buildtools"]["local_file"] `
                 -ArgumentList $installerArguments `
-                -EnvironmentPath @("${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build", `
-                                   "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\BuildTools\Common7\Tools")
+                -EnvironmentPath @("${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build", `
+                                   "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\BuildTools\Common7\Tools")
 }
 
 # See https://nsis.sourceforge.io/Docs/Chapter3.html#installerusagecommon for valid installer args
