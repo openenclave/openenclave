@@ -11,10 +11,10 @@
 
 ### 1. Configure the Intel and Microsoft APT Repositories
 ```bash
-echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu focal main' | sudo tee /etc/apt/sources.list.d/intel-sgx.list
+echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu jammy main' | sudo tee /etc/apt/sources.list.d/intel-sgx.list
 wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | sudo apt-key add -
 
-echo "deb [arch=amd64] https://packages.microsoft.com/ubuntu/22.04/prod focal main" | sudo tee /etc/apt/sources.list.d/msprod.list
+echo "deb [arch=amd64] https://packages.microsoft.com/ubuntu/22.04/prod jammy main" | sudo tee /etc/apt/sources.list.d/msprod.list
 wget -qO - https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
 
 sudo apt update
