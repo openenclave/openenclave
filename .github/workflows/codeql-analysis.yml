@@ -18,10 +18,10 @@ on:
 jobs:
   analyze:
     name: Analyze
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     container:
-      image: openenclavedockerregistry.azurecr.io/oetools-20.04:latest
+      image: openenclavedockerregistry.azurecr.io/oetools-22.04:latest
 
     strategy:
       fail-fast: false
