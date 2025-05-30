@@ -961,10 +961,10 @@ oe_result_t oe_sgx_qe_get_quote_size(
     size_t* quote_size)
 {
     oe_result_t result = OE_UNEXPECTED;
+    if (!quote_size)
+        OE_RAISE(OE_INVALID_PARAMETER);
     uint32_t local_quote_size = (uint32_t)*quote_size;
-    quote3_error_t error = SGX_QL_ERROR_UNEXPECTED;
-
-    if (!format_id || !quote_size)
+    if (!format_id)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     if (_use_quote_ex_library())
