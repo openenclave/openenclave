@@ -14,7 +14,7 @@
 #include <openenclave/bits/types.h>
 
 /*! Limit the size of the endorsements */
-#define OE_ATTESTATION_ENDORSEMENT_MAX_SIZE (20 * 1024)
+#define OE_ATTESTATION_ENDORSEMENT_MAX_SIZE (200 * 1024)
 
 /*! Endorsement structure version */
 #define OE_ATTESTATION_ENDORSEMENT_VERSION (1)
