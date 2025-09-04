@@ -132,7 +132,7 @@ platforms:
 
 - Hardware
    1. Scalys TrustBox
-      - [Website](https://scalys.com/trustbox-industrial)
+      - [Website](https://scalys.com/solutions/networking-ecosystem/trustbox-edge/)
       - [Getting Started Guide](Hardware/ScalysTrustBox.md)
 - Emulation
    1. The Quick EMUlator (QEMU)
