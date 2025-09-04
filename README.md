@@ -2,6 +2,7 @@ Open Enclave SDK
 ================
 
 [![Bors enabled](https://bors.tech/images/badge_small.svg)](https://app.bors.tech/repositories/21855)
+[![OpenSSF Best Practices](https://bestpractices.coreinfrastructure.org/projects/6187/badge)](https://bestpractices.coreinfrastructure.org/projects/6187)
 [![Join the chat at https://gitter.im/openenclave/community](https://badges.gitter.im/openenclave/community.svg)](https://gitter.im/openenclave/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/6187/badge)](https://www.bestpractices.dev/projects/6187)
 
