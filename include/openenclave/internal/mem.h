@@ -215,7 +215,8 @@ MEM_INLINE int mem_reserve(mem_t* mem, size_t cap)
             cap = m;
 
         /* Expand allocation */
-        if (!(ptr = (unsigned char*)realloc(mem->__ptr, cap)))
+        ptr = (unsigned char*)realloc(mem->__ptr, cap);
+        if (!ptr)
             return -1;
 
         mem->__ptr = ptr;

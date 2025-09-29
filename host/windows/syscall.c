@@ -36,18 +36,18 @@
 // clang-format on
 
 #include <openenclave/corelibc/errno.h>
-#include <openenclave/internal/atomic.h>
-#include <openenclave/internal/syscall/fcntl.h>
-#include <openenclave/internal/syscall/dirent.h>
-#include <openenclave/internal/syscall/netdb.h>
-#include <openenclave/internal/syscall/unistd.h>
-#include <openenclave/internal/syscall/sys/stat.h>
-#include <openenclave/internal/safecrt.h>
-#include <openenclave/internal/time.h>
-#include <openenclave/internal/raise.h>
 #include <openenclave/corelibc/limits.h>
-#include "../hostthread.h"
+#include <openenclave/internal/atomic.h>
+#include <openenclave/internal/raise.h>
+#include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/syscall/dirent.h>
+#include <openenclave/internal/syscall/fcntl.h>
+#include <openenclave/internal/syscall/netdb.h>
+#include <openenclave/internal/syscall/sys/stat.h>
+#include <openenclave/internal/syscall/unistd.h>
+#include <openenclave/internal/time.h>
 #include "../../common/oe_host_socket.h"
+#include "../hostthread.h"
 #include "syscall_u.h"
 
 struct WIN_DIR_DATA
@@ -388,7 +388,7 @@ inline void _windows_to_oe_syscall_volume_root(char* path, size_t path_length)
     /* convert "C:" to "/c" */
     if (path && path_length >= 2 && isalpha(path[0]) && path[1] == ':')
     {
-        path[1] = tolower(path[0]);
+        path[1] = (char)tolower((unsigned char)path[0]);
         path[0] = '/';
     }
 }
@@ -414,7 +414,7 @@ inline void _fix_oe_syscall_volume_root(PWSTR path, uint32_t path_length)
         if (iswalpha(path[0]) && path[1] == ':' && path[2] == '\\' &&
             iswalpha(path[3]) && (path[4] == '\0' || path[4] == '\\'))
         {
-            path[0] = towupper(path[3]);
+            path[0] = (WCHAR)towupper(path[3]);
             if (path[4] == '\0')
                 path[3] = '\0';
             else
@@ -433,6 +433,7 @@ errno_t _get_full_path_name(
     PWSTR* outpath)
 {
     errno_t err = 0;
+    PWSTR outpath_buf = NULL; /* ensure initialized before any goto */
     DWORD required_length = GetFullPathNameW(path, 0, NULL, NULL);
     if (required_length == 0)
     {
@@ -441,7 +442,7 @@ errno_t _get_full_path_name(
         err = _winerr_to_errno(winerror);
         goto done;
     }
-    PWSTR outpath_buf = (PWSTR)malloc(required_length * sizeof(WCHAR));
+    outpath_buf = (PWSTR)malloc(required_length * sizeof(WCHAR));
     if (!outpath_buf)
     {
         err = OE_ENOMEM;
@@ -714,8 +715,8 @@ static HANDLE _createfile(
     SID_IDENTIFIER_AUTHORITY SIDAuthWorld = SECURITY_WORLD_SID_AUTHORITY;
 
     HANDLE hToken;
-    TOKEN_PRIMARY_GROUP* GroupInfo;
-    TOKEN_OWNER* OwnerInfo;
+    TOKEN_PRIMARY_GROUP* GroupInfo = NULL;
+    TOKEN_OWNER* OwnerInfo = NULL;
 
     oe_mode_t win_modes[] = {GENERIC_EXECUTE, GENERIC_WRITE, GENERIC_READ};
     oe_mode_t current_mode = 01; // bit zero set to 1, which is S_IXOTH
@@ -1376,6 +1377,10 @@ ssize_t oe_syscall_pread_ocall(
     size_t count,
     oe_off_t offset)
 {
+    OE_UNUSED(fd);
+    OE_UNUSED(buf);
+    OE_UNUSED(count);
+    OE_UNUSED(offset);
     PANIC;
 }
 
@@ -1385,6 +1390,10 @@ ssize_t oe_syscall_pwrite_ocall(
     size_t count,
     oe_off_t offset)
 {
+    OE_UNUSED(fd);
+    OE_UNUSED(buf);
+    OE_UNUSED(count);
+    OE_UNUSED(offset);
     PANIC;
 }
 
@@ -1515,6 +1524,7 @@ oe_host_fd_t oe_syscall_dup_ocall(oe_host_fd_t fd)
 uint64_t oe_syscall_opendir_ocall(const char* pathname)
 {
     struct WIN_DIR_DATA* pdir = NULL;
+    PWSTR wpathname = NULL; /* declare before any goto */
 
     pdir = (struct WIN_DIR_DATA*)calloc(1, sizeof(struct WIN_DIR_DATA));
     if (!pdir)
@@ -1523,7 +1533,7 @@ uint64_t oe_syscall_opendir_ocall(const char* pathname)
         goto done;
     }
 
-    PWSTR wpathname = oe_syscall_path_to_win(pathname);
+    wpathname = oe_syscall_path_to_win(pathname);
     if (!wpathname)
     {
         goto done;
@@ -1569,7 +1579,6 @@ int oe_syscall_readdir_ocall(uint64_t dirp, struct oe_dirent* entry)
     int ret = -1;
 
     struct WIN_DIR_DATA* pdir = (struct WIN_DIR_DATA*)dirp;
-    int nlen = -1;
 
     _set_errno(0);
 
@@ -1649,7 +1658,6 @@ done:
 
 void oe_syscall_rewinddir_ocall(uint64_t dirp)
 {
-    DWORD err = 0;
     struct WIN_DIR_DATA* pdir = (struct WIN_DIR_DATA*)dirp;
     PCWSTR wpathname = pdir->pdirpath;
 
@@ -1789,18 +1797,19 @@ int oe_syscall_fstat_ocall(oe_host_fd_t fd, struct oe_stat_t* buf)
 int oe_syscall_access_ocall(const char* pathname, int mode)
 {
     int ret = -1;
-    PWSTR wpathname = oe_syscall_path_to_win(pathname);
-    if (!wpathname)
-    {
-        goto done;
-    }
-
+    PWSTR wpathname = NULL; /* declare all locals prior to any goto */
     HANDLE hToken = NULL;
     TOKEN_OWNER* OwnerInfo = NULL;
     TRUSTEE trustee;
     ACL* pACL = NULL;
     SECURITY_DESCRIPTOR* pSD = NULL;
     DWORD dwSize = 0, dwRes = 0;
+
+    wpathname = oe_syscall_path_to_win(pathname);
+    if (!wpathname)
+    {
+        goto done;
+    }
 
     // Open a handle to the access token for the calling process.
     if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken))
@@ -1985,13 +1994,16 @@ int oe_syscall_truncate_ocall(const char* pathname, oe_off_t length)
 {
     int ret = -1;
     LARGE_INTEGER new_offset = {0};
-    PWSTR wpathname = oe_syscall_path_to_win(pathname);
+    PWSTR wpathname = NULL;          /* ensure declared before goto */
+    HANDLE h = INVALID_HANDLE_VALUE; /* move before possible early exit */
+
+    wpathname = oe_syscall_path_to_win(pathname);
     if (!wpathname)
     {
         goto done;
     }
 
-    HANDLE h = CreateFileW(
+    h = CreateFileW(
         wpathname,
         GENERIC_WRITE,
         FILE_SHARE_WRITE,
@@ -2519,6 +2531,9 @@ int oe_syscall_fcntl_ocall(
     uint64_t argsize,
     void* argout)
 {
+    OE_UNUSED(arg);
+    OE_UNUSED(argsize);
+    OE_UNUSED(argout);
     if (fd < 0)
     {
         _set_errno(OE_EINVAL);
@@ -2597,10 +2612,7 @@ int oe_syscall_setsockopt_ocall(
 
     int ret = setsockopt(_get_socket(sockfd), level, optname, optval, optlen);
     if (ret != 0)
-    {
-        int err = _winsockerr_to_errno(WSAGetLastError());
-        _set_errno(err);
-    }
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
 
     return ret;
 }
@@ -2616,17 +2628,15 @@ int oe_syscall_getsockopt_ocall(
     level = _musl_to_bsd(level, musl2bsd_socket_level);
     optname = _musl_to_bsd(optname, musl2bsd_socket_option);
 
-    int ret =
-        getsockopt(_get_socket(sockfd), level, optname, optval, &optlen_in);
+    int ret;
+    int tmp_len = (int)optlen_in;
+    ret = getsockopt(_get_socket(sockfd), level, optname, optval, &tmp_len);
     if (ret != 0)
-    {
-        int err = _winsockerr_to_errno(WSAGetLastError());
-        _set_errno(err);
-    }
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
     else
     {
         if (optlen_out)
-            *optlen_out = optlen_in;
+            *optlen_out = (oe_socklen_t)tmp_len;
     }
 
     return ret;
@@ -2642,7 +2652,12 @@ int oe_syscall_getsockname_ocall(
 
     errno = 0;
 
-    ret = getsockname(_get_socket(sockfd), (struct sockaddr*)addr, &addrlen_in);
+    {
+        int tmp_len = (int)addrlen_in;
+        ret =
+            getsockname(_get_socket(sockfd), (struct sockaddr*)addr, &tmp_len);
+        addrlen_in = (oe_socklen_t)tmp_len;
+    }
 
     if (ret != 0)
     {
@@ -2667,7 +2682,12 @@ int oe_syscall_getpeername_ocall(
 
     errno = 0;
 
-    ret = getpeername(_get_socket(sockfd), (struct sockaddr*)addr, &addrlen_in);
+    {
+        int tmp_len = (int)addrlen_in;
+        ret =
+            getpeername(_get_socket(sockfd), (struct sockaddr*)addr, &tmp_len);
+        addrlen_in = (oe_socklen_t)tmp_len;
+    }
 
     if (ret != 0)
     {
@@ -2741,7 +2761,8 @@ int oe_syscall_getaddrinfo_open_ocall(
         goto done;
     }
 
-    if (!(handle = calloc(1, sizeof(getaddrinfo_handle_t))))
+    handle = calloc(1, sizeof(getaddrinfo_handle_t));
+    if (!handle)
     {
         ret = OE_EAI_MEMORY;
         _set_errno(OE_ENOMEM);

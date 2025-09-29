@@ -606,7 +606,8 @@ oe_result_t oe_ecall(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Assign a oe_sgx_td_t for this operation */
-    if (!(tcs = _assign_tcs(enclave)))
+    tcs = _assign_tcs(enclave);
+    if (!tcs)
         OE_RAISE(OE_OUT_OF_THREADS);
 
     oe_log(

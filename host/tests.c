@@ -18,7 +18,8 @@ uint32_t oe_get_create_flags(void)
 
     char* env = NULL;
 
-    if (!(env = oe_dupenv("OE_SIMULATION")))
+    env = oe_dupenv("OE_SIMULATION");
+    if (!env)
         goto done;
 
     if (strcmp(env, "1") == 0)

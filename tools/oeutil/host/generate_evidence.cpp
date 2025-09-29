@@ -34,7 +34,14 @@
 #if defined(__linux__)
 #include <dlfcn.h>
 #else
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4996)
+#endif
 #include <openssl/applink.c>
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 #endif
 
 #include "../../../common/attest_plugin.h"

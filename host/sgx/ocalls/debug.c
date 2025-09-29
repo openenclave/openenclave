@@ -63,7 +63,8 @@ static char** _backtrace_symbols(
     }
 
     /* Allocate the array of string pointers, followed by the strings */
-    if (!(ptr = (char*)malloc(malloc_size)))
+    ptr = (char*)malloc(malloc_size);
+    if (!ptr)
         goto done;
 
     /* Set pointer to array of strings */
@@ -111,11 +112,9 @@ oe_result_t oe_sgx_backtrace_symbols_ocall(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Convert the addresses into symbol strings. */
-    if (!(strings =
-              _backtrace_symbols(oe_enclave, (void* const*)buffer, (int)size)))
-    {
+    strings = _backtrace_symbols(oe_enclave, (void* const*)buffer, (int)size);
+    if (!strings)
         OE_RAISE(OE_FAILURE);
-    }
 
     *symbols_buffer_size_out = symbols_buffer_size;
 
@@ -152,11 +151,9 @@ oe_result_t oe_sgx_log_backtrace_ocall(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Convert the addresses into symbol strings. */
-    if (!(strings =
-              _backtrace_symbols(oe_enclave, (void* const*)buffer, (int)size)))
-    {
+    strings = _backtrace_symbols(oe_enclave, (void* const*)buffer, (int)size);
+    if (!strings)
         OE_RAISE(OE_FAILURE);
-    }
 
     for (size_t i = 0; i < size; ++i)
     {

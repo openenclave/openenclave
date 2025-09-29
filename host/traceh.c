@@ -331,7 +331,8 @@ oe_result_t oe_log(oe_log_level_t level, const char* fmt, ...)
         }
     }
 
-    if (!(message = malloc(OE_LOG_MESSAGE_LEN_MAX)))
+    message = malloc(OE_LOG_MESSAGE_LEN_MAX);
+    if (!message)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     va_start(ap, fmt);

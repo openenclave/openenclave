@@ -356,7 +356,8 @@ int elf64_load(const char* path, elf64_t* elf)
     elf->size = (size_t)statbuf.st_size;
 
     /* Allocate the data to hold this image */
-    if (!(elf->data = malloc(elf->size)))
+    elf->data = malloc(elf->size);
+    if (!elf->data)
         goto done;
 
     /* Read the file into memory */
@@ -544,7 +545,8 @@ const char* elf64_get_string_from_strtab(
     if (!_is_valid_elf64(elf))
         return NULL;
 
-    if ((index = _find_shdr(elf, ".strtab")) == (size_t)-1)
+    index = _find_shdr(elf, ".strtab");
+    if (index == (size_t)-1)
         return NULL;
 
     return _get_string_from_section_by_index(elf, index, offset);
@@ -568,14 +570,16 @@ int elf64_find_symbol_by_name(
         goto done;
 
     /* Find the symbol table section header */
-    if ((index = _find_shdr(elf, SECTIONNAME)) == (size_t)-1)
+    index = _find_shdr(elf, SECTIONNAME);
+    if (index == (size_t)-1)
         goto done;
 
     if (index == 0 || index >= _get_header(elf)->e_shnum)
         goto done;
 
     /* Set pointer to section header */
-    if (!(sh = _get_shdr(elf, index)))
+    sh = _get_shdr(elf, index);
+    if (!sh)
         goto done;
 
     /* If this is not a symbol table */
@@ -587,7 +591,8 @@ int elf64_find_symbol_by_name(
         goto done;
 
     /* Set pointer to symbol table section */
-    if (!(symtab = (const elf64_sym_t*)_get_section(elf, index)))
+    symtab = (const elf64_sym_t*)_get_section(elf, index);
+    if (!symtab)
         goto done;
 
     /* Calculate number of symbol table entries */
@@ -603,7 +608,8 @@ int elf64_find_symbol_by_name(
             continue;
 
         /* If illegal name */
-        if (!(s = elf64_get_string_from_strtab(elf, p->st_name)))
+        s = elf64_get_string_from_strtab(elf, p->st_name);
+        if (!s)
             goto done;
 
         /* If found */
@@ -637,14 +643,16 @@ int elf64_get_dynamic_symbol_table(
     *size = 0;
 
     /* Find the symbol table section header */
-    if ((index = _find_shdr(elf, SECTIONNAME)) == (size_t)-1)
+    index = _find_shdr(elf, SECTIONNAME);
+    if (index == (size_t)-1)
         goto done;
 
     if (index == 0 || index >= _get_header(elf)->e_shnum)
         goto done;
 
     /* Set pointer to section header */
-    if (!(sh = _get_shdr(elf, index)))
+    sh = _get_shdr(elf, index);
+    if (!sh)
         goto done;
 
     /* If this is not a symbol table */
@@ -656,7 +664,8 @@ int elf64_get_dynamic_symbol_table(
         goto done;
 
     /* Set pointer to symbol table section */
-    if (!(*symtab = (const elf64_sym_t*)_get_section(elf, index)))
+    *symtab = (const elf64_sym_t*)_get_section(elf, index);
+    if (!*symtab)
         goto done;
 
     /* Calculate number of symbol table entries */
@@ -674,7 +683,8 @@ static const char* _get_string_from_dynstr_internal(
 {
     size_t index;
 
-    if ((index = _find_shdr_internal(ptr, ".dynstr", use_header)) == (size_t)-1)
+    index = _find_shdr_internal(ptr, ".dynstr", use_header);
+    if (index == (size_t)-1)
         return NULL;
 
     return _get_string_from_section_by_index_internal(
@@ -709,8 +719,8 @@ static int _find_dynamic_symbol_by_name(
     const elf64_word_t SH_TYPE = SHT_DYNSYM;
 
     /* Find the symbol table section header */
-    if ((index = _find_shdr_internal(ptr, SECTIONNAME, use_header)) ==
-        (size_t)-1)
+    index = _find_shdr_internal(ptr, SECTIONNAME, use_header);
+    if (index == (size_t)-1)
         goto done;
 
     if (!use_header)
@@ -722,7 +732,8 @@ static int _find_dynamic_symbol_by_name(
         goto done;
 
     /* Set pointer to section header */
-    if (!(sh = _get_shdr_internal(ptr, index, use_header)))
+    sh = _get_shdr_internal(ptr, index, use_header);
+    if (!sh)
         goto done;
 
     /* If this is not a symbol table */
@@ -734,8 +745,8 @@ static int _find_dynamic_symbol_by_name(
         goto done;
 
     /* Set pointer to symbol table section */
-    if (!(symtab = (const elf64_sym_t*)_get_section_internal(
-              ptr, index, use_header)))
+    symtab = (const elf64_sym_t*)_get_section_internal(ptr, index, use_header);
+    if (!symtab)
         goto done;
 
     /* Calculate number of symbol table entries */
@@ -751,8 +762,8 @@ static int _find_dynamic_symbol_by_name(
             continue;
 
         /* If illegal name */
-        if (!(s = _get_string_from_dynstr_internal(
-                  ptr, p->st_name, use_header)))
+        s = _get_string_from_dynstr_internal(ptr, p->st_name, use_header);
+        if (!s)
             goto done;
 
         /* If found */
@@ -811,14 +822,16 @@ int elf64_find_symbol_by_address(
         goto done;
 
     /* Find the symbol table section header */
-    if ((index = _find_shdr(elf, SECTIONNAME)) == (size_t)-1)
+    index = _find_shdr(elf, SECTIONNAME);
+    if (index == (size_t)-1)
         goto done;
 
     if (index == 0 || index >= _get_header(elf)->e_shnum)
         goto done;
 
     /* Set pointer to section header */
-    if (!(sh = _get_shdr(elf, index)))
+    sh = _get_shdr(elf, index);
+    if (!sh)
         goto done;
 
     /* If this is not a symbol table */
@@ -830,7 +843,8 @@ int elf64_find_symbol_by_address(
         goto done;
 
     /* Set pointer to symbol table section */
-    if (!(symtab = (const elf64_sym_t*)_get_section(elf, index)))
+    symtab = (const elf64_sym_t*)_get_section(elf, index);
+    if (!symtab)
         goto done;
 
     /* Calculate number of symbol table entries */
@@ -875,14 +889,16 @@ int elf64_find_dynamic_symbol_by_address(
         goto done;
 
     /* Find the symbol table section header */
-    if ((index = _find_shdr(elf, SECTIONNAME)) == (size_t)-1)
+    index = _find_shdr(elf, SECTIONNAME);
+    if (index == (size_t)-1)
         goto done;
 
     if (index == 0 || index >= _get_header(elf)->e_shnum)
         goto done;
 
     /* Set pointer to section header */
-    if (!(sh = _get_shdr(elf, index)))
+    sh = _get_shdr(elf, index);
+    if (!sh)
         goto done;
 
     /* If this is not a symbol table */
@@ -894,7 +910,8 @@ int elf64_find_dynamic_symbol_by_address(
         goto done;
 
     /* Set pointer to symbol table section */
-    if (!(symtab = (const elf64_sym_t*)_get_section(elf, index)))
+    symtab = (const elf64_sym_t*)_get_section(elf, index);
+    if (!symtab)
         goto done;
 
     /* Calculate number of symbol table entries */
@@ -1379,11 +1396,13 @@ int elf64_visit_symbols(
         goto done;
 
     /* Find the symbol table section header */
-    if ((index = _find_shdr(elf, SECTIONNAME)) == (size_t)-1)
+    index = _find_shdr(elf, SECTIONNAME);
+    if (index == (size_t)-1)
         goto done;
 
     /* Set pointer to section header */
-    if (!(sh = _get_shdr(elf, index)))
+    sh = _get_shdr(elf, index);
+    if (!sh)
         goto done;
 
     /* If this is not a symbol table */
@@ -1395,7 +1414,8 @@ int elf64_visit_symbols(
         goto done;
 
     /* Set pointer to symbol table section */
-    if (!(symtab = (const elf64_sym_t*)_get_section(elf, index)))
+    symtab = (const elf64_sym_t*)_get_section(elf, index);
+    if (!symtab)
         goto done;
 
     /* Calculate number of symbol table entries */
@@ -2110,8 +2130,11 @@ oe_result_t elf64_load_relocations(
     /* Make a copy of the relocation section */
     *size_out = size;
 
-    if (!(*data_out = oe_memalign(OE_PAGE_SIZE, *size_out)))
+    void* tmp_alloc = oe_memalign(OE_PAGE_SIZE, *size_out);
+    if (!tmp_alloc)
         OE_RAISE(OE_OUT_OF_MEMORY);
+    *data_out = tmp_alloc;
+    tmp_alloc = NULL;
 
     memset(*data_out, 0, *size_out);
     OE_CHECK(oe_memcpy_s(*data_out, *size_out, dyn_data, dyn_size));
@@ -2193,11 +2216,13 @@ const char* elf64_get_function_name(const elf64_t* elf, elf64_addr_t addr)
         goto done;
 
     /* Find the symbol table section header */
-    if ((index = _find_shdr(elf, SECTIONNAME)) == (size_t)-1)
+    index = _find_shdr(elf, SECTIONNAME);
+    if (index == (size_t)-1)
         goto done;
 
     /* Set pointer to section header */
-    if (!(sh = _get_shdr(elf, index)))
+    sh = _get_shdr(elf, index);
+    if (!sh)
         goto done;
 
     /* If this is not a symbol table */
@@ -2209,7 +2234,8 @@ const char* elf64_get_function_name(const elf64_t* elf, elf64_addr_t addr)
         goto done;
 
     /* Set pointer to symbol table section */
-    if (!(symtab = (const elf64_sym_t*)_get_section(elf, index)))
+    symtab = (const elf64_sym_t*)_get_section(elf, index);
+    if (!symtab)
         goto done;
 
     /* Calculate number of symbol table entries */

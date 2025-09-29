@@ -95,7 +95,7 @@ bool oe_atomic_compare_and_swap_32(
     return __atomic_compare_exchange_n(
         dest, &old, newval, weak, __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE);
 #elif defined(_MSC_VER)
-    return _InterlockedCompareExchange(
+    return (uint32_t)_InterlockedCompareExchange(
                (volatile long*)dest, (long)newval, (long)old) == old;
 #else
 #error "unsupported"

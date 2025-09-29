@@ -124,10 +124,10 @@ void test_switchless_ocalls(
     thread_info_t tinfo[NUM_TCS];
     for (uint64_t i = 0; i < num_extra_enc_threads; ++i)
     {
-        int ret = 0;
         tinfo[i].enclave = enclave_switchess;
-        if ((ret = oe_thread_create(
-                 &tinfo[i].tid, launch_enclave_thread, &tinfo[i])))
+        int ret =
+            oe_thread_create(&tinfo[i].tid, launch_enclave_thread, &tinfo[i]);
+        if (ret)
         {
             oe_put_err("thread_create(host): ret=%u", ret);
         }
@@ -338,10 +338,10 @@ void test_switchless_ecalls(
     thread_info_t tinfo[NUM_TCS];
     for (uint64_t i = 0; i < num_extra_host_threads; ++i)
     {
-        int ret = 0;
         tinfo[i].enclave = enclave_switchless;
-        if ((ret = oe_thread_create(
-                 &tinfo[i].tid, launch_host_thread, &tinfo[i])))
+        int ret =
+            oe_thread_create(&tinfo[i].tid, launch_host_thread, &tinfo[i]);
+        if (ret)
         {
             oe_put_err("thread_create(host): ret=%u", ret);
         }

@@ -56,7 +56,8 @@ oe_result_t __oe_load_file(
     OE_CHECK(oe_safe_add_sizet(*size, extra_bytes, &total_size));
 
     /* Allocate memory */
-    if (!(*data = malloc(total_size)))
+    *data = malloc(total_size);
+    if (!*data)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     /* Open the file */

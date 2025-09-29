@@ -70,7 +70,7 @@ done:
 void run_test(oe_enclave_t* enclave, int test_type)
 {
     oe_result_t result = OE_FAILURE;
-    oe_result_t ecall_result;
+    oe_result_t ecall_result = OE_FAILURE;
     unsigned char* cert = NULL;
     size_t cert_size = 0;
 

@@ -259,6 +259,8 @@ static int _load_config_file(const char* path, config_file_options_t* options)
         {
             oe_uuid_t id;
 
+            memset(&id, 0, sizeof(id));
+
             if (options->family_id.has_value)
             {
                 oe_err(
@@ -287,6 +289,8 @@ static int _load_config_file(const char* path, config_file_options_t* options)
         else if (strcmp(str_ptr(&lhs), "ExtendedProductID") == 0)
         {
             oe_uuid_t id;
+
+            memset(&id, 0, sizeof(id));
 
             if (options->extended_product_id.has_value)
             {

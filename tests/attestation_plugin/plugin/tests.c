@@ -1158,7 +1158,7 @@ void verify_sgx_evidence(
     oe_sgx_endorsements_t sgx_endorsements;
     void* from;
     void* until;
-    bool is_local;
+    bool is_local = false;
     bool tcb_level_valid;
 
     sgx_evidence_format_type_t format_type = SGX_FORMAT_TYPE_UNKNOWN;

@@ -62,10 +62,12 @@ oe_result_t oe_get_public_key_by_policy(
         arg.key_buffer_size = KEY_BUFFER_SIZE;
         arg.key_info_size = KEY_INFO_SIZE;
 
-        if (!(arg.key_buffer = malloc(arg.key_buffer_size)))
+        arg.key_buffer = malloc(arg.key_buffer_size);
+        if (!arg.key_buffer)
             OE_RAISE(OE_OUT_OF_MEMORY);
 
-        if (!(arg.key_info = malloc(arg.key_info_size)))
+        arg.key_info = malloc(arg.key_info_size);
+        if (!arg.key_info)
             OE_RAISE(OE_OUT_OF_MEMORY);
     }
 
@@ -87,10 +89,12 @@ oe_result_t oe_get_public_key_by_policy(
     /* If the buffers were too small, try again with corrected sizes. */
     if (retval == OE_BUFFER_TOO_SMALL)
     {
-        if (!(arg.key_buffer = realloc(arg.key_buffer, arg.key_buffer_size)))
+        arg.key_buffer = realloc(arg.key_buffer, arg.key_buffer_size);
+        if (!arg.key_buffer)
             OE_RAISE(OE_OUT_OF_MEMORY);
 
-        if (!(arg.key_info = realloc(arg.key_info, arg.key_info_size)))
+        arg.key_info = realloc(arg.key_info, arg.key_info_size);
+        if (!arg.key_info)
             OE_RAISE(OE_OUT_OF_MEMORY);
 
         if (oe_get_public_key_by_policy_ecall(
@@ -172,7 +176,8 @@ oe_result_t oe_get_public_key(
     {
         arg.key_buffer_size = KEY_BUFFER_SIZE;
 
-        if (!(arg.key_buffer = malloc(arg.key_buffer_size)))
+        arg.key_buffer = malloc(arg.key_buffer_size);
+        if (!arg.key_buffer)
             OE_RAISE(OE_OUT_OF_MEMORY);
     }
 
@@ -192,7 +197,8 @@ oe_result_t oe_get_public_key(
     /* If the buffers were too small, try again with corrected sizes. */
     if (retval == OE_BUFFER_TOO_SMALL)
     {
-        if (!(arg.key_buffer = realloc(arg.key_buffer, arg.key_buffer_size)))
+        arg.key_buffer = realloc(arg.key_buffer, arg.key_buffer_size);
+        if (!arg.key_buffer)
             OE_RAISE(OE_OUT_OF_MEMORY);
 
         if (oe_get_public_key_ecall(

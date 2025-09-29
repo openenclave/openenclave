@@ -321,8 +321,8 @@ oe_result_t oe_rsa_public_key_get_modulus(
     oe_result_t result = OE_UNEXPECTED;
     const oe_public_key_t* impl = (const oe_public_key_t*)public_key;
     BYTE* key_blob = NULL;
-    ULONG key_blob_size;
-    BCRYPT_RSAKEY_BLOB* keyblob;
+    ULONG key_blob_size = 0;
+    BCRYPT_RSAKEY_BLOB* keyblob = NULL;
 
     /* Check for null parameters and invalid sizes. */
     if (!oe_bcrypt_key_is_valid(impl, OE_RSA_PUBLIC_KEY_MAGIC) ||
@@ -387,7 +387,7 @@ oe_result_t oe_rsa_public_key_get_exponent(
     oe_result_t result = OE_UNEXPECTED;
     const oe_public_key_t* impl = (const oe_public_key_t*)public_key;
     BYTE* key_blob = NULL;
-    ULONG key_blob_size;
+    ULONG key_blob_size = 0;
     BCRYPT_RSAKEY_BLOB* keyblob;
 
     /* Check for null parameters and invalid sizes. */
@@ -512,7 +512,7 @@ oe_result_t oe_rsa_get_public_key_from_private(
     oe_result_t result = OE_UNEXPECTED;
     oe_private_key_t* impl = (oe_private_key_t*)private_key;
     BYTE* key_blob = NULL;
-    ULONG key_blob_size;
+    ULONG key_blob_size = 0;
 
     if (public_key)
         memset(public_key, 0, sizeof(oe_rsa_public_key_t));

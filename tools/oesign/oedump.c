@@ -16,7 +16,7 @@ static bool verbose_opt = false;
 static void _dump_entry_point(const elf64_t* elf)
 {
     elf64_sym_t sym;
-    const char* name;
+    const char* name = NULL;
 
     if (elf64_find_dynamic_symbol_by_address(
             elf, elf64_get_header(elf)->e_entry, STT_FUNC, &sym) != 0)
@@ -25,7 +25,8 @@ static void _dump_entry_point(const elf64_t* elf)
         return;
     }
 
-    if (!(name = elf64_get_string_from_dynstr(elf, sym.st_name)))
+    name = elf64_get_string_from_dynstr(elf, sym.st_name);
+    if (!name)
     {
         oe_err("Cannot resolve entry point name");
         return;

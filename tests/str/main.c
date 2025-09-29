@@ -185,7 +185,7 @@ void TestStr(str_t* s)
             n++;
         }
 
-        OE_TEST(n = 4);
+        OE_TEST(n == 5);
         OE_TEST(r == 1);
 
         fclose(is);

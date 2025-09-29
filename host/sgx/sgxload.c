@@ -130,7 +130,8 @@ static sgx_secs_t* _new_secs(
 {
     sgx_secs_t* secs = NULL;
 
-    if (!(secs = (sgx_secs_t*)oe_memalign(OE_PAGE_SIZE, sizeof(sgx_secs_t))))
+    secs = (sgx_secs_t*)oe_memalign(OE_PAGE_SIZE, sizeof(sgx_secs_t));
+    if (!secs)
         return NULL;
 
     memset(secs, 0, sizeof(sgx_secs_t));
@@ -191,11 +192,9 @@ static void* _allocate_enclave_memory(size_t enclave_size)
     }
 #elif defined(_WIN32)
     /* Allocate virtual memory for this enclave */
-    if (!(result = VirtualAlloc(
-              NULL,
-              enclave_size,
-              MEM_COMMIT | MEM_RESERVE,
-              PAGE_EXECUTE_READWRITE)))
+    result = VirtualAlloc(
+        NULL, enclave_size, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+    if (!result)
     {
         OE_TRACE_ERROR("VirtualAlloc failed enclave_size=0x%lx", enclave_size);
         goto done;
@@ -331,7 +330,7 @@ oe_result_t oe_sgx_create_enclave(
     void* image_base = NULL;
     void* start_address = NULL;
     sgx_secs_t* secs = NULL;
-    sgx_enclave_elrange_t enclave_elrange;
+    sgx_enclave_elrange_t enclave_elrange = {0};
     uint32_t ex_features = 0;
     void* ex_features_array[32] = {0};
 
@@ -359,7 +358,8 @@ oe_result_t oe_sgx_create_enclave(
         if (oe_sgx_is_simulation_load_context(context))
         {
             /* Allocation memory-mapped region */
-            if (!(image_base = _allocate_enclave_memory(enclave_size)))
+            image_base = _allocate_enclave_memory(enclave_size);
+            if (!image_base)
                 OE_RAISE(OE_OUT_OF_MEMORY);
         }
 #else
@@ -406,8 +406,9 @@ oe_result_t oe_sgx_create_enclave(
         enclave_elrange.elrange_size = enclave_size;
 
     /* Create SECS structure */
-    if (!(secs = _new_secs(
-              (uint64_t)image_base, enclave_elrange.elrange_size, context)))
+    secs =
+        _new_secs((uint64_t)image_base, enclave_elrange.elrange_size, context);
+    if (!secs)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     /* Measure this operation */

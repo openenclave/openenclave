@@ -150,6 +150,34 @@ elseif (MSVC)
   add_compile_options(/WX)
   add_compile_options(/W3)
 
+  # Promote mandatory security-related warnings explicitly
+  # These map to the SDL required set.
+  set(MANDATORY_WARNINGS
+      /we4018
+      /we4055
+      /we4146
+      /we4242
+      /we4244
+      /we4267
+      /we4302
+      /we4308
+      /we4509
+      /we4510
+      /we4532
+      /we4533
+      /we4610
+      /we4611
+      /we4700
+      /we4701
+      /we4703
+      /we4789
+      /we4995
+      /we4996)
+  # Turn list into a space-separated string
+  string(JOIN " " MANDATORY_WARNINGS_LIST ${MANDATORY_WARNINGS})
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MANDATORY_WARNINGS_LIST}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MANDATORY_WARNINGS_LIST}")
+
   # Ignore compiler warnings:
   # * unicode character not supported
 

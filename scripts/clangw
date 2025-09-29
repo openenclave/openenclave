@@ -51,7 +51,7 @@ function call_clang {
         [ "$a" == "/Wv:18" ]        && continue
 
         # Ignore warnings for specific error codes
-        if [[ "$a" =~ /[wW][dD][0-9]* ]]; then
+        if [[ "$a" =~ /[wW][dDeE][0-9]* ]]; then
             continue
         fi
 

@@ -1024,7 +1024,9 @@ oe_result_t oe_sgx_build_enclave(
 
     /* Check if the enclave is configured with CreateZeroBaseEnclave=1 */
     context->create_zero_base_enclave =
-        props.config.flags.create_zero_base_enclave;
+        props.config.flags.create_zero_base_enclave
+            ? 1
+            : 0; /* bool narrowing safe */
 
     context->start_address = props.config.start_address;
 
@@ -1137,7 +1139,8 @@ oe_result_t oe_sgx_build_enclave(
     /* Save full path of this enclave. When a debugger attaches to the host
      * process, it needs the fullpath so that it can load the image binary and
      * extract the debugging symbols. */
-    if (!(enclave->path = get_fullpath(path)))
+    enclave->path = get_fullpath(path);
+    if (!enclave->path)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     /* Set the magic number only if we have actually created an enclave */
@@ -1295,7 +1298,8 @@ oe_result_t oe_create_enclave(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Allocate and zero-fill the enclave structure */
-    if (!(enclave = (oe_enclave_t*)calloc(1, sizeof(oe_enclave_t))))
+    enclave = (oe_enclave_t*)calloc(1, sizeof(oe_enclave_t));
+    if (!enclave)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     /* Initialize the context parameter and any driver handles */
@@ -1312,15 +1316,13 @@ oe_result_t oe_create_enclave(
     {
         oe_thread_binding_t* binding = &enclave->bindings[i];
 
-        if (!(binding->event.handle = CreateEvent(
-                  0,     /* No security attributes */
-                  FALSE, /* Event is reset automatically */
-                  FALSE, /* Event is not put in a signaled state
-                            upon creation */
-                  0)))   /* No name */
-        {
+        binding->event.handle = CreateEvent(
+            0,     /* No security attributes */
+            FALSE, /* Event is reset automatically */
+            FALSE, /* Event is not put in a signaled state upon creation */
+            0);    /* No name */
+        if (!binding->event.handle)
             OE_RAISE_MSG(OE_FAILURE, "CreateEvent failed", NULL);
-        }
     }
 
 #endif
