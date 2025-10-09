@@ -75,6 +75,9 @@ oe_result_t oe_verify_quote_with_tdx_endorsements(
         MAX_SUPPLEMENTAL_DATA_SIZE,
         &supplemental_data_size_out));
 
+    OE_TRACE_INFO(
+        "collateral_expiration_status: %d\n", collateral_expiration_status);
+
     if (verification_result)
         *verification_result = quote_verification_result;
 
@@ -92,7 +95,17 @@ oe_result_t oe_verify_quote_with_tdx_endorsements(
         *supplemental_data_size = supplemental_data_size_out;
     }
 
-    result = OE_OK;
+    if (collateral_expiration_status == 0)
+    {
+        result = OE_OK;
+    }
+    else
+    {
+        OE_TRACE_ERROR(
+            "Collateral possibly expired! Expected status: 0, got: %u\n",
+            collateral_expiration_status);
+        result = OE_VERIFY_FAILED;
+    }
 
 done:
     return result;
