@@ -13,6 +13,16 @@
 static const oe_uuid_t oe_format_default = {OE_FORMAT_UUID_SGX_ECDSA};
 static const oe_uuid_t _tdx_quote_uuid = {OE_FORMAT_UUID_TDX_QUOTE_ECDSA};
 
+#ifdef OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
+// Pre-production (SBX) root certificate for Intel DCAP
+// Use this for testing with sandbox/pre-production platforms
+const char* _trusted_root_key_pem =
+    "-----BEGIN PUBLIC KEY-----\n"
+    "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAET/oP/VYc2tbA+Y0wjIEoxbknonMy\n"
+    "yOjrE/a+QrVx1kZvU8ZE/8L/wQKCIOSaSWbPAvMuL7TTSbssuu0okDegLQ==\n"
+    "-----END PUBLIC KEY-----\n";
+#endif
+
 typedef struct _evidence_uuid_desc
 {
     const char* name;
@@ -125,13 +135,23 @@ oe_result_t print_and_verify_claims(
     oe_claim_t* claims,
     size_t claims_length)
 {
-    fprintf(stdout, "Claims:\n");
+    fprintf(stdout, "Claims (%zu total):\n", claims_length);
     for (size_t i = 0; i < claims_length; i++)
     {
         oe_claim_t* claim = &claims[i];
+
+        // Print claim name and size for all claims
+        fprintf(
+            stdout,
+            "  [%zu] %s (%zu bytes): ",
+            i,
+            claim->name,
+            claim->value_size);
+
         if (strcmp(claim->name, OE_CLAIM_SECURITY_VERSION) == 0)
         {
             uint32_t security_version = *(uint32_t*)(claim->value);
+            fprintf(stdout, "%u\n", security_version);
             // Check the enclave's security version
             if (memcmp(format, &_tdx_quote_uuid, sizeof(oe_uuid_t)) &&
                 security_version < 1)
@@ -153,7 +173,7 @@ oe_result_t print_and_verify_claims(
             strcmp(claim->name, OE_CLAIM_SGX_REPORT_DATA) == 0 ||
             strcmp(claim->name, OE_CLAIM_TCB_STATUS) == 0)
         {
-            fprintf(stdout, "Enclave %s: 0x", claim->name);
+            fprintf(stdout, "0x");
             for (size_t j = 0; j < claim->value_size; j++)
             {
                 fprintf(stdout, "%02x", claim->value[j]);
@@ -163,7 +183,7 @@ oe_result_t print_and_verify_claims(
         // Also dump custom claims individually if any
         else if (strcmp(claim->name, OE_CLAIM_CUSTOM_CLAIMS_BUFFER) == 0)
         {
-            fprintf(stdout, "Custom claims:\n");
+            fprintf(stdout, "\n  Custom claims:\n");
             oe_result_t result = OE_FAILURE;
             oe_claim_t* custom_claims = NULL;
             size_t custom_claims_length = 0;
@@ -182,7 +202,7 @@ oe_result_t print_and_verify_claims(
 
             for (size_t j = 0; j < custom_claims_length; j++)
             {
-                fprintf(stdout, "%s: 0x", custom_claims[j].name);
+                fprintf(stdout, "    %s: 0x", custom_claims[j].name);
                 for (size_t k = 0; k < custom_claims[j].value_size; k++)
                 {
                     fprintf(stdout, "%02x", custom_claims[j].value[k]);
@@ -191,6 +211,16 @@ oe_result_t print_and_verify_claims(
             }
 
             oe_free_custom_claims(custom_claims, custom_claims_length);
+        }
+        // For any other claim type, print as hex
+        else
+        {
+            fprintf(stdout, "0x");
+            for (size_t j = 0; j < claim->value_size; j++)
+            {
+                fprintf(stdout, "%02x", claim->value[j]);
+            }
+            fprintf(stdout, "\n");
         }
     }
 

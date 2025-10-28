@@ -409,6 +409,58 @@ if (CMAKE_C_COMPILER_ID MATCHES GNU)
   target_compile_options(oehostverify PRIVATE -Wjump-misses-init)
 endif ()
 
+# Build oehostverify_prerelease (with support for pre-production/ certificates)
+add_library(oehostverify_prerelease STATIC ${PLATFORM_HOST_ONLY_SRC})
+target_link_libraries(oehostverify_prerelease PUBLIC oe_includes)
+target_compile_definitions(oehostverify_prerelease PUBLIC OE_BUILD_HOST_VERIFY)
+# Enable internal TDX verification with custom root certificates
+target_compile_definitions(oehostverify_prerelease
+                           PUBLIC OEUTIL_TCB_ALLOW_ANY_ROOT_KEY)
+target_compile_definitions(
+  oehostverify_prerelease
+  PUBLIC # NOTE: This definition is public to the rest of our project's
+         # targets, but should not be exposed to consumers of our
+         # package.
+         $<BUILD_INTERFACE:OE_API_VERSION=2>
+  PRIVATE OE_BUILD_UNTRUSTED OE_REPO_BRANCH_NAME="${GIT_BRANCH}"
+          OE_REPO_LAST_COMMIT="${GIT_COMMIT}")
+
+if (OE_SGX)
+  target_include_directories(
+    oehostverify_prerelease
+    PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/sgxsdk/include)
+endif ()
+
+if (UNIX)
+  target_link_libraries(
+    oehostverify_prerelease PRIVATE openenclave::crypto openenclave::dl
+                                    Threads::Threads)
+  target_compile_options(
+    oehostverify_prerelease
+    PRIVATE -Wno-attributes -Wmissing-prototypes -fPIC ${PLATFORM_FLAGS}
+    PUBLIC -fstack-protector-strong)
+  target_compile_definitions(
+    oehostverify_prerelease
+    PRIVATE _GNU_SOURCE
+    PUBLIC $<$<NOT:$<CONFIG:debug>>:_FORTIFY_SOURCE=2>)
+  target_link_libraries(oehostverify_prerelease INTERFACE -Wl,-z,noexecstack
+                                                          -rdynamic)
+elseif (WIN32)
+  target_include_directories(
+    oehostverify_prerelease
+    PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
+  target_link_libraries(oehostverify_prerelease PRIVATE bcrypt Crypt32)
+endif ()
+
+if (WITH_EEID)
+  target_compile_definitions(oehostverify_prerelease
+                             PRIVATE OE_WITH_EXPERIMENTAL_EEID)
+endif ()
+
+if (CMAKE_C_COMPILER_ID MATCHES GNU)
+  target_compile_options(oehostverify_prerelease PRIVATE -Wjump-misses-init)
+endif ()
+
 # Install oehostverify
 if (WIN32)
   # Install .pdb files to enable stepping into oehost srcs for Debug

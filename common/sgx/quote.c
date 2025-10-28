@@ -3,6 +3,7 @@
 
 #include "quote.h"
 #include <openenclave/attestation/sgx/evidence.h>
+#include <openenclave/attestation/tdx/evidence.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/bits/tdx/tdxquote.h>
 #include <openenclave/internal/crypto/cert.h>
@@ -184,6 +185,163 @@ static oe_result_t _parse_quote(
 done:
     return result;
 }
+
+#ifdef OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
+// Parse TDX quote (v4 or v5) and extract certification data
+static oe_result_t _parse_tdx_quote(
+    const uint8_t* quote,
+    size_t quote_size,
+    tdx_quote_t** tdx_quote,
+    tdx_quote_auth_data_t** quote_auth_data,
+    sgx_qe_auth_data_t* qe_auth_data,
+    sgx_qe_cert_data_t* qe_cert_data)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    const uint8_t* p = quote;
+    tdx_quote_t* _tdx_quote = (tdx_quote_t*)p;
+    const uint8_t* const quote_end = quote + quote_size;
+
+    if (quote_end < p)
+        // Pointer wrapped around.
+        OE_RAISE_MSG(
+            OE_REPORT_PARSE_ERROR,
+            "TDX quote parsing error. Pointer wrapped around.",
+            NULL);
+
+    // Determine quote version and size of fixed header
+    size_t quote_body_end;
+    uint32_t signature_len;
+
+    if (_tdx_quote->version == 4)
+    {
+        quote_body_end = sizeof(tdx_quote_t);
+        signature_len = _tdx_quote->signature_len;
+    }
+    else if (_tdx_quote->version == 5)
+    {
+        // Version 5 has variable body size
+        tdx_quote_v5_t* v5_quote = (tdx_quote_v5_t*)p;
+        quote_body_end = sizeof(tdx_quote_v5_t) + v5_quote->size;
+        // signature_len is right after the variable body
+        const uint8_t* sig_len_ptr = (const uint8_t*)v5_quote + quote_body_end;
+        signature_len = ReadUint32(sig_len_ptr);
+        quote_body_end += 4; // Add signature_len field size
+    }
+    else
+    {
+        OE_RAISE_MSG(
+            OE_REPORT_PARSE_ERROR, "Unsupported TDX quote version.", NULL);
+    }
+
+    p += quote_body_end;
+
+    if (p > quote_end)
+        OE_RAISE_MSG(
+            OE_REPORT_PARSE_ERROR,
+            "Parse error after parsing TDX quote header.",
+            NULL);
+
+    if (p + signature_len != quote_end)
+        OE_RAISE_MSG(
+            OE_REPORT_PARSE_ERROR,
+            "Parse error: TDX signature length mismatch.",
+            NULL);
+
+    // Parse authentication data
+    // tdx_quote_auth_data_t has signature and attestation_key (128 bytes total)
+    // The certification_data[] is a flexible array member at the end
+    if (quote_auth_data)
+        *quote_auth_data = (tdx_quote_auth_data_t*)p;
+
+    // Move past signature (64) and attestation_key (64) = 128 bytes total
+    p += sizeof(tdx_quote_auth_data_t);
+
+    // Now p points to certification_data[] which contains
+    // tdx_qe_report_certification_data_t:
+    //   - tdx_qe_certification_data_t: 6 bytes
+    //   - qe_report_body (sgx_report_body_t, 384 bytes)
+    //   - signature (sgx_ecdsa256_signature_t, 64 bytes)
+    //   - auth_certification_data[] (variable):
+    //       - qe_auth_data_size (2 bytes)
+    //       - qe_auth_data (variable)
+    //       - qe_cert_data_type (2 bytes)
+    //       - qe_cert_data_size (4 bytes)
+    //       - qe_cert_data (variable)
+
+    if (p + sizeof(tdx_qe_certification_data_t) > quote_end)
+        OE_RAISE_MSG(
+            OE_REPORT_PARSE_ERROR,
+            "TDX quote data size too small to contain certification data.",
+            NULL);
+
+    tdx_qe_certification_data_t* cert_data = (tdx_qe_certification_data_t*)p;
+    cert_data->type = ReadUint16(p);
+    p += 2;
+    cert_data->size = ReadUint32(p);
+    p += 4;
+
+    // Validation: Check cert data type (should be 6 for QE report)
+    if (cert_data->type != TDX_QE_CERTIFICATION_DATA_TYPE_QE_REPORT)
+        OE_RAISE_MSG(
+            OE_REPORT_PARSE_ERROR,
+            "Invalid TDX QE certification data type.",
+            NULL);
+
+    if (p + cert_data->size != quote_end)
+        OE_RAISE_MSG(
+            OE_REPORT_PARSE_ERROR,
+            "TDX QE certification data size mismatch.",
+            NULL);
+
+    // Now parse the QE report body and signature
+    // Note: We can't use tdx_qe_report_certification_data_t directly because
+    // of the 6-byte prefix
+    p += sizeof(sgx_report_body_t);        // 384 bytes
+    p += sizeof(sgx_ecdsa256_signature_t); // 64 bytes
+    // Now at offset: 706 + 128 + 6 + 384 + 64 = 1288
+
+    // Parse qe_auth_data
+    qe_auth_data->size = ReadUint16(p);
+    p += 2;
+    qe_auth_data->data = (uint8_t*)p;
+    p += qe_auth_data->size;
+
+    if (p > quote_end)
+        OE_RAISE_MSG(
+            OE_REPORT_PARSE_ERROR,
+            "Parse error after parsing TDX QE authorization data.",
+            NULL);
+
+    // Parse QE cert data (certificate chain)
+    qe_cert_data->type = ReadUint16(p);
+    p += 2;
+    qe_cert_data->size = ReadUint32(p);
+    p += 4;
+    qe_cert_data->data = (uint8_t*)p;
+    p += qe_cert_data->size;
+
+    if (p != quote_end)
+        OE_RAISE_MSG(
+            OE_REPORT_PARSE_ERROR,
+            "Unexpected TDX quote length while parsing.",
+            NULL);
+
+    // Validation: Check cert data type (should be 5 for PCK cert chain)
+    if (qe_cert_data->type != TDX_QE_CERTIFICATION_DATA_TYPE_PCK_CERT_CHAIN)
+        OE_RAISE_MSG(
+            OE_REPORT_PARSE_ERROR,
+            "Invalid TDX QE certificate data type.",
+            NULL);
+
+    if (tdx_quote)
+        *tdx_quote = _tdx_quote;
+
+    result = OE_OK;
+done:
+    return result;
+}
+#endif // OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
 
 static oe_result_t _read_public_key(
     sgx_ecdsa256_key_t* key,
@@ -447,6 +605,232 @@ done:
     oe_cert_chain_free(&pck_cert_chain);
     return result;
 }
+
+#ifdef OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
+// Internal TDX quote verification using OE's certificate validation
+// instead of Intel QVL library. This allows using pre-production root
+// certificates.
+oe_result_t oe_verify_tdx_quote_internal(
+    const uint8_t* quote,
+    size_t quote_size)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    tdx_quote_t* tdx_quote = NULL;
+    tdx_quote_auth_data_t* quote_auth_data = NULL;
+    sgx_qe_auth_data_t qe_auth_data = {0};
+    sgx_qe_cert_data_t qe_cert_data = {0};
+    oe_cert_chain_t pck_cert_chain = {0};
+    oe_sha256_context_t sha256_ctx = {0};
+    OE_SHA256 sha256 = {0};
+    oe_ec_public_key_t attestation_key = {0};
+    oe_cert_t leaf_cert = {0};
+    oe_cert_t root_cert = {0};
+    oe_cert_t intermediate_cert = {0};
+    oe_ec_public_key_t leaf_public_key = {0};
+    oe_ec_public_key_t root_public_key = {0};
+    oe_ec_public_key_t expected_root_public_key = {0};
+    bool key_equal = false;
+
+    uint8_t* pem_pck_certificate = NULL;
+    size_t pem_pck_certificate_size = 0;
+
+    OE_TRACE_INFO("TDX quote internal verification (bypassing Intel QVL)");
+
+    OE_CHECK_MSG(
+        _parse_tdx_quote(
+            quote,
+            quote_size,
+            &tdx_quote,
+            &quote_auth_data,
+            &qe_auth_data,
+            &qe_cert_data),
+        "Failed to parse TDX quote. %s",
+        oe_result_str(result));
+
+    pem_pck_certificate = qe_cert_data.data;
+    pem_pck_certificate_size = qe_cert_data.size;
+
+    // PCK Certificate Chain validations (same as SGX)
+    {
+        // Read and validate the chain.
+        OE_CHECK_MSG(
+            oe_cert_chain_read_pem(
+                &pck_cert_chain, pem_pck_certificate, pem_pck_certificate_size),
+            "Failed to parse TDX certificate chain.",
+            NULL);
+
+        // Fetch leaf and root certificates.
+        OE_CHECK_MSG(
+            oe_cert_chain_get_leaf_cert(&pck_cert_chain, &leaf_cert),
+            "Failed to get TDX leaf certificate.",
+            NULL);
+        OE_CHECK_MSG(
+            oe_cert_chain_get_root_cert(&pck_cert_chain, &root_cert),
+            "Failed to get TDX root certificate.",
+            NULL);
+        OE_CHECK_MSG(
+            oe_cert_chain_get_cert(&pck_cert_chain, 1, &intermediate_cert),
+            "Failed to get TDX intermediate certificate.",
+            NULL);
+
+        // Get public keys.
+        OE_CHECK_MSG(
+            oe_cert_get_ec_public_key(&leaf_cert, &leaf_public_key),
+            "Failed to get TDX leaf cert public key.",
+            NULL);
+        OE_CHECK_MSG(
+            oe_cert_get_ec_public_key(&root_cert, &root_public_key),
+            "Failed to get TDX root cert public key.",
+            NULL);
+
+        // Ensure that the root certificate matches root of trust.
+        OE_CHECK_MSG(
+            oe_ec_public_key_read_pem(
+                &expected_root_public_key,
+                (const uint8_t*)_trusted_root_key_pem,
+                oe_strlen(_trusted_root_key_pem) + 1),
+            "Failed to read expected TDX root cert key.",
+            NULL);
+        OE_CHECK_MSG(
+            oe_ec_public_key_equal(
+                &root_public_key, &expected_root_public_key, &key_equal),
+            "Failed to compare TDX keys.",
+            NULL);
+
+        if (!key_equal)
+        {
+            // Convert public keys to PEM format for logging.
+            uint8_t* key = NULL;
+            size_t key_size = 0;
+
+            oe_result_t ret =
+                _ec_public_key_write_pem(&root_public_key, &key, &key_size);
+
+            if (ret == OE_OK)
+            {
+                OE_TRACE_VERBOSE(
+                    "Expected TDX root public key:\n%s\nActual TDX root public "
+                    "key:\n%s\n",
+                    _trusted_root_key_pem,
+                    key);
+            }
+            else
+            {
+                OE_TRACE_ERROR(
+                    "Failed to convert TDX public key to PEM format. "
+                    "error=%s\n",
+                    oe_result_str(ret));
+            }
+
+            oe_free(key);
+
+            OE_RAISE_MSG(
+                OE_QUOTE_VERIFICATION_ERROR,
+                "Failed to verify TDX root public key.",
+                NULL);
+        }
+    }
+
+    // TDX Quote signature validations
+    // We calculated pointers to QE report and signature during parsing
+    // Reconstruct them here
+    const uint8_t* cert_data_start =
+        (const uint8_t*)quote_auth_data + sizeof(tdx_quote_auth_data_t);
+    const uint8_t* qe_report_ptr =
+        cert_data_start + sizeof(tdx_qe_certification_data_t);
+    const uint8_t* qe_sig_ptr = qe_report_ptr + sizeof(sgx_report_body_t);
+
+    sgx_report_body_t* qe_report_body = (sgx_report_body_t*)qe_report_ptr;
+    sgx_ecdsa256_signature_t* qe_signature =
+        (sgx_ecdsa256_signature_t*)qe_sig_ptr;
+
+    {
+        // Verify SHA256 ECDSA (qe_report_body_signature, qe_report_body,
+        // PckCertificate.pub_key)
+        OE_CHECK_MSG(
+            _ecdsa_verify(
+                &leaf_public_key,
+                qe_report_body,
+                sizeof(sgx_report_body_t),
+                qe_signature),
+            "TDX QE report signature validation using PCK public key + SHA256 "
+            "ECDSA",
+            NULL);
+
+        // Assert SHA256 (attestation_key + qe_auth_data.data) ==
+        // qe_report_body.report_data[0..32]
+        OE_CHECK(oe_sha256_init(&sha256_ctx));
+        OE_CHECK(oe_sha256_update(
+            &sha256_ctx,
+            (const uint8_t*)&quote_auth_data->attestation_key,
+            sizeof(quote_auth_data->attestation_key)));
+        if (qe_auth_data.size > 0)
+            OE_CHECK(oe_sha256_update(
+                &sha256_ctx, qe_auth_data.data, qe_auth_data.size));
+        OE_CHECK(oe_sha256_final(&sha256_ctx, &sha256));
+
+        if (!oe_constant_time_mem_equal(
+                &sha256, &qe_report_body->report_data, sizeof(sha256)))
+            OE_RAISE_MSG(
+                OE_QUOTE_VERIFICATION_ERROR,
+                "TDX QE report data hash mismatch.",
+                NULL);
+
+        // Verify the TDX report signature (attestation_key signs the TDX report
+        // body)
+        OE_CHECK_MSG(
+            _read_public_key(
+                &quote_auth_data->attestation_key, &attestation_key),
+            "Failed to read TDX attestation key.",
+            NULL);
+
+        // For TDX v4, the report body starts at offset 48
+        // For TDX v5, it's at offset 54 + variable header
+        void* report_body_ptr;
+        size_t report_body_size;
+
+        if (tdx_quote->version == 4)
+        {
+            report_body_ptr = &tdx_quote->report_body;
+            report_body_size = sizeof(tdx_report_body_t);
+        }
+        else // version 5
+        {
+            tdx_quote_v5_t* v5_quote = (tdx_quote_v5_t*)tdx_quote;
+            report_body_ptr = v5_quote->body;
+            report_body_size = v5_quote->size;
+        }
+
+        size_t offset_to_body =
+            (size_t)((uint8_t*)report_body_ptr - (uint8_t*)tdx_quote);
+        size_t signed_data_size = offset_to_body + report_body_size;
+
+        OE_CHECK_MSG(
+            _ecdsa_verify(
+                &attestation_key,
+                tdx_quote,
+                signed_data_size,
+                &quote_auth_data->signature),
+            "TDX report signature validation using attestation key + SHA256 "
+            "ECDSA",
+            NULL);
+    }
+
+    OE_TRACE_INFO("TDX quote internal verification succeeded");
+    result = OE_OK;
+
+done:
+    oe_ec_public_key_free(&leaf_public_key);
+    oe_ec_public_key_free(&root_public_key);
+    oe_ec_public_key_free(&expected_root_public_key);
+    oe_ec_public_key_free(&attestation_key);
+    oe_cert_free(&leaf_cert);
+    oe_cert_free(&root_cert);
+    oe_cert_free(&intermediate_cert);
+    oe_cert_chain_free(&pck_cert_chain);
+    return result;
+}
+#endif // OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
 
 oe_result_t oe_get_quote_cert_chain_internal(
     const uint8_t* quote,

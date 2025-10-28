@@ -19,6 +19,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `SGX_QL_EPHEMERAL_QVE_MULTI_THREAD` - QvE is loaded per thread and be unloaded before function exit.
   - `SGX_QL_PERSISTENT_QVE_MULTI_THREAD` - QvE is loaded per thread and only be unloaded before thread exit.
 
+- Supported the following new claims for TDX Quote v1.5 verification
+  - `tdx_td_attributes_perf_prof`
+  - `tdx_td_attributes_pmt_prof`
+  - `tdx_td_attributes_icssd`
+  - `tdx_td_attributes_servtd_ext`
+  - `tdx_td_attributes_lass`
+  - `tdx_td_attributes_migratable`
+
 [v0.19.0][v0.19.0_log]
 --------------
 ### Added

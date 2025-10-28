@@ -271,11 +271,59 @@ static oe_result_t _fill_with_known_tdx_claims(
         attributes,
         sizeof(tdx_attributes_t)));
 
-    flag = !!attributes->tud.d.debug;
+    flag = !!attributes->tud_tup.d.debug;
     OE_CHECK(_add_claim(
         &claims[claims_index++],
         OE_CLAIM_TDX_TD_ATTRIBUTES_DEBUG,
         sizeof(OE_CLAIM_TDX_TD_ATTRIBUTES_DEBUG),
+        &flag,
+        sizeof(flag)));
+
+    flag = !!attributes->tud_tup.d.hgs_plus_prof;
+    OE_CHECK(_add_claim(
+        &claims[claims_index++],
+        OE_CLAIM_TDX_TD_ATTRIBUTES_HGS_PLUS_PROF,
+        sizeof(OE_CLAIM_TDX_TD_ATTRIBUTES_HGS_PLUS_PROF),
+        &flag,
+        sizeof(flag)));
+
+    flag = !!attributes->tud_tup.d.perf_prof;
+    OE_CHECK(_add_claim(
+        &claims[claims_index++],
+        OE_CLAIM_TDX_TD_ATTRIBUTES_PERF_PROF,
+        sizeof(OE_CLAIM_TDX_TD_ATTRIBUTES_PERF_PROF),
+        &flag,
+        sizeof(flag)));
+
+    flag = !!attributes->tud_tup.d.pmt_prof;
+    OE_CHECK(_add_claim(
+        &claims[claims_index++],
+        OE_CLAIM_TDX_TD_ATTRIBUTES_PMT_PROF,
+        sizeof(OE_CLAIM_TDX_TD_ATTRIBUTES_PMT_PROF),
+        &flag,
+        sizeof(flag)));
+
+    flag = !!attributes->sec.d.icssd;
+    OE_CHECK(_add_claim(
+        &claims[claims_index++],
+        OE_CLAIM_TDX_TD_ATTRIBUTES_ICSSD,
+        sizeof(OE_CLAIM_TDX_TD_ATTRIBUTES_ICSSD),
+        &flag,
+        sizeof(flag)));
+
+    flag = !!attributes->sec.d.servtd_ext;
+    OE_CHECK(_add_claim(
+        &claims[claims_index++],
+        OE_CLAIM_TDX_TD_ATTRIBUTES_SERVTD_EXT,
+        sizeof(OE_CLAIM_TDX_TD_ATTRIBUTES_SERVTD_EXT),
+        &flag,
+        sizeof(flag)));
+
+    flag = !!attributes->sec.d.lass;
+    OE_CHECK(_add_claim(
+        &claims[claims_index++],
+        OE_CLAIM_TDX_TD_ATTRIBUTES_LASS,
+        sizeof(OE_CLAIM_TDX_TD_ATTRIBUTES_LASS),
         &flag,
         sizeof(flag)));
 
@@ -284,6 +332,14 @@ static oe_result_t _fill_with_known_tdx_claims(
         &claims[claims_index++],
         OE_CLAIM_TDX_TD_ATTRIBUTES_SEPT_VE_DISABLE,
         sizeof(OE_CLAIM_TDX_TD_ATTRIBUTES_SEPT_VE_DISABLE),
+        &flag,
+        sizeof(flag)));
+
+    flag = !!attributes->sec.d.migratable;
+    OE_CHECK(_add_claim(
+        &claims[claims_index++],
+        OE_CLAIM_TDX_TD_ATTRIBUTES_MIGRATABLE,
+        sizeof(OE_CLAIM_TDX_TD_ATTRIBUTES_MIGRATABLE),
         &flag,
         sizeof(flag)));
 

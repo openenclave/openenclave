@@ -121,6 +121,20 @@ oe_result_t oe_get_sgx_quote_validity(
     oe_datetime_t* valid_from,
     oe_datetime_t* valid_until);
 
+#ifdef OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
+/*!
+ * Internal TDX quote verification bypassing Intel QVL.
+ * Uses OE's certificate validation with custom root certificate.
+ * Only available when OEUTIL_TCB_ALLOW_ANY_ROOT_KEY is defined.
+ *
+ * @param[in] quote Input TDX quote.
+ * @param[in] quote_size The size of the quote.
+ */
+oe_result_t oe_verify_tdx_quote_internal(
+    const uint8_t* quote,
+    size_t quote_size);
+#endif
+
 OE_EXTERNC_END
 
 #endif // _OE_COMMON_QUOTE_H

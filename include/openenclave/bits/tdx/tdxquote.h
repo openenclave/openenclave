@@ -22,22 +22,30 @@ typedef struct _tdx_attributes_t
         struct
         {
             uint8_t debug : 1;
-            uint8_t reserved : 7;
+            uint8_t reserved0 : 3;
+            uint8_t hgs_plus_prof : 1;
+            uint8_t perf_prof : 1;
+            uint8_t pmt_prof : 1;
+            uint8_t reserved1 : 1;
+            uint8_t reserved2;
         } d;
-        uint8_t u;
-    } tud;
+        uint8_t u[2];
+    } tud_tup;
     union
     {
         struct
         {
-            uint8_t reserved0[2];
-            uint8_t reserved1 : 4;
+            uint8_t icssd : 1;
+            uint8_t servtd_ext : 1;
+            uint8_t reserved0 : 6;
+            uint8_t reserved1 : 3;
+            uint8_t lass : 1;
             uint8_t sept_ve_disable : 1;
-            uint8_t reserved2 : 1;
+            uint8_t migratable : 1;
             uint8_t pks : 1;
             uint8_t kl : 1;
         } d;
-        uint8_t u[3];
+        uint8_t u[2];
     } sec;
     union
     {
@@ -253,6 +261,23 @@ OE_PACK_END
 OE_STATIC_ASSERT(OE_OFFSETOF(tdx_quote_auth_data_t, signature) == 0);
 OE_STATIC_ASSERT(OE_OFFSETOF(tdx_quote_auth_data_t, attestation_key) == 64);
 OE_STATIC_ASSERT(sizeof(tdx_quote_auth_data_t) == 128);
+
+#define TDX_QE_CERTIFICATION_DATA_TYPE_PCK_CERT_CHAIN 5
+#define TDX_QE_CERTIFICATION_DATA_TYPE_QE_REPORT 6
+
+OE_PACK_BEGIN
+typedef struct _tdx_qe_certification_data_t
+{
+    /* (0) Certification Data Type */
+    uint16_t type;
+
+    /* (2) Certification Data Size */
+    uint32_t size;
+
+    /* Place holder for tdx_qe_report_certification_data_t */
+    uint8_t certification_data[];
+} tdx_qe_certification_data_t;
+OE_PACK_END
 
 OE_PACK_BEGIN
 typedef struct _tdx_qe_report_certification_data_t

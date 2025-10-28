@@ -24,8 +24,16 @@ OE_EXTERNC_BEGIN
 #define OE_CLAIM_TDX_SEAM_ATTRIBUTES "tdx_seam_attributes"
 #define OE_CLAIM_TDX_TD_ATTRIBUTES "tdx_td_attributes"
 #define OE_CLAIM_TDX_TD_ATTRIBUTES_DEBUG "tdx_td_attributes_debug"
+#define OE_CLAIM_TDX_TD_ATTRIBUTES_HGS_PLUS_PROF \
+    "tdx_td_attributes_hgs_plus_prof"
+#define OE_CLAIM_TDX_TD_ATTRIBUTES_PERF_PROF "tdx_td_attributes_perf_prof"
+#define OE_CLAIM_TDX_TD_ATTRIBUTES_PMT_PROF "tdx_td_attributes_pmt_prof"
+#define OE_CLAIM_TDX_TD_ATTRIBUTES_ICSSD "tdx_td_attributes_icssd"
+#define OE_CLAIM_TDX_TD_ATTRIBUTES_SERVTD_EXT "tdx_td_attributes_servtd_ext"
+#define OE_CLAIM_TDX_TD_ATTRIBUTES_LASS "tdx_td_attributes_lass"
 #define OE_CLAIM_TDX_TD_ATTRIBUTES_SEPT_VE_DISABLE \
     "tdx_td_attributes_septve_disable"
+#define OE_CLAIM_TDX_TD_ATTRIBUTES_MIGRATABLE "tdx_td_attributes_migratable"
 #define OE_CLAIM_TDX_TD_ATTRIBUTES_PROTECTION_KEYS \
     "tdx_td_attributes_protection_keys"
 #define OE_CLAIM_TDX_TD_ATTRIBUTES_KEY_LOCKER "tdx_td_attributes_key_locker"
@@ -42,7 +50,7 @@ OE_EXTERNC_BEGIN
 #define OE_CLAIM_TDX_REPORT_DATA "tdx_report_data"
 #define OE_CLAIM_TDX_TEE_TCB_SVN_2 "tdx_tee_tcb_svn_2"
 #define OE_CLAIM_TDX_MRSERVICETD "tdx_mrservicetd"
-#define OE_TDX_REQUIRED_CLAIMS_COUNT 22
+#define OE_TDX_REQUIRED_CLAIMS_COUNT 29
 
 /*
  * Additional claims from other sources (e.g., data returned by QvE/QVL)

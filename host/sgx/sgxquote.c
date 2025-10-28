@@ -1729,6 +1729,36 @@ done:
     return result;
 }
 
+static oe_result_t _free_tdx_quote_verification_collateral(
+    uint8_t* p_quote_collateral)
+{
+    quote3_error_t error = SGX_QL_ERROR_UNEXPECTED;
+    oe_result_t result = OE_FAILURE;
+
+    if (!p_quote_collateral)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    // Always use QvE/QVL for TDX verification
+    if (!_load_tdx_dcap_qvl())
+        OE_RAISE(OE_PLATFORM_ERROR);
+
+    error = _tee_qv_free_collateral(p_quote_collateral);
+
+    if (error != SGX_QL_SUCCESS)
+    {
+        OE_RAISE_MSG(
+            result,
+            "Fail to free TDX quote collateral "
+            "quote3_error_t=%s\n",
+            get_quote3_error_t_string(error));
+    }
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
 oe_result_t oe_get_tdx_quote_verification_collateral(
     const uint8_t* p_quote,
     uint32_t quote_size,
@@ -1772,36 +1802,14 @@ oe_result_t oe_get_tdx_quote_verification_collateral(
     result = OE_OK;
 
 done:
-    oe_free_tdx_quote_verification_collateral(p_collateral);
+    _free_tdx_quote_verification_collateral(p_collateral);
     return result;
 }
 
 oe_result_t oe_free_tdx_quote_verification_collateral(
     uint8_t* p_quote_collateral)
 {
-    quote3_error_t error = SGX_QL_ERROR_UNEXPECTED;
-    oe_result_t result = OE_FAILURE;
+    free(p_quote_collateral);
 
-    if (!p_quote_collateral)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    // Always use QvE/QVL for TDX verification
-    if (!_load_tdx_dcap_qvl())
-        OE_RAISE(OE_PLATFORM_ERROR);
-
-    error = _tee_qv_free_collateral(p_quote_collateral);
-
-    if (error != SGX_QL_SUCCESS)
-    {
-        OE_RAISE_MSG(
-            result,
-            "Fail to free TDX quote collateral "
-            "quote3_error_t=%s\n",
-            get_quote3_error_t_string(error));
-    }
-
-    result = OE_OK;
-
-done:
-    return result;
+    return OE_OK;
 }

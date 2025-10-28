@@ -7,11 +7,13 @@
 #include "oeutil_u.h"
 
 #include "generate_evidence.h"
+#include "get_endorsements.h"
 #include "parse_args_helper.h"
 
 FILE* log_file = nullptr;
 
 #define COMMAND_GENERATE_EVIDENCE "generate-evidence"
+#define COMMAND_GET_ENDORSEMENTS "get-endorsements"
 
 typedef enum _oeutil_command
 {
@@ -20,6 +22,10 @@ typedef enum _oeutil_command
      * Generate evidence, a report, or a certificate.
      */
     OEUTIL_GENERATE_EVIDENCE = 1,
+    /**
+     * Get endorsements for TDX evidence.
+     */
+    OEUTIL_GET_ENDORSEMENTS = 2,
 
 } oeutil_command_t;
 
@@ -30,6 +36,9 @@ static void _display_help(const char* command)
     printf(
         "\t1. %s: generate evidence, a report, or a certificate.\n",
         COMMAND_GENERATE_EVIDENCE);
+    printf(
+        "\t2. %s: get endorsements for input TDX evidence.\n",
+        COMMAND_GET_ENDORSEMENTS);
     printf("Options:\n\tType oeutil <command> --help for more information\n");
 }
 
@@ -46,6 +55,11 @@ static oeutil_command_t _get_oeutil_command(int argc, const char* argv[])
     if (strncasecmp(COMMAND_GENERATE_EVIDENCE, argv[1], strlen(argv[1])) == 0)
     {
         command_type = OEUTIL_GENERATE_EVIDENCE;
+    }
+    else if (
+        strncasecmp(COMMAND_GET_ENDORSEMENTS, argv[1], strlen(argv[1])) == 0)
+    {
+        command_type = OEUTIL_GET_ENDORSEMENTS;
     }
     else
     {
@@ -66,6 +80,9 @@ int main(int argc, const char* argv[])
     {
         case OEUTIL_GENERATE_EVIDENCE:
             ret = oeutil_generate_evidence(argc, argv);
+            break;
+        case OEUTIL_GET_ENDORSEMENTS:
+            ret = oeutil_get_endorsements(argc, argv);
             break;
         default:
             _display_help(argv[0]);

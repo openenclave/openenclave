@@ -6,6 +6,7 @@
 #include <openenclave/internal/raise.h>
 
 #include "../common.h"
+#include "../sgx/quote.h"
 #include "quote.h"
 
 #ifdef OE_BUILD_ENCLAVE
@@ -17,7 +18,10 @@
 // Max length of SGX DCAP QVL/QvE returned supplemental data
 #define MAX_SUPPLEMENTAL_DATA_SIZE 1000
 
+#ifndef OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
+// UUID only needed for Intel QVL path
 static const oe_uuid_t _ecdsa_uuid = {OE_FORMAT_UUID_TDX_QUOTE_ECDSA};
+#endif
 
 oe_result_t oe_verify_quote_with_tdx_endorsements(
     const uint8_t* quote,
@@ -31,6 +35,35 @@ oe_result_t oe_verify_quote_with_tdx_endorsements(
 {
     oe_result_t result = OE_UNEXPECTED;
 
+#ifdef OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
+    // Unused parameters in internal verification path
+    OE_UNUSED(endorsements);
+    OE_UNUSED(endorsements_size);
+    OE_UNUSED(input_validation_time);
+
+    // Use OE's internal verification with custom root certificate
+    // instead of Intel QVL library for pre-production testing
+    OE_TRACE_INFO("Using internal TDX verification "
+                  "(OEUTIL_TCB_ALLOW_ANY_ROOT_KEY enabled)");
+
+    // Verify the quote using internal verification
+    OE_CHECK(oe_verify_tdx_quote_internal(quote, quote_size));
+
+    // Set verification result to success
+    if (verification_result)
+        *verification_result = 0; // Success
+
+    // Note: supplemental_data not supported in internal verification mode
+    if (supplemental_data && supplemental_data_size)
+    {
+        *supplemental_data = NULL;
+        *supplemental_data_size = 0;
+    }
+
+    result = OE_OK;
+
+#else
+    // Use Intel QVL library for production verification
     uint32_t collateral_expiration_status;
     uint32_t quote_verification_result;
     uint8_t supplemental_data_out[MAX_SUPPLEMENTAL_DATA_SIZE] = {0};
@@ -93,6 +126,7 @@ oe_result_t oe_verify_quote_with_tdx_endorsements(
     }
 
     result = OE_OK;
+#endif // OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
 
 done:
     return result;
