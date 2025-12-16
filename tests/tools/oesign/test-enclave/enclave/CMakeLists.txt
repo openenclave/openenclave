@@ -9,6 +9,8 @@ if (DEFAULT_TEST_ENCLAVE_CRYPTO_LIB_LOW STREQUAL "mbedtls")
   set(oecrypto_lib oecryptombedtls)
 elseif (DEFAULT_TEST_ENCLAVE_CRYPTO_LIB_LOW STREQUAL "openssl")
   set(oecrypto_lib oecryptoopenssl)
+elseif (DEFAULT_TEST_ENCLAVE_CRYPTO_LIB_LOW STREQUAL "openssl_3")
+  set(oecrypto_lib oecryptoopenssl_3)
 else ()
   message(
     FATAL_ERROR "Unsupported crypto library ${DEFAULT_TEST_ENCLAVE_CRYPTO_LIB}."
