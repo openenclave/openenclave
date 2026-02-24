@@ -54,3 +54,12 @@
     state: latest
     update_cache: yes
     install_recommends: no
+
+# Ignore AESMD service when in a Docker environment
+# AESMD should be used via /var/run/aesmd/aesm.socket from host environment
+- name: Ensure aesmd service running
+  ansible.builtin.service:
+    name: aesmd
+    state: started
+    enabled: yes
+  when: ansible_service_mgr == "systemd"

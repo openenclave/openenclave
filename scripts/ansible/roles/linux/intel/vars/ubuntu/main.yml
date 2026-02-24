@@ -2,12 +2,10 @@
 # Licensed under the MIT License.
 
 ---
-# PSW 2.25.100 and DCAP 1.22.100.3
-intel_sgx_psw_version: "2.25.100"
+# PSW 2.27.100 and DCAP 1.24.100.2
+intel_sgx_psw_version: "2.27.100"
 
 intel_dcap_driver_files:
-  - "/dev/sgx_provision"
-  - "/dev/sgx_enclave"
   - "/dev/sgx_provision"
   - "/dev/sgx_enclave"
 

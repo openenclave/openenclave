@@ -22,9 +22,10 @@ Param(
     [string]$Nuget6Hash = 'F2B2145244A3FE1E905599CFB3ADE38E3FCE0C00E73532BDE164EE4F8C8EDCEA',
     [string]$DevconURL = 'https://download.microsoft.com/download/7/D/D/7DD48DE6-8BDA-47C0-854A-539A800FAA90/wdk/Installers/787bee96dbd26371076b37b13c405890.cab',
     [string]$DevconHash = 'A38E409617FC89D0BA1224C31E42AF4344013FEA046D2248E4B9E03F67D5908A',
-    # Intel PSW 2.23.100.3 is included in DCAP 1.21.100.3
-    [string]$IntelDCAPURL = 'https://downloadmirror.intel.com/834564/Intel_SGX_DCAP_for_Windows_v1.22.100.3.zip',
-    [string]$IntelDCAPHash = 'E65061221BF22C1C52E0AF9F610CE53288AA34543A0E152DA2FE755B7079EB93',
+    # Intel PSW 2.27.100.1 is included in DCAP 1.24.100.2
+    # For future releases see https://www.intel.com/content/www/us/en/download/683952/873879/intel-software-guard-extensions-intel-sgx-driver-and-data-center-attestation-primitives-intel-sgx-dcap.html
+    [string]$IntelDCAPURL = 'https://downloadmirror.intel.com/873879/Intel_SGX_DCAP_for_Windows_v1.24.100.2.zip',
+    [string]$IntelDCAPHash = '3F88534EB443F2629072E68D1C5E8D0144CA870275DDA6237657E966993B1B15',
     [string]$VCRuntime2012URL = 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe',
     [string]$VCRuntime2012Hash = '681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064',
     [string]$AzureDCAPNupkgURL = 'https://openenclavepublicstorage.blob.core.windows.net/openenclavedependencies/microsoft.azure.dcap.1.12.3.nupkg',
