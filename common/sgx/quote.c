@@ -103,6 +103,81 @@ done:
     return result;
 }
 
+// Parse sgx_qe_auth_data_t
+// Expect cur to point to the beginning of sgx_qe_auth_data_t
+// Will modify cur to point to the byte right after the parsed sgx_qe_auth_data_t
+static oe_result_t _parse_sgx_qe_auth_data_t(
+    const uint8_t** cur,
+    const uint8_t* buffer_end,
+    sgx_qe_auth_data_t* qe_auth_data)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    if ((size_t)(buffer_end - *cur) < sizeof(uint16_t))
+        OE_RAISE_MSG(
+            OE_REPORT_PARSE_ERROR,
+            "Parse error. Quote signature area is too small for QE auth data "
+            "size.",
+            NULL);
+
+    qe_auth_data->size = ReadUint16(*cur);
+    *cur += sizeof(uint16_t);
+
+    if ((size_t)(buffer_end - *cur) < qe_auth_data->size)
+        OE_RAISE_MSG(
+            OE_REPORT_PARSE_ERROR,
+            "Parse error after parsing QE authorization data.",
+            NULL);
+
+    qe_auth_data->data = (uint8_t*)*cur;
+    *cur += qe_auth_data->size;
+
+    result = OE_OK;
+done:
+    return result;
+}
+
+// Parse sgx_qe_cert_data_t
+// Expect cur to point to the beginning of sgx_qe_cert_data_t
+// Will modify cur to point to the byte right after the parsed sgx_qe_cert_data_t
+static oe_result_t _parse_sgx_qe_cert_data_t(
+    const uint8_t** cur,
+    const uint8_t* buffer_end,
+    sgx_qe_cert_data_t* qe_cert_data)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    if ((size_t)(buffer_end - *cur) < (sizeof(uint16_t) + sizeof(uint32_t)))
+        OE_RAISE_MSG(
+            OE_REPORT_PARSE_ERROR,
+            "Parse error. Quote signature area is too small for QE "
+            "certificate data header.",
+            NULL);
+
+    qe_cert_data->type = ReadUint16(*cur);
+    *cur += sizeof(uint16_t);
+    qe_cert_data->size = ReadUint32(*cur);
+    *cur += sizeof(uint32_t);
+
+    if ((size_t)(buffer_end - *cur) < qe_cert_data->size)
+        OE_RAISE_MSG(
+            OE_REPORT_PARSE_ERROR,
+            "Unexpected quote length while parsing.",
+            NULL);
+
+    qe_cert_data->data = (uint8_t*)*cur;
+    *cur += qe_cert_data->size;
+
+    result = OE_OK;
+done:
+    return result;
+}
+
+// quote buffer should contain following struct
+// 1. sgx_quote_t
+// 2. sgx_quote_auth_data_t
+// 3. sgx_qe_auth_data_t
+// 4. sgx_qe_cert_data_t
 static oe_result_t _parse_quote(
     const uint8_t* quote,
     size_t quote_size,
@@ -113,55 +188,43 @@ static oe_result_t _parse_quote(
 {
     oe_result_t result = OE_UNEXPECTED;
 
-    const uint8_t* p = quote;
-    sgx_quote_t* _sgx_quote = (sgx_quote_t*)p;
+    const uint8_t* cur = quote;
+    sgx_quote_t* _parsed_sgx_quote = (sgx_quote_t*)cur;
+
     const uint8_t* const quote_end = quote + quote_size;
-
-    if (quote_end < p)
-        // Pointer wrapped around.
+    // Check if pointer wrapped around because of overflow.
+    if (quote_end < quote)
         OE_RAISE_MSG(
             OE_REPORT_PARSE_ERROR,
-            "Parsing error.  Pointer wrapper around.",
+            "Parse error. Pointer overflow.",
             NULL);
 
-    p += sizeof(sgx_quote_t);
+    cur += sizeof(sgx_quote_t);
 
-    if (p > quote_end)
-        OE_RAISE_MSG(
-            OE_REPORT_PARSE_ERROR,
-            "Parse error after parsing SGX quote, before signature.",
-            NULL);
-
-    if (p + _sgx_quote->signature_len != quote_end)
+    // Validate sgx_quote_t
+    if ((cur > quote_end) || ((quote_end - cur) != _parsed_sgx_quote->signature_len))
         OE_RAISE_MSG(
             OE_REPORT_PARSE_ERROR,
             "Parse error after parsing SGX signature.",
             NULL);
 
-    if (quote_auth_data)
-        *quote_auth_data = (sgx_quote_auth_data_t*)p;
-
-    p += sizeof(sgx_quote_auth_data_t);
-
-    qe_auth_data->size = ReadUint16(p);
-    p += 2;
-    qe_auth_data->data = (uint8_t*)p;
-    p += qe_auth_data->size;
-
-    if (p > quote_end)
+    // Validate sgx_quote_auth_data_t
+    if ((size_t)(quote_end - cur) < sizeof(sgx_quote_auth_data_t))
         OE_RAISE_MSG(
             OE_REPORT_PARSE_ERROR,
-            "Parse error after parsing QE authorization data.",
+            "Parse error. Quote signature area is too small for SGX auth data.",
             NULL);
 
-    qe_cert_data->type = ReadUint16(p);
-    p += 2;
-    qe_cert_data->size = ReadUint32(p);
-    p += 4;
-    qe_cert_data->data = (uint8_t*)p;
-    p += qe_cert_data->size;
+    if (quote_auth_data)
+        *quote_auth_data = (sgx_quote_auth_data_t*)cur;
 
-    if (p != quote_end)
+    cur += sizeof(sgx_quote_auth_data_t);
+
+    OE_CHECK(_parse_sgx_qe_auth_data_t(&cur, quote_end, qe_auth_data));
+
+    OE_CHECK(_parse_sgx_qe_cert_data_t(&cur, quote_end, qe_cert_data));
+
+    if (cur != quote_end)
         OE_RAISE_MSG(
             OE_REPORT_PARSE_ERROR,
             "Unexpected quote length while parsing.",
@@ -171,7 +234,7 @@ static oe_result_t _parse_quote(
     // Validation
     //
     OE_CHECK_MSG(
-        _validate_sgx_quote(_sgx_quote), "SGX quote validation failed.", NULL);
+        _validate_sgx_quote(_parsed_sgx_quote), "SGX quote validation failed.", NULL);
 
     OE_CHECK_MSG(
         _validate_qe_cert_data(qe_cert_data),
@@ -179,7 +242,7 @@ static oe_result_t _parse_quote(
         NULL);
 
     if (sgx_quote)
-        *sgx_quote = _sgx_quote;
+        *sgx_quote = _parsed_sgx_quote;
 
     result = OE_OK;
 done:
@@ -198,11 +261,11 @@ static oe_result_t _parse_tdx_quote(
 {
     oe_result_t result = OE_UNEXPECTED;
 
-    const uint8_t* p = quote;
-    tdx_quote_t* _tdx_quote = (tdx_quote_t*)p;
+    const uint8_t* cur = quote;
+    tdx_quote_t* _parsed_tdx_quote = (tdx_quote_t*)cur;
     const uint8_t* const quote_end = quote + quote_size;
 
-    if (quote_end < p)
+    if (quote_end < cur)
         // Pointer wrapped around.
         OE_RAISE_MSG(
             OE_REPORT_PARSE_ERROR,
@@ -210,23 +273,49 @@ static oe_result_t _parse_tdx_quote(
             NULL);
 
     // Determine quote version and size of fixed header
-    size_t quote_body_end;
+    size_t offset_quote_body;
     uint32_t signature_len;
 
-    if (_tdx_quote->version == 4)
+    if (quote_size < sizeof(uint16_t))
+        OE_RAISE_MSG(
+            OE_REPORT_PARSE_ERROR,
+            "TDX quote parsing error. Quote too small for version field.",
+            NULL);
+
+    if (_parsed_tdx_quote->version == 4)
     {
-        quote_body_end = sizeof(tdx_quote_t);
-        signature_len = _tdx_quote->signature_len;
+        if (quote_size < sizeof(tdx_quote_t))
+            OE_RAISE_MSG(
+                OE_REPORT_PARSE_ERROR,
+                "TDX quote parsing error. Quote too small for v4 header.",
+                NULL);
+
+        offset_quote_body = sizeof(tdx_quote_t);
+        signature_len = _parsed_tdx_quote->signature_len;
     }
-    else if (_tdx_quote->version == 5)
+    else if (_parsed_tdx_quote->version == 5)
     {
-        // Version 5 has variable body size
-        tdx_quote_v5_t* v5_quote = (tdx_quote_v5_t*)p;
-        quote_body_end = sizeof(tdx_quote_v5_t) + v5_quote->size;
+        if (quote_size < sizeof(tdx_quote_v5_t))
+            OE_RAISE_MSG(
+                OE_REPORT_PARSE_ERROR,
+                "TDX quote parsing error. Quote too small for v5 header.",
+                NULL);
+
+        tdx_quote_v5_t* v5_quote = (tdx_quote_v5_t*)cur;
+        offset_quote_body = sizeof(tdx_quote_v5_t) + v5_quote->size;
+
+        if (offset_quote_body < sizeof(tdx_quote_v5_t) ||
+            offset_quote_body > quote_size ||
+            (size_t)(quote_size - offset_quote_body) < sizeof(uint32_t))
+            OE_RAISE_MSG(
+                OE_REPORT_PARSE_ERROR,
+                "TDX quote parsing error. Invalid v5 quote body size.",
+                NULL);
+
         // signature_len is right after the variable body
-        const uint8_t* sig_len_ptr = (const uint8_t*)v5_quote + quote_body_end;
+        const uint8_t* sig_len_ptr = (const uint8_t*)v5_quote + offset_quote_body;
         signature_len = ReadUint32(sig_len_ptr);
-        quote_body_end += 4; // Add signature_len field size
+        offset_quote_body += 4; // Add signature_len field size
     }
     else
     {
@@ -234,52 +323,57 @@ static oe_result_t _parse_tdx_quote(
             OE_REPORT_PARSE_ERROR, "Unsupported TDX quote version.", NULL);
     }
 
-    p += quote_body_end;
-
-    if (p > quote_end)
+    if (offset_quote_body > quote_size)
         OE_RAISE_MSG(
             OE_REPORT_PARSE_ERROR,
             "Parse error after parsing TDX quote header.",
             NULL);
 
-    if (p + signature_len != quote_end)
+    cur = quote + offset_quote_body;
+
+    // Validate tdx_quote_auth_data_t
+    if ((cur > quote_end) || ((quote_end - cur) != signature_len))
         OE_RAISE_MSG(
             OE_REPORT_PARSE_ERROR,
             "Parse error: TDX signature length mismatch.",
+            NULL);
+
+    if ((size_t)(quote_end - cur) < sizeof(tdx_quote_auth_data_t))
+        OE_RAISE_MSG(
+            OE_REPORT_PARSE_ERROR,
+            "TDX quote signature area is too small for auth data.",
             NULL);
 
     // Parse authentication data
     // tdx_quote_auth_data_t has signature and attestation_key (128 bytes total)
     // The certification_data[] is a flexible array member at the end
     if (quote_auth_data)
-        *quote_auth_data = (tdx_quote_auth_data_t*)p;
+        *quote_auth_data = (tdx_quote_auth_data_t*)cur;
 
     // Move past signature (64) and attestation_key (64) = 128 bytes total
-    p += sizeof(tdx_quote_auth_data_t);
+    cur += sizeof(tdx_quote_auth_data_t);
 
-    // Now p points to certification_data[] which contains
+    // Validate tdx_qe_report_certification_data_t
+    // Now cur points to certification_data[] which contains
     // tdx_qe_report_certification_data_t:
     //   - tdx_qe_certification_data_t: 6 bytes
     //   - qe_report_body (sgx_report_body_t, 384 bytes)
     //   - signature (sgx_ecdsa256_signature_t, 64 bytes)
     //   - auth_certification_data[] (variable):
-    //       - qe_auth_data_size (2 bytes)
-    //       - qe_auth_data (variable)
-    //       - qe_cert_data_type (2 bytes)
-    //       - qe_cert_data_size (4 bytes)
-    //       - qe_cert_data (variable)
+    //       - sgx_qe_auth_data_t
+    //       - sgx_qe_cert_data_t (2 bytes)
 
-    if (p + sizeof(tdx_qe_certification_data_t) > quote_end)
+    if ((size_t)(quote_end - cur) < sizeof(tdx_qe_certification_data_t))
         OE_RAISE_MSG(
             OE_REPORT_PARSE_ERROR,
             "TDX quote data size too small to contain certification data.",
             NULL);
 
-    tdx_qe_certification_data_t* cert_data = (tdx_qe_certification_data_t*)p;
-    cert_data->type = ReadUint16(p);
-    p += 2;
-    cert_data->size = ReadUint32(p);
-    p += 4;
+    tdx_qe_certification_data_t* cert_data = (tdx_qe_certification_data_t*)cur;
+    cert_data->type = ReadUint16(cur);
+    cur += 2;
+    cert_data->size = ReadUint32(cur);
+    cur += 4;
 
     // Validation: Check cert data type (should be 6 for QE report)
     if (cert_data->type != TDX_QE_CERTIFICATION_DATA_TYPE_QE_REPORT)
@@ -288,7 +382,7 @@ static oe_result_t _parse_tdx_quote(
             "Invalid TDX QE certification data type.",
             NULL);
 
-    if (p + cert_data->size != quote_end)
+    if ((size_t)(quote_end - cur) != cert_data->size)
         OE_RAISE_MSG(
             OE_REPORT_PARSE_ERROR,
             "TDX QE certification data size mismatch.",
@@ -297,31 +391,22 @@ static oe_result_t _parse_tdx_quote(
     // Now parse the QE report body and signature
     // Note: We can't use tdx_qe_report_certification_data_t directly because
     // of the 6-byte prefix
-    p += sizeof(sgx_report_body_t);        // 384 bytes
-    p += sizeof(sgx_ecdsa256_signature_t); // 64 bytes
-    // Now at offset: 706 + 128 + 6 + 384 + 64 = 1288
-
-    // Parse qe_auth_data
-    qe_auth_data->size = ReadUint16(p);
-    p += 2;
-    qe_auth_data->data = (uint8_t*)p;
-    p += qe_auth_data->size;
-
-    if (p > quote_end)
+    if ((size_t)(quote_end - cur) <
+        (sizeof(sgx_report_body_t) + sizeof(sgx_ecdsa256_signature_t)))
         OE_RAISE_MSG(
             OE_REPORT_PARSE_ERROR,
-            "Parse error after parsing TDX QE authorization data.",
+            "TDX quote certification data is too small for QE report data.",
             NULL);
 
-    // Parse QE cert data (certificate chain)
-    qe_cert_data->type = ReadUint16(p);
-    p += 2;
-    qe_cert_data->size = ReadUint32(p);
-    p += 4;
-    qe_cert_data->data = (uint8_t*)p;
-    p += qe_cert_data->size;
+    cur += sizeof(sgx_report_body_t);        // 384 bytes
+    cur += sizeof(sgx_ecdsa256_signature_t); // 64 bytes
+    // Now at offset: 706 + 128 + 6 + 384 + 64 = 1288
 
-    if (p != quote_end)
+    OE_CHECK(_parse_sgx_qe_auth_data_t(&cur, quote_end, qe_auth_data));
+    
+    OE_CHECK(_parse_sgx_qe_cert_data_t(&cur, quote_end, qe_cert_data));
+
+    if (cur != quote_end)
         OE_RAISE_MSG(
             OE_REPORT_PARSE_ERROR,
             "Unexpected TDX quote length while parsing.",
@@ -335,7 +420,7 @@ static oe_result_t _parse_tdx_quote(
             NULL);
 
     if (tdx_quote)
-        *tdx_quote = _tdx_quote;
+        *tdx_quote = _parsed_tdx_quote;
 
     result = OE_OK;
 done:

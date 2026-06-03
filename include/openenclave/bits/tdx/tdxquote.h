@@ -252,8 +252,7 @@ typedef struct _tdx_quote_auth_data
     /* (64) Pair of 256 bit ECDSA Key. */
     sgx_ecdsa256_key_t attestation_key;
 
-    /* Place holder for sgx_qe_cert_data_t
-     * where the data holds tdx_qe_report_certification_data_t*/
+    /* Place holder for tdx_qe_certification_data_t. */
     uint8_t certification_data[];
 } tdx_quote_auth_data_t;
 OE_PACK_END
