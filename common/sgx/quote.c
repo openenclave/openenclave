@@ -361,7 +361,7 @@ static oe_result_t _parse_tdx_quote(
     //   - signature (sgx_ecdsa256_signature_t, 64 bytes)
     //   - auth_certification_data[] (variable):
     //       - sgx_qe_auth_data_t
-    //       - sgx_qe_cert_data_t (2 bytes)
+    //       - sgx_qe_cert_data_t
 
     if ((size_t)(quote_end - cur) < sizeof(tdx_qe_certification_data_t))
         OE_RAISE_MSG(
