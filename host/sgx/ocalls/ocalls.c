@@ -455,6 +455,17 @@ done:
     return result;
 }
 
+oe_result_t oe_get_tdx_fmspc_from_quote_ocall(
+    const void* p_quote,
+    uint32_t quote_size,
+    uint8_t* fmspc,
+    uint32_t fmspc_size)
+{
+    /* p_quote, quote_size, fmspc, and fmspc_size are validated by
+     * oe_get_tdx_fmspc_from_quote */
+    return oe_get_tdx_fmspc_from_quote(p_quote, quote_size, fmspc, fmspc_size);
+}
+
 oe_result_t oe_sgx_get_additional_host_entropy_ocall(uint8_t* data, size_t size)
 {
     oe_result_t result = OE_FAILURE;

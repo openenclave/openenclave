@@ -28,6 +28,12 @@ enclave
             uint32_t quote_size,
             [out] tdx_quote_collateral_t* collateral);
 
+        oe_result_t oe_get_tdx_fmspc_from_quote_ocall(
+            [in, size=quote_size] const void* p_quote,
+            uint32_t quote_size,
+            [out, size=fmspc_size] uint8_t* fmspc,
+            uint32_t fmspc_size);
+
         oe_result_t oe_verify_tdx_quote_ocall(
             [in] const oe_uuid_t* format_id,
             [in, size=opt_params_size] const void* opt_params,

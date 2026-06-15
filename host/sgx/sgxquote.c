@@ -119,6 +119,12 @@ static quote3_error_t (*_tee_qv_get_collateral)(
 
 static quote3_error_t (*_tee_qv_free_collateral)(uint8_t* p_quote_collateral);
 
+static quote3_error_t (*_tee_get_fmspc_from_quote)(
+    const uint8_t* p_quote,
+    uint32_t quote_size,
+    uint8_t* p_fmspc_from_quote,
+    uint32_t fmspc_from_quote_size);
+
 static sgx_ql_request_policy_t _policy = SGX_QL_DEFAULT;
 
 typedef struct _supp_ver_t
@@ -577,6 +583,10 @@ static void _load_tdx_dcap_qvl_impl(void)
             _qvl_module,
             "tee_qv_free_collateral",
             (void**)&_tee_qv_free_collateral));
+        OE_CHECK(_lookup_function(
+            _qvl_module,
+            "tee_get_fmspc_from_quote",
+            (void**)&_tee_get_fmspc_from_quote));
         result = OE_OK;
     }
     else
@@ -1812,4 +1822,37 @@ oe_result_t oe_free_tdx_quote_verification_collateral(
     free(p_quote_collateral);
 
     return OE_OK;
+}
+
+oe_result_t oe_get_tdx_fmspc_from_quote(
+    const uint8_t* quote,
+    uint32_t quote_size,
+    uint8_t* fmspc,
+    uint32_t fmspc_size)
+{
+    quote3_error_t error = SGX_QL_ERROR_UNEXPECTED;
+    oe_result_t result = OE_FAILURE;
+
+    if (!quote || !quote_size || !fmspc || fmspc_size < OE_TDX_FMSPC_SIZE)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    // Always use QvE/QVL for TDX verification
+    if (!_load_tdx_dcap_qvl() || !_tee_get_fmspc_from_quote)
+        OE_RAISE(OE_PLATFORM_ERROR);
+
+    error = _tee_get_fmspc_from_quote(quote, quote_size, fmspc, fmspc_size);
+
+    if (error != SGX_QL_SUCCESS)
+    {
+        OE_RAISE_MSG(
+            get_oe_result_t(error),
+            "Fail to get FMSPC from TDX quote "
+            "quote3_error_t=%s\n",
+            get_quote3_error_t_string(error));
+    }
+
+    result = OE_OK;
+
+done:
+    return result;
 }
