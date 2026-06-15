@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "tdx_verifier.h"
+#include <openenclave/attestation/tdx/evidence.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/internal/raise.h>
 #include "platform_t.h"
@@ -35,6 +36,13 @@ oe_result_t _oe_get_tdx_quote_verification_collateral_ocall(
     const void* p_quote,
     uint32_t quote_size,
     tdx_quote_collateral_t* collateral);
+
+oe_result_t _oe_get_tdx_fmspc_from_quote_ocall(
+    oe_result_t* _retval,
+    const void* p_quote,
+    uint32_t quote_size,
+    uint8_t* fmspc,
+    uint32_t fmspc_size);
 
 oe_result_t _oe_verify_tdx_quote_ocall(
     oe_result_t* _retval,
@@ -95,6 +103,27 @@ oe_result_t _oe_get_tdx_quote_verification_collateral_ocall(
 OE_WEAK_ALIAS(
     _oe_get_tdx_quote_verification_collateral_ocall,
     oe_get_tdx_quote_verification_collateral_ocall);
+
+oe_result_t _oe_get_tdx_fmspc_from_quote_ocall(
+    oe_result_t* _retval,
+    const void* p_quote,
+    uint32_t quote_size,
+    uint8_t* fmspc,
+    uint32_t fmspc_size)
+{
+    OE_UNUSED(p_quote);
+    OE_UNUSED(quote_size);
+    OE_UNUSED(fmspc);
+    OE_UNUSED(fmspc_size);
+
+    if (_retval)
+        *_retval = OE_UNSUPPORTED;
+
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(
+    _oe_get_tdx_fmspc_from_quote_ocall,
+    oe_get_tdx_fmspc_from_quote_ocall);
 
 oe_result_t tdx_verify_quote(
     const oe_uuid_t* format_id,
@@ -221,4 +250,24 @@ oe_result_t oe_free_tdx_quote_verification_collateral(
     oe_free(p_quote_collateral);
 
     return OE_OK;
+}
+
+oe_result_t oe_get_tdx_fmspc_from_quote(
+    const uint8_t* quote,
+    uint32_t quote_size,
+    uint8_t* fmspc,
+    uint32_t fmspc_size)
+{
+    oe_result_t result = OE_FAILURE;
+
+    if (!quote || !quote_size || !fmspc || fmspc_size < OE_TDX_FMSPC_SIZE)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    OE_CHECK(oe_get_tdx_fmspc_from_quote_ocall(
+        &result, quote, quote_size, fmspc, fmspc_size));
+
+    OE_CHECK(result);
+
+done:
+    return result;
 }

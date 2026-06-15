@@ -100,4 +100,10 @@ oe_result_t oe_get_tdx_quote_verification_collateral(
 oe_result_t oe_free_tdx_quote_verification_collateral(
     uint8_t* p_quote_collateral);
 
+oe_result_t oe_get_tdx_fmspc_from_quote(
+    const uint8_t* quote,
+    uint32_t quote_size,
+    uint8_t* fmspc,
+    uint32_t fmspc_size);
+
 #endif // _OE_SGXQUOTE_H

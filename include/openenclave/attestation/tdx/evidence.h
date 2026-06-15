@@ -116,6 +116,35 @@ oe_result_t oe_get_tdx_endorsements(
  */
 void oe_free_tdx_endorsements(uint8_t* endorsements_buffer);
 
+/**
+ * Size in bytes of the FMSPC (Family-Model-Stepping-Platform-CustomSKU)
+ * extracted from a TDX quote.
+ */
+#define OE_TDX_FMSPC_SIZE 6
+
+/**
+ * oe_get_tdx_fmspc_from_quote
+ *
+ * Extract the FMSPC (Family-Model-Stepping-Platform-CustomSKU) from a TDX
+ * quote. The FMSPC identifies the platform's TCB and is used to look up the
+ * matching TCB info collateral.
+ *
+ * @param[in] quote Input TDX quote.
+ * @param[in] quote_size The size of the quote in bytes.
+ * @param[out] fmspc Output buffer that receives the FMSPC bytes.
+ * @param[in] fmspc_size The size of the output buffer. Must be at least
+ * OE_TDX_FMSPC_SIZE.
+ *
+ * @retval OE_OK on success.
+ * @retval OE_INVALID_PARAMETER a parameter is NULL or fmspc_size is too small.
+ * @retval other appropriate error code.
+ */
+oe_result_t oe_get_tdx_fmspc_from_quote(
+    const uint8_t* quote,
+    uint32_t quote_size,
+    uint8_t* fmspc,
+    uint32_t fmspc_size);
+
 OE_EXTERNC_END
 
 #endif /* _OE_ATTESTATION_TDX_EVIDENCE_H */
