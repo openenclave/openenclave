@@ -308,6 +308,42 @@ oe_result_t enclave_claims_verifier(
     return print_and_verify_claims(&oe_format_default, claims, claims_length);
 }
 
+oe_result_t print_fmspc_from_quote(const char* evidence_filename)
+{
+    oe_result_t result = OE_FAILURE;
+    size_t evidence_file_size = 0;
+    uint8_t* evidence_data = NULL;
+    uint8_t fmspc[OE_TDX_FMSPC_SIZE] = {0};
+
+    if (!read_binary_file(
+            evidence_filename, &evidence_data, &evidence_file_size))
+    {
+        return OE_INVALID_PARAMETER;
+    }
+
+    result = oe_get_tdx_fmspc_from_quote(
+        evidence_data, (uint32_t)evidence_file_size, fmspc, sizeof(fmspc));
+
+    if (result == OE_OK)
+    {
+        fprintf(stdout, "FMSPC: ");
+        for (size_t i = 0; i < sizeof(fmspc); i++)
+            fprintf(stdout, "%02x", fmspc[i]);
+        fprintf(stdout, "\n");
+    }
+    else
+    {
+        fprintf(
+            stderr,
+            "Failed to get FMSPC from quote (%u): %s\n",
+            result,
+            oe_result_str(result));
+    }
+
+    free(evidence_data);
+    return result;
+}
+
 oe_result_t verify_cert(const char* filename)
 {
     oe_result_t result = OE_FAILURE;
@@ -383,6 +419,10 @@ void print_syntax(const char* program_name)
         "verification, as a Unix epoch timestamp (seconds). When set, an "
         "out-of-date TCB status is upgraded if the platform's TCB level date "
         "is at or after this baseline.\n");
+    fprintf(
+        stdout,
+        "\n  -g: print the FMSPC extracted from the TDX quote given by -r and "
+        "exit (no verification performed).\n");
 }
 
 int main(int argc, const char* argv[])
@@ -393,6 +433,7 @@ int main(int argc, const char* argv[])
     const char* evidence_format = NULL;
     int64_t tcb_baseline_date = 0;
     bool has_tcb_baseline_date = false;
+    bool print_fmspc = false;
     oe_result_t result = OE_FAILURE;
     int n = 0;
 
@@ -440,6 +481,10 @@ int main(int argc, const char* argv[])
                 has_tcb_baseline_date = true;
             }
         }
+        else if (memcmp(argv[n], "-g", 2) == 0)
+        {
+            print_fmspc = true;
+        }
         else
         {
             print_syntax(argv[0]);
@@ -469,6 +514,21 @@ int main(int argc, const char* argv[])
 
         oe_verifier_initialize();
         oe_tdx_verifier_initialize();
+
+        // -g: print FMSPC from the TDX quote and exit (no verification).
+        if (print_fmspc)
+        {
+            if (evidence_filename == NULL)
+            {
+                fprintf(stderr, "Error: -g requires -r <evidence_file>\n");
+                oe_verifier_shutdown();
+                return 1;
+            }
+
+            result = print_fmspc_from_quote(evidence_filename);
+            oe_verifier_shutdown();
+            return (result == OE_OK) ? 0 : 1;
+        }
 
         if (evidence_filename != NULL)
         {

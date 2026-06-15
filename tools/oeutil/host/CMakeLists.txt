@@ -16,7 +16,7 @@ add_custom_command(
           --search-path ${PROJECT_SOURCE_DIR}/include -DOE_SGX)
 
 add_executable(oeutil host.cpp generate_evidence.cpp get_endorsements.cpp
-                      ${CMAKE_CURRENT_BINARY_DIR}/ oeutil_u.c)
+                      get_fmspc.cpp ${CMAKE_CURRENT_BINARY_DIR}/ oeutil_u.c)
 
 add_dependencies(oeutil enclave_key_pair)
 

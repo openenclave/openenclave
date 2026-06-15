@@ -34,6 +34,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   caller-supplied baseline date. The policy value is a Unix epoch timestamp
   (seconds since 1970-01-01T00:00:00Z) stored as an `int64_t`.
 
+- Added a new API `oe_get_tdx_fmspc_from_quote` to extract the FMSPC
+  (Family-Model-Stepping-Platform-CustomSKU) from a TDX quote. Available in both
+  host and enclave builds. The `oeutil get-fmspc` subcommand and the `oeverify
+  -g` option print the FMSPC of a TDX quote.
+
 [v0.19.0][v0.19.0_log]
 --------------
 ### Added

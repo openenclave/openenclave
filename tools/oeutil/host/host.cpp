@@ -8,12 +8,14 @@
 
 #include "generate_evidence.h"
 #include "get_endorsements.h"
+#include "get_fmspc.h"
 #include "parse_args_helper.h"
 
 FILE* log_file = nullptr;
 
 #define COMMAND_GENERATE_EVIDENCE "generate-evidence"
 #define COMMAND_GET_ENDORSEMENTS "get-endorsements"
+#define COMMAND_GET_FMSPC "get-fmspc"
 
 typedef enum _oeutil_command
 {
@@ -27,6 +29,11 @@ typedef enum _oeutil_command
      */
     OEUTIL_GET_ENDORSEMENTS = 2,
 
+    /**
+     * Get FMSPC for TDX evidence.
+     */
+    OEUTIL_GET_FMSPC = 3,
+
 } oeutil_command_t;
 
 static void _display_help(const char* command)
@@ -39,6 +46,7 @@ static void _display_help(const char* command)
     printf(
         "\t2. %s: get endorsements for input TDX evidence.\n",
         COMMAND_GET_ENDORSEMENTS);
+    printf("\t3. %s: get FMSPC for input TDX evidence.\n", COMMAND_GET_FMSPC);
     printf("Options:\n\tType oeutil <command> --help for more information\n");
 }
 
@@ -60,6 +68,10 @@ static oeutil_command_t _get_oeutil_command(int argc, const char* argv[])
         strncasecmp(COMMAND_GET_ENDORSEMENTS, argv[1], strlen(argv[1])) == 0)
     {
         command_type = OEUTIL_GET_ENDORSEMENTS;
+    }
+    else if (strncasecmp(COMMAND_GET_FMSPC, argv[1], strlen(argv[1])) == 0)
+    {
+        command_type = OEUTIL_GET_FMSPC;
     }
     else
     {
@@ -83,6 +95,9 @@ int main(int argc, const char* argv[])
             break;
         case OEUTIL_GET_ENDORSEMENTS:
             ret = oeutil_get_endorsements(argc, argv);
+            break;
+        case OEUTIL_GET_FMSPC:
+            ret = oeutil_get_fmspc(argc, argv);
             break;
         default:
             _display_help(argv[0]);
