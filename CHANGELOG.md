@@ -27,6 +27,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `tdx_td_attributes_lass`
   - `tdx_td_attributes_migratable`
 
+- Added a new attestation policy type `OE_POLICY_TCB_BASELINE_DATE` for TDX quote
+  verification. When supplied to `oe_verify_evidence`, an out-of-date TCB status
+  is upgraded (out-of-date to up-to-date, out-of-date-configuration-needed to
+  configuration-needed) when the platform's TCB level date is at or after the
+  caller-supplied baseline date. The policy value is a Unix epoch timestamp
+  (seconds since 1970-01-01T00:00:00Z) stored as an `int64_t`.
+
 [v0.19.0][v0.19.0_log]
 --------------
 ### Added

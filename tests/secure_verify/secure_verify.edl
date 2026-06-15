@@ -23,6 +23,8 @@ enclave {
           size_t evidence_size,
           [in, count=endorsement_size] uint8_t* endorsement_in,
           size_t endorsement_size,
+          int64_t tcb_baseline_date,
+          uint8_t has_tcb_baseline_date
         );
     };
 };

@@ -101,4 +101,50 @@ if (BUILD_ENCLAVES)
     PROPERTIES
       PASS_REGULAR_EXPRESSION
       "(secure_verify not supported in simulation mode|tcb_status: 07000000)")
+
+  # TCB baseline date policy tests (OE_POLICY_TCB_BASELINE_DATE).
+  #
+  # These use pinned TDX endorsements (eval21 collateral, fmspc 00806f050000)
+  # for which tdx_quote_v5 is OUT_OF_DATE (tcb_status: 01000000). The quote's
+  # matched TCB level date is 2023-08-09T00:00:00Z (epoch 1691539200).
+  #
+  # The baseline policy upgrades an OUT_OF_DATE result to UP_TO_DATE only when
+  # the platform's matched TCB level date is at or after the baseline. The two
+  # tests straddle the exact matched date by 1 second to assert the boundary is
+  # inclusive (">=", not ">"):
+  #   - baseline 1691539200 (== matched date) -> upgraded UP_TO_DATE
+  #   - baseline 1691539201 (matched date + 1s) -> stays OUT_OF_DATE
+
+  # Baseline exactly equal to the platform's TCB level date -> upgraded to
+  # UP_TO_DATE. This asserts the comparison is inclusive (">="). A regression
+  # to a strict ">" would leave this OUT_OF_DATE and fail the test.
+  add_test(
+    NAME tests/secure_verify_tdx_openssl_baseline_up_to_date
+    COMMAND
+      $<TARGET_FILE:secure_verify> secure_verify_enc_openssl.signed
+      ${CMAKE_CURRENT_SOURCE_DIR}/data/tdx_quote_v5 -f tdx_quote -e
+      ${CMAKE_CURRENT_SOURCE_DIR}/data/tdx_quote_v5_endorsement_eval21.bin -b
+      1691539200
+    WORKING_DIRECTORY $<TARGET_FILE_DIR:secure_verify>)
+  set_tests_properties(
+    tests/secure_verify_tdx_openssl_baseline_up_to_date
+    PROPERTIES
+      PASS_REGULAR_EXPRESSION
+      "(secure_verify not supported in simulation mode|tcb_status: 00000000)")
+
+  # Baseline one second after the platform's TCB level date -> stays
+  # OUT_OF_DATE. This asserts the boundary is strict on the high side.
+  add_test(
+    NAME tests/secure_verify_tdx_openssl_baseline_out_of_date
+    COMMAND
+      $<TARGET_FILE:secure_verify> secure_verify_enc_openssl.signed
+      ${CMAKE_CURRENT_SOURCE_DIR}/data/tdx_quote_v5 -f tdx_quote -e
+      ${CMAKE_CURRENT_SOURCE_DIR}/data/tdx_quote_v5_endorsement_eval21.bin -b
+      1691539201
+    WORKING_DIRECTORY $<TARGET_FILE_DIR:secure_verify>)
+  set_tests_properties(
+    tests/secure_verify_tdx_openssl_baseline_out_of_date
+    PROPERTIES
+      PASS_REGULAR_EXPRESSION
+      "(secure_verify not supported in simulation mode|tcb_status: 01000000)")
 endif ()

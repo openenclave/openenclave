@@ -48,11 +48,29 @@ oe_result_t verify_plugin_evidence(
     uint8_t* evidence,
     size_t evidence_size,
     uint8_t* endorsement,
-    size_t endorsement_size)
+    size_t endorsement_size,
+    int64_t tcb_baseline_date,
+    uint8_t has_tcb_baseline_date)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_claim_t* claims = NULL;
     size_t claims_length = 0;
+
+    oe_policy_t policies[1];
+    oe_policy_t* policies_ptr = NULL;
+    size_t policies_size = 0;
+
+    if (has_tcb_baseline_date)
+    {
+        policies[0].type = OE_POLICY_TCB_BASELINE_DATE;
+        policies[0].policy = &tcb_baseline_date;
+        policies[0].policy_size = sizeof(tcb_baseline_date);
+        policies_ptr = policies;
+        policies_size = 1;
+        printf(
+            "Applying TCB baseline date policy: %lld (epoch seconds)\n",
+            (long long)tcb_baseline_date);
+    }
 
     OE_CHECK(oe_verifier_initialize());
     OE_CHECK(oe_tdx_verifier_initialize());
@@ -64,8 +82,8 @@ oe_result_t verify_plugin_evidence(
             evidence_size,
             endorsement,
             endorsement_size,
-            NULL,
-            0,
+            policies_ptr,
+            policies_size,
             &claims,
             &claims_length),
         "Failed to verify evidence. result=%u (%s)\n",

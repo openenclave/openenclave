@@ -55,6 +55,8 @@ oe_result_t verify_oe_evidence(
     oe_enclave_t* enclave,
     const oe_uuid_t* foramt_id,
     const char* evidence_filename,
-    const char* endorsement_filename);
+    const char* endorsement_filename,
+    int64_t tcb_baseline_date,
+    bool has_tcb_baseline_date);
 
 #endif // _SGX_QUOTE

@@ -197,7 +197,20 @@ typedef enum _oe_policy_type
      * The policy can only be specified once, having multiple polices of this
      * type will result in API error.
      */
-    OE_POLICY_ENDORSEMENTS_BASELINE = 2
+    OE_POLICY_ENDORSEMENTS_BASELINE = 2,
+
+    /**
+     * Specifies a minimum acceptable TCB date as a baseline for TDX quote
+     * verification. When the platform's TCB is reported as out-of-date but the
+     * TCB level date of the platform (from the verification supplemental data)
+     * is at or after this baseline date, the resulting TCB status is upgraded:
+     * an out-of-date status becomes up-to-date and an out-of-date status that
+     * additionally needs configuration becomes configuration-needed.
+     *
+     * The policy is a Unix epoch timestamp (seconds since
+     * 1970-01-01T00:00:00Z) stored as an `int64_t`.
+     */
+    OE_POLICY_TCB_BASELINE_DATE = 3
 } oe_policy_type_t;
 
 /**
