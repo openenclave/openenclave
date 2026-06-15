@@ -230,7 +230,9 @@ oe_result_t print_and_verify_claims(
 oe_result_t verify_evidence(
     const char* evidence_filename,
     const char* endorsement_filename,
-    oe_uuid_t format)
+    oe_uuid_t format,
+    int64_t tcb_baseline_date,
+    bool has_tcb_baseline_date)
 {
     oe_result_t result = OE_FAILURE;
     size_t evidence_file_size = 0;
@@ -239,6 +241,19 @@ oe_result_t verify_evidence(
     uint8_t* endorsement_data = NULL;
     oe_claim_t* claims = NULL;
     size_t claims_length = 0;
+
+    oe_policy_t policies[1];
+    oe_policy_t* policies_ptr = NULL;
+    size_t policies_size = 0;
+
+    if (has_tcb_baseline_date)
+    {
+        policies[0].type = OE_POLICY_TCB_BASELINE_DATE;
+        policies[0].policy = &tcb_baseline_date;
+        policies[0].policy_size = sizeof(tcb_baseline_date);
+        policies_ptr = policies;
+        policies_size = 1;
+    }
 
     if (read_binary_file(
             evidence_filename, &evidence_data, &evidence_file_size))
@@ -257,8 +272,8 @@ oe_result_t verify_evidence(
             evidence_file_size,
             endorsement_data,
             endorsement_file_size,
-            NULL,
-            0,
+            policies_ptr,
+            policies_size,
             &claims,
             &claims_length);
     }
@@ -353,7 +368,7 @@ void print_syntax(const char* program_name)
     fprintf(
         stdout,
         "Usage:\n  %s -r <evidence_file> [-e <endorsement_file>] [-f "
-        "<evidence_format>] \n  %s -c "
+        "<evidence_format>] [-b <tcb_baseline_date>] \n  %s -c "
         "<certificate_file>\n",
         program_name,
         program_name);
@@ -362,6 +377,12 @@ void print_syntax(const char* program_name)
         stdout,
         "\nVerify the integrity of enclave attestation evidence or attestation "
         "certificate.\n");
+    fprintf(
+        stdout,
+        "\n  -b <tcb_baseline_date>: optional TCB baseline date for TDX quote "
+        "verification, as a Unix epoch timestamp (seconds). When set, an "
+        "out-of-date TCB status is upgraded if the platform's TCB level date "
+        "is at or after this baseline.\n");
 }
 
 int main(int argc, const char* argv[])
@@ -370,6 +391,8 @@ int main(int argc, const char* argv[])
     const char* endorsement_filename = NULL;
     const char* certificate_filename = NULL;
     const char* evidence_format = NULL;
+    int64_t tcb_baseline_date = 0;
+    bool has_tcb_baseline_date = false;
     oe_result_t result = OE_FAILURE;
     int n = 0;
 
@@ -409,6 +432,14 @@ int main(int argc, const char* argv[])
                 evidence_format = argv[++n];
             }
         }
+        else if (memcmp(argv[n], "-b", 2) == 0)
+        {
+            if (argc > (n - 1))
+            {
+                tcb_baseline_date = (int64_t)strtoll(argv[++n], NULL, 10);
+                has_tcb_baseline_date = true;
+            }
+        }
         else
         {
             print_syntax(argv[0]);
@@ -443,7 +474,11 @@ int main(int argc, const char* argv[])
         {
             fprintf(stdout, "Verifying evidence %s...\n", evidence_filename);
             result = verify_evidence(
-                evidence_filename, endorsement_filename, oe_format);
+                evidence_filename,
+                endorsement_filename,
+                oe_format,
+                tcb_baseline_date,
+                has_tcb_baseline_date);
             fprintf(
                 stdout,
                 "Evidence verification %s (%u).\n",
