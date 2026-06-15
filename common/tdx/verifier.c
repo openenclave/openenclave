@@ -59,6 +59,48 @@ static oe_sgx_tcb_status_t _verification_result_to_tcb_status(
     }
 }
 
+/* Apply an optional TCB-date baseline policy to the verification result.
+ *
+ * When the platform TCB is reported out-of-date but the platform's TCB level
+ * date (tcb_level_date_tag from the verification supplemental data) is at or
+ * after the caller-supplied baseline date, the result is upgraded:
+ *   - OUT_OF_DATE                -> OK
+ *   - OUT_OF_DATE_CONFIG_NEEDED  -> CONFIG_NEEDED
+ * All other results, or cases where the supplemental data or baseline date is
+ * unavailable, are returned unchanged.
+ *
+ * Note: this runs in the trusted component (inside the enclave for enclave
+ * attestation) after the QvE report and result have already been validated, so
+ * adjusting the result here does not weaken the QvE attestation guarantee. */
+static sgx_ql_qv_result_t _apply_tcb_baseline_date_policy(
+    sgx_ql_qv_result_t verification_result,
+    const uint8_t* supplemental_data,
+    size_t supplemental_data_size,
+    const time_t* tcb_baseline_date)
+{
+    const sgx_ql_qv_supplemental_t* supplemental = NULL;
+
+    if (verification_result != SGX_QL_QV_RESULT_OUT_OF_DATE &&
+        verification_result != SGX_QL_QV_RESULT_OUT_OF_DATE_CONFIG_NEEDED)
+        return verification_result;
+
+    if (!tcb_baseline_date || !supplemental_data ||
+        supplemental_data_size < sizeof(sgx_ql_qv_supplemental_t))
+        return verification_result;
+
+    supplemental = (const sgx_ql_qv_supplemental_t*)supplemental_data;
+
+    /* Only upgrade when the platform's TCB level date is at or after the
+     * baseline date required by the policy. */
+    if (supplemental->tcb_level_date_tag < *tcb_baseline_date)
+        return verification_result;
+
+    if (verification_result == SGX_QL_QV_RESULT_OUT_OF_DATE)
+        return SGX_QL_QV_RESULT_OK;
+
+    return SGX_QL_QV_RESULT_CONFIG_NEEDED;
+}
+
 static oe_result_t _on_register(
     oe_attestation_role_t* context,
     const void* configuration_data,
@@ -134,6 +176,7 @@ static oe_result_t _fill_with_known_tdx_claims(
     uint32_t verification_result,
     const uint8_t* supplemental_data,
     size_t supplemental_data_size,
+    const time_t* tcb_baseline_date,
     oe_claim_t* claims,
     size_t claims_length,
     size_t* claims_added)
@@ -458,8 +501,12 @@ static oe_result_t _fill_with_known_tdx_claims(
 
     /* Additional claims */
 
-    tcb_status = _verification_result_to_tcb_status(
-        (sgx_ql_qv_result_t)verification_result);
+    tcb_status =
+        _verification_result_to_tcb_status(_apply_tcb_baseline_date_policy(
+            (sgx_ql_qv_result_t)verification_result,
+            supplemental_data,
+            supplemental_data_size,
+            tcb_baseline_date));
 
     // TCB status.
     OE_CHECK(_add_claim(
@@ -511,6 +558,7 @@ static oe_result_t _extract_claims(
     uint32_t verification_result,
     const uint8_t* supplemental_data,
     size_t supplemental_data_size,
+    const time_t* tcb_baseline_date,
     oe_claim_t** claims_out,
     size_t* claims_length_out)
 {
@@ -544,6 +592,7 @@ static oe_result_t _extract_claims(
         verification_result,
         supplemental_data,
         supplemental_data_size,
+        tcb_baseline_date,
         claims,
         claims_length,
         &claims_added));
@@ -617,6 +666,47 @@ static oe_result_t _get_input_time(
     return OE_OK;
 }
 
+/* Extract the optional TCB-date baseline policy
+ * (OE_POLICY_TCB_BASELINE_DATE). The policy value is a Unix epoch timestamp
+ * (seconds since 1970-01-01T00:00:00Z) stored as an int64_t. */
+static oe_result_t _get_tcb_baseline_date(
+    const oe_policy_t* policies,
+    size_t policies_size,
+    time_t* tcb_baseline_date,
+    bool* has_tcb_baseline_date)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    *has_tcb_baseline_date = false;
+
+    if (!policies)
+        return OE_OK;
+
+    for (size_t i = 0; i < policies_size; i++)
+    {
+        if (policies[i].type == OE_POLICY_TCB_BASELINE_DATE)
+        {
+            int64_t baseline = 0;
+
+            if (!policies[i].policy ||
+                policies[i].policy_size != sizeof(baseline))
+                OE_RAISE(OE_INVALID_PARAMETER);
+
+            memcpy(&baseline, policies[i].policy, sizeof(baseline));
+
+            *tcb_baseline_date = (time_t)baseline;
+            *has_tcb_baseline_date = true;
+            return OE_OK;
+        }
+    }
+
+    // Baseline date not found, which is fine since it's optional.
+    result = OE_OK;
+
+done:
+    return result;
+}
+
 static oe_result_t _verify_evidence(
     oe_verifier_t* context,
     const uint8_t* evidence_buffer,
@@ -634,6 +724,8 @@ static oe_result_t _verify_evidence(
     uint32_t verification_result = 0;
     oe_uuid_t* format_id = NULL;
     oe_datetime_t* time = NULL;
+    time_t tcb_baseline_date = 0;
+    bool has_tcb_baseline_date = false;
 
     if (!context || !evidence_buffer || !evidence_buffer_size ||
         (!endorsements_buffer != !endorsements_buffer_size) ||
@@ -643,6 +735,9 @@ static oe_result_t _verify_evidence(
     format_id = &context->base.format_id;
 
     OE_CHECK(_get_input_time(policies, policies_size, &time));
+
+    OE_CHECK(_get_tcb_baseline_date(
+        policies, policies_size, &tcb_baseline_date, &has_tcb_baseline_date));
 
     if (!memcmp(format_id, &_uuid_tdx_quote_ecdsa, sizeof(oe_uuid_t)))
     {
@@ -688,6 +783,7 @@ static oe_result_t _verify_evidence(
             verification_result,
             supplemental_data,
             supplemental_data_size,
+            has_tcb_baseline_date ? &tcb_baseline_date : NULL,
             claims,
             claims_length));
     }

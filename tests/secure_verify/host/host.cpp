@@ -37,6 +37,7 @@
 #define INPUT_PARAM_EVIDENCE_FORMAT_TDX_QUOTE "tdx_quote"
 #define INPUT_PARAM_OPTION_VERBOSE "--verbose"
 #define INPUT_PARAM_OPTION_ENDORSEMENT_FILE "-e"
+#define INPUT_PARAM_OPTION_TCB_BASELINE_DATE "-b"
 
 #define OE_FORMAT_UUID_CERT                                               \
     {                                                                     \
@@ -62,6 +63,8 @@ typedef struct _input_params
     const oe_uuid_t* evidence_format;
     const char* log_filename;
     bool verbose;
+    int64_t tcb_baseline_date;
+    bool has_tcb_baseline_date;
 } input_params_t;
 
 static input_params_t _params;
@@ -95,6 +98,9 @@ static void _display_help(const char* cmd)
         "\t%s <log filename> (default: %s)\n",
         INPUT_PARAM_OPTION_LOG_FILE,
         DEFAULT_LOG_FILE);
+    printf(
+        "\t%s <tcb baseline date in epoch seconds> (TDX only)\n",
+        INPUT_PARAM_OPTION_TCB_BASELINE_DATE);
     printf("\t%s\n\n", INPUT_PARAM_OPTION_VERBOSE);
     printf("Example:\n");
     printf(
@@ -187,6 +193,14 @@ static int _parse_args(int argc, const char* argv[])
             _params.verbose = true;
             i++;
         }
+        else if (strcmp(INPUT_PARAM_OPTION_TCB_BASELINE_DATE, argv[i]) == 0)
+        {
+            if (argc < i + 2)
+                break;
+            _params.tcb_baseline_date = (int64_t)strtoll(argv[i + 1], NULL, 10);
+            _params.has_tcb_baseline_date = true;
+            i += 2;
+        }
         else
         {
             printf("Invalid option: %s\n\n", argv[i]);
@@ -225,7 +239,9 @@ static oe_result_t _verify_evidence(oe_enclave_t* enclave)
             enclave,
             _params.evidence_format,
             _params.evidence_filename,
-            _params.endorsement_filename);
+            _params.endorsement_filename,
+            _params.tcb_baseline_date,
+            _params.has_tcb_baseline_date);
     }
 
     return result;

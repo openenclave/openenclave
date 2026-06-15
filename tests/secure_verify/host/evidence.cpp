@@ -176,7 +176,9 @@ oe_result_t verify_oe_evidence(
     oe_enclave_t* enclave,
     const oe_uuid_t* foramt_id,
     const char* evidence_filename,
-    const char* endorsement_filename)
+    const char* endorsement_filename,
+    int64_t tcb_baseline_date,
+    bool has_tcb_baseline_date)
 {
     oe_result_t result = OE_UNEXPECTED;
     size_t evidence_file_size = 0;
@@ -207,7 +209,9 @@ oe_result_t verify_oe_evidence(
         evidence_data,
         evidence_file_size,
         endorsement_data,
-        endorsement_file_size);
+        endorsement_file_size,
+        tcb_baseline_date,
+        has_tcb_baseline_date ? 1 : 0);
 
     OE_CHECK_MSG(
         result,
