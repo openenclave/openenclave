@@ -19,8 +19,7 @@ pipeline {
         string(name: "BRANCH_NAME", defaultValue: "master", description: "The branch used to checkout the repository")
         string(name: "DOCKER_TAG", defaultValue: "", description: "[OPTIONAL] Specify the tag for the new Docker images.")
         string(name: "BASE_DOCKER_TAG", defaultValue: "", description: "[OPTIONAL] Specify the tag for the new Base Docker images.")
-        string(name: "CONTAINER_REPO", defaultValue: "https://openenclave.azurecr.io", description: "Url for internal Docker repository")
-        string(name: "CONTAINER_REPO_CRED_ID", defaultValue: "openenclave-acr-credentials", description: "Credential ID for internal Docker repository")
+        string(name: "CONTAINER_REPO", defaultValue: "openenclave.azurecr.io", description: "Docker repository name")
         string(name: "OECI_LIB_VERSION", defaultValue: 'master', description: 'Version of OE Libraries to use')
         string(name: "DEVKITS_URI", defaultValue: 'https://openenclavepublicstorage.blob.core.windows.net/openenclavedependencies/OE-CI-devkits-d1634ce8.tar.gz', description: "Uri for downloading the OECI Devkit")
         string(name: "AGENTS_LABEL", defaultValue: 'acc-ubuntu-20.04', description: "Label of the agent to use to run this job")
@@ -83,13 +82,14 @@ pipeline {
                                         helpers.TestSamplesCommand(false, "open-enclave")
                                     }
                                 }
-                                docker.withRegistry(params.CONTAINER_REPO, params.CONTAINER_REPO_CRED_ID) {
-                                    base_image.push()
-                                    if ( params.TAG_LATEST ) {
-                                        base_image.push('latest')
-                                    }
+                                sh """
+                                    az login --identity
+                                    az acr login --name ${params.CONTAINER_REPO}
+                                """
+                                base_image.push()
+                                if ( params.TAG_LATEST ) {
+                                    base_image.push('latest')
                                 }
-                            }
                         }
                     }
                 }
@@ -113,11 +113,13 @@ pipeline {
                                 helpers.releaseInstall("latest", "open-enclave", "GitHub")
                                 helpers.TestSamplesCommand(false, "open-enclave")
                             }
-                            docker.withRegistry(params.CONTAINER_REPO, params.CONTAINER_REPO_CRED_ID) {
-                                common.exec_with_retry { oe2004.push() }
-                                if ( params.TAG_LATEST ) {
-                                    common.exec_with_retry { oe2004.push('latest') }
-                                }
+                            sh """
+                                az login --identity
+                                az acr login --name ${params.CONTAINER_REPO}
+                            """
+                            common.exec_with_retry { oe2004.push() }
+                            if ( params.TAG_LATEST ) {
+                                common.exec_with_retry { oe2004.push('latest') }
                             }
                         }
                     }
@@ -140,11 +142,13 @@ pipeline {
                                 // helpers.releaseInstall("latest", "open-enclave", "GitHub")
                                 // helpers.TestSamplesCommand(false, "open-enclave")
                             }
-                            docker.withRegistry(params.CONTAINER_REPO, params.CONTAINER_REPO_CRED_ID) {
-                                common.exec_with_retry { oe2204.push() }
-                                if ( params.TAG_LATEST ) {
-                                    common.exec_with_retry { oe2204.push('latest') }
-                                }
+                            sh """
+                                az login --identity
+                                az acr login --name ${params.CONTAINER_REPO}
+                            """
+                            common.exec_with_retry { oe2204.push() }
+                            if ( params.TAG_LATEST ) {
+                                common.exec_with_retry { oe2204.push('latest') }
                             }
                         }
                     }
@@ -154,7 +158,12 @@ pipeline {
     }
     post {
         always {
-                sh "docker logout ${params.CONTAINER_REPO}"
+                sh """
+                    docker logout ${params.CONTAINER_REPO}
+                    az logout || true
+                    az cache purge
+                    az account clear
+                """
         }
     }
 }

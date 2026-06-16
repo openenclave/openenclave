@@ -3,7 +3,6 @@
 
 GLOBAL_TIMEOUT_MINUTES = 90
 library "OpenEnclaveJenkinsLibrary@${params.OECI_LIB_VERSION}"
-CONTAINER_REPO_NAME = params.CONTAINER_REPO - ~"^(https|http)://"
 
 pipeline {
     agent {
@@ -14,8 +13,7 @@ pipeline {
         string(name: "BRANCH_NAME", defaultValue: "master", description: "The branch used to checkout the repository")
         string(name: "LINUX_TAG", description: "[REQUIRED] Specify the Linux Docker image tag to push to the container repository")
         string(name: "WINDOWS_TAG", description: "[REQUIRED] Specify the Windows Docker image tag to push to the container repository")
-        string(name: "CONTAINER_REPO", defaultValue: "https://openenclave.azurecr.io", description: "Url for Docker repository")
-        string(name: "CONTAINER_REPO_CRED_ID", defaultValue: "openenclavedockerregistry-userkey-jenkins", description: "Credential ID for Docker repository")
+        string(name: "CONTAINER_REPO", defaultValue: "openenclave.azurecr.io", description: "Docker repository name")
         string(name: "OECI_LIB_VERSION", defaultValue: 'master', description: 'Version of OE Libraries to use')
         booleanParam(name: "PUBLISH_LINUX", defaultValue: true, description: "Publish Linux Docker images?")
         booleanParam(name: "PUBLISH_WINDOWS", defaultValue: true, description: "Publish Windows Docker images?")
@@ -36,14 +34,12 @@ pipeline {
                         stage('Pull images') {
                             steps {
                                 script {
-                                    docker.withRegistry(params.CONTAINER_REPO, params.CONTAINER_REPO_CRED_ID) {
-                                        sh """
-                                            docker pull ${CONTAINER_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.LINUX_TAG}
-                                            docker pull ${CONTAINER_REPO_NAME}/oetools-20.04:${params.LINUX_TAG}
-                                            docker pull ${CONTAINER_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.LINUX_TAG}
-                                            docker pull ${CONTAINER_REPO_NAME}/oetools-22.04:${params.LINUX_TAG}
-                                        """
-                                    }
+                                    sh """
+                                        docker pull ${params.CONTAINER_REPO}/openenclave-base-ubuntu-20.04:${params.LINUX_TAG}
+                                        docker pull ${params.CONTAINER_REPO}/oetools-20.04:${params.LINUX_TAG}
+                                        docker pull ${params.CONTAINER_REPO}/openenclave-base-ubuntu-22.04:${params.LINUX_TAG}
+                                        docker pull ${params.CONTAINER_REPO}/oetools-22.04:${params.LINUX_TAG}
+                                    """
                                 }
                             }
                         }
@@ -53,19 +49,20 @@ pipeline {
                             }
                             steps {
                                 script {
-                                    docker.withRegistry(params.CONTAINER_REPO, params.CONTAINER_REPO_CRED_ID) {
-                                        sh """
-                                            docker tag ${CONTAINER_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.LINUX_TAG} ${CONTAINER_REPO_NAME}/openenclave-base-ubuntu-20.04:latest
-                                            docker tag ${CONTAINER_REPO_NAME}/oetools-20.04:${params.LINUX_TAG} ${CONTAINER_REPO_NAME}/oetools-20.04:latest
-                                            docker push ${CONTAINER_REPO_NAME}/openenclave-base-ubuntu-20.04:latest
-                                            docker push ${CONTAINER_REPO_NAME}/oetools-20.04:latest
+                                    sh """
+                                        az login --identity
+                                        az acr login --name ${params.CONTAINER_REPO}
+                                        docker tag ${params.CONTAINER_REPO}/openenclave-base-ubuntu-20.04:${params.LINUX_TAG} ${params.CONTAINER_REPO}/openenclave-base-ubuntu-20.04:latest
+                                        docker tag ${params.CONTAINER_REPO}/oetools-20.04:${params.LINUX_TAG} ${params.CONTAINER_REPO}/oetools-20.04:latest
+                                        docker push ${params.CONTAINER_REPO}/openenclave-base-ubuntu-20.04:latest
+                                        docker push ${params.CONTAINER_REPO}/oetools-20.04:latest
 
-                                            docker tag ${CONTAINER_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.LINUX_TAG} ${CONTAINER_REPO_NAME}/openenclave-base-ubuntu-22.04:latest
-                                            docker tag ${CONTAINER_REPO_NAME}/oetools-22.04:${params.LINUX_TAG} ${CONTAINER_REPO_NAME}/oetools-22.04:latest
-                                            docker push ${CONTAINER_REPO_NAME}/openenclave-base-ubuntu-22.04:latest
-                                            docker push ${CONTAINER_REPO_NAME}/oetools-22.04:latest
-                                        """
-                                    }
+                                        docker tag ${params.CONTAINER_REPO}/openenclave-base-ubuntu-22.04:${params.LINUX_TAG} ${params.CONTAINER_REPO}/openenclave-base-ubuntu-22.04:latest
+                                        docker tag ${params.CONTAINER_REPO}/oetools-22.04:${params.LINUX_TAG} ${params.CONTAINER_REPO}/oetools-22.04:latest
+                                        docker push ${params.CONTAINER_REPO}/openenclave-base-ubuntu-22.04:latest
+                                        docker push ${params.CONTAINER_REPO}/oetools-22.04:latest
+                                        docker logout --name ${params.CONTAINER_REPO}
+                                    """
                                 }
                             }
                         }
@@ -83,11 +80,9 @@ pipeline {
                         stage('Pull images') {
                             steps {
                                 script {
-                                    docker.withRegistry(params.CONTAINER_REPO, params.CONTAINER_REPO_CRED_ID) {
-                                        powershell """
-                                            docker pull ${CONTAINER_REPO_NAME}/oetools-ws2022:${params.WINDOWS_TAG}
-                                        """
-                                    }
+                                    powershell """
+                                        docker pull ${params.CONTAINER_REPO}/oetools-ws2022:${params.WINDOWS_TAG}
+                                    """
                                 }
                             }
                         }
@@ -97,12 +92,13 @@ pipeline {
                             }
                             steps {
                                 script {
-                                    docker.withRegistry(params.CONTAINER_REPO, params.CONTAINER_REPO_CRED_ID) {
-                                        powershell """
-                                            docker tag ${CONTAINER_REPO_NAME}/oetools-ws2022:${params.WINDOWS_TAG} ${CONTAINER_REPO_NAME}/oetools-ws2022:latest
-                                            docker push ${CONTAINER_REPO_NAME}/oetools-ws2022:latest
-                                        """
-                                    }
+                                    powershell """
+                                        az login --identity
+                                        az acr login --name ${params.CONTAINER_REPO}
+                                        docker tag ${params.CONTAINER_REPO}/oetools-ws2022:${params.WINDOWS_TAG} ${params.CONTAINER_REPO}/oetools-ws2022:latest
+                                        docker push ${params.CONTAINER_REPO}/oetools-ws2022:latest
+                                        docker logout --name ${params.CONTAINER_REPO}
+                                    """
                                 }
                             }
                         }
@@ -163,28 +159,28 @@ pipeline {
                             // Add new images
                             if (params.PUBLISH_WINDOWS) {
                                 sh """
-                                    echo "| Windows Server 2022 | ${CONTAINER_REPO_NAME}/oetools-ws2022:${params.WINDOWS_TAG} | ${OE_VERSION} | None | None |" >> DOCKER_IMAGES_new.md
+                                    echo "| Windows Server 2022 | ${params.CONTAINER_REPO}/oetools-ws2022:${params.WINDOWS_TAG} | ${OE_VERSION} | None | None |" >> DOCKER_IMAGES_new.md
                                 """
                             }
                             if (params.PUBLISH_LINUX) {
                                 // The PSW and DCAP versions between full, base, and Ubuntu versions should always be the same
                                 // But we do this as a quick and easy check to ensure all versions are consistent
                                 // Ubuntu 22.04
-                                BASE_2204_PSW  = helpers.dockerGetAptPackageVersion("${CONTAINER_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.LINUX_TAG}", "libsgx-enclave-common")
-                                BASE_2204_DCAP = helpers.dockerGetAptPackageVersion("${CONTAINER_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.LINUX_TAG}", "libsgx-ae-id-enclave")
-                                FULL_2204_PSW  = helpers.dockerGetAptPackageVersion("${CONTAINER_REPO_NAME}/oetools-22.04:${params.LINUX_TAG}", "libsgx-enclave-common")
-                                FULL_2204_DCAP = helpers.dockerGetAptPackageVersion("${CONTAINER_REPO_NAME}/oetools-22.04:${params.LINUX_TAG}", "libsgx-ae-id-enclave")
+                                BASE_2204_PSW  = helpers.dockerGetAptPackageVersion("${params.CONTAINER_REPO}/openenclave-base-ubuntu-22.04:${params.LINUX_TAG}", "libsgx-enclave-common")
+                                BASE_2204_DCAP = helpers.dockerGetAptPackageVersion("${params.CONTAINER_REPO}/openenclave-base-ubuntu-22.04:${params.LINUX_TAG}", "libsgx-ae-id-enclave")
+                                FULL_2204_PSW  = helpers.dockerGetAptPackageVersion("${params.CONTAINER_REPO}/oetools-22.04:${params.LINUX_TAG}", "libsgx-enclave-common")
+                                FULL_2204_DCAP = helpers.dockerGetAptPackageVersion("${params.CONTAINER_REPO}/oetools-22.04:${params.LINUX_TAG}", "libsgx-ae-id-enclave")
                                 // Ubuntu 20.04
-                                BASE_2004_PSW  = helpers.dockerGetAptPackageVersion("${CONTAINER_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.LINUX_TAG}", "libsgx-enclave-common")
-                                BASE_2004_DCAP = helpers.dockerGetAptPackageVersion("${CONTAINER_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.LINUX_TAG}", "libsgx-ae-id-enclave")
-                                FULL_2004_PSW  = helpers.dockerGetAptPackageVersion("${CONTAINER_REPO_NAME}/oetools-20.04:${params.LINUX_TAG}", "libsgx-enclave-common")
-                                FULL_2004_DCAP = helpers.dockerGetAptPackageVersion("${CONTAINER_REPO_NAME}/oetools-20.04:${params.LINUX_TAG}", "libsgx-ae-id-enclave")
+                                BASE_2004_PSW  = helpers.dockerGetAptPackageVersion("${params.CONTAINER_REPO}/openenclave-base-ubuntu-20.04:${params.LINUX_TAG}", "libsgx-enclave-common")
+                                BASE_2004_DCAP = helpers.dockerGetAptPackageVersion("${params.CONTAINER_REPO}/openenclave-base-ubuntu-20.04:${params.LINUX_TAG}", "libsgx-ae-id-enclave")
+                                FULL_2004_PSW  = helpers.dockerGetAptPackageVersion("${params.CONTAINER_REPO}/oetools-20.04:${params.LINUX_TAG}", "libsgx-enclave-common")
+                                FULL_2004_DCAP = helpers.dockerGetAptPackageVersion("${params.CONTAINER_REPO}/oetools-20.04:${params.LINUX_TAG}", "libsgx-ae-id-enclave")
 
                                 sh """
-                                    echo "| Base Ubuntu 22.04 | ${CONTAINER_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.LINUX_TAG} | ${OE_VERSION} | ${BASE_2204_PSW} | ${BASE_2204_DCAP} |" >> DOCKER_IMAGES_new.md
-                                    echo "| Full Ubuntu 22.04 | ${CONTAINER_REPO_NAME}/oetools-22.04:${params.LINUX_TAG} | ${OE_VERSION} | ${FULL_2204_PSW} | ${FULL_2204_DCAP} |" >> DOCKER_IMAGES_new.md
-                                    echo "| Base Ubuntu 20.04 | ${CONTAINER_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.LINUX_TAG} | ${OE_VERSION} | ${BASE_2004_PSW} | ${BASE_2004_DCAP} |" >> DOCKER_IMAGES_new.md
-                                    echo "| Full Ubuntu 20.04 | ${CONTAINER_REPO_NAME}/oetools-20.04:${params.LINUX_TAG} | ${OE_VERSION} | ${FULL_2004_PSW} | ${FULL_2004_DCAP} |" >> DOCKER_IMAGES_new.md
+                                    echo "| Base Ubuntu 22.04 | ${params.CONTAINER_REPO}/openenclave-base-ubuntu-22.04:${params.LINUX_TAG} | ${OE_VERSION} | ${BASE_2204_PSW} | ${BASE_2204_DCAP} |" >> DOCKER_IMAGES_new.md
+                                    echo "| Full Ubuntu 22.04 | ${params.CONTAINER_REPO}/oetools-22.04:${params.LINUX_TAG} | ${OE_VERSION} | ${FULL_2204_PSW} | ${FULL_2204_DCAP} |" >> DOCKER_IMAGES_new.md
+                                    echo "| Base Ubuntu 20.04 | ${params.CONTAINER_REPO}/openenclave-base-ubuntu-20.04:${params.LINUX_TAG} | ${OE_VERSION} | ${BASE_2004_PSW} | ${BASE_2004_DCAP} |" >> DOCKER_IMAGES_new.md
+                                    echo "| Full Ubuntu 20.04 | ${params.CONTAINER_REPO}/oetools-20.04:${params.LINUX_TAG} | ${OE_VERSION} | ${FULL_2004_PSW} | ${FULL_2004_DCAP} |" >> DOCKER_IMAGES_new.md
                                 """
                             }
                         }
@@ -222,6 +218,17 @@ pipeline {
                     }
                 }
             }
+        }
+    }
+    post {
+        always {
+                sh """
+                    docker logout ${params.CONTAINER_REPO}
+                    az logout || true
+                    az cache purge
+                    az account clear
+                    rm -f ${GIT_SSH_KEY}
+                """
         }
     }
 }

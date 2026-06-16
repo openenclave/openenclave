@@ -6,8 +6,7 @@ library "OpenEnclaveJenkinsLibrary@${params.OECI_LIB_VERSION}"
 GLOBAL_TIMEOUT_MINUTES = 480
 
 JENKINS_USER_CREDS_ID = 'oeadmin-credentials'
-OETOOLS_REPO = 'openenclave.azurecr.io'
-OETOOLS_REPO_CREDENTIALS_ID = 'openenclave-acr-credentials'
+CONTAINER_REPO = 'openenclave.azurecr.io'
 AZURE_IMAGES_MAP = [
     "WS22": [
         "image": "MicrosoftWindowsServer:WindowsServer:2022-datacenter-azure-edition:latest",
@@ -35,7 +34,6 @@ def buildLinuxManagedImage(String os_type, String version, String gallery_image_
     }
     stage("${OS_NAME_MAP[os_type]} ${version} Build") {
         withEnv([
-                "DOCKER_REGISTRY=${OETOOLS_REPO}",
                 "MANAGED_IMAGE_NAME_ID=${gallery_image_version}",
                 "GALLERY_IMAGE_VERSION=${gallery_image_version}",
                 "RESOURCE_GROUP=${params.RESOURCE_GROUP}",
@@ -48,15 +46,8 @@ def buildLinuxManagedImage(String os_type, String version, String gallery_image_
                             usernamePassword(credentialsId: JENKINS_USER_CREDS_ID,
                                              usernameVariable: "SSH_USERNAME",
                                              passwordVariable: "SSH_PASSWORD"),
-                            usernamePassword(credentialsId: OETOOLS_REPO_CREDENTIALS_ID,
-                                             usernameVariable: "DOCKER_USER_NAME",
-                                             passwordVariable: "DOCKER_USER_PASSWORD"),
                             string(credentialsId: 'Jenkins-CI-Subscription-Id', variable: 'SUBSCRIPTION_ID'),
                             string(credentialsId: 'Jenkins-CI-Tenant-Id', variable: 'TENANT_ID')]) {
-                        sh '''#!/bin/bash
-                            az login --identity
-                            az account set -s ${SUBSCRIPTION_ID}
-                        '''
                         retry(5) {
                             sh '''#!/bin/bash
                                 packer build -force \

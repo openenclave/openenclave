@@ -64,6 +64,7 @@
     reauthorize: yes
     tls: yes
     validate_certs: yes
+    when: docker_user_name is defined and docker_user_password is defined
 
 - name: Jenkins | Docker pull images
   community.general.docker_image:
