@@ -36,8 +36,7 @@ Param(
     [string]$GetPipURL = 'https://bootstrap.pypa.io/pip/3.4/get-pip.py',
     [string]$GetPipHash = 'DBD5DAE3D1E7F6DF844D630CDF65E0F0D98E483C9997DAEA17C7C9D86F7B38AD',
     [Parameter(mandatory=$true)][string]$InstallPath,
-    # SGX1 and SGX1-NoIntelDrivers will be deprecated.
-    [Parameter(mandatory=$true)][ValidateSet("SGX1FLC", "SGX1", "SGX1FLC-NoIntelDrivers", "SGX1-NoIntelDrivers")][string]$LaunchConfiguration,
+    [Parameter(mandatory=$true)][ValidateSet("SGX1FLC", "SGX1FLC-NoIntelDrivers")][string]$LaunchConfiguration,
     [Parameter(mandatory=$true)][ValidateSet("None", "Azure")][string]$DCAPClientType,
     [Parameter(mandatory=$false)][switch]$SkipVSInstall=$false,
     [Parameter(mandatory=$false)][switch]$VerificationOnly=$false,
