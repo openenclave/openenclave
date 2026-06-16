@@ -17,7 +17,7 @@ String dockerImage(String tag, String dockerfile = ".jenkins/Dockerfile", String
     return docker.build(tag, "${buildArgs} -f ${dockerfile} .")
 }
 
-def ContainerRun(String imageName, String compiler, String task, String runArgs="", registryUrl="https://oejenkinscidockerregistry.azurecr.io", registryName="oejenkinscidockerregistry") {
+def ContainerRun(String imageName, String compiler, String task, String runArgs="", registryUrl="https://openenclave.azurecr.io", registryName="openenclave") {
     docker.withRegistry(registryUrl, registryName) {
         def image = docker.image(imageName)
         retry(3) {
@@ -26,24 +26,6 @@ def ContainerRun(String imageName, String compiler, String task, String runArgs=
         image.inside(runArgs) {
             dir("${WORKSPACE}/build") {
                 Run(compiler, task)
-            }
-        }
-    }
-}
-
-def azureEnvironment(String task, String imageName = "oetools-deploy:latest") {
-    withCredentials([string(credentialsId: 'Jenkins-CI-Subscription-Id', variable: 'SUBSCRIPTION_ID'),
-                     string(credentialsId: 'Jenkins-CI-Tenant-Id', variable: 'TENANT_ID')]) {
-        docker.withRegistry("https://oejenkinscidockerregistry.azurecr.io", "oejenkinscidockerregistry") {
-            def image = docker.image("oetools-deploy:latest")
-            image.pull()
-            image.inside {
-                sh """#!/usr/bin/env bash
-                      set -o errexit
-                      set -o pipefail
-                      source /etc/profile
-                      ${task}
-                   """
             }
         }
     }
@@ -107,18 +89,6 @@ def Run(String compiler, String task) {
             string(credentialsId: 'thim-tdx-region-url', variable: 'AZDCAP_REGION_URL')
         ]) {
             runTask(task)
-        }
-    }
-}
-
-def deleteRG(List resourceGroups, String imageName = "oetools-deploy:latest") {
-    stage("Delete ${resourceGroups.toString()} resource groups") {
-        resourceGroups.each { rg ->
-            withEnv(["RESOURCE_GROUP=${rg}"]) {
-                dir("${WORKSPACE}/.jenkins/provision") {
-                    azureEnvironment("./cleanup.sh", imageName)
-                }
-            }
         }
     }
 }

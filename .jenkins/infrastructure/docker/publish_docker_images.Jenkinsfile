@@ -3,8 +3,7 @@
 
 GLOBAL_TIMEOUT_MINUTES = 90
 library "OpenEnclaveJenkinsLibrary@${params.OECI_LIB_VERSION}"
-INTERNAL_REPO_NAME = params.INTERNAL_REPO - ~"^(https|http)://"
-PUBLIC_REPO_NAME = params.PUBLIC_REPO - ~"^(https|http)://"
+CONTAINER_REPO_NAME = params.CONTAINER_REPO - ~"^(https|http)://"
 
 pipeline {
     agent {
@@ -13,14 +12,10 @@ pipeline {
     parameters {
         string(name: "REPOSITORY_NAME", defaultValue: "openenclave/openenclave", description: "GitHub repository to checkout")
         string(name: "BRANCH_NAME", defaultValue: "master", description: "The branch used to checkout the repository")
-        string(name: "INTERNAL_LINUX_TAG", description: "[REQUIRED] Specify the Linux Docker image tag to pull from the internal repository")
-        string(name: "PUBLIC_LINUX_TAG", description: "[REQUIRED] Specify the Linux Docker image tag to push to the public repository")
-        string(name: "INTERNAL_WINDOWS_TAG", description: "[REQUIRED] Specify the Windows Docker image tag to pull from the internal repository")
-        string(name: "PUBLIC_WINDOWS_TAG", description: "[REQUIRED] Specify the Windows Docker image tag to push to the public repository")
-        string(name: "INTERNAL_REPO", defaultValue: "https://oejenkinscidockerregistry.azurecr.io", description: "Url for internal Docker repository")
-        string(name: "INTERNAL_REPO_CRED_ID", defaultValue: "oejenkinscidockerregistry", description: "Credential ID for internal Docker repository")
-        string(name: "PUBLIC_REPO", defaultValue: "https://openenclavedockerregistry.azurecr.io", description: "Url for internal Docker repository")
-        string(name: "PUBLIC_REPO_CRED_ID", defaultValue: "openenclavedockerregistry-userkey-jenkins", description: "Credential ID for internal Docker repository")
+        string(name: "LINUX_TAG", description: "[REQUIRED] Specify the Linux Docker image tag to push to the container repository")
+        string(name: "WINDOWS_TAG", description: "[REQUIRED] Specify the Windows Docker image tag to push to the container repository")
+        string(name: "CONTAINER_REPO", defaultValue: "https://openenclave.azurecr.io", description: "Url for Docker repository")
+        string(name: "CONTAINER_REPO_CRED_ID", defaultValue: "openenclavedockerregistry-userkey-jenkins", description: "Credential ID for Docker repository")
         string(name: "OECI_LIB_VERSION", defaultValue: 'master', description: 'Version of OE Libraries to use')
         booleanParam(name: "PUBLISH_LINUX", defaultValue: true, description: "Publish Linux Docker images?")
         booleanParam(name: "PUBLISH_WINDOWS", defaultValue: true, description: "Publish Windows Docker images?")
@@ -31,7 +26,7 @@ pipeline {
         OECITEAM_BRANCH = "oeciteam/publish-docker"
     }
     stages {
-        stage('Push to public repo') {
+        stage('Push to container repo') {
             parallel {
                 stage('Linux containers') {
                     when {
@@ -41,98 +36,34 @@ pipeline {
                         stage('Pull images') {
                             steps {
                                 script {
-                                    docker.withRegistry(params.INTERNAL_REPO, params.INTERNAL_REPO_CRED_ID) {
+                                    docker.withRegistry(params.CONTAINER_REPO, params.CONTAINER_REPO_CRED_ID) {
                                         sh """
-                                            docker pull ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.INTERNAL_LINUX_TAG}
-                                            docker pull ${INTERNAL_REPO_NAME}/oetools-20.04:${params.INTERNAL_LINUX_TAG}
-                                            docker pull ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.INTERNAL_LINUX_TAG}
-                                            docker pull ${INTERNAL_REPO_NAME}/oetools-22.04:${params.INTERNAL_LINUX_TAG}
+                                            docker pull ${CONTAINER_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.LINUX_TAG}
+                                            docker pull ${CONTAINER_REPO_NAME}/oetools-20.04:${params.LINUX_TAG}
+                                            docker pull ${CONTAINER_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.LINUX_TAG}
+                                            docker pull ${CONTAINER_REPO_NAME}/oetools-22.04:${params.LINUX_TAG}
                                         """
                                     }
                                 }
                             }
                         }
-                        stage('Push tag to public repo') {
-                            steps {
-                                script {
-                                    docker.withRegistry(params.PUBLIC_REPO, params.PUBLIC_REPO_CRED_ID) {
-                                        sh """
-                                            docker tag ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.INTERNAL_LINUX_TAG} ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.PUBLIC_LINUX_TAG}
-                                            docker tag ${INTERNAL_REPO_NAME}/oetools-20.04:${params.INTERNAL_LINUX_TAG} ${PUBLIC_REPO_NAME}/oetools-20.04:${params.PUBLIC_LINUX_TAG}
-                                            docker push ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.PUBLIC_LINUX_TAG}
-                                            docker push ${PUBLIC_REPO_NAME}/oetools-20.04:${params.PUBLIC_LINUX_TAG}
-
-                                            docker tag ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.INTERNAL_LINUX_TAG} ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.PUBLIC_LINUX_TAG}
-                                            docker tag ${INTERNAL_REPO_NAME}/oetools-22.04:${params.INTERNAL_LINUX_TAG} ${PUBLIC_REPO_NAME}/oetools-22.04:${params.PUBLIC_LINUX_TAG}
-                                            docker push ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.PUBLIC_LINUX_TAG}
-                                            docker push ${PUBLIC_REPO_NAME}/oetools-22.04:${params.PUBLIC_LINUX_TAG}
-
-                                        """
-                                    }
-                                }
-                            }
-                        }
-                        stage('Push latest to public repo') {
+                        stage('Push latest to container repo') {
                             when {
                                 expression { return params.TAG_LATEST }
                             }
                             steps {
                                 script {
-                                    docker.withRegistry(params.PUBLIC_REPO, params.PUBLIC_REPO_CRED_ID) {
+                                    docker.withRegistry(params.CONTAINER_REPO, params.CONTAINER_REPO_CRED_ID) {
                                         sh """
-                                            docker tag ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.PUBLIC_LINUX_TAG} ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-20.04:latest
-                                            docker tag ${PUBLIC_REPO_NAME}/oetools-20.04:${params.PUBLIC_LINUX_TAG} ${PUBLIC_REPO_NAME}/oetools-20.04:latest
-                                            docker push ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-20.04:latest
-                                            docker push ${PUBLIC_REPO_NAME}/oetools-20.04:latest
+                                            docker tag ${CONTAINER_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.LINUX_TAG} ${CONTAINER_REPO_NAME}/openenclave-base-ubuntu-20.04:latest
+                                            docker tag ${CONTAINER_REPO_NAME}/oetools-20.04:${params.LINUX_TAG} ${CONTAINER_REPO_NAME}/oetools-20.04:latest
+                                            docker push ${CONTAINER_REPO_NAME}/openenclave-base-ubuntu-20.04:latest
+                                            docker push ${CONTAINER_REPO_NAME}/oetools-20.04:latest
 
-                                            docker tag ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.PUBLIC_LINUX_TAG} ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-22.04:latest
-                                            docker tag ${PUBLIC_REPO_NAME}/oetools-22.04:${params.PUBLIC_LINUX_TAG} ${PUBLIC_REPO_NAME}/oetools-22.04:latest
-                                            docker push ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-22.04:latest
-                                            docker push ${PUBLIC_REPO_NAME}/oetools-22.04:latest
-                                        """
-                                    }
-                                }
-                            }
-                        }
-                        stage('Push tag to internal repo') {
-                            when {
-                                expression { return params.INTERNAL_LINUX_TAG != params.PUBLIC_LINUX_TAG }
-                            }
-                            steps {
-                                script {
-                                    docker.withRegistry(params.INTERNAL_REPO, params.INTERNAL_REPO_CRED_ID) {
-                                        sh """
-                                            docker tag ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.INTERNAL_LINUX_TAG} ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.PUBLIC_LINUX_TAG}
-                                            docker tag ${INTERNAL_REPO_NAME}/oetools-20.04:${params.INTERNAL_LINUX_TAG} ${INTERNAL_REPO_NAME}/oetools-20.04:${params.PUBLIC_LINUX_TAG}
-                                            docker push ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.PUBLIC_LINUX_TAG}
-                                            docker push ${INTERNAL_REPO_NAME}/oetools-20.04:${params.PUBLIC_LINUX_TAG}
-
-                                            docker tag ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.INTERNAL_LINUX_TAG} ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.PUBLIC_LINUX_TAG}
-                                            docker tag ${INTERNAL_REPO_NAME}/oetools-22.04:${params.INTERNAL_LINUX_TAG} ${INTERNAL_REPO_NAME}/oetools-22.04:${params.PUBLIC_LINUX_TAG}
-                                            docker push ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.PUBLIC_LINUX_TAG}
-                                            docker push ${INTERNAL_REPO_NAME}/oetools-22.04:${params.PUBLIC_LINUX_TAG}
-                                        """
-                                    }
-                                }
-                            }
-                        }
-                        stage('Push latest to internal repo') {
-                            when {
-                                expression { return params.TAG_LATEST }
-                            }
-                            steps {
-                                script {
-                                    docker.withRegistry(params.INTERNAL_REPO, params.INTERNAL_REPO_CRED_ID) {
-                                        sh """
-                                            docker tag ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.PUBLIC_LINUX_TAG} ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-20.04:latest
-                                            docker tag ${INTERNAL_REPO_NAME}/oetools-20.04:${params.PUBLIC_LINUX_TAG} ${INTERNAL_REPO_NAME}/oetools-20.04:latest
-                                            docker push ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-20.04:latest
-                                            docker push ${INTERNAL_REPO_NAME}/oetools-20.04:latest
-
-                                            docker tag ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.PUBLIC_LINUX_TAG} ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-22.04:latest
-                                            docker tag ${INTERNAL_REPO_NAME}/oetools-22.04:${params.PUBLIC_LINUX_TAG} ${INTERNAL_REPO_NAME}/oetools-22.04:latest
-                                            docker push ${INTERNAL_REPO_NAME}/openenclave-base-ubuntu-22.04:latest
-                                            docker push ${INTERNAL_REPO_NAME}/oetools-22.04:latest
+                                            docker tag ${CONTAINER_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.LINUX_TAG} ${CONTAINER_REPO_NAME}/openenclave-base-ubuntu-22.04:latest
+                                            docker tag ${CONTAINER_REPO_NAME}/oetools-22.04:${params.LINUX_TAG} ${CONTAINER_REPO_NAME}/oetools-22.04:latest
+                                            docker push ${CONTAINER_REPO_NAME}/openenclave-base-ubuntu-22.04:latest
+                                            docker push ${CONTAINER_REPO_NAME}/oetools-22.04:latest
                                         """
                                     }
                                 }
@@ -152,66 +83,24 @@ pipeline {
                         stage('Pull images') {
                             steps {
                                 script {
-                                    docker.withRegistry(params.INTERNAL_REPO, params.INTERNAL_REPO_CRED_ID) {
+                                    docker.withRegistry(params.CONTAINER_REPO, params.CONTAINER_REPO_CRED_ID) {
                                         powershell """
-                                            docker pull ${INTERNAL_REPO_NAME}/oetools-ws2022:${params.INTERNAL_WINDOWS_TAG}
+                                            docker pull ${CONTAINER_REPO_NAME}/oetools-ws2022:${params.WINDOWS_TAG}
                                         """
                                     }
                                 }
                             }
                         }
-                        stage('Push tag to public repo') {
-                            steps {
-                                script {
-                                    docker.withRegistry(params.PUBLIC_REPO, params.PUBLIC_REPO_CRED_ID) {
-                                        powershell """
-                                            docker tag ${INTERNAL_REPO_NAME}/oetools-ws2022:${params.INTERNAL_WINDOWS_TAG} ${PUBLIC_REPO_NAME}/oetools-ws2022:${params.PUBLIC_WINDOWS_TAG}
-                                            docker push ${PUBLIC_REPO_NAME}/oetools-ws2022:${params.PUBLIC_WINDOWS_TAG}
-                                        """
-                                    }
-                                }
-                            }
-                        }
-                        stage('Push latest to public repo') {
+                        stage('Push latest to container repo') {
                             when {
                                 expression { return params.TAG_LATEST }
                             }
                             steps {
                                 script {
-                                    docker.withRegistry(params.PUBLIC_REPO, params.PUBLIC_REPO_CRED_ID) {
+                                    docker.withRegistry(params.CONTAINER_REPO, params.CONTAINER_REPO_CRED_ID) {
                                         powershell """
-                                            docker tag ${PUBLIC_REPO_NAME}/oetools-ws2022:${params.PUBLIC_WINDOWS_TAG} ${PUBLIC_REPO_NAME}/oetools-ws2022:latest
-                                            docker push ${PUBLIC_REPO_NAME}/oetools-ws2022:latest
-                                        """
-                                    }
-                                }
-                            }
-                        }
-                        stage('Push tag to internal repo') {
-                            when {
-                                expression { return params.INTERNAL_WINDOWS_TAG != params.PUBLIC_WINDOWS_TAG }
-                            }
-                            steps {
-                                script {
-                                    docker.withRegistry(params.INTERNAL_REPO, params.INTERNAL_REPO_CRED_ID) {
-                                        powershell """
-                                            docker tag ${INTERNAL_REPO_NAME}/oetools-ws2022:${params.INTERNAL_WINDOWS_TAG} ${INTERNAL_REPO_NAME}/oetools-ws2022:${params.PUBLIC_WINDOWS_TAG}
-                                            docker push ${INTERNAL_REPO_NAME}/oetools-ws2022:${params.PUBLIC_WINDOWS_TAG}
-                                        """
-                                    }
-                                }
-                            }
-                        }
-                        stage('Push latest to internal repo') {
-                            when {
-                                expression { return params.TAG_LATEST }
-                            }
-                            steps {
-                                script {
-                                    docker.withRegistry(params.INTERNAL_REPO, params.INTERNAL_REPO_CRED_ID) {
-                                        powershell """
-                                            docker tag ${INTERNAL_REPO_NAME}/oetools-ws2022:${params.INTERNAL_WINDOWS_TAG} ${INTERNAL_REPO_NAME}/oetools-ws2022:latest
-                                            docker push ${INTERNAL_REPO_NAME}/oetools-ws2022:latest
+                                            docker tag ${CONTAINER_REPO_NAME}/oetools-ws2022:${params.WINDOWS_TAG} ${CONTAINER_REPO_NAME}/oetools-ws2022:latest
+                                            docker push ${CONTAINER_REPO_NAME}/oetools-ws2022:latest
                                         """
                                     }
                                 }
@@ -274,28 +163,28 @@ pipeline {
                             // Add new images
                             if (params.PUBLISH_WINDOWS) {
                                 sh """
-                                    echo "| Windows Server 2022 | ${PUBLIC_REPO_NAME}/oetools-ws2022:${PUBLIC_WINDOWS_TAG} | ${OE_VERSION} | None | None |" >> DOCKER_IMAGES_new.md
+                                    echo "| Windows Server 2022 | ${CONTAINER_REPO_NAME}/oetools-ws2022:${params.WINDOWS_TAG} | ${OE_VERSION} | None | None |" >> DOCKER_IMAGES_new.md
                                 """
                             }
                             if (params.PUBLISH_LINUX) {
                                 // The PSW and DCAP versions between full, base, and Ubuntu versions should always be the same
                                 // But we do this as a quick and easy check to ensure all versions are consistent
                                 // Ubuntu 22.04
-                                BASE_2204_PSW  = helpers.dockerGetAptPackageVersion("${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.PUBLIC_LINUX_TAG}", "libsgx-enclave-common")
-                                BASE_2204_DCAP = helpers.dockerGetAptPackageVersion("${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.PUBLIC_LINUX_TAG}", "libsgx-ae-id-enclave")
-                                FULL_2204_PSW  = helpers.dockerGetAptPackageVersion("${PUBLIC_REPO_NAME}/oetools-22.04:${params.PUBLIC_LINUX_TAG}", "libsgx-enclave-common")
-                                FULL_2204_DCAP = helpers.dockerGetAptPackageVersion("${PUBLIC_REPO_NAME}/oetools-22.04:${params.PUBLIC_LINUX_TAG}", "libsgx-ae-id-enclave")
+                                BASE_2204_PSW  = helpers.dockerGetAptPackageVersion("${CONTAINER_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.LINUX_TAG}", "libsgx-enclave-common")
+                                BASE_2204_DCAP = helpers.dockerGetAptPackageVersion("${CONTAINER_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.LINUX_TAG}", "libsgx-ae-id-enclave")
+                                FULL_2204_PSW  = helpers.dockerGetAptPackageVersion("${CONTAINER_REPO_NAME}/oetools-22.04:${params.LINUX_TAG}", "libsgx-enclave-common")
+                                FULL_2204_DCAP = helpers.dockerGetAptPackageVersion("${CONTAINER_REPO_NAME}/oetools-22.04:${params.LINUX_TAG}", "libsgx-ae-id-enclave")
                                 // Ubuntu 20.04
-                                BASE_2004_PSW  = helpers.dockerGetAptPackageVersion("${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.PUBLIC_LINUX_TAG}", "libsgx-enclave-common")
-                                BASE_2004_DCAP = helpers.dockerGetAptPackageVersion("${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.PUBLIC_LINUX_TAG}", "libsgx-ae-id-enclave")
-                                FULL_2004_PSW  = helpers.dockerGetAptPackageVersion("${PUBLIC_REPO_NAME}/oetools-20.04:${params.PUBLIC_LINUX_TAG}", "libsgx-enclave-common")
-                                FULL_2004_DCAP = helpers.dockerGetAptPackageVersion("${PUBLIC_REPO_NAME}/oetools-20.04:${params.PUBLIC_LINUX_TAG}", "libsgx-ae-id-enclave")
+                                BASE_2004_PSW  = helpers.dockerGetAptPackageVersion("${CONTAINER_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.LINUX_TAG}", "libsgx-enclave-common")
+                                BASE_2004_DCAP = helpers.dockerGetAptPackageVersion("${CONTAINER_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.LINUX_TAG}", "libsgx-ae-id-enclave")
+                                FULL_2004_PSW  = helpers.dockerGetAptPackageVersion("${CONTAINER_REPO_NAME}/oetools-20.04:${params.LINUX_TAG}", "libsgx-enclave-common")
+                                FULL_2004_DCAP = helpers.dockerGetAptPackageVersion("${CONTAINER_REPO_NAME}/oetools-20.04:${params.LINUX_TAG}", "libsgx-ae-id-enclave")
 
                                 sh """
-                                    echo "| Base Ubuntu 22.04 | ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-22.04:${PUBLIC_LINUX_TAG} | ${OE_VERSION} | ${BASE_2204_PSW} | ${BASE_2204_DCAP} |" >> DOCKER_IMAGES_new.md
-                                    echo "| Full Ubuntu 22.04 | ${PUBLIC_REPO_NAME}/oetools-22.04:${PUBLIC_LINUX_TAG} | ${OE_VERSION} | ${FULL_2204_PSW} | ${FULL_2204_DCAP} |" >> DOCKER_IMAGES_new.md
-                                    echo "| Base Ubuntu 20.04 | ${PUBLIC_REPO_NAME}/openenclave-base-ubuntu-20.04:${PUBLIC_LINUX_TAG} | ${OE_VERSION} | ${BASE_2004_PSW} | ${BASE_2004_DCAP} |" >> DOCKER_IMAGES_new.md
-                                    echo "| Full Ubuntu 20.04 | ${PUBLIC_REPO_NAME}/oetools-20.04:${PUBLIC_LINUX_TAG} | ${OE_VERSION} | ${FULL_2004_PSW} | ${FULL_2004_DCAP} |" >> DOCKER_IMAGES_new.md
+                                    echo "| Base Ubuntu 22.04 | ${CONTAINER_REPO_NAME}/openenclave-base-ubuntu-22.04:${params.LINUX_TAG} | ${OE_VERSION} | ${BASE_2204_PSW} | ${BASE_2204_DCAP} |" >> DOCKER_IMAGES_new.md
+                                    echo "| Full Ubuntu 22.04 | ${CONTAINER_REPO_NAME}/oetools-22.04:${params.LINUX_TAG} | ${OE_VERSION} | ${FULL_2204_PSW} | ${FULL_2204_DCAP} |" >> DOCKER_IMAGES_new.md
+                                    echo "| Base Ubuntu 20.04 | ${CONTAINER_REPO_NAME}/openenclave-base-ubuntu-20.04:${params.LINUX_TAG} | ${OE_VERSION} | ${BASE_2004_PSW} | ${BASE_2004_DCAP} |" >> DOCKER_IMAGES_new.md
+                                    echo "| Full Ubuntu 20.04 | ${CONTAINER_REPO_NAME}/oetools-20.04:${params.LINUX_TAG} | ${OE_VERSION} | ${FULL_2004_PSW} | ${FULL_2004_DCAP} |" >> DOCKER_IMAGES_new.md
                                 """
                             }
                         }
@@ -312,15 +201,22 @@ pipeline {
                 }
                 stage('Commit and push') {
                     steps {
-                        withCredentials([usernamePassword(credentialsId: 'github-oeciteam-user-pat',
-                                                        usernameVariable: 'GIT_USERNAME',
-                                                        passwordVariable: 'GIT_PASSWORD')]) {
+                        withCredentials([sshUserPrivateKey(credentialsId: 'github-oeciteam-ssh',
+                                                        keyFileVariable: 'GIT_SSH_KEY',
+                                                        usernameVariable: 'GIT_USERNAME')]) {
                             sh '''
                                 git add DOCKER_IMAGES.md
                                 git config --global user.email "${GIT_USERNAME}@microsoft.com"
-                                git config --global user.name ${GIT_USERNAME}
+                                git config --global user.name "${GIT_USERNAME}"
                                 git commit -sm "Publish Docker Images"
-                                git push --force https://${GIT_PASSWORD}@github.com/openenclave/openenclave.git HEAD:${OECITEAM_BRANCH}
+
+                                if [[ ! -d ~/.ssh ]]; then
+                                    mkdir -p ~/.ssh
+                                fi
+                                ssh-keyscan github.com >> ~/.ssh/known_hosts
+                                chmod 600 ~/.ssh/known_hosts
+
+                                GIT_SSH_COMMAND="ssh -i ${GIT_SSH_KEY}" git push --force git@github.com:openenclave/openenclave.git HEAD:${OECITEAM_BRANCH}
                             '''
                         }
                     }

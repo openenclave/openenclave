@@ -6,8 +6,8 @@ library "OpenEnclaveJenkinsLibrary@${params.OECI_LIB_VERSION}"
 GLOBAL_TIMEOUT_MINUTES = 480
 
 JENKINS_USER_CREDS_ID = 'oeadmin-credentials'
-OETOOLS_REPO = 'oejenkinscidockerregistry.azurecr.io'
-OETOOLS_REPO_CREDENTIALS_ID = 'oejenkinscidockerregistry'
+OETOOLS_REPO = 'openenclave.azurecr.io'
+OETOOLS_REPO_CREDENTIALS_ID = 'openenclave-acr-credentials'
 AZURE_IMAGES_MAP = [
     "WS22": [
         "image": "MicrosoftWindowsServer:WindowsServer:2022-datacenter-azure-edition:latest",
@@ -114,6 +114,7 @@ def buildWindowsManagedImage(String os_series, String image_type, String launch_
                 """
             }
 
+            // TVM is not supported for image creation so we must continue to use standard.
             stage("Provision VM") {
                 withCredentials([
                         usernamePassword(credentialsId: JENKINS_USER_CREDS_ID,

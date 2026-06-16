@@ -15,8 +15,8 @@ pipeline {
         string(name: "BASE_DOCKER_TAG", defaultValue: "", description: "[OPTIONAL] Specify the tag for the new Base Docker images.")
         string(name: "DOCKER_TAG", defaultValue: "", description: "[OPTIONAL] Specify the tag for the new Docker images.")
         string(name: "OECI_LIB_VERSION", defaultValue: 'master', description: 'Version of OE Libraries to use')
-        string(name: "INTERNAL_REPO", defaultValue: "https://oejenkinscidockerregistry.azurecr.io", description: "Url for internal Docker repository")
-        string(name: "INTERNAL_REPO_CRED_ID", defaultValue: "oejenkinscidockerregistry", description: "Credential ID for internal Docker repository")
+        string(name: "CONTAINER_REPO", defaultValue: "https://openenclave.azurecr.io", description: "Url for internal Docker repository")
+        string(name: "CONTAINER_REPO_CRED_ID", defaultValue: "openenclave-acr-credentials", description: "Credential ID for internal Docker repository")
         string(name: "IMAGES_BUILD_LABEL", defaultValue: "acc-ubuntu-20.04", description: "Label of the agent to use to run Linux container builds")
         string(name: "WINDOWS_AGENTS_LABEL", defaultValue: "ws2022-nonsgx", description: "Label of the agent to use to run Windows container builds")
         booleanParam(name: "TAG_LATEST", defaultValue: true, description: "Update the latest tag to the currently built DOCKER_TAG")
@@ -50,8 +50,8 @@ pipeline {
                             parameters: [
                                 string(name: 'REPOSITORY_NAME', value: params.REPOSITORY_NAME),
                                 string(name: 'BRANCH_NAME', value: params.BRANCH_NAME),
-                                string(name: 'INTERNAL_REPO', value: params.INTERNAL_REPO),
-                                string(name: 'INTERNAL_REPO_CRED_ID', value: params.INTERNAL_REPO_CRED_ID),
+                                string(name: 'CONTAINER_REPO', value: params.CONTAINER_REPO),
+                                string(name: 'CONTAINER_REPO_CRED_ID', value: params.CONTAINER_REPO_CRED_ID),
                                 string(name: 'DOCKER_TAG', value: DOCKER_TAG),
                                 string(name: 'OECI_LIB_VERSION', value: params.OECI_LIB_VERSION),
                                 string(name: 'AGENTS_LABEL', value: params.WINDOWS_AGENTS_LABEL),
@@ -68,8 +68,8 @@ pipeline {
                             parameters: [
                                 string(name: 'REPOSITORY_NAME', value: params.REPOSITORY_NAME),
                                 string(name: 'BRANCH_NAME', value: params.BRANCH_NAME),
-                                string(name: 'INTERNAL_REPO', value: params.INTERNAL_REPO),
-                                string(name: 'INTERNAL_REPO_CRED_ID', value: params.INTERNAL_REPO_CRED_ID),
+                                string(name: 'CONTAINER_REPO', value: params.CONTAINER_REPO),
+                                string(name: 'CONTAINER_REPO_CRED_ID', value: params.CONTAINER_REPO_CRED_ID),
                                 string(name: 'DOCKER_TAG', value: DOCKER_TAG),
                                 string(name: 'AGENTS_LABEL', value: params.IMAGES_BUILD_LABEL),
                                 string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
@@ -90,12 +90,10 @@ pipeline {
                     parameters: [
                         string(name: 'REPOSITORY_NAME', value: params.REPOSITORY_NAME),
                         string(name: 'BRANCH_NAME', value: params.BRANCH_NAME),
-                        string(name: 'INTERNAL_REPO', value: params.INTERNAL_REPO),
-                        string(name: 'INTERNAL_REPO_CRED_ID', value: params.INTERNAL_REPO_CRED_ID),
-                        string(name: 'INTERNAL_LINUX_TAG', value: DOCKER_TAG),
-                        string(name: 'PUBLIC_LINUX_TAG', value: DOCKER_TAG),
-                        string(name: 'INTERNAL_WINDOWS_TAG', value: DOCKER_TAG),
-                        string(name: 'PUBLIC_WINDOWS_TAG', value: DOCKER_TAG),
+                        string(name: 'CONTAINER_REPO', value: params.CONTAINER_REPO),
+                        string(name: 'CONTAINER_REPO_CRED_ID', value: params.CONTAINER_REPO_CRED_ID),
+                        string(name: 'LINUX_TAG', value: DOCKER_TAG),
+                        string(name: 'WINDOWS_TAG', value: DOCKER_TAG),
                         string(name: 'OECI_LIB_VERSION', value: params.OECI_LIB_VERSION),
                         booleanParam(name: 'PUBLISH_LINUX', value: params.BUILD_LINUX),
                         booleanParam(name: 'PUBLISH_WINDOWS', value: params.BUILD_WINDOWS),

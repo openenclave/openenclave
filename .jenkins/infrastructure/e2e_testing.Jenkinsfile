@@ -8,8 +8,8 @@ library "OpenEnclaveJenkinsLibrary@${params.OECI_LIB_VERSION}"
 
 GLOBAL_TIMEOUT_MINUTES = 240
 
-OETOOLS_REPO_NAME = "oejenkinscidockerregistry.azurecr.io"
-OETOOLS_REPO_CREDENTIAL_ID = "oejenkinscidockerregistry"
+OETOOLS_REPO_NAME = "openenclave.azurecr.io"
+OETOOLS_REPO_CREDENTIAL_ID = "openenclave-acr-credentials"
 
 IMAGE_ID = ""
 NOW = LocalDateTime.now()
@@ -124,12 +124,11 @@ pipeline {
                         string(name: 'BRANCH_NAME', value: env.BRANCH_NAME),
                         string(name: 'RESOURCE_GROUP', value: env.RESOURCE_GROUP),
                         string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
+                        string(name: 'E2E_IMAGES_GALLERY_NAME', value: env.E2E_IMAGES_GALLERY_NAME),
                         string(name: 'PRODUCTION_IMAGES_GALLERY_NAME', value: env.PRODUCTION_IMAGES_GALLERY_NAME),
                         string(name: 'REPLICATION_REGIONS', value: env.REPLICATION_REGIONS),
                         string(name: 'IMAGE_ID', value: IMAGE_ID),
-                        string(name: 'IMAGE_VERSION', value: IMAGE_VERSION),
-                        string(name: 'DOCKER_TAG', value: DOCKER_TAG),
-                        string(name: 'IMAGES_BUILD_LABEL', value: env.UBUNTU_2004_LABEL)
+                        string(name: 'IMAGE_VERSION', value: IMAGE_VERSION)
                     ]
             }
         }

@@ -24,6 +24,6 @@ This image supports out-of-proc attestation using Intel SGX. To allow this, the 
 All Docker images offered are available in [this table](https://github.com/openenclave/openenclave/blob/master/DOCKER_IMAGES.md).
 
 The base Docker images can be pulled from Dockerhub like so:
-```docker pull oejenkinscidockerregistry.azurecr.io/openenclave-base-ubuntu-20.04:2022.06.0931```
+```docker pull openenclave.azurecr.io/openenclave-base-ubuntu-20.04:latest```
 
 Tags correspond to different Open Enclave or Intel SGX PSW/DCAP versions. You can use the `latest` tag to pull in the container with the latest component versions.
