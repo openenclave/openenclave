@@ -49,12 +49,14 @@ def buildLinuxManagedImage(String os_type, String version, String gallery_image_
                             string(credentialsId: 'Jenkins-CI-Subscription-Id', variable: 'SUBSCRIPTION_ID'),
                             string(credentialsId: 'Jenkins-CI-Tenant-Id', variable: 'TENANT_ID')]) {
                         retry(5) {
-                            sh '''#!/bin/bash
-                                packer build -force \
-                                    -var-file=${WORKSPACE}/.jenkins/infrastructure/provision/templates/packer/azure_managed_image/${OS_TYPE}-${OS_VERSION}-variables.json \
-                                    -var "use_azure_cli_auth=true" \
-                                    ${WORKSPACE}/.jenkins/infrastructure/provision/templates/packer/azure_managed_image/packer-${OS_TYPE}.json
-                            '''
+                            timeout(120) {
+                                sh '''#!/bin/bash
+                                    packer build -force \
+                                        -var-file=${WORKSPACE}/.jenkins/infrastructure/provision/templates/packer/azure_managed_image/${OS_TYPE}-${OS_VERSION}-variables.json \
+                                        -var "use_azure_cli_auth=true" \
+                                        ${WORKSPACE}/.jenkins/infrastructure/provision/templates/packer/azure_managed_image/packer-${OS_TYPE}.json
+                                '''
+                            }
                         }
                     }
                 }
