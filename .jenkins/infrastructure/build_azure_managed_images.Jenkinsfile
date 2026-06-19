@@ -6,7 +6,6 @@ library "OpenEnclaveJenkinsLibrary@${params.OECI_LIB_VERSION}"
 GLOBAL_TIMEOUT_MINUTES = 480
 
 JENKINS_SSH_CREDS_ID = 'jenkins-agent-ssh-key'
-SSH_KEY_NAME = 'jenkinsagentskey'
 CONTAINER_REPO = 'openenclave.azurecr.io'
 AZURE_IMAGES_MAP = [
     "WS22": [
@@ -75,8 +74,7 @@ def buildLinuxManagedImage(String os_series, String version, String gallery_imag
                             "REGION=${REGION}",
                             "VM_NAME=${vm_name}",
                             "AZURE_IMAGE_ID=${azure_image_id}",
-                            "VM_SIZE=${AZURE_IMAGES_MAP[os_series][version]["vm_size"]}",
-                            "SSH_KEY_NAME=${SSH_KEY_NAME}"]) {
+                            "VM_SIZE=${AZURE_IMAGES_MAP[os_series][version]["vm_size"]}"]) {
                         // Create a VM that will be captured as a managed image
                         // Note: Creation of managed images are not supported for virtual machine with TrustedLaunch security type.
 
@@ -85,6 +83,7 @@ def buildLinuxManagedImage(String os_series, String version, String gallery_imag
                                 --resource-group ${JENKINS_RG_NAME} \
                                 --name ${JENKINS_SUBNET_NAME} \
                                 --vnet-name ${JENKINS_VNET_NAME} --query id -o tsv)
+                            SSH_PUB_KEY=\$(ssh-keygen -y -f ${SSH_KEY_FILE})
                             az vm create \
                                 --resource-group ${VM_RG_NAME} \
                                 --location ${REGION} \
@@ -93,7 +92,7 @@ def buildLinuxManagedImage(String os_series, String version, String gallery_imag
                                 --os-disk-size-gb 128 \
                                 --subnet \$SUBNET_ID \
                                 --admin-username ${SSH_USERNAME} \
-                                --ssh-key-name ${SSH_KEY_NAME} \
+                                --ssh-key-values "\$SSH_PUB_KEY" \
                                 --image ${AZURE_IMAGE_ID} \
                                 --public-ip-address \"\" \
                                 --nsg-rule NONE \
