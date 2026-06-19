@@ -22,10 +22,11 @@ Param(
     [string]$Nuget6Hash = 'F2B2145244A3FE1E905599CFB3ADE38E3FCE0C00E73532BDE164EE4F8C8EDCEA',
     [string]$DevconURL = 'https://download.microsoft.com/download/7/D/D/7DD48DE6-8BDA-47C0-854A-539A800FAA90/wdk/Installers/787bee96dbd26371076b37b13c405890.cab',
     [string]$DevconHash = 'A38E409617FC89D0BA1224C31E42AF4344013FEA046D2248E4B9E03F67D5908A',
-    # Intel PSW 2.24.100.3 is included in DCAP 1.22.100.3
+    # Intel PSW 2.28.100.1 is included in DCAP 1.25.100.1
     # This is a redistributed copy which is the same as the one provided by Intel with an additional Intel Simplified Software License pdf.
-    [string]$IntelDCAPURL = 'https://openenclavepublicstorage.blob.core.windows.net/openenclavedependencies/Intel_SGX_DCAP_for_Windows_v1.22.100.3_redist.zip',
-    [string]$IntelDCAPHash = '83CB9C80E17FA2C93E2FC5A730D5C57401ED254A9F8F89EB22EC0C8350823854',
+    # Original distribution can be obtained from https://downloadmirror.intel.com/915862/Intel_SGX_DCAP_for_Windows.zip
+    [string]$IntelDCAPURL = 'https://openenclavepublicstorage.blob.core.windows.net/openenclavedependencies/Intel_SGX_DCAP_for_Windows_v1.25.100.1_redist.zip',
+    [string]$IntelDCAPHash = '022AF05217B920CFE9A7C87733D10AEE1C765B7B6C762034E8B01872038B5B92',
     [string]$VCRuntime2012URL = 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe',
     [string]$VCRuntime2012Hash = '681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064',
     [string]$AzureDCAPNupkgURL = 'https://openenclavepublicstorage.blob.core.windows.net/openenclavedependencies/microsoft.azure.dcap.1.12.3.nupkg',
