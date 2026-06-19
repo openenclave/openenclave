@@ -6,7 +6,7 @@ library "OpenEnclaveJenkinsLibrary@${params.OECI_LIB_VERSION}"
 GLOBAL_TIMEOUT_MINUTES = 480
 
 JENKINS_SSH_CREDS_ID = 'jenkins-agent-ssh-key'
-SSH_CREDS_NAME = 'jenkinsagentskey'
+SSH_KEY_NAME = 'jenkinsagentskey'
 CONTAINER_REPO = 'openenclave.azurecr.io'
 AZURE_IMAGES_MAP = [
     "WS22": [
@@ -75,7 +75,8 @@ def buildLinuxManagedImage(String os_series, String version, String gallery_imag
                             "REGION=${REGION}",
                             "VM_NAME=${vm_name}",
                             "AZURE_IMAGE_ID=${azure_image_id}",
-                            "VM_SIZE=${AZURE_IMAGES_MAP[os_series][version]["vm_size"]}"]) {
+                            "VM_SIZE=${AZURE_IMAGES_MAP[os_series][version]["vm_size"]}",
+                            "SSH_KEY_NAME=${SSH_KEY_NAME}"]) {
                         // Create a VM that will be captured as a managed image
                         // Note: Creation of managed images are not supported for virtual machine with TrustedLaunch security type.
 
@@ -92,7 +93,7 @@ def buildLinuxManagedImage(String os_series, String version, String gallery_imag
                                 --os-disk-size-gb 128 \
                                 --subnet \$SUBNET_ID \
                                 --admin-username ${SSH_USERNAME} \
-                                --ssh-key-name ${SSH_CREDS_NAME} \
+                                --ssh-key-name ${SSH_KEY_NAME} \
                                 --image ${AZURE_IMAGE_ID} \
                                 --public-ip-address \"\" \
                                 --nsg-rule NONE \
