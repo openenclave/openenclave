@@ -90,6 +90,7 @@ pipeline {
                                 if ( params.TAG_LATEST ) {
                                     base_image.push('latest')
                                 }
+                            }
                         }
                     }
                 }
