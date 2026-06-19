@@ -64,7 +64,7 @@
     reauthorize: yes
     tls: yes
     validate_certs: yes
-    when: docker_user_name is defined and docker_user_password is defined
+  when: docker_registry is defined and docker_user_name is defined and docker_user_password is defined
 
 - name: Jenkins | Docker pull images
   community.general.docker_image:
@@ -74,11 +74,13 @@
     - "{{ docker_registry }}/oetools-20.04:{{ docker_tag }}"
   retries: 10
   delay: 10
+  when: docker_registry is defined and docker_tag is defined
 
 - name: Jenkins | Docker Logout
   community.general.docker_login:
     registry_url: "{{ docker_registry }}"
     state: absent
+  when: docker_registry is defined
 
 - name: Install Code Coverage dependency - APT
   ansible.builtin.apt:

@@ -11,6 +11,20 @@ AZURE_IMAGES_MAP = [
     "WS22": [
         "image": "MicrosoftWindowsServer:WindowsServer:2022-datacenter-azure-edition:latest",
         "generation": "V2"
+    ],
+    "ubuntu": [
+        "20.04": [
+            "image": "canonical:0001-com-ubuntu-server-focal:20_04-lts-gen2:latest",
+            "gallery_image_definition": "ubuntu-20.04",
+            "vm_size": "Standard_DC2s_v3",
+            "generation": "V2"
+        ],
+        "22.04": [
+            "image": "canonical:0001-com-ubuntu-server-jammy:22_04-lts-gen2:latest",
+            "gallery_image_definition": "ubuntu-22.04",
+            "vm_size": "Standard_DC2s_v3",
+            "generation": "V2"
+        ]
     ]
 ]
 OS_NAME_MAP = [
@@ -18,52 +32,227 @@ OS_NAME_MAP = [
     "ubuntu":  "Ubuntu",
 ]
 
-def buildLinuxManagedImage(String os_type, String version, String gallery_image_version) {
-    stage('Install prerequisites') {
-        retry(10) {
-            sh """#!/bin/bash
-                sleep 5
-                curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
-                sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com \$(lsb_release -cs) main"
-                ${helpers.WaitForAptLock()}
-                sudo apt-get update && sudo apt-get install packer
-                packer plugins install github.com/hashicorp/azure
-                packer plugins install github.com/hashicorp/ansible
-            """
+def buildLinuxManagedImage(String os_series, String version, String gallery_image_version) {
+
+    stage("${OS_NAME_MAP[os_series]} ${version} Build") {
+
+        def gallery_image_definition
+        def vm_rg_name = "build-${gallery_image_version}-${os_series}-${version}-${BUILD_NUMBER}"
+        def os_series_short = os_series[-2..-1]
+        // Azure VM names must be 15 characters or less, cannot start with a number
+        def vm_name = os_series_short + version.replace('.', '') + "-" + BUILD_NUMBER
+        def jenkins_rg_name = params.JENKINS_RESOURCE_GROUP
+        def jenkins_vnet_name = params.JENKINS_VNET_NAME
+        def jenkins_subnet_name = params.JENKINS_SUBNET_NAME
+        def azure_image_id = AZURE_IMAGES_MAP[os_series][version]["image"]
+
+        if (AZURE_IMAGES_MAP[os_series]?.get(version)) {
+            gallery_image_definition = AZURE_IMAGES_MAP[os_series][version]["gallery_image_definition"]
+        } else {
+            throw new Exception("Unsupported Linux image mapping for ${os_series} ${version}")
         }
-    }
-    stage("${OS_NAME_MAP[os_type]} ${version} Build") {
-        withEnv([
-                "MANAGED_IMAGE_NAME_ID=${gallery_image_version}",
-                "GALLERY_IMAGE_VERSION=${gallery_image_version}",
-                "RESOURCE_GROUP=${params.RESOURCE_GROUP}",
-                "GALLERY_NAME=${params.GALLERY_NAME}",
-                "OS_TYPE=${os_type}",
-                "OS_VERSION=${version}"]) {
-            stage("Run Packer Job") {
-                timeout(GLOBAL_TIMEOUT_MINUTES) {
-                    withCredentials([
-                            usernamePassword(credentialsId: JENKINS_USER_CREDS_ID,
-                                             usernameVariable: "SSH_USERNAME",
-                                             passwordVariable: "SSH_PASSWORD"),
-                            string(credentialsId: 'Jenkins-CI-Subscription-Id', variable: 'SUBSCRIPTION_ID'),
-                            string(credentialsId: 'Jenkins-CI-Tenant-Id', variable: 'TENANT_ID')]) {
-                        retry(5) {
-                            timeout(120) {
-                                sh '''#!/bin/bash
-                                    packer build -force \
-                                        -var-file=${WORKSPACE}/.jenkins/infrastructure/provision/templates/packer/azure_managed_image/${OS_TYPE}-${OS_VERSION}-variables.json \
-                                        -var "use_azure_cli_auth=true" \
-                                        ${WORKSPACE}/.jenkins/infrastructure/provision/templates/packer/azure_managed_image/packer-${OS_TYPE}.json
-                                '''
-                            }
+
+        try {
+
+            stage("Create Resource Group") {
+                sh """
+                    az group create --name ${vm_rg_name} --location ${REGION}
+                """
+            }
+
+            // TVM is not supported for image creation so we must continue to use standard.
+            stage("Provision VM") {
+                withCredentials([
+                        usernamePassword(credentialsId: JENKINS_USER_CREDS_ID,
+                                         usernameVariable: "SSH_USERNAME",
+                                         passwordVariable: "SSH_PASSWORD")]) {
+                    withEnv([
+                            "JENKINS_RG_NAME=${jenkins_rg_name}",
+                            "JENKINS_SUBNET_NAME=${jenkins_subnet_name}",
+                            "JENKINS_VNET_NAME=${jenkins_vnet_name}",
+                            "VM_RG_NAME=${vm_rg_name}",
+                            "REGION=${REGION}",
+                            "VM_NAME=${vm_name}",
+                            "AZURE_IMAGE_ID=${azure_image_id}",
+                            "VM_SIZE=${AZURE_IMAGES_MAP[os_series][version]["vm_size"]}"]) {
+                        // Create a VM that will be captured as a managed image
+                        // Note: Creation of managed images are not supported for virtual machine with TrustedLaunch security type.
+
+                        sh '''
+                            SUBNET_ID=\$(az network vnet subnet show \
+                                --resource-group ${JENKINS_RG_NAME} \
+                                --name ${JENKINS_SUBNET_NAME} \
+                                --vnet-name ${JENKINS_VNET_NAME} --query id -o tsv)
+                            az vm create \
+                                --resource-group ${VM_RG_NAME} \
+                                --location ${REGION} \
+                                --name ${VM_NAME} \
+                                --size ${VM_SIZE} \
+                                --os-disk-size-gb 128 \
+                                --subnet \$SUBNET_ID \
+                                --admin-username ${SSH_USERNAME} \
+                                --admin-password ${SSH_PASSWORD} \
+                                --image ${AZURE_IMAGE_ID} \
+                                --public-ip-address \"\" \
+                                --nsg-rule NONE \
+                                --security-type Standard
+                            '''
+                    }
+                }
+            }
+
+            stage("Setup remote access") {
+                withCredentials([
+                    usernamePassword(credentialsId: JENKINS_USER_CREDS_ID,
+                                     usernameVariable: "SSH_USERNAME",
+                                     passwordVariable: "SSH_PASSWORD")]) {
+                    withEnv([
+                            "JENKINS_RG_NAME=${jenkins_rg_name}",
+                            "JENKINS_SUBNET_NAME=${jenkins_subnet_name}",
+                            "JENKINS_VNET_NAME=${jenkins_vnet_name}",
+                            "VM_RG_NAME=${vm_rg_name}",
+                            "REGION=${REGION}",
+                            "VM_NAME=${vm_name}",
+                            "AZURE_IMAGE_ID=${azure_image_id}"]) {
+                        sh '''
+                            VM_DETAILS=\$(az vm show --resource-group ${VM_RG_NAME} \
+                                                     --name ${VM_NAME} \
+                                                     --show-details)
+
+                            PRIVATE_IP=\$(echo \$VM_DETAILS | jq -r '.privateIps')
+
+                            rm -f ${WORKSPACE}/scripts/ansible/inventory/hosts-${VM_NAME}
+
+                            echo "[linux-agents]" >> ${WORKSPACE}/scripts/ansible/inventory/hosts-${VM_NAME}
+                            echo "\$PRIVATE_IP" >> ${WORKSPACE}/scripts/ansible/inventory/hosts-${VM_NAME}
+                            echo "ansible_ssh_user: ${SSH_USERNAME}" >> ${WORKSPACE}/scripts/ansible/inventory/host_vars/\$PRIVATE_IP
+                            echo "ansible_ssh_pass: ${SSH_PASSWORD}" >> ${WORKSPACE}/scripts/ansible/inventory/host_vars/\$PRIVATE_IP
+                            echo "ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ServerAliveInterval=30 -o ServerAliveCountMax=10 -o TCPKeepAlive=yes'" >> ${WORKSPACE}/scripts/ansible/inventory/host_vars/\$PRIVATE_IP
+                        '''
+                    }
+                }
+                sh """
+                    cd ${WORKSPACE}/scripts/ansible
+                    ANSIBLE_HOST_KEY_CHECKING=False \
+                    ansible linux-agents \
+                        -i ${WORKSPACE}/scripts/ansible/inventory/hosts-${vm_name} \
+                        -m ansible.builtin.wait_for_connection \
+                        -a "sleep=10 timeout=600"
+                """
+            }
+
+            stage("Deploy VM") {
+                def docker_extra_vars = ""
+                if (params.DOCKER_REGISTRY) {
+                    docker_extra_vars += " --extra-vars \"docker_registry=${params.DOCKER_REGISTRY}\""
+                }
+                if (params.DOCKER_TAG) {
+                    docker_extra_vars += " --extra-vars \"docker_tag=${params.DOCKER_TAG}\""
+                }
+                withCredentials([
+                        usernamePassword(credentialsId: JENKINS_USER_CREDS_ID,
+                                         usernameVariable: "SSH_USERNAME",
+                                         passwordVariable: "SSH_PASSWORD")]) {
+                    common.exec_with_retry(5, 60) {
+                        timeout(60) {
+                            sh """
+                                cd ${WORKSPACE}/scripts/ansible
+                                ANSIBLE_HOST_KEY_CHECKING=False \
+                                ansible-playbook \
+                                    -i ${WORKSPACE}/scripts/ansible/inventory/hosts-${vm_name} \
+                                    --extra-vars \"jenkins_admin_name=\${SSH_USERNAME}\"${docker_extra_vars} \
+                                    oe-linux-acc-setup.yml \
+                                    jenkins-packer.yml
+                            """
                         }
                     }
                 }
             }
+
+            stage("Generalize VM") {
+                timeout(GLOBAL_TIMEOUT_MINUTES) {
+                    common.exec_with_retry(5, 60) {
+                        sh """
+                            az vm run-command invoke \
+                                --resource-group ${vm_rg_name} \
+                                --name ${vm_name} \
+                                --command-id RunShellScript \
+                                --scripts "sudo waagent -force -deprovision+user && export HISTSIZE=0 && sync"
+
+                            az vm deallocate --resource-group ${vm_rg_name} --name ${vm_name}
+                            az vm generalize --resource-group ${vm_rg_name} --name ${vm_name}
+                        """
+                    }
+                }
+            }
+
+            stage("Capture Image") {
+                timeout(GLOBAL_TIMEOUT_MINUTES) {
+                    common.exec_with_retry(5, 60) {
+                        sh """
+                            VM_ID=\$(az vm show \
+                                --resource-group ${vm_rg_name} \
+                                --name ${vm_name} | jq -r '.id' )
+
+                            # If the target image doesn't exist, the below command
+                            # will not fail because it is idempotent.
+                            az image delete \
+                                --resource-group ${RESOURCE_GROUP} \
+                                --name ${gallery_image_version}-${os_series}-${version}
+
+                            az image create \
+                                --resource-group ${RESOURCE_GROUP} \
+                                --name ${gallery_image_version}-${os_series}-${version} \
+                                --hyper-v-generation ${AZURE_IMAGES_MAP[os_series][version]["generation"]} \
+                                --source \$VM_ID
+                        """
+                    }
+                }
+            }
+
+            stage("Upload Image") {
+                timeout(GLOBAL_TIMEOUT_MINUTES) {
+                    common.exec_with_retry(10, 30) {
+                        sh """
+                            MANAGED_IMG_ID=\$(az image show \
+                                --resource-group ${RESOURCE_GROUP} \
+                                --name ${gallery_image_version}-${os_series}-${version} \
+                                | jq -r '.id' )
+
+                            # If the target image version doesn't exist, the below
+                            # command will not fail because it is idempotent.
+                            az sig image-version delete \
+                                --resource-group ${RESOURCE_GROUP} \
+                                --gallery-name ${GALLERY_NAME} \
+                                --gallery-image-definition ${gallery_image_definition} \
+                                --gallery-image-version ${gallery_image_version}
+
+                            az sig image-version create \
+                                --resource-group ${RESOURCE_GROUP} \
+                                --gallery-name ${GALLERY_NAME} \
+                                --gallery-image-definition ${gallery_image_definition} \
+                                --gallery-image-version ${gallery_image_version} \
+                                --managed-image \$MANAGED_IMG_ID \
+                                --target-regions ${env.REPLICATION_REGIONS.split(',').join(' ')} \
+                                --replica-count 1
+                        """
+                    }
+                }
+            }
+        } finally {
+            stage("${version}-cleanup") {
+                sh """
+                    az group delete --name ${vm_rg_name} --yes
+                    az image delete \
+                        --resource-group ${RESOURCE_GROUP} \
+                        --name ${gallery_image_version}-${os_series}-${version}
+                """
+            }
         }
     }
 }
+
+
 
 /* This builds a Windows image for Azure Managed Images
  * @param os_series            String for windows OS version that forms part of the image definition in Azure Compute Galleries.
@@ -329,7 +518,7 @@ node(params.AGENTS_LABEL) {
                     sudo apt-get update
                     # see https://github.com/Azure/azure-cli/issues/28397
                     apt-cache show azure-cli | grep Version
-                    sudo apt-get -y install azure-cli jq
+                    sudo apt-get -y install azure-cli jq sshpass
                 """
             }
         }
