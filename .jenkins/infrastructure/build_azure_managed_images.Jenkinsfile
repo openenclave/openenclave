@@ -5,7 +5,8 @@ library "OpenEnclaveJenkinsLibrary@${params.OECI_LIB_VERSION}"
 
 GLOBAL_TIMEOUT_MINUTES = 480
 
-JENKINS_USER_CREDS_ID = 'oeadmin-credentials'
+JENKINS_SSH_CREDS_ID = 'jenkins-agent-ssh-key'
+SSH_CREDS_NAME = 'jenkinsagentskey'
 CONTAINER_REPO = 'openenclave.azurecr.io'
 AZURE_IMAGES_MAP = [
     "WS22": [
@@ -63,9 +64,9 @@ def buildLinuxManagedImage(String os_series, String version, String gallery_imag
             // TVM is not supported for image creation so we must continue to use standard.
             stage("Provision VM") {
                 withCredentials([
-                        usernamePassword(credentialsId: JENKINS_USER_CREDS_ID,
-                                         usernameVariable: "SSH_USERNAME",
-                                         passwordVariable: "SSH_PASSWORD")]) {
+                        sshUserPrivateKey(credentialsId: JENKINS_SSH_CREDS_ID,
+                                         keyFileVariable: 'SSH_KEY_FILE',
+                                         usernameVariable: 'SSH_USERNAME')]) {
                     withEnv([
                             "JENKINS_RG_NAME=${jenkins_rg_name}",
                             "JENKINS_SUBNET_NAME=${jenkins_subnet_name}",
@@ -91,7 +92,7 @@ def buildLinuxManagedImage(String os_series, String version, String gallery_imag
                                 --os-disk-size-gb 128 \
                                 --subnet \$SUBNET_ID \
                                 --admin-username ${SSH_USERNAME} \
-                                --admin-password ${SSH_PASSWORD} \
+                                --ssh-key-name ${SSH_CREDS_NAME} \
                                 --image ${AZURE_IMAGE_ID} \
                                 --public-ip-address \"\" \
                                 --nsg-rule NONE \
@@ -103,9 +104,9 @@ def buildLinuxManagedImage(String os_series, String version, String gallery_imag
 
             stage("Setup remote access") {
                 withCredentials([
-                    usernamePassword(credentialsId: JENKINS_USER_CREDS_ID,
-                                     usernameVariable: "SSH_USERNAME",
-                                     passwordVariable: "SSH_PASSWORD")]) {
+                    sshUserPrivateKey(credentialsId: JENKINS_SSH_CREDS_ID,
+                                     keyFileVariable: 'SSH_KEY_FILE',
+                                     usernameVariable: 'SSH_USERNAME')]) {
                     withEnv([
                             "JENKINS_RG_NAME=${jenkins_rg_name}",
                             "JENKINS_SUBNET_NAME=${jenkins_subnet_name}",
@@ -122,11 +123,14 @@ def buildLinuxManagedImage(String os_series, String version, String gallery_imag
                             PRIVATE_IP=\$(echo \$VM_DETAILS | jq -r '.privateIps')
 
                             rm -f ${WORKSPACE}/scripts/ansible/inventory/hosts-${VM_NAME}
+                            mkdir -p ${WORKSPACE}/.ssh
+                            cp ${SSH_KEY_FILE} ${WORKSPACE}/.ssh/id_rsa_${VM_NAME}
+                            chmod 600 ${WORKSPACE}/.ssh/id_rsa_${VM_NAME}
 
                             echo "[linux-agents]" >> ${WORKSPACE}/scripts/ansible/inventory/hosts-${VM_NAME}
                             echo "\$PRIVATE_IP" >> ${WORKSPACE}/scripts/ansible/inventory/hosts-${VM_NAME}
                             echo "ansible_ssh_user: ${SSH_USERNAME}" >> ${WORKSPACE}/scripts/ansible/inventory/host_vars/\$PRIVATE_IP
-                            echo "ansible_ssh_pass: ${SSH_PASSWORD}" >> ${WORKSPACE}/scripts/ansible/inventory/host_vars/\$PRIVATE_IP
+                            echo "ansible_ssh_private_key_file: ${WORKSPACE}/.ssh/id_rsa_${VM_NAME}" >> ${WORKSPACE}/scripts/ansible/inventory/host_vars/\$PRIVATE_IP
                             echo "ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ServerAliveInterval=30 -o ServerAliveCountMax=10 -o TCPKeepAlive=yes'" >> ${WORKSPACE}/scripts/ansible/inventory/host_vars/\$PRIVATE_IP
                         '''
                     }
@@ -149,9 +153,9 @@ def buildLinuxManagedImage(String os_series, String version, String gallery_imag
                     docker_extra_vars += " --extra-vars docker_tag=${params.DOCKER_TAG}"
                 }
                 withCredentials([
-                        usernamePassword(credentialsId: JENKINS_USER_CREDS_ID,
-                                         usernameVariable: "SSH_USERNAME",
-                                         passwordVariable: "SSH_PASSWORD")]) {
+                        sshUserPrivateKey(credentialsId: JENKINS_SSH_CREDS_ID,
+                                         keyFileVariable: 'SSH_KEY_FILE',
+                                         usernameVariable: 'SSH_USERNAME')]) {
                     withEnv(["VM_NAME=${vm_name}",
                              "DOCKER_EXTRA_VARS=${docker_extra_vars}"]) {
                         common.exec_with_retry(5, 60) {
@@ -250,6 +254,7 @@ def buildLinuxManagedImage(String os_series, String version, String gallery_imag
         } finally {
             stage("${version}-cleanup") {
                 sh """
+                    rm -f ${WORKSPACE}/.ssh/id_rsa_${vm_name}
                     az group delete --name ${vm_rg_name} --yes
                     az image delete \
                         --resource-group ${RESOURCE_GROUP} \
@@ -511,25 +516,7 @@ node(params.AGENTS_LABEL) {
                 println("IMAGE_VERSION: ${image_version}")
             }
             stage("Install Azure CLI") {
-                retry(10) {
-                    sh """
-                        sleep 5
-                        ${helpers.WaitForAptLock()}
-                        sudo apt-get update
-                        sudo apt-get -y install ca-certificates curl apt-transport-https lsb-release gnupg
-                        curl -sL https://packages.microsoft.com/keys/microsoft.asc |
-                            gpg --dearmor |
-                            sudo tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null
-                        AZ_REPO=\$(lsb_release -cs)
-                        echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ \$AZ_REPO main" |
-                            sudo tee /etc/apt/sources.list.d/azure-cli.list
-                        ${helpers.WaitForAptLock()}
-                        sudo apt-get update
-                        # see https://github.com/Azure/azure-cli/issues/28397
-                        apt-cache show azure-cli | grep Version
-                        sudo apt-get -y install azure-cli jq sshpass
-                    """
-                }
+                common.installAzureCLI()
             }
             stage("Azure CLI Login") {
                 withCredentials([

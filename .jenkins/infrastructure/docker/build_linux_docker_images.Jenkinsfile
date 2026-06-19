@@ -40,6 +40,13 @@ pipeline {
                     userRemoteConfigs: [[url: "https://github.com/${params.REPOSITORY_NAME}"]]])
             }
         }
+        stage("Install Azure CLI") {
+            steps {
+                script {
+                    common.installAzureCLI()
+                }
+            }
+        }
         stage("Base Image") {
             matrix {
                 axes {
@@ -52,20 +59,21 @@ pipeline {
                     stage("Build Base") {
                         steps {
                             script {
+                                def sgx_version
                                 if(UBUNTU_RELEASE == "20.04") {
                                     // Last release for Ubuntu 20.04 is SGX 2.25.100.
-                                    SGX_VERSION = "2.25.100"
+                                    sgx_version = "2.25.100"
                                 } else {
-                                    SGX_VERSION = params.SGX_VERSION
+                                    sgx_version = params.SGX_VERSION
                                 }
-                            }
-                            dir(env.BASE_DOCKERFILE_DIR) {
-                                sh """
-                                    chmod +x ./build.sh
-                                    mkdir "build-${UBUNTU_RELEASE}"
-                                    cd "build-${UBUNTU_RELEASE}"
-                                    ../build.sh -v "${SGX_VERSION}" -u "${UBUNTU_RELEASE}" -t "${TAG_BASE_IMAGE}"
-                                """
+                                dir(env.BASE_DOCKERFILE_DIR) {
+                                    sh """
+                                        chmod +x ./build.sh
+                                        mkdir "build-${UBUNTU_RELEASE}"
+                                        cd "build-${UBUNTU_RELEASE}"
+                                        ../build.sh -v "${sgx_version}" -u "${UBUNTU_RELEASE}" -t "${TAG_BASE_IMAGE}"
+                                    """
+                                }
                             }
                         }
                     }
@@ -168,10 +176,10 @@ pipeline {
     post {
         always {
                 sh """
-                    docker logout ${params.CONTAINER_REPO} || true
+                    docker logout ${params.CONTAINER_REPO}
                     az logout || true
-                    az cache purge || true
-                    az account clear || true
+                    az cache purge
+                    az account clear
                 """
         }
     }

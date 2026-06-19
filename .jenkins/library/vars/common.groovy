@@ -126,7 +126,7 @@ def installAzureCLI() {
                 sudo tee /etc/apt/sources.list.d/azure-cli.list
             ${helpers.WaitForAptLock()}
             sudo apt-get update
-            sudo apt-get -y install azure-cli
+            sudo apt-get -y install azure-cli jq
         """
     }
 }
