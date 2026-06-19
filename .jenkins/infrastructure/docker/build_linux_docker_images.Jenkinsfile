@@ -102,9 +102,11 @@ pipeline {
                                     az login --identity
                                     az acr login --name ${params.CONTAINER_REPO}
                                 """
-                                base_image.push()
-                                if ( params.TAG_LATEST ) {
-                                    base_image.push('latest')
+                                docker.withRegistry("https://${params.CONTAINER_REPO}") {
+                                    base_image.push()
+                                    if ( params.TAG_LATEST ) {
+                                        base_image.push('latest')
+                                    }
                                 }
                             }
                         }
@@ -134,9 +136,11 @@ pipeline {
                                 az login --identity
                                 az acr login --name ${params.CONTAINER_REPO}
                             """
-                            common.exec_with_retry { oe2004.push() }
-                            if ( params.TAG_LATEST ) {
-                                common.exec_with_retry { oe2004.push('latest') }
+                            docker.withRegistry("https://${params.CONTAINER_REPO}") {
+                                common.exec_with_retry { oe2004.push() }
+                                if ( params.TAG_LATEST ) {
+                                    common.exec_with_retry { oe2004.push('latest') }
+                                }
                             }
                         }
                     }
@@ -163,9 +167,11 @@ pipeline {
                                 az login --identity
                                 az acr login --name ${params.CONTAINER_REPO}
                             """
-                            common.exec_with_retry { oe2204.push() }
-                            if ( params.TAG_LATEST ) {
-                                common.exec_with_retry { oe2204.push('latest') }
+                            docker.withRegistry("https://${params.CONTAINER_REPO}") {
+                                common.exec_with_retry { oe2204.push() }
+                                if ( params.TAG_LATEST ) {
+                                    common.exec_with_retry { oe2204.push('latest') }
+                                }
                             }
                         }
                     }
