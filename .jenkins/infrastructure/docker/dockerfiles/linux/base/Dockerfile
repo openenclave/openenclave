@@ -3,7 +3,7 @@
 #
 # Please use the associated build.sh to build this Dockerfile
 ARG UBUNTU_CODENAME
-ARG UBUNTU_SOURCE_REPO=""
+ARG UBUNTU_SOURCE_REPO="docker.io/library/"
 FROM ${UBUNTU_SOURCE_REPO}ubuntu:${UBUNTU_CODENAME}
 ARG UBUNTU_VERSION
 ARG UBUNTU_CODENAME

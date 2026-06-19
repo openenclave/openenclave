@@ -51,12 +51,20 @@ pipeline {
                 stages {
                     stage("Build Base") {
                         steps {
+                            script {
+                                if(UBUNTU_RELEASE == "20.04") {
+                                    // Last release for Ubuntu 20.04 is SGX 2.25.100.
+                                    SGX_VERSION = "2.25.100"
+                                } else {
+                                    SGX_VERSION = params.SGX_VERSION
+                                }
+                            }
                             dir(env.BASE_DOCKERFILE_DIR) {
                                 sh """
                                     chmod +x ./build.sh
                                     mkdir "build-${UBUNTU_RELEASE}"
                                     cd "build-${UBUNTU_RELEASE}"
-                                    ../build.sh -v "${params.SGX_VERSION}" -u "${UBUNTU_RELEASE}" -t "${TAG_BASE_IMAGE}"
+                                    ../build.sh -v "${SGX_VERSION}" -u "${UBUNTU_RELEASE}" -t "${TAG_BASE_IMAGE}"
                                 """
                             }
                         }
@@ -160,10 +168,10 @@ pipeline {
     post {
         always {
                 sh """
-                    docker logout ${params.CONTAINER_REPO}
+                    docker logout ${params.CONTAINER_REPO} || true
                     az logout || true
-                    az cache purge
-                    az account clear
+                    az cache purge || true
+                    az account clear || true
                 """
         }
     }
