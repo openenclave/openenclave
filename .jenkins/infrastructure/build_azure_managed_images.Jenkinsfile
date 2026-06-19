@@ -132,7 +132,6 @@ def buildLinuxManagedImage(String os_series, String version, String gallery_imag
                     }
                 }
                 sh """
-                    cd ${WORKSPACE}/scripts/ansible
                     ANSIBLE_HOST_KEY_CHECKING=False \
                     ansible linux-agents \
                         -i ${WORKSPACE}/scripts/ansible/inventory/hosts-${vm_name} \
@@ -144,26 +143,30 @@ def buildLinuxManagedImage(String os_series, String version, String gallery_imag
             stage("Deploy VM") {
                 def docker_extra_vars = ""
                 if (params.DOCKER_REGISTRY) {
-                    docker_extra_vars += " --extra-vars \"docker_registry=${params.DOCKER_REGISTRY}\""
+                    docker_extra_vars += " --extra-vars docker_registry=${params.DOCKER_REGISTRY}"
                 }
                 if (params.DOCKER_TAG) {
-                    docker_extra_vars += " --extra-vars \"docker_tag=${params.DOCKER_TAG}\""
+                    docker_extra_vars += " --extra-vars docker_tag=${params.DOCKER_TAG}"
                 }
                 withCredentials([
                         usernamePassword(credentialsId: JENKINS_USER_CREDS_ID,
                                          usernameVariable: "SSH_USERNAME",
                                          passwordVariable: "SSH_PASSWORD")]) {
-                    common.exec_with_retry(5, 60) {
-                        timeout(60) {
-                            sh """
-                                cd ${WORKSPACE}/scripts/ansible
-                                ANSIBLE_HOST_KEY_CHECKING=False \
-                                ansible-playbook \
-                                    -i ${WORKSPACE}/scripts/ansible/inventory/hosts-${vm_name} \
-                                    --extra-vars \"jenkins_admin_name=\${SSH_USERNAME}\"${docker_extra_vars} \
-                                    oe-linux-acc-setup.yml \
-                                    jenkins-packer.yml
-                            """
+                    withEnv(["VM_NAME=${vm_name}",
+                             "DOCKER_EXTRA_VARS=${docker_extra_vars}"]) {
+                        common.exec_with_retry(5, 60) {
+                            timeout(60) {
+                                sh '''
+                                    cd ${WORKSPACE}/scripts/ansible
+                                    ANSIBLE_HOST_KEY_CHECKING=False \
+                                    ansible-playbook \
+                                        -i ${WORKSPACE}/scripts/ansible/inventory/hosts-${VM_NAME} \
+                                        --extra-vars "jenkins_admin_name=${SSH_USERNAME}" \
+                                        ${DOCKER_EXTRA_VARS} \
+                                        oe-linux-acc-setup.yml \
+                                        jenkins-packer.yml
+                                '''
+                            }
                         }
                     }
                 }
@@ -171,14 +174,19 @@ def buildLinuxManagedImage(String os_series, String version, String gallery_imag
 
             stage("Generalize VM") {
                 timeout(GLOBAL_TIMEOUT_MINUTES) {
+                    sh """
+                        export ANSIBLE_HOST_KEY_CHECKING=False
+                        ansible linux-agents \
+                            -i ${WORKSPACE}/scripts/ansible/inventory/hosts-${vm_name} \
+                            -m ansible.builtin.wait_for_connection \
+                            -a "sleep=10 timeout=600"
+                        ansible linux-agents \
+                            -i ${WORKSPACE}/scripts/ansible/inventory/hosts-${vm_name} \
+                            -m ansible.builtin.raw \
+                            -a 'sudo waagent -force -deprovision+user && export HISTSIZE=0 && sync'
+                    """
                     common.exec_with_retry(5, 60) {
                         sh """
-                            az vm run-command invoke \
-                                --resource-group ${vm_rg_name} \
-                                --name ${vm_name} \
-                                --command-id RunShellScript \
-                                --scripts "sudo waagent -force -deprovision+user && export HISTSIZE=0 && sync"
-
                             az vm deallocate --resource-group ${vm_rg_name} --name ${vm_name}
                             az vm generalize --resource-group ${vm_rg_name} --name ${vm_name}
                         """
@@ -484,90 +492,92 @@ def buildWindowsManagedImage(String os_series, String image_type, String launch_
 }
 
 node(params.AGENTS_LABEL) {
-    try {
-        stage("Initialize Workspace") {
+    timestamps {
+        try {
+            stage("Initialize Workspace") {
 
-            cleanWs()
-            checkout([$class: 'GitSCM',
-                branches: [[name: BRANCH_NAME]],
-                extensions: [],
-                userRemoteConfigs: [[url: "https://github.com/${params.REPOSITORY_NAME}"]]])
+                cleanWs()
+                checkout([$class: 'GitSCM',
+                    branches: [[name: BRANCH_NAME]],
+                    extensions: [],
+                    userRemoteConfigs: [[url: "https://github.com/${params.REPOSITORY_NAME}"]]])
 
-            if (params.IMAGE_VERSION) {
-                image_version = params.IMAGE_VERSION
-            } else {
-                image_version = helpers.get_date(".") + "${BUILD_NUMBER}"
+                if (params.IMAGE_VERSION) {
+                    image_version = params.IMAGE_VERSION
+                } else {
+                    image_version = helpers.get_date(".") + "${BUILD_NUMBER}"
+                }
+
+                println("IMAGE_VERSION: ${image_version}")
             }
-
-            println("IMAGE_VERSION: ${image_version}")
-        }
-        stage("Install Azure CLI") {
-            retry(10) {
-                sh """
-                    sleep 5
-                    ${helpers.WaitForAptLock()}
-                    sudo apt-get update
-                    sudo apt-get -y install ca-certificates curl apt-transport-https lsb-release gnupg
-                    curl -sL https://packages.microsoft.com/keys/microsoft.asc |
-                        gpg --dearmor |
-                        sudo tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null
-                    AZ_REPO=\$(lsb_release -cs)
-                    echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ \$AZ_REPO main" |
-                        sudo tee /etc/apt/sources.list.d/azure-cli.list
-                    ${helpers.WaitForAptLock()}
-                    sudo apt-get update
-                    # see https://github.com/Azure/azure-cli/issues/28397
-                    apt-cache show azure-cli | grep Version
-                    sudo apt-get -y install azure-cli jq sshpass
-                """
-            }
-        }
-        stage("Azure CLI Login") {
-            withCredentials([
-                    string(credentialsId: 'Jenkins-CI-Subscription-Id', variable: 'SUBSCRIPTION_ID'),
-                    string(credentialsId: 'Jenkins-CI-Tenant-Id', variable: 'TENANT_ID')]) {
-                retry(5) {
-                    sh '''#!/bin/bash
-                        az login --identity
-                        az account set -s ${SUBSCRIPTION_ID}
-                    '''
+            stage("Install Azure CLI") {
+                retry(10) {
+                    sh """
+                        sleep 5
+                        ${helpers.WaitForAptLock()}
+                        sudo apt-get update
+                        sudo apt-get -y install ca-certificates curl apt-transport-https lsb-release gnupg
+                        curl -sL https://packages.microsoft.com/keys/microsoft.asc |
+                            gpg --dearmor |
+                            sudo tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null
+                        AZ_REPO=\$(lsb_release -cs)
+                        echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ \$AZ_REPO main" |
+                            sudo tee /etc/apt/sources.list.d/azure-cli.list
+                        ${helpers.WaitForAptLock()}
+                        sudo apt-get update
+                        # see https://github.com/Azure/azure-cli/issues/28397
+                        apt-cache show azure-cli | grep Version
+                        sudo apt-get -y install azure-cli jq sshpass
+                    """
                 }
             }
-        }
-        stage("Install Ansible") {
-            retry(10) {
-                sh """#!/bin/bash
-                    ${helpers.WaitForAptLock()}
-                    sudo ${WORKSPACE}/scripts/ansible/install-ansible.sh
+            stage("Azure CLI Login") {
+                withCredentials([
+                        string(credentialsId: 'Jenkins-CI-Subscription-Id', variable: 'SUBSCRIPTION_ID'),
+                        string(credentialsId: 'Jenkins-CI-Tenant-Id', variable: 'TENANT_ID')]) {
+                    retry(5) {
+                        sh '''#!/bin/bash
+                            az login --identity
+                            az account set -s ${SUBSCRIPTION_ID}
+                        '''
+                    }
+                }
+            }
+            stage("Install Ansible") {
+                retry(10) {
+                    sh """#!/bin/bash
+                        ${helpers.WaitForAptLock()}
+                        sudo ${WORKSPACE}/scripts/ansible/install-ansible.sh
+                    """
+                }
+            }
+            stage("Build images") {
+                def windows_images = [
+                    "Build WS2022 - nonSGX - clang11"       : { buildWindowsManagedImage("WS22", "nonSGX", "SGX1FLC-NoIntelDrivers", "11.1.0", image_version) },
+                    "Build WS2022 - SGX1FLC DCAP - clang11" : { buildWindowsManagedImage("WS22", "SGX-DCAP", "SGX1FLC", "11.1.0", image_version) }
+                ]
+                def linux_images = [
+                    "Build Ubuntu 20.04" : { buildLinuxManagedImage("ubuntu", "20.04", image_version) },
+                    "Build Ubuntu 22.04" : { buildLinuxManagedImage("ubuntu", "22.04", image_version) }
+                ]
+                def images = [:]
+                if (params.BUILD_WINDOWS_IMAGES) {
+                    images += windows_images
+                }
+                if (params.BUILD_LINUX_IMAGES) {
+                    images += linux_images
+                }
+                parallel images
+            }
+        } finally {
+            stage("Clean up") {
+                sh """
+                    az logout || true
+                    az cache purge
+                    az account clear
                 """
+                cleanWs()
             }
-        }
-        stage("Build images") {
-            def windows_images = [
-                "Build WS2022 - nonSGX - clang11"       : { buildWindowsManagedImage("WS22", "nonSGX", "SGX1FLC-NoIntelDrivers", "11.1.0", image_version) },
-                "Build WS2022 - SGX1FLC DCAP - clang11" : { buildWindowsManagedImage("WS22", "SGX-DCAP", "SGX1FLC", "11.1.0", image_version) }
-            ]
-            def linux_images = [
-                "Build Ubuntu 20.04" : { buildLinuxManagedImage("ubuntu", "20.04", image_version) },
-                "Build Ubuntu 22.04" : { buildLinuxManagedImage("ubuntu", "22.04", image_version) }
-            ]
-            def images = [:]
-            if (params.BUILD_WINDOWS_IMAGES) {
-                images += windows_images
-            }
-            if (params.BUILD_LINUX_IMAGES) {
-                images += linux_images
-            }
-            parallel images
-        }
-    } finally {
-        stage("Clean up") {
-            sh """
-                az logout || true
-                az cache purge
-                az account clear
-            """
-            cleanWs()
         }
     }
 }
