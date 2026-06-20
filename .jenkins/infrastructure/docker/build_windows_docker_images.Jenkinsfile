@@ -33,6 +33,13 @@ pipeline {
                     userRemoteConfigs: [[url: "https://github.com/${params.REPOSITORY_NAME}"]]])
             }
         }
+        stage("Install Azure CLI") {
+            steps {
+                script {
+                    common.installAzureCLI()
+                }
+            }
+        }
         stage("Build Windows Server 2022 Docker Image") {
             steps {
                 powershell """
