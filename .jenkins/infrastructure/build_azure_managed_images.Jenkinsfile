@@ -5,6 +5,7 @@ library "OpenEnclaveJenkinsLibrary@${params.OECI_LIB_VERSION}"
 
 GLOBAL_TIMEOUT_MINUTES = 480
 
+JENKINS_USER_CREDS_ID = 'oeadmin-credentials'
 JENKINS_SSH_CREDS_ID = 'jenkins-agent-ssh-key'
 CONTAINER_REPO = 'openenclave.azurecr.io'
 AZURE_IMAGES_MAP = [

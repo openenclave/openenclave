@@ -109,25 +109,40 @@ def emailJobStatus(String status) {
 }
 
 /**
- * Installs Azure CLI from Microsoft repository (Ubuntu distributions only)
+ * Installs Azure CLI on the current agent.
+ * Supports Ubuntu (via apt) and Windows (via MSI).
  */
 def installAzureCLI() {
-    retry(10) {
-        sh """
-            sleep 5
-            ${helpers.WaitForAptLock()}
-            sudo apt-get update
-            sudo apt-get -y install ca-certificates curl apt-transport-https lsb-release gnupg
-            curl -sL https://packages.microsoft.com/keys/microsoft.asc |
-                gpg --dearmor |
-                sudo tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null
-            AZ_REPO=\$(lsb_release -cs)
-            echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ \$AZ_REPO main" |
-                sudo tee /etc/apt/sources.list.d/azure-cli.list
-            ${helpers.WaitForAptLock()}
-            sudo apt-get update
-            sudo apt-get -y install azure-cli jq
-        """
+    if (isUnix()) {
+        retry(10) {
+            sh """
+                ${helpers.WaitForAptLock()}
+                sudo apt-get update
+                sudo apt-get -y install ca-certificates curl apt-transport-https lsb-release gnupg
+                curl -sL https://packages.microsoft.com/keys/microsoft.asc |
+                    gpg --dearmor |
+                    sudo tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null
+                AZ_REPO=\$(lsb_release -cs)
+                echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ \$AZ_REPO main" |
+                    sudo tee /etc/apt/sources.list.d/azure-cli.list
+                ${helpers.WaitForAptLock()}
+                sudo apt-get update
+                sudo apt-get -y install azure-cli jq
+            """
+        }
+    } else {
+        retry(10) {
+            powershell '''
+                $ProgressPreference = 'SilentlyContinue'
+                Invoke-WebRequest -Uri https://aka.ms/installazurecliwindowsx64 -OutFile .\\AzureCLI.msi
+                $sig = Get-AuthenticodeSignature .\\AzureCLI.msi
+                if ($sig.Status -ne 'Valid') {
+                    throw "Azure CLI MSI signature validation failed: $($sig.Status)"
+                }
+                Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /quiet'
+                Remove-Item .\\AzureCLI.msi
+            '''
+        }
     }
 }
 
