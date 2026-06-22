@@ -169,7 +169,7 @@ def buildLinuxManagedImage(String os_series, String version, String gallery_imag
                                         --extra-vars "jenkins_admin_name=${SSH_USERNAME}" \
                                         ${DOCKER_EXTRA_VARS} \
                                         oe-linux-acc-setup.yml \
-                                        jenkins-packer.yml
+                                        jenkins-setup.yml
                                 '''
                             }
                         }
@@ -409,7 +409,7 @@ def buildWindowsManagedImage(String os_series, String image_type, String launch_
                             --extra-vars \"ci_team_email=oeciteam@microsoft.com" \
                             --extra-vars \"ci_team_name=OE CI Team\" \
                             oe-windows-acc-setup.yml \
-                            jenkins-packer.yml
+                            jenkins-setup.yml
 
                         az vm run-command invoke \
                             --resource-group ${vm_rg_name} \
