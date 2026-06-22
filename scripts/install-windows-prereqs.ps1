@@ -537,7 +537,7 @@ function Install-DCAP-Dependencies {
     $TEMP_NUGET_DIR = "$PACKAGES_DIRECTORY\Azure_DCAP_Client_nupkg"
     New-Directory -Path $OE_NUGET_DIR -RemoveExisting
     New-Directory -Path $TEMP_NUGET_DIR -RemoveExisting
-    $nupkgDir = Get-Item "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel_SGX_DCAP_for_Windows_*\nuget"
+    $nupkgDir = Get-Item "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel_SGX_DCAP_for_Windows*\nuget"
     if(!$nupkgDir) {
         Throw "Cannot find the Intel DCAP nupkg directory"
     }
