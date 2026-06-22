@@ -178,23 +178,28 @@ def buildLinuxManagedImage(String os_series, String version, String gallery_imag
             }
 
             stage("Generalize VM") {
-                timeout(GLOBAL_TIMEOUT_MINUTES) {
-                    sh """
-                        export ANSIBLE_HOST_KEY_CHECKING=False
-                        ansible linux-agents \
-                            -i ${WORKSPACE}/scripts/ansible/inventory/hosts-${vm_name} \
-                            -m ansible.builtin.wait_for_connection \
-                            -a "sleep=10 timeout=600"
-                        ansible linux-agents \
-                            -i ${WORKSPACE}/scripts/ansible/inventory/hosts-${vm_name} \
-                            -m ansible.builtin.raw \
-                            -a 'sudo waagent -force -deprovision+user && export HISTSIZE=0 && sync'
-                    """
-                    common.exec_with_retry(5, 60) {
+                withCredentials([
+                    sshUserPrivateKey(credentialsId: JENKINS_SSH_CREDS_ID,
+                                     keyFileVariable: 'SSH_KEY_FILE',
+                                     usernameVariable: 'SSH_USERNAME')]) {
+                    timeout(120) {
                         sh """
-                            az vm deallocate --resource-group ${vm_rg_name} --name ${vm_name}
-                            az vm generalize --resource-group ${vm_rg_name} --name ${vm_name}
+                            export ANSIBLE_HOST_KEY_CHECKING=False
+                            ansible linux-agents \
+                                -i ${WORKSPACE}/scripts/ansible/inventory/hosts-${vm_name} \
+                                -m ansible.builtin.wait_for_connection \
+                                -a "sleep=10 timeout=600"
+                            ansible linux-agents \
+                                -i ${WORKSPACE}/scripts/ansible/inventory/hosts-${vm_name} \
+                                -m ansible.builtin.raw \
+                                -a 'sudo rm -f /var/log/waagent.log && sudo cloud-init clean && sudo groupdel -f ${SSH_USERNAME} && sudo waagent -force -deprovision+user && export HISTSIZE=0'
                         """
+                        common.exec_with_retry(5, 60) {
+                            sh """
+                                az vm deallocate --resource-group ${vm_rg_name} --name ${vm_name}
+                                az vm generalize --resource-group ${vm_rg_name} --name ${vm_name}
+                            """
+                        }
                     }
                 }
             }
