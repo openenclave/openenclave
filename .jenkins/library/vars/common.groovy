@@ -128,9 +128,14 @@ def installAzureCLI() {
                 ${helpers.WaitForAptLock()}
                 sudo apt-get update
                 sudo apt-get -y install azure-cli jq
+                az --version
             """
         }
     } else {
+        def azPath = 'C:\\Program Files\\Microsoft SDKs\\Azure\\CLI2\\wbin'
+        if (!fileExists("${azPath}\\az.cmd")) {
+            error "Azure CLI installation failed: az.cmd not found in ${azPath}"
+        }
         retry(10) {
             powershell '''
                 $ProgressPreference = 'SilentlyContinue'
@@ -143,6 +148,12 @@ def installAzureCLI() {
                 Remove-Item .\\AzureCLI.msi
             '''
         }
+        if (!env.PATH.contains(azPath)) {
+            env.PATH = "${azPath};${env.PATH}"
+        }
+        powershell '''
+            az --version
+        '''
     }
 }
 
