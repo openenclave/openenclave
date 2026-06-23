@@ -59,9 +59,11 @@ pipeline {
                         az login --identity
                         az acr login --name ${params.CONTAINER_REPO}
                     """
-                    common.exec_with_retry { oe2022.push() }
-                    if ( params.TAG_LATEST ) {
-                        common.exec_with_retry { oe2022.push('latest') }
+                    docker.withRegistry("https://${params.CONTAINER_REPO}") {
+                        common.exec_with_retry { oe2022.push() }
+                        if ( params.TAG_LATEST ) {
+                            common.exec_with_retry { oe2022.push('latest') }
+                        }
                     }
                 }
             }
