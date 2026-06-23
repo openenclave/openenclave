@@ -22,9 +22,11 @@ Param(
     [string]$Nuget6Hash = 'F2B2145244A3FE1E905599CFB3ADE38E3FCE0C00E73532BDE164EE4F8C8EDCEA',
     [string]$DevconURL = 'https://download.microsoft.com/download/7/D/D/7DD48DE6-8BDA-47C0-854A-539A800FAA90/wdk/Installers/787bee96dbd26371076b37b13c405890.cab',
     [string]$DevconHash = 'A38E409617FC89D0BA1224C31E42AF4344013FEA046D2248E4B9E03F67D5908A',
-    # Intel PSW 2.23.100.3 is included in DCAP 1.21.100.3
-    [string]$IntelDCAPURL = 'https://downloadmirror.intel.com/834564/Intel_SGX_DCAP_for_Windows_v1.22.100.3.zip',
-    [string]$IntelDCAPHash = 'E65061221BF22C1C52E0AF9F610CE53288AA34543A0E152DA2FE755B7079EB93',
+    # Intel PSW 2.28.100.1 is included in DCAP 1.25.100.1
+    # This is a redistributed copy which is the same as the one provided by Intel with an additional Intel Simplified Software License pdf.
+    # Original distribution can be obtained from https://downloadmirror.intel.com/915862/Intel_SGX_DCAP_for_Windows.zip
+    [string]$IntelDCAPURL = 'https://openenclavepublicstorage.blob.core.windows.net/openenclavedependencies/Intel_SGX_DCAP_for_Windows_v1.25.100.1_redist.zip',
+    [string]$IntelDCAPHash = '022AF05217B920CFE9A7C87733D10AEE1C765B7B6C762034E8B01872038B5B92',
     [string]$VCRuntime2012URL = 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe',
     [string]$VCRuntime2012Hash = '681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064',
     [string]$AzureDCAPNupkgURL = 'https://openenclavepublicstorage.blob.core.windows.net/openenclavedependencies/microsoft.azure.dcap.1.12.3.nupkg',
@@ -36,8 +38,7 @@ Param(
     [string]$GetPipURL = 'https://bootstrap.pypa.io/pip/3.4/get-pip.py',
     [string]$GetPipHash = 'DBD5DAE3D1E7F6DF844D630CDF65E0F0D98E483C9997DAEA17C7C9D86F7B38AD',
     [Parameter(mandatory=$true)][string]$InstallPath,
-    # SGX1 and SGX1-NoIntelDrivers will be deprecated.
-    [Parameter(mandatory=$true)][ValidateSet("SGX1FLC", "SGX1", "SGX1FLC-NoIntelDrivers", "SGX1-NoIntelDrivers")][string]$LaunchConfiguration,
+    [Parameter(mandatory=$true)][ValidateSet("SGX1FLC", "SGX1FLC-NoIntelDrivers")][string]$LaunchConfiguration,
     [Parameter(mandatory=$true)][ValidateSet("None", "Azure")][string]$DCAPClientType,
     [Parameter(mandatory=$false)][switch]$SkipVSInstall=$false,
     [Parameter(mandatory=$false)][switch]$VerificationOnly=$false,
@@ -536,7 +537,7 @@ function Install-DCAP-Dependencies {
     $TEMP_NUGET_DIR = "$PACKAGES_DIRECTORY\Azure_DCAP_Client_nupkg"
     New-Directory -Path $OE_NUGET_DIR -RemoveExisting
     New-Directory -Path $TEMP_NUGET_DIR -RemoveExisting
-    $nupkgDir = Get-Item "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel_SGX_DCAP_for_Windows_*\nuget"
+    $nupkgDir = Get-Item "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel_SGX_DCAP_for_Windows*\nuget"
     if(!$nupkgDir) {
         Throw "Cannot find the Intel DCAP nupkg directory"
     }

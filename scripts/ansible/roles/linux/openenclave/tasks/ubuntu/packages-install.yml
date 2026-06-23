@@ -30,3 +30,4 @@
   retries: 100
   register: install
   until: install is success
+  timeout: 600

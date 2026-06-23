@@ -3,7 +3,7 @@
 
 ---
 java_packages:
-  - "openjdk-17-jre-headless"
+  - "openjdk-21-jre-headless"
 
 apt_packages_code_coverage:
   - "lcov"

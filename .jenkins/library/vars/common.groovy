@@ -17,7 +17,7 @@ String dockerImage(String tag, String dockerfile = ".jenkins/Dockerfile", String
     return docker.build(tag, "${buildArgs} -f ${dockerfile} .")
 }
 
-def ContainerRun(String imageName, String compiler, String task, String runArgs="", registryUrl="https://oejenkinscidockerregistry.azurecr.io", registryName="oejenkinscidockerregistry") {
+def ContainerRun(String imageName, String compiler, String task, String runArgs="", registryUrl="https://openenclave.azurecr.io", registryName="openenclave") {
     docker.withRegistry(registryUrl, registryName) {
         def image = docker.image(imageName)
         retry(3) {
@@ -26,24 +26,6 @@ def ContainerRun(String imageName, String compiler, String task, String runArgs=
         image.inside(runArgs) {
             dir("${WORKSPACE}/build") {
                 Run(compiler, task)
-            }
-        }
-    }
-}
-
-def azureEnvironment(String task, String imageName = "oetools-deploy:latest") {
-    withCredentials([string(credentialsId: 'Jenkins-CI-Subscription-Id', variable: 'SUBSCRIPTION_ID'),
-                     string(credentialsId: 'Jenkins-CI-Tenant-Id', variable: 'TENANT_ID')]) {
-        docker.withRegistry("https://oejenkinscidockerregistry.azurecr.io", "oejenkinscidockerregistry") {
-            def image = docker.image("oetools-deploy:latest")
-            image.pull()
-            image.inside {
-                sh """#!/usr/bin/env bash
-                      set -o errexit
-                      set -o pipefail
-                      source /etc/profile
-                      ${task}
-                   """
             }
         }
     }
@@ -111,18 +93,6 @@ def Run(String compiler, String task) {
     }
 }
 
-def deleteRG(List resourceGroups, String imageName = "oetools-deploy:latest") {
-    stage("Delete ${resourceGroups.toString()} resource groups") {
-        resourceGroups.each { rg ->
-            withEnv(["RESOURCE_GROUP=${rg}"]) {
-                dir("${WORKSPACE}/.jenkins/provision") {
-                    azureEnvironment("./cleanup.sh", imageName)
-                }
-            }
-        }
-    }
-}
-
 def emailJobStatus(String status) {
     emailext (
       to: '$DEFAULT_RECIPIENTS',      
@@ -139,25 +109,51 @@ def emailJobStatus(String status) {
 }
 
 /**
- * Installs Azure CLI from Microsoft repository (Ubuntu distributions only)
+ * Installs Azure CLI on the current agent.
+ * Supports Ubuntu (via apt) and Windows (via MSI).
  */
 def installAzureCLI() {
-    retry(10) {
-        sh """
-            sleep 5
-            ${helpers.WaitForAptLock()}
-            sudo apt-get update
-            sudo apt-get -y install ca-certificates curl apt-transport-https lsb-release gnupg
-            curl -sL https://packages.microsoft.com/keys/microsoft.asc |
-                gpg --dearmor |
-                sudo tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null
-            AZ_REPO=\$(lsb_release -cs)
-            echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ \$AZ_REPO main" |
-                sudo tee /etc/apt/sources.list.d/azure-cli.list
-            ${helpers.WaitForAptLock()}
-            sudo apt-get update
-            sudo apt-get -y install azure-cli
-        """
+    if (isUnix()) {
+        retry(10) {
+            sh """
+                ${helpers.WaitForAptLock()}
+                sudo apt-get update
+                sudo apt-get -y install ca-certificates curl apt-transport-https lsb-release gnupg
+                curl -sL https://packages.microsoft.com/keys/microsoft.asc |
+                    gpg --dearmor |
+                    sudo tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null
+                AZ_REPO=\$(lsb_release -cs)
+                echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ \$AZ_REPO main" |
+                    sudo tee /etc/apt/sources.list.d/azure-cli.list
+                ${helpers.WaitForAptLock()}
+                sudo apt-get update
+                sudo apt-get -y install azure-cli jq
+                az --version
+            """
+        }
+    } else {
+        def azPath = 'C:\\Program Files\\Microsoft SDKs\\Azure\\CLI2\\wbin'
+        if (!fileExists("${azPath}\\az.cmd")) {
+            error "Azure CLI installation failed: az.cmd not found in ${azPath}"
+        }
+        retry(10) {
+            powershell '''
+                $ProgressPreference = 'SilentlyContinue'
+                Invoke-WebRequest -Uri https://aka.ms/installazurecliwindowsx64 -OutFile .\\AzureCLI.msi
+                $sig = Get-AuthenticodeSignature .\\AzureCLI.msi
+                if ($sig.Status -ne 'Valid') {
+                    throw "Azure CLI MSI signature validation failed: $($sig.Status)"
+                }
+                Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /quiet'
+                Remove-Item .\\AzureCLI.msi
+            '''
+        }
+        if (!env.PATH.contains(azPath)) {
+            env.PATH = "${azPath};${env.PATH}"
+        }
+        powershell '''
+            az --version
+        '''
     }
 }
 

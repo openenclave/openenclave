@@ -74,22 +74,8 @@ pipeline {
     stages {
         stage("Install Azure CLI") {
             steps {
-                retry(10) {
-                    sh """
-                        sleep 5
-                        ${helpers.WaitForAptLock()}
-                        sudo apt-get update
-                        sudo apt-get -y install ca-certificates curl apt-transport-https lsb-release gnupg
-                        curl -sL https://packages.microsoft.com/keys/microsoft.asc |
-                            gpg --dearmor |
-                            sudo tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null
-                        AZ_REPO=\$(lsb_release -cs)
-                        echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ \$AZ_REPO main" |
-                            sudo tee /etc/apt/sources.list.d/azure-cli.list
-                        ${helpers.WaitForAptLock()}
-                        sudo apt-get update
-                        sudo apt-get -y install azure-cli jq
-                    """
+                script {
+                    common.installAzureCLI()
                 }
             }
         }

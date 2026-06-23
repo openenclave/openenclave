@@ -58,7 +58,11 @@
   ansible.builtin.get_url:
     url: 'https://download.01.org/intel-sgx/sgx-linux/2.13/as.ld.objdump.gold.r3.tar.gz'
     dest: '/tmp/'
+    timeout: 600
   register: asldobjdump
+  retries: 5
+  delay: 15
+  until: asldobjdump is succeeded
 
 - name: Extract as and ld binaries
   ansible.builtin.unarchive:
