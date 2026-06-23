@@ -161,12 +161,13 @@ def buildLinuxManagedImage(String os_series, String version, String gallery_imag
                              "DOCKER_EXTRA_VARS=${docker_extra_vars}"]) {
                         common.exec_with_retry(5, 60) {
                             timeout(60) {
+                                // jenkins_admin_name should match the user created in the Dockerfile
                                 sh '''
                                     cd ${WORKSPACE}/scripts/ansible
                                     ANSIBLE_HOST_KEY_CHECKING=False \
                                     ansible-playbook \
                                         -i ${WORKSPACE}/scripts/ansible/inventory/hosts-${VM_NAME} \
-                                        --extra-vars "jenkins_admin_name=${SSH_USERNAME}" \
+                                        --extra-vars "jenkins_admin_name=jenkins" \
                                         ${DOCKER_EXTRA_VARS} \
                                         oe-linux-acc-setup.yml \
                                         jenkins-setup.yml

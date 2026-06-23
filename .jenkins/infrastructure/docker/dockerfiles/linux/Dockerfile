@@ -2,11 +2,7 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-#
-# IMPORTANT- Please update the version number in the next sentence
-# when you create a new docker image.
-#
-# This Dockerfile script builds an image for oetools-20.04
+# This Dockerfile script builds an Ubuntu-based Docker image with the necessary prerequisites for building and running Open Enclave SDK applications.
 
 # To use this Dockerfile, you will need to install docker-ce.
 #
@@ -34,7 +30,6 @@
 # To allow this, the Intel SGX AESM Service will need to be made available by creating the container with the following parameter:
 #   --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket
 #
-# Note that while building Ubuntu 22.04 is possible, it is not currently supported by Open Enclave SDK.
 
 ARG ubuntu_version=20.04
 ARG ubuntu_source_repo="docker.io/library/"
