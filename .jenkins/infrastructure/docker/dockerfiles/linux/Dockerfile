@@ -44,8 +44,8 @@ FROM ${ubuntu_source_repo}ubuntu:${ubuntu_version} as build
 ARG UNAME=jenkins
 ARG GNAME=jenkins
 # This UID/GID needs to match Jenkins agent UID/GID
-ARG UID=1000
-ARG GID=1000
+ARG UID=1002
+ARG GID=1002
 ARG devkits_uri
 
 # Workaround for https://githubmemory.com/repo/pypa/pip/issues/10219
