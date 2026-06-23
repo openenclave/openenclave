@@ -17,8 +17,8 @@ String dockerImage(String tag, String dockerfile = ".jenkins/Dockerfile", String
     return docker.build(tag, "${buildArgs} -f ${dockerfile} .")
 }
 
-def ContainerRun(String imageName, String compiler, String task, String runArgs="", registryUrl="https://openenclave.azurecr.io", registryName="openenclave") {
-    docker.withRegistry(registryUrl, registryName) {
+def ContainerRun(String imageName, String compiler, String task, String runArgs="", registryUrl="https://openenclave.azurecr.io") {
+    docker.withRegistry(registryUrl) {
         def image = docker.image(imageName)
         retry(3) {
             image.pull()
