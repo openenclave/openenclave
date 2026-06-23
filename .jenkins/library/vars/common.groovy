@@ -18,6 +18,12 @@ String dockerImage(String tag, String dockerfile = ".jenkins/Dockerfile", String
 }
 
 def ContainerRun(String imageName, String compiler, String task, String runArgs="", registryUrl="https://openenclave.azurecr.io") {
+    if (runArgs.contains("sgx_provision")) {
+        def sgx_prv_gid = sh(script: "stat -c '%g' /dev/sgx_provision", returnStdout: true).trim()
+        if (sgx_prv_gid && !runArgs.contains("--group-add")) {
+            runArgs = "--group-add ${sgx_prv_gid} ${runArgs}"
+        }
+    }
     docker.withRegistry(registryUrl) {
         def image = docker.image(imageName)
         retry(3) {
