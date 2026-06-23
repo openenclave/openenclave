@@ -2,6 +2,8 @@
 # Licensed under the MIT License.
 
 ---
+# PSW 2.25.100 and DCAP 1.22.100
+intel_sgx_psw_version: "2.25.100"
 intel_sgx_w_flc_driver_url: "https://download.01.org/intel-sgx/sgx-linux/2.18/distro/ubuntu20.04-server/sgx_linux_x64_driver_1.41.bin"
 # For Intel SGX driver 1.41 and above, intel_sgx_prv_permissions needs to be set to yes
 intel_sgx_prv_permissions: yes

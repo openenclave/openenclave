@@ -18,8 +18,7 @@ pipeline {
         string(name: "REPOSITORY_NAME", defaultValue: "openenclave/openenclave", description: "GitHub repository to checkout")
         string(name: "BRANCH_NAME", defaultValue: "master", description: "The branch used to checkout the repository")
         string(name: "DOCKER_TAG", defaultValue: "", description: "[OPTIONAL] Specify the tag for the new Docker images.")
-        string(name: "INTERNAL_REPO", defaultValue: "https://oejenkinscidockerregistry.azurecr.io", description: "Url for internal Docker repository")
-        string(name: "INTERNAL_REPO_CRED_ID", defaultValue: "oejenkinscidockerregistry", description: "Credential ID for internal Docker repository")
+        string(name: "CONTAINER_REPO", defaultValue: "openenclave.azurecr.io", description: "Docker repository name")
         string(name: "OECI_LIB_VERSION", defaultValue: 'master', description: 'Version of OE Libraries to use')
         string(name: "AGENTS_LABEL", defaultValue: 'ws2022-nonsgx', description: "Label of the agent to use to run this job")
         booleanParam(name: "TAG_LATEST", defaultValue: false, description: "Update the latest tag to the currently built DOCKER_TAG")
@@ -32,6 +31,13 @@ pipeline {
                     branches: [[name: BRANCH_NAME]],
                     extensions: [],
                     userRemoteConfigs: [[url: "https://github.com/${params.REPOSITORY_NAME}"]]])
+            }
+        }
+        stage("Install Azure CLI") {
+            steps {
+                script {
+                    common.installAzureCLI()
+                }
             }
         }
         stage("Build Windows Server 2022 Docker Image") {
@@ -49,14 +55,26 @@ pipeline {
         stage("Push to OE Docker Registry") {
             steps {
                 script {
-                    docker.withRegistry(params.INTERNAL_REPO, params.INTERNAL_REPO_CRED_ID) {
-                        common.exec_with_retry { oe2022.push() }
-                        if ( params.TAG_LATEST ) {
-                            common.exec_with_retry { oe2022.push('latest') }
-                        }
+                    powershell """
+                        az login --identity
+                        az acr login --name ${params.CONTAINER_REPO}
+                    """
+                    common.exec_with_retry { oe2022.push() }
+                    if ( params.TAG_LATEST ) {
+                        common.exec_with_retry { oe2022.push('latest') }
                     }
                 }
             }
+        }
+    }
+    post {
+        always {
+                powershell """
+                    docker logout ${params.CONTAINER_REPO}
+                    az logout -ErrorAction SilentlyContinue
+                    az cache purge
+                    az account clear
+                """
         }
     }
 }

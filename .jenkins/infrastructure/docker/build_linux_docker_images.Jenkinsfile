@@ -19,8 +19,7 @@ pipeline {
         string(name: "BRANCH_NAME", defaultValue: "master", description: "The branch used to checkout the repository")
         string(name: "DOCKER_TAG", defaultValue: "", description: "[OPTIONAL] Specify the tag for the new Docker images.")
         string(name: "BASE_DOCKER_TAG", defaultValue: "", description: "[OPTIONAL] Specify the tag for the new Base Docker images.")
-        string(name: "INTERNAL_REPO", defaultValue: "https://oejenkinscidockerregistry.azurecr.io", description: "Url for internal Docker repository")
-        string(name: "INTERNAL_REPO_CRED_ID", defaultValue: "oejenkinscidockerregistry", description: "Credential ID for internal Docker repository")
+        string(name: "CONTAINER_REPO", defaultValue: "openenclave.azurecr.io", description: "Docker repository name")
         string(name: "OECI_LIB_VERSION", defaultValue: 'master', description: 'Version of OE Libraries to use')
         string(name: "DEVKITS_URI", defaultValue: 'https://openenclavepublicstorage.blob.core.windows.net/openenclavedependencies/OE-CI-devkits-d1634ce8.tar.gz', description: "Uri for downloading the OECI Devkit")
         string(name: "AGENTS_LABEL", defaultValue: 'acc-ubuntu-20.04', description: "Label of the agent to use to run this job")
@@ -41,6 +40,13 @@ pipeline {
                     userRemoteConfigs: [[url: "https://github.com/${params.REPOSITORY_NAME}"]]])
             }
         }
+        stage("Install Azure CLI") {
+            steps {
+                script {
+                    common.installAzureCLI()
+                }
+            }
+        }
         stage("Base Image") {
             matrix {
                 axes {
@@ -52,13 +58,22 @@ pipeline {
                 stages {
                     stage("Build Base") {
                         steps {
-                            dir(env.BASE_DOCKERFILE_DIR) {
-                                sh """
-                                    chmod +x ./build.sh
-                                    mkdir "build-${UBUNTU_RELEASE}"
-                                    cd "build-${UBUNTU_RELEASE}"
-                                    ../build.sh -v "${params.SGX_VERSION}" -u "${UBUNTU_RELEASE}" -t "${TAG_BASE_IMAGE}"
-                                """
+                            script {
+                                def sgx_version
+                                if(UBUNTU_RELEASE == "20.04") {
+                                    // Last release for Ubuntu 20.04 is SGX 2.25.100.
+                                    sgx_version = "2.25.100"
+                                } else {
+                                    sgx_version = params.SGX_VERSION
+                                }
+                                dir(env.BASE_DOCKERFILE_DIR) {
+                                    sh """
+                                        chmod +x ./build.sh
+                                        mkdir "build-${UBUNTU_RELEASE}"
+                                        cd "build-${UBUNTU_RELEASE}"
+                                        ../build.sh -v "${sgx_version}" -u "${UBUNTU_RELEASE}" -t "${TAG_BASE_IMAGE}"
+                                    """
+                                }
                             }
                         }
                     }
@@ -83,7 +98,11 @@ pipeline {
                                         helpers.TestSamplesCommand(false, "open-enclave")
                                     }
                                 }
-                                docker.withRegistry(params.INTERNAL_REPO, params.INTERNAL_REPO_CRED_ID) {
+                                sh """
+                                    az login --identity
+                                    az acr login --name ${params.CONTAINER_REPO}
+                                """
+                                docker.withRegistry("https://${params.CONTAINER_REPO}") {
                                     base_image.push()
                                     if ( params.TAG_LATEST ) {
                                         base_image.push('latest')
@@ -113,7 +132,11 @@ pipeline {
                                 helpers.releaseInstall("latest", "open-enclave", "GitHub")
                                 helpers.TestSamplesCommand(false, "open-enclave")
                             }
-                            docker.withRegistry(params.INTERNAL_REPO, params.INTERNAL_REPO_CRED_ID) {
+                            sh """
+                                az login --identity
+                                az acr login --name ${params.CONTAINER_REPO}
+                            """
+                            docker.withRegistry("https://${params.CONTAINER_REPO}") {
                                 common.exec_with_retry { oe2004.push() }
                                 if ( params.TAG_LATEST ) {
                                     common.exec_with_retry { oe2004.push('latest') }
@@ -140,7 +163,11 @@ pipeline {
                                 // helpers.releaseInstall("latest", "open-enclave", "GitHub")
                                 // helpers.TestSamplesCommand(false, "open-enclave")
                             }
-                            docker.withRegistry(params.INTERNAL_REPO, params.INTERNAL_REPO_CRED_ID) {
+                            sh """
+                                az login --identity
+                                az acr login --name ${params.CONTAINER_REPO}
+                            """
+                            docker.withRegistry("https://${params.CONTAINER_REPO}") {
                                 common.exec_with_retry { oe2204.push() }
                                 if ( params.TAG_LATEST ) {
                                     common.exec_with_retry { oe2204.push('latest') }
@@ -154,7 +181,12 @@ pipeline {
     }
     post {
         always {
-                sh "docker logout ${params.INTERNAL_REPO}"
+                sh """
+                    docker logout ${params.CONTAINER_REPO}
+                    az logout || true
+                    az cache purge
+                    az account clear
+                """
         }
     }
 }

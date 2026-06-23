@@ -9,7 +9,7 @@
   tasks:
     - import_role:
         name: linux/jenkins
-        tasks_from: packer.yml
+        tasks_from: setup.yml
 
 - hosts: windows-agents
   any_errors_fatal: true
@@ -17,4 +17,4 @@
   tasks:
     - import_role:
         name: windows/jenkins
-        tasks_from: packer.yml
+        tasks_from: setup.yml

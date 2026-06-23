@@ -37,7 +37,7 @@
 # Note that while building Ubuntu 22.04 is possible, it is not currently supported by Open Enclave SDK.
 
 ARG ubuntu_version=20.04
-ARG ubuntu_source_repo=""
+ARG ubuntu_source_repo="docker.io/library/"
 
 FROM ${ubuntu_source_repo}ubuntu:${ubuntu_version} as build
 
@@ -82,7 +82,7 @@ RUN useradd --create-home --uid ${UID} --gid ${GID} --shell /bin/bash ${UNAME}
 RUN echo "${UNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 ARG ubuntu_version=20.04
-ARG ubuntu_source_repo=""
+ARG ubuntu_source_repo="docker.io/library/"
 
 # Final stage of the image build
 FROM ${ubuntu_source_repo}ubuntu:${ubuntu_version}

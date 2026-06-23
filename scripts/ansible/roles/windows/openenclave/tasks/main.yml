@@ -2,7 +2,6 @@
 # Licensed under the MIT License.
 
 ---
-
   - name: OE setup | Set clang 11 version url and hash
     set_fact:
       clang_url:  "https://github.com/llvm/llvm-project/releases/download/llvmorg-11.1.0/LLVM-11.1.0-win64.exe"
@@ -54,6 +53,11 @@
       # Use azure_windows_update_reject_list only if the VM is an Azure VM
       reject_list: "{{ azure_windows_update_reject_list if is_azure_vm else [] }}"
     notify: "Reboot node"
+
+  - name: Wait for connection
+    ansible.builtin.wait_for_connection:
+      sleep: 10
+      timeout: 600
 
   - import_role:
       name: windows/openenclave
