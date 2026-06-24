@@ -17,8 +17,14 @@ String dockerImage(String tag, String dockerfile = ".jenkins/Dockerfile", String
     return docker.build(tag, "${buildArgs} -f ${dockerfile} .")
 }
 
-def ContainerRun(String imageName, String compiler, String task, String runArgs="", registryUrl="https://openenclave.azurecr.io", registryName="openenclave") {
-    docker.withRegistry(registryUrl, registryName) {
+def ContainerRun(String imageName, String compiler, String task, String runArgs="", registryUrl="https://openenclave.azurecr.io") {
+    if (runArgs.contains("sgx_provision")) {
+        def sgx_prv_gid = sh(script: "stat -c '%g' /dev/sgx_provision", returnStdout: true).trim()
+        if (sgx_prv_gid && !runArgs.contains("--group-add")) {
+            runArgs = "--group-add ${sgx_prv_gid} ${runArgs}"
+        }
+    }
+    docker.withRegistry(registryUrl) {
         def image = docker.image(imageName)
         retry(3) {
             image.pull()
@@ -129,13 +135,11 @@ def installAzureCLI() {
                 sudo apt-get update
                 sudo apt-get -y install azure-cli jq
                 az --version
+                which az
             """
         }
     } else {
         def azPath = 'C:\\Program Files\\Microsoft SDKs\\Azure\\CLI2\\wbin'
-        if (!fileExists("${azPath}\\az.cmd")) {
-            error "Azure CLI installation failed: az.cmd not found in ${azPath}"
-        }
         retry(10) {
             powershell '''
                 $ProgressPreference = 'SilentlyContinue'
@@ -148,11 +152,15 @@ def installAzureCLI() {
                 Remove-Item .\\AzureCLI.msi
             '''
         }
+        if (!fileExists("${azPath}\\az.cmd")) {
+            error "Azure CLI installation failed: az.cmd not found in ${azPath}"
+        }
         if (!env.PATH.contains(azPath)) {
             env.PATH = "${azPath};${env.PATH}"
         }
         powershell '''
             az --version
+            (Get-Command az).Source
         '''
     }
 }
