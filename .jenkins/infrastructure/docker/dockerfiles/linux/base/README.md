@@ -14,6 +14,8 @@ For Intel SGX driver 1.41 and above, the following parameters are needed:
   ```--device /dev/sgx_provision:/dev/sgx_provision```  
   ```--device /dev/sgx_enclave:/dev/sgx_enclave```
 
+/dev/sgx_provision is not accessible until your docker user has the required group permission. Typically this can be achieved by adding the option `--group-add sgx_prv` when you run your container.
+
 ## Out-of-proc attestation support
 This image supports out-of-proc attestation using Intel SGX. To allow this, the Intel SGX AESM Service will need to be made available by running the container with the following parameters:  
    ```--volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket```  
