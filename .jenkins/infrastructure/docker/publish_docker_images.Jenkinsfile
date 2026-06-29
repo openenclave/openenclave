@@ -49,6 +49,7 @@ pipeline {
                             }
                             steps {
                                 script {
+                                    common.installAzureCLI()
                                     sh """
                                         az login --identity
                                         az acr login --name ${params.CONTAINER_REPO}
@@ -60,9 +61,14 @@ pipeline {
                                         docker tag ${params.CONTAINER_REPO}/openenclave-base-ubuntu-22.04:${params.LINUX_TAG} ${params.CONTAINER_REPO}/openenclave-base-ubuntu-22.04:latest
                                         docker tag ${params.CONTAINER_REPO}/oetools-22.04:${params.LINUX_TAG} ${params.CONTAINER_REPO}/oetools-22.04:latest
                                         docker push ${params.CONTAINER_REPO}/openenclave-base-ubuntu-22.04:latest
-                                        docker push ${params.CONTAINER_REPO}/oetools-22.04:latest
-                                        docker logout --name ${params.CONTAINER_REPO}
-                                    """
+                                        docker push ${params.CONTAINER_REPO}/oetools-22.04:latest                                    """
+                                }
+                            }
+                            post {
+                                always {
+                                    script {
+                                        helper.dockerCleanup(params.CONTAINER_REPO, GIT_SSH_KEY)
+                                    }
                                 }
                             }
                         }
@@ -92,13 +98,20 @@ pipeline {
                             }
                             steps {
                                 script {
+                                    common.installAzureCLI()
                                     powershell """
                                         az login --identity
                                         az acr login --name ${params.CONTAINER_REPO}
                                         docker tag ${params.CONTAINER_REPO}/oetools-ws2022:${params.WINDOWS_TAG} ${params.CONTAINER_REPO}/oetools-ws2022:latest
                                         docker push ${params.CONTAINER_REPO}/oetools-ws2022:latest
-                                        docker logout --name ${params.CONTAINER_REPO}
                                     """
+                                }
+                            }
+                            post {
+                                always {
+                                    script {
+                                        helper.dockerCleanup(params.CONTAINER_REPO, GIT_SSH_KEY)
+                                    }
                                 }
                             }
                         }
@@ -218,17 +231,6 @@ pipeline {
                     }
                 }
             }
-        }
-    }
-    post {
-        always {
-                sh """
-                    docker logout ${params.CONTAINER_REPO}
-                    az logout || true
-                    az cache purge
-                    az account clear
-                    rm -f ${GIT_SSH_KEY}
-                """
         }
     }
 }

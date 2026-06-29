@@ -978,3 +978,22 @@ def needSudo() {
         fi
     """
 }
+
+/* Logout of Docker and Azure CLI, clear Azure CLI cache, and remove SSH key
+ *
+ * @param container_repo  Docker container repository to logout from
+ * @param ssh_key_path    Path to SSH key to remove (optional)
+*/
+def dockerCleanup(String container_repo, String ssh_key_path="") {
+    sh """
+        docker logout ${container_repo}
+        az logout || true
+        az cache purge
+        az account clear
+    """
+    if (ssh_key_path) {
+        sh """
+            rm -f ${ssh_key_path}
+        """
+    }
+}

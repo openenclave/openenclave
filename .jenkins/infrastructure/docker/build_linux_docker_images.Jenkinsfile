@@ -181,12 +181,9 @@ pipeline {
     }
     post {
         always {
-                sh """
-                    docker logout ${params.CONTAINER_REPO}
-                    az logout || true
-                    az cache purge
-                    az account clear
-                """
+            script {
+                helpers.dockerCleanup(params.CONTAINER_REPO)
+            }
         }
     }
 }
