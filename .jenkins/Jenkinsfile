@@ -213,7 +213,6 @@ pipeline {
                                 string(name: 'DOCKER_TAG', value: params.DOCKER_TAG),
                                 string(name: 'UBUNTU_2004_NONSGX_LABEL', value: globalvars.AGENTS_LABELS["ubuntu-nonsgx-2004"]),
                                 string(name: 'UBUNTU_2204_NONSGX_LABEL', value: globalvars.AGENTS_LABELS["ubuntu-nonsgx-2204"]),
-                                string(name: 'WS2022_DCAP_CFL_LABEL', value: globalvars.AGENTS_LABELS["acc-win2022-dcap"]),
                                 string(name: 'WS2022_DCAP_ICX_LABEL', value: globalvars.AGENTS_LABELS["acc-v3-win2022-dcap"]),
                                 string(name: 'OECI_LIB_VERSION', value: params.OECI_LIB_VERSION),
                                 booleanParam(name: 'FULL_TEST_SUITE', value: params.FULL_TEST_SUITE)

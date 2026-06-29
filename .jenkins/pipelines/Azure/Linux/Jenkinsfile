@@ -21,12 +21,11 @@ try{
                                                                                                                                                      // ACCTEST BOOL OPTIONS: SKIP LVI TESTS, SNMALLOC, EEID,  E2E
         // "ACC2004 v2 clang-11 RelWithDebInfo ControlFlow e2e":        { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-20.04-vanilla"], 'clang-11', 'RelWithDebInfo', 'ControlFlow', true, false,    false, true,  params.PULL_REQUEST_ID) },
         "ACC2204 v3 clang-11 RelWithDebInfo ControlFlow e2e":        { tests.ACCTest(globalvars.AGENTS_LABELS["acc-ubuntu-22.04-vanilla"], 'clang-11', 'RelWithDebInfo', 'ControlFlow', true, false,    false, true,  params.PULL_REQUEST_ID) },
-        "ACC2004 v2 clang-11 RelWithDebInfo ControlFlow snmalloc":   { tests.ACCTest(globalvars.AGENTS_LABELS["acc-v2-ubuntu-20.04"],      'clang-11', 'RelWithDebInfo', 'ControlFlow', true, true,     false, false, params.PULL_REQUEST_ID) },
-        "ACC2204 v2 clang-11 RelWithDebInfo ControlFlow snmalloc":   { tests.ACCTest(globalvars.AGENTS_LABELS["acc-v2-ubuntu-22.04"],      'clang-11', 'RelWithDebInfo', 'ControlFlow', true, true,     false, false, params.PULL_REQUEST_ID) },
-        "ACC2004 v2 clang-11 Debug":                                 { tests.ACCTest(globalvars.AGENTS_LABELS["acc-v2-ubuntu-20.04"],      'clang-11', 'Debug',          'None',        true, false,    false, false, params.PULL_REQUEST_ID) },
-        "ACC2204 v2 clang-11 Debug":                                 { tests.ACCTest(globalvars.AGENTS_LABELS["acc-v2-ubuntu-22.04"],      'clang-11', 'Debug',          'None',        true, false,    false, false, params.PULL_REQUEST_ID) },
+        "ACC2004 v3 clang-11 RelWithDebInfo ControlFlow snmalloc":   { tests.ACCTest(globalvars.AGENTS_LABELS["acc-v3-ubuntu-20.04"],      'clang-11', 'RelWithDebInfo', 'ControlFlow', true, true,     false, false, params.PULL_REQUEST_ID) },
+        "ACC2204 v3 clang-11 RelWithDebInfo ControlFlow snmalloc":   { tests.ACCTest(globalvars.AGENTS_LABELS["acc-v3-ubuntu-22.04"],      'clang-11', 'RelWithDebInfo', 'ControlFlow', true, true,     false, false, params.PULL_REQUEST_ID) },
+        "ACC2004 v3 clang-11 Debug":                                 { tests.ACCTest(globalvars.AGENTS_LABELS["acc-v3-ubuntu-20.04"],      'clang-11', 'Debug',          'None',        true, false,    false, false, params.PULL_REQUEST_ID) },
+        "ACC2204 v3 clang-11 Debug":                                 { tests.ACCTest(globalvars.AGENTS_LABELS["acc-v3-ubuntu-22.04"],      'clang-11', 'Debug',          'None',        true, false,    false, false, params.PULL_REQUEST_ID) },
         "ACC2004 v3 clang-11 RelWithDebInfo ControlFlow":            { tests.ACCTest(globalvars.AGENTS_LABELS["acc-v3-ubuntu-20.04"],      'clang-11', 'RelWithDebInfo', 'ControlFlow', true, false,    false, false, params.PULL_REQUEST_ID) },
-        "ACC2204 v2 clang-11 RelWithDebInfo ControlFlow":            { tests.ACCTest(globalvars.AGENTS_LABELS["acc-v2-ubuntu-22.04"],      'clang-11', 'RelWithDebInfo', 'ControlFlow', true, false,    false, false, params.PULL_REQUEST_ID) },
         "ACC2204 v3 clang-11 RelWithDebInfo ControlFlow":            { tests.ACCTest(globalvars.AGENTS_LABELS["acc-v3-ubuntu-22.04"],      'clang-11', 'RelWithDebInfo', 'ControlFlow', true, false,    false, false, params.PULL_REQUEST_ID) }
     ]
     if(FULL_TEST_SUITE == "true") {
@@ -35,12 +34,12 @@ try{
             "Host verification 2204 Debug":                          { tests.ACCHostVerificationTest('22.04', 'Debug', 'clang-11', params.PULL_REQUEST_ID) },
             "Package ACC2004 Debug ControlFlow":                     { tests.ACCPackageTest('20.04', 'Debug', 'ControlFlow', false, false, params.PULL_REQUEST_ID) },
             "Package ACC2004 Debug ControlFlow":                     { tests.ACCPackageTest('22.04', 'Debug', 'ControlFlow', false, false, params.PULL_REQUEST_ID) },
-            "ACC2004 v2 clang-11 RelWithDebInfo ControlFlow":        { tests.ACCTest(globalvars.AGENTS_LABELS["acc-v2-ubuntu-20.04"], 'clang-11', 'RelWithDebInfo', 'ControlFlow',       false, false, false, false, params.PULL_REQUEST_ID) },
-            "ACC2204 v2 clang-11 RelWithDebInfo ControlFlow":        { tests.ACCTest(globalvars.AGENTS_LABELS["acc-v2-ubuntu-22.04"], 'clang-11', 'RelWithDebInfo', 'ControlFlow',       false, false, false, false, params.PULL_REQUEST_ID) },
-            "ACC2004 v2 clang-11 RelWithDebInfo ControlFlow-Clang":  { tests.ACCTest(globalvars.AGENTS_LABELS["acc-v2-ubuntu-20.04"], 'clang-11', 'RelWithDebInfo', 'ControlFlow-Clang', false, false, false, false, params.PULL_REQUEST_ID) },
-            "ACC2204 v2 clang-11 RelWithDebInfo ControlFlow-Clang":  { tests.ACCTest(globalvars.AGENTS_LABELS["acc-v2-ubuntu-22.04"], 'clang-11', 'RelWithDebInfo', 'ControlFlow-Clang', false, false, false, false, params.PULL_REQUEST_ID) },
-            "ACC2004 v2 clang-11 Debug ControlFlow":                 { tests.ACCTest(globalvars.AGENTS_LABELS["acc-v2-ubuntu-20.04"], 'clang-11', 'Debug',          'ControlFlow',       false, false, false, false, params.PULL_REQUEST_ID) },
-            "ACC2204 v2 clang-11 Debug ControlFlow":                 { tests.ACCTest(globalvars.AGENTS_LABELS["acc-v2-ubuntu-22.04"], 'clang-11', 'Debug',          'ControlFlow',       false, false, false, false, params.PULL_REQUEST_ID) }
+            "ACC2004 v3 clang-11 RelWithDebInfo ControlFlow":        { tests.ACCTest(globalvars.AGENTS_LABELS["acc-v3-ubuntu-20.04"], 'clang-11', 'RelWithDebInfo', 'ControlFlow',       false, false, false, false, params.PULL_REQUEST_ID) },
+            "ACC2204 v3 clang-11 RelWithDebInfo ControlFlow":        { tests.ACCTest(globalvars.AGENTS_LABELS["acc-v3-ubuntu-22.04"], 'clang-11', 'RelWithDebInfo', 'ControlFlow',       false, false, false, false, params.PULL_REQUEST_ID) },
+            "ACC2004 v3 clang-11 RelWithDebInfo ControlFlow-Clang":  { tests.ACCTest(globalvars.AGENTS_LABELS["acc-v3-ubuntu-20.04"], 'clang-11', 'RelWithDebInfo', 'ControlFlow-Clang', false, false, false, false, params.PULL_REQUEST_ID) },
+            "ACC2204 v3 clang-11 RelWithDebInfo ControlFlow-Clang":  { tests.ACCTest(globalvars.AGENTS_LABELS["acc-v3-ubuntu-22.04"], 'clang-11', 'RelWithDebInfo', 'ControlFlow-Clang', false, false, false, false, params.PULL_REQUEST_ID) },
+            "ACC2004 v3 clang-11 Debug ControlFlow":                 { tests.ACCTest(globalvars.AGENTS_LABELS["acc-v3-ubuntu-20.04"], 'clang-11', 'Debug',          'ControlFlow',       false, false, false, false, params.PULL_REQUEST_ID) },
+            "ACC2204 v3 clang-11 Debug ControlFlow":                 { tests.ACCTest(globalvars.AGENTS_LABELS["acc-v3-ubuntu-22.04"], 'clang-11', 'Debug',          'ControlFlow',       false, false, false, false, params.PULL_REQUEST_ID) }
 
         ]
     }
