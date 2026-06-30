@@ -67,7 +67,7 @@ pipeline {
                             post {
                                 always {
                                     script {
-                                        helper.dockerCleanup(params.CONTAINER_REPO, GIT_SSH_KEY)
+                                        helpers.dockerCleanup(params.CONTAINER_REPO, GIT_SSH_KEY)
                                     }
                                 }
                             }
@@ -110,7 +110,7 @@ pipeline {
                             post {
                                 always {
                                     script {
-                                        helper.dockerCleanup(params.CONTAINER_REPO, GIT_SSH_KEY)
+                                        helpers.dockerCleanup(params.CONTAINER_REPO, GIT_SSH_KEY)
                                     }
                                 }
                             }
