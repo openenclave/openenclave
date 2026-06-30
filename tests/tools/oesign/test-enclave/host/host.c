@@ -87,9 +87,12 @@ int main(int argc, const char* argv[])
     }
 
     /* check_kss_extended_ids currently assumes the quote provider is available.
-     * Skip if there is no quote provider for now.
+     * Skip if there is no quote provider for now, or if in simulation mode.
+     * Skip in simulation mode because oe_sgx_is_kss_supported() queries real
+     * CPUID but sgx_create_report returns OE_UNSUPPORTED in simulation mode
      */
-    if (is_kss_supported && oe_sgx_has_quote_provider())
+    if (is_kss_supported && !(flags & OE_ENCLAVE_FLAG_SIMULATE) &&
+        oe_sgx_has_quote_provider())
     {
         result = check_kss_extended_ids(
             enclave,

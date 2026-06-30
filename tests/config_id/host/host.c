@@ -44,7 +44,7 @@ int main(int argc, const char* argv[])
     optional_settings.setting_type = OE_SGX_ENCLAVE_CONFIG_DATA;
     optional_settings.u.config_data = &optional_config_data_setting;
 
-    if (oe_sgx_is_kss_supported())
+    if (oe_sgx_is_kss_supported() && !(flags & OE_ENCLAVE_FLAG_SIMULATE))
     {
         result = oe_create_config_id_enclave(
             argv[1],
