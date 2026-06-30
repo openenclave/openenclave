@@ -67,7 +67,7 @@ pipeline {
                             post {
                                 always {
                                     script {
-                                        helpers.dockerCleanup(params.CONTAINER_REPO, GIT_SSH_KEY)
+                                        helpers.dockerCleanup(params.CONTAINER_REPO)
                                     }
                                 }
                             }
@@ -110,7 +110,7 @@ pipeline {
                             post {
                                 always {
                                     script {
-                                        helpers.dockerCleanup(params.CONTAINER_REPO, GIT_SSH_KEY)
+                                        helpers.dockerCleanup(params.CONTAINER_REPO)
                                     }
                                 }
                             }
@@ -226,6 +226,7 @@ pipeline {
                                 chmod 600 ~/.ssh/known_hosts
 
                                 GIT_SSH_COMMAND="ssh -i ${GIT_SSH_KEY}" git push --force git@github.com:openenclave/openenclave.git HEAD:${OECITEAM_BRANCH}
+                                rm -r ${GIT_SSH_KEY}
                             '''
                         }
                     }
