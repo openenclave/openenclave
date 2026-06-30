@@ -91,7 +91,8 @@ int main(int argc, const char* argv[])
      * Skip in simulation mode because oe_sgx_is_kss_supported() queries real
      * CPUID but sgx_create_report returns OE_UNSUPPORTED in simulation mode
      */
-    if (is_kss_supported && !(flags & OE_ENCLAVE_FLAG_SIMULATE) &&
+    if (is_kss_supported &&
+        (flags & OE_ENCLAVE_FLAG_SIMULATE) == 0 &&
         oe_sgx_has_quote_provider())
     {
         result = check_kss_extended_ids(
