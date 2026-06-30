@@ -44,8 +44,7 @@ int main(int argc, const char* argv[])
     optional_settings.setting_type = OE_SGX_ENCLAVE_CONFIG_DATA;
     optional_settings.u.config_data = &optional_config_data_setting;
 
-    if (oe_sgx_is_kss_supported() &&
-        (flags & OE_ENCLAVE_FLAG_SIMULATE) == 0)
+    if (oe_sgx_is_kss_supported() && (flags & OE_ENCLAVE_FLAG_SIMULATE) == 0)
     {
         result = oe_create_config_id_enclave(
             argv[1],
@@ -61,12 +60,12 @@ int main(int argc, const char* argv[])
             OE_TEST(result == OE_OK);
         }
     }
-    else if (oe_sgx_is_kss_supported() &&
-             (flags & OE_ENCLAVE_FLAG_SIMULATE) != 0)
+    else if (
+        oe_sgx_is_kss_supported() && (flags & OE_ENCLAVE_FLAG_SIMULATE) != 0)
     {
         // KSS supported but in simulation mode enclave creation with KSS
         // succeeds. Attestation is skipped because EREPORT is unsupported
-        // in simulation mode. 
+        // in simulation mode.
         result = oe_create_config_id_enclave(
             argv[1],
             OE_ENCLAVE_TYPE_SGX,
