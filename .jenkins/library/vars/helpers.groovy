@@ -978,3 +978,25 @@ def needSudo() {
         fi
     """
 }
+
+/* Logout of Docker and Azure CLI, clear Azure CLI cache
+ *
+ * @param container_repo  Docker container repository to logout from
+ */
+def dockerCleanup(String container_repo) {
+    if (isUnix()) {
+        sh """
+            docker logout ${container_repo}
+            az logout || true
+            az cache purge
+            az account clear
+        """
+    } else {
+        powershell """
+            docker logout ${container_repo}
+            az logout 2>&1 | Out-Null
+            az cache purge
+            az account clear
+        """
+    }
+}

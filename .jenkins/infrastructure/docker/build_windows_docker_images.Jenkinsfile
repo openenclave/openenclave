@@ -71,12 +71,9 @@ pipeline {
     }
     post {
         always {
-                powershell """
-                    docker logout ${params.CONTAINER_REPO}
-                    az logout -ErrorAction SilentlyContinue
-                    az cache purge
-                    az account clear
-                """
+            script {
+                helpers.dockerCleanup(params.CONTAINER_REPO)
+            }
         }
     }
 }
