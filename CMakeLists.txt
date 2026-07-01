@@ -109,6 +109,8 @@ project(
 set(PROJECT_VERSION ${OE_VERSION})
 set(OE_SCRIPTSDIR "${PROJECT_SOURCE_DIR}/scripts")
 
+include(CTest)
+
 if (LVI_MITIGATION STREQUAL ControlFlow-Clang)
   if (UNIX)
     if (NOT CMAKE_C_COMPILER_ID MATCHES Clang)
@@ -373,7 +375,6 @@ if (NOT USE_SNMALLOC)
   set(USE_DLMALLOC true)
 endif ()
 
-option(BUILD_TESTS "Build OE tests" ON)
 option(ENABLE_FUZZING "Build OE with fuzzing flags enabled" OFF)
 option(BUILD_OEUTIL_TOOL "Build oeutil tool" ON)
 
@@ -473,7 +474,6 @@ else ()
   message(STATUS "Valgrind not found")
 endif ()
 # Configure testing
-enable_testing()
 include(add_enclave_test)
 
 # Recurse through subdirectories
@@ -500,7 +500,7 @@ if (OE_SGX)
   add_subdirectory(debugger)
 endif ()
 
-if (BUILD_TESTS)
+if (BUILD_TESTING)
   add_subdirectory(tests)
 endif ()
 

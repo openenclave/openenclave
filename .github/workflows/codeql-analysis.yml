@@ -44,7 +44,7 @@ jobs:
       run: |
        mkdir build
        cd build
-       cmake .. -DBUILD_TESTS=OFF
+       cmake .. -DBUILD_TESTING=OFF
        make -j8
 
     - name: Perform CodeQL Analysis
