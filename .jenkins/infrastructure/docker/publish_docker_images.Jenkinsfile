@@ -49,6 +49,7 @@ pipeline {
                             }
                             steps {
                                 script {
+                                    common.installAzureCLI()
                                     sh """
                                         az login --identity
                                         az acr login --name ${params.CONTAINER_REPO}
@@ -61,8 +62,14 @@ pipeline {
                                         docker tag ${params.CONTAINER_REPO}/oetools-22.04:${params.LINUX_TAG} ${params.CONTAINER_REPO}/oetools-22.04:latest
                                         docker push ${params.CONTAINER_REPO}/openenclave-base-ubuntu-22.04:latest
                                         docker push ${params.CONTAINER_REPO}/oetools-22.04:latest
-                                        docker logout --name ${params.CONTAINER_REPO}
-                                    """
+                                """
+                                }
+                            }
+                            post {
+                                always {
+                                    script {
+                                        helpers.dockerCleanup(params.CONTAINER_REPO)
+                                    }
                                 }
                             }
                         }
@@ -92,13 +99,20 @@ pipeline {
                             }
                             steps {
                                 script {
+                                    common.installAzureCLI()
                                     powershell """
                                         az login --identity
                                         az acr login --name ${params.CONTAINER_REPO}
                                         docker tag ${params.CONTAINER_REPO}/oetools-ws2022:${params.WINDOWS_TAG} ${params.CONTAINER_REPO}/oetools-ws2022:latest
                                         docker push ${params.CONTAINER_REPO}/oetools-ws2022:latest
-                                        docker logout --name ${params.CONTAINER_REPO}
                                     """
+                                }
+                            }
+                            post {
+                                always {
+                                    script {
+                                        helpers.dockerCleanup(params.CONTAINER_REPO)
+                                    }
                                 }
                             }
                         }
@@ -129,7 +143,7 @@ pipeline {
                                 ]
                             ], 
                             userRemoteConfigs: [[url: "https://github.com/openenclave/openenclave"]]])
-                        sh """
+                        sh """#!/bin/bash
                             if git fetch origin ${OECITEAM_BRANCH}; then
                                 git checkout ${OECITEAM_BRANCH} --force
                             else
@@ -213,22 +227,12 @@ pipeline {
                                 chmod 600 ~/.ssh/known_hosts
 
                                 GIT_SSH_COMMAND="ssh -i ${GIT_SSH_KEY}" git push --force git@github.com:openenclave/openenclave.git HEAD:${OECITEAM_BRANCH}
+                                rm -r ${GIT_SSH_KEY}
                             '''
                         }
                     }
                 }
             }
-        }
-    }
-    post {
-        always {
-                sh """
-                    docker logout ${params.CONTAINER_REPO}
-                    az logout || true
-                    az cache purge
-                    az account clear
-                    rm -f ${GIT_SSH_KEY}
-                """
         }
     }
 }
