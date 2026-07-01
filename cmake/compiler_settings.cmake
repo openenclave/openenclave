@@ -143,8 +143,12 @@ elseif (MSVC)
   # Turns off warnings for:
   # * Unicode character cannot be represented by current code page
   # * Flexible array members. These are standard in C99 so we will allow them.
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4566 /wd4200")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4566 /wd4200")
+  set(CMAKE_C_FLAGS
+      "${CMAKE_C_FLAGS} /wd4566 /wd4200 /wd4018 /wd4055 /wd4146 /wd4242 /wd4244 /wd4267 /wd4302 /wd4308 /wd4509 /wd4510 /wd4532 /wd4533 /wd4610 /wd4611 /wd4700 /wd4701 /wd4703 /wd4789 /wd4995 /wd4996"
+  )
+  set(CMAKE_CXX_FLAGS
+      "${CMAKE_CXX_FLAGS} /wd4566 /wd4200 /wd4018 /wd4055 /wd4146 /wd4242 /wd4244 /wd4267 /wd4302 /wd4308 /wd4509 /wd4510 /wd4532 /wd4533 /wd4610 /wd4611 /wd4700 /wd4701 /wd4703 /wd4789 /wd4995 /wd4996"
+  )
 
   # Add Flags we want to use for both C and CXX
   add_compile_options(/WX)
