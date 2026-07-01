@@ -61,7 +61,8 @@ pipeline {
                                         docker tag ${params.CONTAINER_REPO}/openenclave-base-ubuntu-22.04:${params.LINUX_TAG} ${params.CONTAINER_REPO}/openenclave-base-ubuntu-22.04:latest
                                         docker tag ${params.CONTAINER_REPO}/oetools-22.04:${params.LINUX_TAG} ${params.CONTAINER_REPO}/oetools-22.04:latest
                                         docker push ${params.CONTAINER_REPO}/openenclave-base-ubuntu-22.04:latest
-                                        docker push ${params.CONTAINER_REPO}/oetools-22.04:latest                                    """
+                                        docker push ${params.CONTAINER_REPO}/oetools-22.04:latest
+                                """
                                 }
                             }
                             post {
