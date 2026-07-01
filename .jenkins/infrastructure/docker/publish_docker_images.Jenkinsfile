@@ -142,7 +142,7 @@ pipeline {
                                 ]
                             ], 
                             userRemoteConfigs: [[url: "https://github.com/openenclave/openenclave"]]])
-                        sh """
+                        sh """#!/bin/bash
                             if git fetch origin ${OECITEAM_BRANCH}; then
                                 git checkout ${OECITEAM_BRANCH} --force
                             else
