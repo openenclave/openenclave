@@ -5,6 +5,7 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/tests.h>
+#include <sys/stat.h>
 
 #include "oeseal_u.h"
 
@@ -58,34 +59,32 @@ static oe_result_t _create_enclave(const char* path, oe_enclave_t** enclave)
 static oe_result_t _read_file(const char* path, uint8_t** data, size_t* size)
 {
     oe_result_t result = OE_FAILURE;
+    struct stat buffer = {0};
     uint8_t* _data = NULL;
-    long file_size = 0;
     size_t _size = 0;
     FILE* f = NULL;
 
     if (!path || !data || !size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    f = fopen(path, "r");
-    if (f == NULL)
-        OE_RAISE_MSG(OE_FAILURE, "Unable to open %s", path);
-
-    fseek(f, 0, SEEK_END);
-
-    file_size = ftell(f);
-    if (file_size == -1)
+    if (stat(path, &buffer) != 0)
         OE_RAISE(OE_FAILURE);
 
-    _size = (size_t)file_size;
+    _size = (size_t)buffer.st_size;
 
-    fseek(f, 0, SEEK_SET);
+#ifdef _WIN32
+    if (fopen_s(&f, path, "r") != 0)
+#else
+    if (!(f = fopen(path, "r")))
+#endif
+        OE_RAISE_MSG(OE_FAILURE, "Unable to open %s", path);
 
     _data = malloc(_size);
     if (_data == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
-    if (fread(_data, _size, 1, f) != 1)
-        OE_RAISE(OE_FAILURE);
+    /* In case the read bytes is less than the file size */
+    _size = fread(_data, 1, _size, f);
 
     *data = _data;
     *size = _size;
@@ -107,11 +106,14 @@ static oe_result_t _write_file(const char* path, uint8_t* data, size_t size)
     if (!path || !data || !size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    f = fopen(path, "w");
-    if (f == NULL)
+#ifdef _WIN32
+    if (fopen_s(&f, path, "w") != 0)
+#else
+    if (!(f = fopen(path, "w")))
+#endif
         OE_RAISE_MSG(OE_FAILURE, "Unable to open %s", path);
 
-    if (fwrite(data, size, 1, f) != 1)
+    if (fwrite(data, 1, size, f) != size)
         OE_RAISE(OE_FAILURE);
 
     result = OE_OK;
