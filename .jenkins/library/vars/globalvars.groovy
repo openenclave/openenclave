@@ -18,7 +18,6 @@ import groovy.transform.Field
     "acc-v2-ubuntu-22.04":         env.UBUNTU_2204_CUSTOM_LABEL ?: "ACC-v2-2204-DC4",
     "acc-v3-ubuntu-20.04":         env.UBUNTU_2004_ICX_CUSTOM_LABEL ?: "ACC-v3-2004-DC4",
     "acc-v3-ubuntu-22.04":         env.UBUNTU_2204_ICX_CUSTOM_LABEL ?: "ACC-v3-2204-DC4",
-    "acc-win2022-dcap":            env.WS2022_DCAP_CUSTOM_LABEL ?: "SGXFLC-Windows-2022-DCAP-v2",
     "acc-v3-win2022-dcap":         env.WS2022_DCAP_ICX_CUSTOM_LABEL ?: "SGXFLC-Windows-2022-DCAP-v3",
     // Non SGX VMs
     // ubuntu-nonsgx will be deprecated in favor of ubuntu-nonsgx-[version]
