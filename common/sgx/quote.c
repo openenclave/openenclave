@@ -236,7 +236,8 @@ static oe_result_t _parse_quote(
     //
     OE_CHECK_MSG(
         _validate_sgx_quote(_parsed_sgx_quote),
-        "SGX quote validation failed.", NULL);
+        "SGX quote validation failed.",
+        NULL);
 
     OE_CHECK_MSG(
         _validate_qe_cert_data(qe_cert_data),
