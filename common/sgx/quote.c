@@ -105,7 +105,8 @@ done:
 
 // Parse sgx_qe_auth_data_t
 // Expect cur to point to the beginning of sgx_qe_auth_data_t
-// Will modify cur to point to the byte right after the parsed sgx_qe_auth_data_t
+// Will modify cur to point to the byte right after the parsed
+// sgx_qe_auth_data_t
 static oe_result_t _parse_sgx_qe_auth_data_t(
     const uint8_t** cur,
     const uint8_t* buffer_end,
@@ -139,7 +140,8 @@ done:
 
 // Parse sgx_qe_cert_data_t
 // Expect cur to point to the beginning of sgx_qe_cert_data_t
-// Will modify cur to point to the byte right after the parsed sgx_qe_cert_data_t
+// Will modify cur to point to the byte right after the parsed
+// sgx_qe_cert_data_t
 static oe_result_t _parse_sgx_qe_cert_data_t(
     const uint8_t** cur,
     const uint8_t* buffer_end,
@@ -195,14 +197,13 @@ static oe_result_t _parse_quote(
     // Check if pointer wrapped around because of overflow.
     if (quote_end < quote)
         OE_RAISE_MSG(
-            OE_REPORT_PARSE_ERROR,
-            "Parse error. Pointer overflow.",
-            NULL);
+            OE_REPORT_PARSE_ERROR, "Parse error. Pointer overflow.", NULL);
 
     cur += sizeof(sgx_quote_t);
 
     // Validate sgx_quote_t
-    if ((cur > quote_end) || ((quote_end - cur) != _parsed_sgx_quote->signature_len))
+    if ((cur > quote_end) ||
+        ((quote_end - cur) != _parsed_sgx_quote->signature_len))
         OE_RAISE_MSG(
             OE_REPORT_PARSE_ERROR,
             "Parse error after parsing SGX signature.",
@@ -234,7 +235,8 @@ static oe_result_t _parse_quote(
     // Validation
     //
     OE_CHECK_MSG(
-        _validate_sgx_quote(_parsed_sgx_quote), "SGX quote validation failed.", NULL);
+        _validate_sgx_quote(_parsed_sgx_quote),
+        "SGX quote validation failed.", NULL);
 
     OE_CHECK_MSG(
         _validate_qe_cert_data(qe_cert_data),
@@ -313,7 +315,8 @@ static oe_result_t _parse_tdx_quote(
                 NULL);
 
         // signature_len is right after the variable body
-        const uint8_t* sig_len_ptr = (const uint8_t*)v5_quote + offset_quote_body;
+        const uint8_t* sig_len_ptr =
+            (const uint8_t*)v5_quote + offset_quote_body;
         signature_len = ReadUint32(sig_len_ptr);
         offset_quote_body += 4; // Add signature_len field size
     }
@@ -403,7 +406,7 @@ static oe_result_t _parse_tdx_quote(
     // Now at offset: 706 + 128 + 6 + 384 + 64 = 1288
 
     OE_CHECK(_parse_sgx_qe_auth_data_t(&cur, quote_end, qe_auth_data));
-    
+
     OE_CHECK(_parse_sgx_qe_cert_data_t(&cur, quote_end, qe_cert_data));
 
     if (cur != quote_end)
