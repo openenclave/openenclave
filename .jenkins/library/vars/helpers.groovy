@@ -584,14 +584,15 @@ def releaseDownloadLinuxGitHub(String release_version, String oe_package, String
  * @param os_id                   The distribution name (e.g. Ubuntu)
  * @param os_release              The distribution version without "." (e.g. 2004)
  * @param storage_credentials_id  [Optional] Jenkins storage account credential id
- * @param storage_blob            [Optional] The name of the blob in the Azure storage account
+ * @param container_name          [Optional] The name of the Azure Storage container to download from
  */
-def releaseDownloadLinux(String release_version, String oe_package, String source, String os_id, String os_release, String storage_credentials_id = "", String storage_blob = "") {
+def releaseDownloadLinux(String release_version, String oe_package, String source, String os_id, String os_release, String storage_credentials_id = "", String container_name = "") {
     // Determine distribution and version
     // Note: lsb_release is only available on Ubuntu.
     if(source == "Azure") {
         // Download from Open Enclave storage container
-        azureContainerDownload(storage_blob, "${release_version}/${os_id}_${os_release}/*", storage_credentials_id)
+        // Debug by printing out params
+        azureContainerDownload(container_name, "${release_version}/${os_id}_${os_release}/*", storage_credentials_id)
         sh """
             find ${release_version}/${os_id}_${os_release} -name "*"
         """
@@ -658,12 +659,13 @@ def releaseDownloadWindowsGitHub(String release_version, String oe_package) {
  *                                - "GitHub" to download from the Open Enclave Repository
  * @param windows_version         The Windows version caption (output of "wmic os get caption")
  * @param storage_credentials_id  [Optional] Jenkins storage account credential id
- * @param storage_blob            [Optional] The name of the blob in the Azure storage account
+ * @param container_name          [Optional] The name of the Azure Storage container to download from
  */
-def releaseDownloadWindows(String release_version, String oe_package, String source, String windows_version, String storage_credentials_id = "", String storage_blob = "") {
+def releaseDownloadWindows(String release_version, String oe_package, String source, String windows_version, String storage_credentials_id = "", String container_name = "") {
     if(source == "Azure") {
         // Download from Azure storage container
-        azureContainerDownload(storage_blob, "${release_version}/${windows_version}/*", storage_credentials_id)
+        // Print debug info
+        azureContainerDownload(container_name, "${release_version}/${windows_version}/*", storage_credentials_id)
     } else if(source == "GitHub") {
         // Download nuget packages from Open Enclave GitHub repository releaases
         releaseDownloadWindowsGitHub(release_version, oe_package)
@@ -686,9 +688,9 @@ def releaseDownloadWindows(String release_version, String oe_package, String sou
  *                                - "Azure" to download from the Azure blob storage [Default]
  *                                - "GitHub" to download from the Open Enclave Repository
  * @param storage_credentials_id  [Optional] Jenkins storage account credential id
- * @param storage_blob            [Optional] The name of the blob in the Azure storage account
+ * @param container_name          [Optional] The name of the Azure Storage container to download from
  */
-def releaseInstall(String release_version = null, String oe_package = "open-enclave", String source = "Azure", String storage_credentials_id = "", String storage_blob = "") {
+def releaseInstall(String release_version = null, String oe_package = "open-enclave", String source = "Azure", String storage_credentials_id = "", String container_name = "") {
     // Check parameters are valid
     if(!release_version) {
         error("[Error] Invalid Open Enclave release version defined!")
@@ -718,7 +720,7 @@ def releaseInstall(String release_version = null, String oe_package = "open-encl
                 returnStdout: true
             ).trim()
         // Download Open Enclave package
-        def downloadedFiles = releaseDownloadLinux(release_version, oe_package, source, os_id, os_release, storage_credentials_id, storage_blob)
+        def downloadedFiles = releaseDownloadLinux(release_version, oe_package, source, os_id, os_release, storage_credentials_id, container_name)
         if(!downloadedFiles) {
             error("[Error] No files were downloaded!")
         } else {
@@ -749,7 +751,7 @@ def releaseInstall(String release_version = null, String oe_package = "open-encl
             oe_package = "open-enclave.OEHOSTVERIFY"
         }
         // Download Open Enclave package
-        releaseDownloadWindows(release_version, oe_package, source, windows_version, storage_credentials_id, storage_blob)     
+        releaseDownloadWindows(release_version, oe_package, source, windows_version, storage_credentials_id, container_name)     
         // Set nuget flags
         def nuget_flags = "-OutputDirectory C:\\oe -ExcludeVersion"
         if(source == "Azure") {

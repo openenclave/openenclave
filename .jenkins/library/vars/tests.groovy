@@ -537,16 +537,16 @@ def ACCHostVerificationPackageTest(String version, String build_type, String com
  * @param source                 [string]  Source to obtain the OE package from
  *                                         Choice of: Azure, or GitHub
  * @param storage_credentials_id [string]  ID of the credentials to access the Azure storage account
- * @param storage_blob           [string]  Name of the Azure storage blob to download the OE package from
+ * @param container_name         [string]  Name of the Azure Storage container to download the OE package from
  * @param lvi_mitigation         [boolean] Build enclave libraries with LVI mitigation.
  *                                         TODO: This and helpers.testSamples* should be converted into string to allow for the different mitigation options
  */
-def OEReleaseTest(String label, String release_version, String oe_package = "open-enclave", String source = "Azure", String storage_credentials_id, String storage_blob, boolean lvi_mitigation = false) {
+def OEReleaseTest(String label, String release_version, String oe_package = "open-enclave", String source = "Azure", String storage_credentials_id, String container_name, boolean lvi_mitigation = false) {
     stage("OE Release Test ${label}") {
         node(label) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
-                helpers.releaseInstall(release_version, oe_package, source, storage_credentials_id, storage_blob)
+                helpers.releaseInstall(release_version, oe_package, source, storage_credentials_id, container_name)
                 helpers.TestSamplesCommand(lvi_mitigation, oe_package)
             }
         }
