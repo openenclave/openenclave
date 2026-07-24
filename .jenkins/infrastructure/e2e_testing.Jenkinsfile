@@ -20,7 +20,7 @@ DOCKER_TAG = "e2e-${IMAGE_VERSION}-${BUILD_NUMBER}"
 
 
 pipeline {
-    agent any
+    agent { label 'Jenkins-Shared-DC2' }
     options {
         timeout(time: 8, unit: 'HOURS')
     }
