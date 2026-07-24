@@ -32,13 +32,10 @@ pipeline {
         string(name: 'E2E_IMAGES_GALLERY_NAME', defaultValue: 'e2e_images', description: "E2E Azure images gallery name", trim: true)
         string(name: 'PRODUCTION_IMAGES_GALLERY_NAME', defaultValue: '', description: "[OPTIONAL]: Specify the Azure Shared Image Gallery for storing production images", trim: true)
         string(name: 'REPLICATION_REGIONS', defaultValue: 'westeurope,eastus,uksouth,eastus2,westus,canadacentral', description: '[OPTIONAL] Replication regions for the shared gallery images definitions (comma-separated)', trim: true)
-        string(name: 'UBUNTU_2004_CFL_LABEL', defaultValue: 'e2e-ACC-2004', description: 'Label to use for image testing and promotion', trim: true)
         string(name: 'UBUNTU_2004_ICX_LABEL', defaultValue: 'e2e-ACC-2004-v3', description: 'Label to use for image testing and promotion', trim: true)
         string(name: 'UBUNTU_2004_NONSGX_LABEL', defaultValue: 'e2e-nonSGX-ubuntu-2004', description: 'Label to use for image testing and promotion', trim: true)
-        string(name: 'UBUNTU_2204_CFL_LABEL', defaultValue: 'e2e-ACC-2204', description: 'Label to use for image testing and promotion', trim: true)
         string(name: 'UBUNTU_2204_ICX_LABEL', defaultValue: 'e2e-ACC-2204-v3', description: 'Label to use for image testing and promotion', trim: true)
         string(name: 'UBUNTU_2204_NONSGX_LABEL', defaultValue: 'e2e-nonsgx-ubuntu-2204', description: 'Label to use for image testing and promotion', trim: true)
-        string(name: 'WS2022_DCAP_CFL_LABEL', defaultValue: 'e2e-SGXFLC-Windows-2022-DCAP-v2', description: 'Label to use for image testing and promotion', trim: true)
         string(name: 'WS2022_DCAP_ICX_LABEL', defaultValue: 'e2e-SGXFLC-Windows-2022-DCAP-v3', description: 'Label to use for image testing and promotion', trim: true)
         string(name: 'WS2022_NONSGX_CUSTOM_LABEL', defaultValue: 'e2e-nonsgx-windows-2022', description: 'Label to use for image testing and promotion', trim: true)
         string(name: 'IMAGES_BUILD_LABEL', defaultValue: 'vanilla-ubuntu-2004', description: 'Agent label used to run Azure Managed Image builds', trim: true)
@@ -99,13 +96,10 @@ pipeline {
                     string(name: 'BRANCH_NAME', value: env.BRANCH_NAME),
                     string(name: 'DOCKER_TAG', value: DOCKER_TAG),
                     string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
-                    string(name: 'UBUNTU_2004_CFL_CUSTOM_LABEL', value: params.UBUNTU_2004_CFL_LABEL),
                     string(name: 'UBUNTU_2004_ICX_CUSTOM_LABEL', value: params.UBUNTU_2004_ICX_LABEL),
                     string(name: 'UBUNTU_2004_NONSGX_LABEL', value: params.UBUNTU_2004_NONSGX_LABEL),
-                    string(name: 'UBUNTU_2204_CFL_CUSTOM_LABEL', value: params.UBUNTU_2204_CFL_LABEL),
                     string(name: 'UBUNTU_2204_ICX_CUSTOM_LABEL', value: params.UBUNTU_2204_ICX_LABEL),
                     string(name: 'UBUNTU_2204_NONSGX_LABEL', value: params.UBUNTU_2204_NONSGX_LABEL),
-                    string(name: 'WS2022_DCAP_CFL_LABEL', value: params.WS2022_DCAP_CFL_LABEL),
                     string(name: 'WS2022_DCAP_ICX_LABEL', value: params.WS2022_DCAP_ICX_LABEL),
                     string(name: 'WS2022_NONSGX_CUSTOM_LABEL', value: params.WS2022_NONSGX_CUSTOM_LABEL),
                     booleanParam(name: 'FULL_TEST_SUITE', value: true),
