@@ -40,7 +40,7 @@ List<String> APPROVED_AUTHORS = [
 ]
 
 pipeline {
-    agent any
+    agent { label 'Jenkins-Shared-DC2' }
     options {
         timeout(time: 240, unit: 'MINUTES')
         buildDiscarder(logRotator(artifactDaysToKeepStr: '90', artifactNumToKeepStr: '180', daysToKeepStr: '90', numToKeepStr: '180'))
