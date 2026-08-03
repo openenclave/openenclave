@@ -138,6 +138,13 @@ extern const char* OE_REQUIRED_CLAIMS[OE_REQUIRED_CLAIMS_COUNT];
 #define OE_CLAIM_TCB_DATE "tcb_date"
 
 /**
+ * The minimum TCB date enforced during verification, represented as an int64_t
+ * Unix epoch timestamp. This claim is present only when a TCB baseline policy
+ * is supplied.
+ */
+#define OE_CLAIM_TCB_BASELINE_DATE "tcb_baseline_date"
+
+/**
  * Overall datetime from which the evidence and endorsements are valid.
  */
 #define OE_CLAIM_VALIDITY_FROM "validity_from"

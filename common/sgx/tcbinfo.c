@@ -527,6 +527,10 @@ static oe_result_t _read_tcb_info_tcb_level_tcb_v3(
     tcb_level->pce_svn = (uint16_t)value;
 
     // Optionally, read array of tcbcomponents for TDX
+    memset(
+        tcb_level->tdx_tcb_comp_svn,
+        0,
+        sizeof(tcb_level->tdx_tcb_comp_svn));
     if (OE_OK == _read(',', itr, end))
     {
         OE_TRACE_VERBOSE("Reading tdxtcbcomponents");
@@ -568,7 +572,8 @@ done:
 // 4. If no tcb level was chosen, then the status of the platform is unknown.
 static void _determine_platform_tcb_info_tcb_level(
     oe_tcb_info_tcb_level_t* platform_tcb_level,
-    oe_tcb_info_tcb_level_t* tcb_level)
+    oe_tcb_info_tcb_level_t* tcb_level,
+    bool use_pce_svn)
 {
     // If the platform's status has already been determined, return.
     if (platform_tcb_level->status.AsUINT32 != OE_TCB_LEVEL_STATUS_UNKNOWN)
@@ -583,7 +588,18 @@ static void _determine_platform_tcb_info_tcb_level(
             tcb_level->sgx_tcb_comp_svn[i])
             return;
     }
-    if (platform_tcb_level->pce_svn < tcb_level->pce_svn)
+    // Compare all of the platform's TDX comp svn values (populated only for TDX
+    // TCB info; zero for the SGX path, in which case the comparison is a no-op)
+    // with the corresponding values in the current tcb level.
+    for (uint32_t i = 0; i < OE_COUNTOF(platform_tcb_level->tdx_tcb_comp_svn);
+         ++i)
+    {
+        if (platform_tcb_level->tdx_tcb_comp_svn[i] <
+            tcb_level->tdx_tcb_comp_svn[i])
+            return;
+    }
+    if (use_pce_svn &&
+        platform_tcb_level->pce_svn < tcb_level->pce_svn)
         return;
 
     // If all the values of the tcb level are less than corresponding values of
@@ -621,7 +637,8 @@ static oe_result_t _read_tcb_info_tcb_level_v1(
     const uint8_t** itr,
     const uint8_t* end,
     oe_tcb_info_tcb_level_t* platform_tcb_level,
-    oe_tcb_info_tcb_level_t* tcb_level)
+    oe_tcb_info_tcb_level_t* tcb_level,
+    bool use_pce_svn)
 {
     oe_result_t result = OE_JSON_INFO_PARSE_ERROR;
     const uint8_t* status = NULL;
@@ -651,7 +668,7 @@ static oe_result_t _read_tcb_info_tcb_level_v1(
         if (tcb_level->status.AsUINT32 != OE_TCB_LEVEL_STATUS_UNKNOWN)
         {
             _determine_platform_tcb_info_tcb_level(
-                platform_tcb_level, tcb_level);
+                platform_tcb_level, tcb_level, use_pce_svn);
         }
         // Read end of array or comma separator.
         if (*itr < end && **itr == ']')
@@ -705,7 +722,8 @@ static oe_result_t _read_tcb_info_tcb_level_v2_or_v3(
     const uint8_t** itr,
     const uint8_t* end,
     oe_tcb_info_tcb_level_t* platform_tcb_level,
-    oe_tcb_info_tcb_level_t* tcb_level)
+    oe_tcb_info_tcb_level_t* tcb_level,
+    bool use_pce_svn)
 {
     oe_result_t result = OE_JSON_INFO_PARSE_ERROR;
     const uint8_t* status = NULL;
@@ -770,7 +788,7 @@ static oe_result_t _read_tcb_info_tcb_level_v2_or_v3(
         if (tcb_level->status.AsUINT32 != OE_TCB_LEVEL_STATUS_UNKNOWN)
         {
             _determine_platform_tcb_info_tcb_level(
-                platform_tcb_level, tcb_level);
+                platform_tcb_level, tcb_level, use_pce_svn);
         }
 
         // Optimization
@@ -958,7 +976,8 @@ static oe_result_t _read_tcb_info_v1_or_v2(
     const uint8_t** itr,
     const uint8_t* end,
     oe_tcb_info_tcb_level_t* platform_tcb_level,
-    oe_parsed_tcb_info_t* parsed_info)
+    oe_parsed_tcb_info_t* parsed_info,
+    bool use_pce_svn)
 {
     oe_result_t result = OE_JSON_INFO_PARSE_ERROR;
 
@@ -971,7 +990,11 @@ static oe_result_t _read_tcb_info_v1_or_v2(
     OE_TRACE_VERBOSE("Reading tcbLevels");
     if (parsed_info->version == 1)
         OE_CHECK(_read_tcb_info_tcb_level_v1(
-            itr, end, platform_tcb_level, &parsed_info->tcb_info_v2.tcb_level));
+            itr,
+            end,
+            platform_tcb_level,
+            &parsed_info->tcb_info_v2.tcb_level,
+            use_pce_svn));
     else if (parsed_info->version == 2)
         OE_CHECK(_read_tcb_info_tcb_level_v2_or_v3(
             parsed_info->version,
@@ -979,7 +1002,8 @@ static oe_result_t _read_tcb_info_v1_or_v2(
             itr,
             end,
             platform_tcb_level,
-            &parsed_info->tcb_info_v2.tcb_level));
+            &parsed_info->tcb_info_v2.tcb_level,
+            use_pce_svn));
     else
     {
         OE_RAISE_MSG(
@@ -1005,7 +1029,8 @@ static oe_result_t _read_tcb_info_v3(
     const uint8_t** itr,
     const uint8_t* end,
     oe_tcb_info_tcb_level_t* platform_tcb_level,
-    oe_parsed_tcb_info_t* parsed_info)
+    oe_parsed_tcb_info_t* parsed_info,
+    bool use_pce_svn)
 {
     oe_result_t result = OE_JSON_INFO_PARSE_ERROR;
     const uint8_t* str = NULL;
@@ -1043,7 +1068,8 @@ static oe_result_t _read_tcb_info_v3(
             itr,
             end,
             platform_tcb_level,
-            &parsed_info->tcb_info_v3.tcb_level));
+            &parsed_info->tcb_info_v3.tcb_level,
+            use_pce_svn));
     else
     {
         OE_RAISE_MSG(
@@ -1110,7 +1136,8 @@ static oe_result_t _read_tcb_info(
     const uint8_t** itr,
     const uint8_t* end,
     oe_tcb_info_tcb_level_t* platform_tcb_level,
-    oe_parsed_tcb_info_t* parsed_info)
+    oe_parsed_tcb_info_t* parsed_info,
+    bool use_pce_svn)
 {
     oe_result_t result = OE_JSON_INFO_PARSE_ERROR;
     uint64_t version = 0;
@@ -1139,10 +1166,20 @@ static oe_result_t _read_tcb_info(
 
     if (parsed_info->version == 1 || parsed_info->version == 2)
         OE_CHECK(_read_tcb_info_v1_or_v2(
-            tcb_info_json, itr, end, platform_tcb_level, parsed_info));
+            tcb_info_json,
+            itr,
+            end,
+            platform_tcb_level,
+            parsed_info,
+            use_pce_svn));
     else if (parsed_info->version == 3)
         OE_CHECK(_read_tcb_info_v3(
-            tcb_info_json, itr, end, platform_tcb_level, parsed_info));
+            tcb_info_json,
+            itr,
+            end,
+            platform_tcb_level,
+            parsed_info,
+            use_pce_svn));
 
     result = OE_OK;
 done:
@@ -1156,11 +1193,12 @@ done:
  *    "signature" : "hex string"
  * }
  */
-oe_result_t oe_parse_tcb_info_json(
+static oe_result_t _parse_tcb_info_json(
     const uint8_t* tcb_info_json,
     size_t tcb_info_json_size,
     oe_tcb_info_tcb_level_t* platform_tcb_level,
-    oe_parsed_tcb_info_t* parsed_info)
+    oe_parsed_tcb_info_t* parsed_info,
+    bool use_pce_svn)
 {
     oe_result_t result = OE_JSON_INFO_PARSE_ERROR;
     const uint8_t* itr = tcb_info_json;
@@ -1183,7 +1221,12 @@ oe_result_t oe_parse_tcb_info_json(
     OE_TRACE_VERBOSE("Reading tcbInfo");
     OE_CHECK(_read_property_name_and_colon("tcbInfo", &itr, end));
     OE_CHECK(_read_tcb_info(
-        tcb_info_json, &itr, end, platform_tcb_level, parsed_info));
+        tcb_info_json,
+        &itr,
+        end,
+        platform_tcb_level,
+        parsed_info,
+        use_pce_svn));
     OE_CHECK(_read(',', &itr, end));
 
     OE_TRACE_VERBOSE("Reading signature");
@@ -1231,6 +1274,34 @@ oe_result_t oe_parse_tcb_info_json(
     }
 done:
     return result;
+}
+
+oe_result_t oe_parse_tcb_info_json(
+    const uint8_t* tcb_info_json,
+    size_t tcb_info_json_size,
+    oe_tcb_info_tcb_level_t* platform_tcb_level,
+    oe_parsed_tcb_info_t* parsed_info)
+{
+    return _parse_tcb_info_json(
+        tcb_info_json,
+        tcb_info_json_size,
+        platform_tcb_level,
+        parsed_info,
+        true);
+}
+
+oe_result_t oe_parse_tcb_info_json_without_pce_svn(
+    const uint8_t* tcb_info_json,
+    size_t tcb_info_json_size,
+    oe_tcb_info_tcb_level_t* platform_tcb_level,
+    oe_parsed_tcb_info_t* parsed_info)
+{
+    return _parse_tcb_info_json(
+        tcb_info_json,
+        tcb_info_json_size,
+        platform_tcb_level,
+        parsed_info,
+        false);
 }
 
 OE_INLINE uint32_t read_uint32(const uint8_t* p)

@@ -377,6 +377,23 @@ option(BUILD_TESTS "Build OE tests" ON)
 option(ENABLE_FUZZING "Build OE with fuzzing flags enabled" OFF)
 option(BUILD_OEUTIL_TOOL "Build oeutil tool" ON)
 
+# OE-side evaluation of the TDX Service-TD initial platform TCB
+# (init_cpu_svn/init_tee_tcb_svn evaluated against the platform TCB info, which
+# is keyed by the platform FMSPC; the evaluation runs only when init_tee_fmspc
+# matches the platform FMSPC, which holds for the single-platform production
+# target). This is a temporary capability: once Intel's verification library
+# evaluates the Service-TD initial TCB natively, this can be turned off.
+# When disabled, the Service-TD extension report fields are still exposed as
+# claims, but the tdx_curr_platform_tcb_status/date and
+# tdx_init_platform_tcb_status/date claims and the init-TCB baseline-date gating
+# are omitted, and the aggregate tcb_status reflects only the current platform
+# TCB.
+option(TDX_ENABLE_SERVTD_INIT_TCB_EVAL
+       "Enable OE-side evaluation of the TDX Service-TD initial platform TCB" ON)
+if (NOT TDX_ENABLE_SERVTD_INIT_TCB_EVAL)
+  add_compile_definitions(OE_TDX_ENABLE_SERVTD_INIT_TCB_EVAL=0)
+endif ()
+
 # For EEID see https://github.com/openenclave/openenclave/pull/2647
 option(
   WITH_EEID

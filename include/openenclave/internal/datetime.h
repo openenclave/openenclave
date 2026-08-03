@@ -64,6 +64,11 @@ void oe_datetime_log(const char* msg, const oe_datetime_t* date);
  */
 oe_result_t oe_datetime_to_time_t(const oe_datetime_t* datetime, time_t* value);
 
+/**
+ * Convert time_t to oe datetime (in GMT time).
+ */
+oe_result_t oe_datetime_from_time_t(time_t value, oe_datetime_t* datetime);
+
 OE_EXTERNC_END
 
 #endif /* _OE_INTERNAL_DATETIME_H */
