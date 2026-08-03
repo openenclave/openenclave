@@ -6,10 +6,16 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/attestation/sgx/evidence.h>
 
 OE_EXTERNC_BEGIN
 
 typedef int64_t time_t;
+
+oe_sgx_tcb_status_t oe_tdx_get_effective_tcb_status(
+    oe_sgx_tcb_status_t current_status,
+    oe_sgx_tcb_status_t init_status,
+    bool* uses_init_status);
 
 /* This file needs to be synchronized with Intel SGX SDK */
 
@@ -26,8 +32,7 @@ typedef struct _sgx_cpu_svn_t
 } sgx_cpu_svn_t;
 
 /* The following definition is based on sgx_qve_header.h from Intel SGX SDK
- * Version 1.20
- * https://github.com/intel/SGXDataCenterAttestationPrimitives/releases/tag/DCAP_1.20
+ * Version 2.27 / DCAP 1.27.
  */
 
 #ifndef SGX_QL_QV_MK_ERROR
@@ -74,8 +79,7 @@ typedef enum _sgx_ql_qv_result_t
                  ///< launched and ran for some time with out-of-date TDX
                  ///< Module. Relaunching or re-provisioning your TD is advised
     SGX_QL_QV_RESULT_TD_RELAUNCH_ADVISED_CONFIG_NEEDED =
-        SGX_QL_QV_MK_ERROR(0x0010), /// Upcoming change in Intel DCAP 1.21,
-                                    /// manually added, error code could change
+        SGX_QL_QV_MK_ERROR(0x000A),
     SGX_QL_QV_RESULT_MAX = SGX_QL_QV_MK_ERROR(
         0x00FF), ///< Indicate max result to allow better translation
 
@@ -93,7 +97,7 @@ typedef enum _pck_cert_flag_enum_t
 
 // Each Intel Advisory size is ~16 bytes
 // Assume each TCB level has 20 advisoryIDs at the very most
-#define MAX_SA_LIST_SIZE 320
+#define MAX_SA_LIST_SIZE 450
 
 // Nameless struct generates C4201 warning in MS compiler, but it is allowed in
 // c++ 11 standard Should remove the pragma after Microsoft fixes this issue
@@ -184,7 +188,22 @@ typedef struct _sgx_ql_qv_supplemental_t
                                     ///< generated the quote is not vulnerable
     uint32_t qe_iden_tcb_eval_ref_num; ///< Lower number of the QEIdentity
     sgx_ql_qv_result_t qe_iden_status; /// QEIdentity status
+    time_t platform_tcb_level_date_tag; ///< Date of the matched platform TCB
+                                        ///< level
+
+    /* Appended in supplemental data version 3.5. For a TDX
+     * TD-preserving update, the fields above describe the launch TCB and the
+     * fields below describe the current TCB. */
+    time_t tcb_date_current;
+    sgx_ql_qv_result_t tcb_status_current;
+    char sa_list_current[MAX_SA_LIST_SIZE];
 } sgx_ql_qv_supplemental_t;
+
+OE_STATIC_ASSERT(
+    OE_OFFSETOF(sgx_ql_qv_supplemental_t, tcb_date_current) == 672);
+OE_STATIC_ASSERT(
+    OE_OFFSETOF(sgx_ql_qv_supplemental_t, sa_list_current) == 684);
+OE_STATIC_ASSERT(sizeof(sgx_ql_qv_supplemental_t) == 1136);
 
 #ifdef _MSC_VER
 #pragma warning(pop)

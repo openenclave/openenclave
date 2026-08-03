@@ -165,6 +165,118 @@ typedef struct _tdx_report_body_v5_t
 } tdx_report_body_v5_t;
 OE_PACK_END
 
+/*
+** TDX report body type 4 (TD Quote body v1.5_ex). Present when the TD
+** ATTRIBUTES.SERVTD_EXT (bit 17) is set. Extends the v1.5 (type 3) body with
+** the Service-TD extension fields, allowing a verifier to observe both the
+** initial and current bound Service-TD measurement and attributes, plus the
+** platform TCB context (CPU SVN, TEE TCB SVN, FMSPC) recorded when the
+** Service-TD was first bound. The first 648 bytes are identical to
+** tdx_report_body_v5_t.
+*/
+OE_PACK_BEGIN
+typedef struct _tdx_report_body_v1_5_ex_t
+{
+    /* (0) */
+    tee_tcb_svn_t tee_tcb_svn;
+
+    /* (16) */
+    uint8_t mrseam[48];
+
+    /* (64) */
+    uint8_t mrseamsigner[48];
+
+    /* (112) */
+    uint8_t seam_attributes[8];
+
+    /* (120) */
+    tdx_attributes_t td_attributes;
+
+    /* (128) */
+    uint8_t xfam[8];
+
+    /* (136) */
+    uint8_t mrtd[48];
+
+    /* (184) */
+    uint8_t mrconfigid[48];
+
+    /* (232) */
+    uint8_t mrowner[48];
+
+    /* (280) */
+    uint8_t mrownerconfig[48];
+
+    /* (328) */
+    uint8_t rtmr0[48];
+
+    /* (376) */
+    uint8_t rtmr1[48];
+
+    /* (424) */
+    uint8_t rtmr2[48];
+
+    /* (472) */
+    uint8_t rtmr3[48];
+
+    /* (520) */
+    uint8_t report_data[64];
+
+    /* (584) */
+    tee_tcb_svn_t tee_tcb_svn2;
+
+    /* (600) */
+    uint8_t mrservicetd[48];
+
+    /* (648) Service-TD extension fields (v1.5_ex) */
+    uint8_t vmid;
+
+    /* (649) */
+    uint8_t td_id[32];
+
+    /* (681) */
+    uint8_t devinfo[48];
+
+    /* (729) SHA384 of the Service-TD bound at TD build time. */
+    uint8_t init_server_td_hash[48];
+
+    /* (777) Service-TD ATTRIBUTES recorded at TD build time. */
+    uint8_t init_server_td_attr[8];
+
+    /* (785) Platform CPU SVN recorded when the Service-TD was first bound. */
+    uint8_t init_cpu_svn[16];
+
+    /* (801) Platform TEE TCB SVN recorded when the Service-TD was first bound.
+     */
+    tee_tcb_svn_t init_tee_tcb_svn;
+
+    /* (817) Platform FMSPC recorded when the Service-TD was first bound. */
+    uint8_t init_tee_fmspc[12];
+
+    /* (829) SHA384 of the currently bound Service-TD. */
+    uint8_t curr_server_td_hash[48];
+
+    /* (877) ATTRIBUTES of the currently bound Service-TD. */
+    uint8_t curr_server_td_attr[8];
+} tdx_report_body_v1_5_ex_t;
+OE_PACK_END
+
+OE_STATIC_ASSERT(OE_OFFSETOF(tdx_report_body_v1_5_ex_t, mrservicetd) == 600);
+OE_STATIC_ASSERT(OE_OFFSETOF(tdx_report_body_v1_5_ex_t, vmid) == 648);
+OE_STATIC_ASSERT(
+    OE_OFFSETOF(tdx_report_body_v1_5_ex_t, init_server_td_hash) == 729);
+OE_STATIC_ASSERT(
+    OE_OFFSETOF(tdx_report_body_v1_5_ex_t, init_server_td_attr) == 777);
+OE_STATIC_ASSERT(OE_OFFSETOF(tdx_report_body_v1_5_ex_t, init_cpu_svn) == 785);
+OE_STATIC_ASSERT(
+    OE_OFFSETOF(tdx_report_body_v1_5_ex_t, init_tee_tcb_svn) == 801);
+OE_STATIC_ASSERT(OE_OFFSETOF(tdx_report_body_v1_5_ex_t, init_tee_fmspc) == 817);
+OE_STATIC_ASSERT(
+    OE_OFFSETOF(tdx_report_body_v1_5_ex_t, curr_server_td_hash) == 829);
+OE_STATIC_ASSERT(
+    OE_OFFSETOF(tdx_report_body_v1_5_ex_t, curr_server_td_attr) == 877);
+OE_STATIC_ASSERT(sizeof(tdx_report_body_v1_5_ex_t) == 885);
+
 OE_PACK_BEGIN
 typedef struct _tdx_quote_t
 {
