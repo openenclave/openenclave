@@ -15,6 +15,8 @@
 #include <string.h>
 #include "secure_verify_t.h"
 
+static const oe_uuid_t _tdx_quote_uuid = {OE_FORMAT_UUID_TDX_QUOTE_ECDSA};
+
 static void _dump_hex(char* key, uint8_t* data, size_t size)
 {
     printf("%s: ", key);
@@ -41,6 +43,20 @@ static void _dump_claims(oe_claim_t* claims, size_t claims_length)
             _dump_str(
                 claims[i].name, (char*)claims[i].value, claims[i].value_size);
     }
+}
+
+static const oe_claim_t* _find_claim(
+    const oe_claim_t* claims,
+    size_t claims_length,
+    const char* name)
+{
+    for (size_t i = 0; i < claims_length; i++)
+    {
+        if (strcmp(claims[i].name, name) == 0)
+            return &claims[i];
+    }
+
+    return NULL;
 }
 
 oe_result_t verify_plugin_evidence(
@@ -91,6 +107,36 @@ oe_result_t verify_plugin_evidence(
         oe_result_str(result));
 
     _dump_claims(claims, claims_length);
+
+    if (memcmp(format_id, &_tdx_quote_uuid, sizeof(*format_id)) == 0)
+    {
+        const oe_claim_t* tcb_date =
+            _find_claim(claims, claims_length, OE_CLAIM_TCB_DATE);
+        const oe_claim_t* baseline = _find_claim(
+            claims, claims_length, OE_CLAIM_TCB_BASELINE_DATE);
+
+        if (!tcb_date || tcb_date->value_size != sizeof(oe_datetime_t))
+            OE_RAISE_MSG(
+                OE_VERIFY_FAILED, "Missing or invalid TCB date claim");
+
+        if (has_tcb_baseline_date)
+        {
+            if (!baseline ||
+                baseline->value_size != sizeof(tcb_baseline_date) ||
+                memcmp(
+                    baseline->value,
+                    &tcb_baseline_date,
+                    sizeof(tcb_baseline_date)) != 0)
+                OE_RAISE_MSG(
+                    OE_VERIFY_FAILED, "Missing or invalid TCB baseline claim");
+        }
+        else if (baseline)
+        {
+            OE_RAISE_MSG(
+                OE_VERIFY_FAILED,
+                "Unexpected TCB baseline claim without baseline policy");
+        }
+    }
 
     result = OE_OK;
 

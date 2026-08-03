@@ -9,9 +9,11 @@
 #include <openenclave/internal/utils.h>
 
 #include <fstream>
+#include <string>
 #include <streambuf>
 #include <vector>
 #include "../../../common/sgx/tcbinfo.h"
+#include "../../../common/tdx/verifier.h"
 #include "../../../host/sgx/quote.h"
 #include "tests_u.h"
 
@@ -402,6 +404,12 @@ void TestVerifyTCBInfoV3(oe_enclave_t* enclave, const char* test_filename)
         {7, 9, 3, 3, 255, 255, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 8};
     oe_parsed_tcb_info_t parsed_info = {0};
 
+    if (std::string(test_filename).find("tdx") != std::string::npos)
+    {
+        platform_tcb_level.tdx_tcb_comp_svn[0] = 3;
+        platform_tcb_level.tdx_tcb_comp_svn[2] = 5;
+    }
+
     printf("TCB Info Version 3 tests with %s\n", test_filename);
     // ./data_v3/tcbInfo_sgx.json contains 5 tcb levels.
     // The first level with pce svn = 8 is UpToDate.
@@ -514,6 +522,206 @@ void TestVerifyTCBInfoV3(oe_enclave_t* enclave, const char* test_filename)
     printf("Unknown TCB Level determination test passed.\n");
 
     printf("TestVerifyTCBInfo V3: Positive Tests passed\n");
+}
+
+void TestVerifyTdxTcbInfoWithMissingComponents()
+{
+    oe_parsed_tcb_info_t parsed_info = {0};
+    oe_tcb_info_tcb_level_t platform_tcb_level = {
+        {7, 9, 3, 3, 255, 255, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 7};
+    const char sgx_components[] =
+        "[{\"svn\":7},{\"svn\":9},{\"svn\":3},{\"svn\":3},"
+        "{\"svn\":255},{\"svn\":255},{\"svn\":1},{\"svn\":0},"
+        "{\"svn\":0},{\"svn\":0},{\"svn\":0},{\"svn\":0},"
+        "{\"svn\":0},{\"svn\":0},{\"svn\":0},{\"svn\":0}]";
+    const char tdx_components[] =
+        "[{\"svn\":3},{\"svn\":0},{\"svn\":5},{\"svn\":0},"
+        "{\"svn\":0},{\"svn\":0},{\"svn\":0},{\"svn\":0},"
+        "{\"svn\":0},{\"svn\":0},{\"svn\":0},{\"svn\":0},"
+        "{\"svn\":0},{\"svn\":0},{\"svn\":0},{\"svn\":0}]";
+    const std::string json =
+        "{\"tcbInfo\":{\"id\":\"TDX\",\"version\":3,"
+        "\"issueDate\":\"2018-06-06T10:12:17Z\","
+        "\"nextUpdate\":\"2019-06-06T10:12:17Z\","
+        "\"fmspc\":\"00906EA10000\",\"pceId\":\"0000\","
+        "\"tcbType\":0,\"tcbEvaluationDataNumber\":14,"
+        "\"tdxModule\":{\"mrsigner\":\""
+        "000000000000000000000000000000000000000000000000"
+        "000000000000000000000000000000000000000000000000\","
+        "\"attributes\":\"0000000000000000\","
+        "\"attributesMask\":\"FFFFFFFFFFFFFFFF\"},\"tcbLevels\":["
+        "{\"tcb\":{\"sgxtcbcomponents\":" +
+        std::string(sgx_components) +
+        ",\"pcesvn\":8,\"tdxtcbcomponents\":" +
+        std::string(tdx_components) +
+        "},\"tcbDate\":\"2018-01-04T01:02:03Z\","
+        "\"tcbStatus\":\"UpToDate\"},"
+        "{\"tcb\":{\"sgxtcbcomponents\":" +
+        std::string(sgx_components) +
+        ",\"pcesvn\":7},\"tcbDate\":\"2018-01-03T01:02:03Z\","
+        "\"tcbStatus\":\"SWHardeningNeeded\"}]},"
+        "\"signature\":\""
+        "0000000000000000000000000000000000000000000000000000000000000000"
+        "0000000000000000000000000000000000000000000000000000000000000000"
+        "\"}";
+
+    platform_tcb_level.status.AsUINT32 = OE_TCB_LEVEL_STATUS_UNKNOWN;
+    OE_TEST(
+        oe_parse_tcb_info_json(
+            (const uint8_t*)json.c_str(),
+            json.size() + 1,
+            &platform_tcb_level,
+            &parsed_info) == OE_OK);
+    OE_TEST(
+        oe_tcb_level_status_to_sgx_tcb_status(platform_tcb_level.status) ==
+        OE_SGX_TCB_STATUS_SW_HARDENING_NEEDED);
+}
+
+void TestVerifyTdxTcbInfoWithoutPceSvn()
+{
+    oe_parsed_tcb_info_t parsed_info = {0};
+    oe_tcb_info_tcb_level_t platform_tcb_level = {
+        {7, 9, 3, 3, 255, 255, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0};
+    const char sgx_components[] =
+        "[{\"svn\":7},{\"svn\":9},{\"svn\":3},{\"svn\":3},"
+        "{\"svn\":255},{\"svn\":255},{\"svn\":1},{\"svn\":0},"
+        "{\"svn\":0},{\"svn\":0},{\"svn\":0},{\"svn\":0},"
+        "{\"svn\":0},{\"svn\":0},{\"svn\":0},{\"svn\":0}]";
+    const char tdx_components[] =
+        "[{\"svn\":3},{\"svn\":0},{\"svn\":5},{\"svn\":0},"
+        "{\"svn\":0},{\"svn\":0},{\"svn\":0},{\"svn\":0},"
+        "{\"svn\":0},{\"svn\":0},{\"svn\":0},{\"svn\":0},"
+        "{\"svn\":0},{\"svn\":0},{\"svn\":0},{\"svn\":0}]";
+    const std::string json =
+        "{\"tcbInfo\":{\"id\":\"TDX\",\"version\":3,"
+        "\"issueDate\":\"2018-06-06T10:12:17Z\","
+        "\"nextUpdate\":\"2019-06-06T10:12:17Z\","
+        "\"fmspc\":\"00906EA10000\",\"pceId\":\"0000\","
+        "\"tcbType\":0,\"tcbEvaluationDataNumber\":14,"
+        "\"tdxModule\":{\"mrsigner\":\""
+        "000000000000000000000000000000000000000000000000"
+        "000000000000000000000000000000000000000000000000\","
+        "\"attributes\":\"0000000000000000\","
+        "\"attributesMask\":\"FFFFFFFFFFFFFFFF\"},\"tcbLevels\":["
+        "{\"tcb\":{\"sgxtcbcomponents\":" +
+        std::string(sgx_components) +
+        ",\"pcesvn\":8,\"tdxtcbcomponents\":" +
+        std::string(tdx_components) +
+        "},\"tcbDate\":\"2018-01-04T01:02:03Z\","
+        "\"tcbStatus\":\"UpToDate\"}]},"
+        "\"signature\":\""
+        "0000000000000000000000000000000000000000000000000000000000000000"
+        "0000000000000000000000000000000000000000000000000000000000000000"
+        "\"}";
+
+    platform_tcb_level.tdx_tcb_comp_svn[0] = 3;
+    platform_tcb_level.tdx_tcb_comp_svn[2] = 5;
+
+    OE_TEST(
+        oe_parse_tcb_info_json(
+            (const uint8_t*)json.c_str(),
+            json.size() + 1,
+            &platform_tcb_level,
+            &parsed_info) == OE_TCB_LEVEL_INVALID);
+
+    memset(&parsed_info, 0, sizeof(parsed_info));
+    OE_TEST(
+        oe_parse_tcb_info_json_without_pce_svn(
+            (const uint8_t*)json.c_str(),
+            json.size() + 1,
+            &platform_tcb_level,
+            &parsed_info) == OE_OK);
+    OE_TEST(
+        oe_tcb_level_status_to_sgx_tcb_status(platform_tcb_level.status) ==
+        OE_SGX_TCB_STATUS_UP_TO_DATE);
+
+    memset(&parsed_info, 0, sizeof(parsed_info));
+    platform_tcb_level.tdx_tcb_comp_svn[2] = 4;
+    OE_TEST(
+        oe_parse_tcb_info_json_without_pce_svn(
+            (const uint8_t*)json.c_str(),
+            json.size() + 1,
+            &platform_tcb_level,
+            &parsed_info) == OE_TCB_LEVEL_INVALID);
+}
+
+void TestTdxEffectiveTcbStatus()
+{
+    bool uses_init = false;
+
+#define TEST_EFFECTIVE_STATUS(current, init, expected, expected_uses_init) \
+    do                                                                  \
+    {                                                                   \
+        uses_init = !(expected_uses_init);                               \
+        OE_TEST(oe_tdx_get_effective_tcb_status(                         \
+                    (current), (init), &uses_init) == (expected));       \
+        OE_TEST(uses_init == (expected_uses_init));                      \
+    } while (0)
+
+    TEST_EFFECTIVE_STATUS(
+        OE_SGX_TCB_STATUS_OUT_OF_DATE,
+        OE_SGX_TCB_STATUS_REVOKED,
+        OE_SGX_TCB_STATUS_OUT_OF_DATE,
+        false);
+    TEST_EFFECTIVE_STATUS(
+        OE_SGX_TCB_STATUS_REVOKED,
+        OE_SGX_TCB_STATUS_OUT_OF_DATE,
+        OE_SGX_TCB_STATUS_REVOKED,
+        false);
+    TEST_EFFECTIVE_STATUS(
+        OE_SGX_TCB_STATUS_INVALID,
+        OE_SGX_TCB_STATUS_REVOKED,
+        OE_SGX_TCB_STATUS_INVALID,
+        false);
+    TEST_EFFECTIVE_STATUS(
+        OE_SGX_TCB_STATUS_OUT_OF_DATE_CONFIGURATION_NEEDED,
+        OE_SGX_TCB_STATUS_REVOKED,
+        OE_SGX_TCB_STATUS_OUT_OF_DATE_CONFIGURATION_NEEDED,
+        false);
+
+    TEST_EFFECTIVE_STATUS(
+        OE_SGX_TCB_STATUS_CONFIGURATION_NEEDED,
+        OE_SGX_TCB_STATUS_REVOKED,
+        OE_SGX_TCB_STATUS_REVOKED,
+        true);
+    TEST_EFFECTIVE_STATUS(
+        OE_SGX_TCB_STATUS_SW_HARDENING_NEEDED,
+        OE_SGX_TCB_STATUS_OUT_OF_DATE,
+        OE_SGX_TCB_STATUS_OUT_OF_DATE,
+        true);
+    TEST_EFFECTIVE_STATUS(
+        OE_SGX_TCB_STATUS_TD_RELAUNCH_ADVISED,
+        OE_SGX_TCB_STATUS_INVALID,
+        OE_SGX_TCB_STATUS_INVALID,
+        true);
+    TEST_EFFECTIVE_STATUS(
+        OE_SGX_TCB_STATUS_CONFIGURATION_NEEDED,
+        OE_SGX_TCB_STATUS_OUT_OF_DATE_CONFIGURATION_NEEDED,
+        OE_SGX_TCB_STATUS_OUT_OF_DATE_CONFIGURATION_NEEDED,
+        true);
+    TEST_EFFECTIVE_STATUS(
+        OE_SGX_TCB_STATUS_UP_TO_DATE,
+        OE_SGX_TCB_STATUS_CONFIGURATION_NEEDED,
+        OE_SGX_TCB_STATUS_CONFIGURATION_NEEDED,
+        true);
+
+    TEST_EFFECTIVE_STATUS(
+        OE_SGX_TCB_STATUS_CONFIGURATION_NEEDED,
+        OE_SGX_TCB_STATUS_SW_HARDENING_NEEDED,
+        OE_SGX_TCB_STATUS_CONFIGURATION_NEEDED,
+        false);
+    TEST_EFFECTIVE_STATUS(
+        OE_SGX_TCB_STATUS_CONFIGURATION_NEEDED,
+        OE_SGX_TCB_STATUS_UP_TO_DATE,
+        OE_SGX_TCB_STATUS_CONFIGURATION_NEEDED,
+        false);
+    TEST_EFFECTIVE_STATUS(
+        OE_SGX_TCB_STATUS_UP_TO_DATE,
+        OE_SGX_TCB_STATUS_UP_TO_DATE,
+        OE_SGX_TCB_STATUS_UP_TO_DATE,
+        false);
+
+#undef TEST_EFFECTIVE_STATUS
 }
 
 void TestVerifyTCBInfo_AdvisoryIDs(

@@ -198,6 +198,16 @@ oe_result_t oe_parse_tcb_info_json(
     oe_tcb_info_tcb_level_t* platform_tcb_level,
     oe_parsed_tcb_info_t* parsed_info);
 
+/**
+ * Parse TCB info while matching only SGX and TDX component SVNs. This is for
+ * platform state records that do not carry a PCE SVN.
+ */
+oe_result_t oe_parse_tcb_info_json_without_pce_svn(
+    const uint8_t* tcb_info_json,
+    size_t tcb_info_json_size,
+    oe_tcb_info_tcb_level_t* platform_tcb_level,
+    oe_parsed_tcb_info_t* parsed_info);
+
 oe_result_t oe_verify_ecdsa256_signature(
     const uint8_t* tcb_info_start,
     size_t tcb_info_size,

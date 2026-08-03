@@ -302,3 +302,37 @@ oe_result_t oe_datetime_to_time_t(const oe_datetime_t* datetime, time_t* value)
 done:
     return result;
 }
+
+oe_result_t oe_datetime_from_time_t(time_t value, oe_datetime_t* datetime)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    struct tm timeinfo = {0};
+
+    if (datetime == NULL)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    memset(datetime, 0, sizeof(*datetime));
+
+#ifdef _WIN32
+    if (gmtime_r(&value, &timeinfo) != 0)
+#else
+    if (gmtime_r(&value, &timeinfo) == NULL)
+#endif
+        OE_RAISE(OE_INVALID_UTC_DATE_TIME);
+
+    datetime->year = (uint32_t)timeinfo.tm_year + 1900;
+    datetime->month = (uint32_t)timeinfo.tm_mon + 1;
+    datetime->day = (uint32_t)timeinfo.tm_mday;
+    datetime->hours = (uint32_t)timeinfo.tm_hour;
+    datetime->minutes = (uint32_t)timeinfo.tm_min;
+    datetime->seconds = (uint32_t)timeinfo.tm_sec;
+
+    OE_CHECK(oe_datetime_is_valid(datetime));
+
+    result = OE_OK;
+done:
+    if (datetime && result != OE_OK)
+        memset(datetime, 0, sizeof(*datetime));
+
+    return result;
+}

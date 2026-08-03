@@ -11,6 +11,7 @@
 #include <openenclave/internal/tests.h>
 #include <openenclave/internal/utils.h>
 #include <ctime>
+#include <limits>
 #include <vector>
 #include "../../../common/sgx/tcbinfo.h"
 #include "../../../host/sgx/quote.h"
@@ -50,6 +51,9 @@ extern void TestVerifyTCBInfoV2(
 extern void TestVerifyTCBInfoV3(
     oe_enclave_t* enclave,
     const char* test_filename);
+extern void TestVerifyTdxTcbInfoWithMissingComponents();
+extern void TestVerifyTdxTcbInfoWithoutPceSvn();
+extern void TestTdxEffectiveTcbStatus();
 extern void TestVerifyTCBInfo_AdvisoryIDs(
     oe_enclave_t* enclave,
     const char* test_filename,
@@ -103,6 +107,21 @@ int load_and_verify_report()
 
 int main(int argc, const char* argv[])
 {
+    oe_datetime_t invalid_time = {1, 1, 1, 1, 1, 1};
+    const oe_datetime_t empty_time = {0};
+
+    OE_TEST(
+        oe_datetime_from_time_t(
+            (std::numeric_limits<time_t>::max)(), &invalid_time) ==
+        OE_INVALID_UTC_DATE_TIME);
+    OE_TEST(memcmp(&invalid_time, &empty_time, sizeof(invalid_time)) == 0);
+
+    invalid_time = {1, 1, 1, 1, 1, 1};
+    OE_TEST(
+        oe_datetime_from_time_t((time_t)-1, &invalid_time) ==
+        OE_INVALID_UTC_DATE_TIME);
+    OE_TEST(memcmp(&invalid_time, &empty_time, sizeof(invalid_time)) == 0);
+
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
 
@@ -345,6 +364,9 @@ int main(int argc, const char* argv[])
 
         TestVerifyTCBInfoV3(enclave, "./data_v3/tcbinfo_sgx.json");
         TestVerifyTCBInfoV3(enclave, "./data_v3/tcbinfo_tdx.json");
+        TestVerifyTdxTcbInfoWithMissingComponents();
+        TestVerifyTdxTcbInfoWithoutPceSvn();
+        TestTdxEffectiveTcbStatus();
 
         generate_and_save_report(enclave);
     }
