@@ -16,7 +16,7 @@
 #endif
 
 // Max length of SGX DCAP QVL/QvE returned supplemental data
-#define MAX_SUPPLEMENTAL_DATA_SIZE 1000
+#define MAX_SUPPLEMENTAL_DATA_SIZE 2048
 
 #ifndef OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
 // UUID only needed for Intel QVL path
