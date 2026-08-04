@@ -38,6 +38,8 @@ List<String> APPROVED_AUTHORS = [
     'dcarpente',
     'justanotherminh',
     'mingweishih',
+    'msftsettiy',
+    'PallabPaul',
     'radhikaj',
     'vtikoo'
 ]
