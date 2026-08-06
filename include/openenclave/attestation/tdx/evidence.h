@@ -71,16 +71,16 @@ OE_EXTERNC_BEGIN
 #define OE_CLAIM_TDX_CURR_SERVER_TD_HASH "tdx_curr_server_td_hash"
 #define OE_CLAIM_TDX_CURR_SERVER_TD_ATTR "tdx_curr_server_td_attr"
 /*
- * Per-component TCB status and TCB date that feed the aggregate OE_CLAIM_TCB_STATUS
- * claim, emitted only for a Service-TD extension quote (type-4 body with the
- * ATTRIBUTES.SERVTD_EXT bit set) whose initial platform TCB could be evaluated
- * (see OE_TDX_ENABLE_SERVTD_INIT_TCB_EVAL; also requires init_tee_fmspc to match
- * the platform FMSPC). Each status is the
- * effective SGX TCB status after the OE_POLICY_TCB_BASELINE_DATE policy is
- * applied to that component's own TCB date. OE_CLAIM_TCB_STATUS preserves the
- * QVL result, including launch-TCB implications from a TD-preserving update,
- * unless it is UP_TO_DATE and the evaluated initial-platform status is not.
- * Consumers should use these component claims for the complete status details.
+ * Per-component TCB status and TCB date that feed the aggregate
+ * OE_CLAIM_TCB_STATUS claim, emitted only for a Service-TD extension quote
+ * (type-4 body with the ATTRIBUTES.SERVTD_EXT bit set) whose initial platform
+ * TCB could be evaluated (see OE_TDX_ENABLE_SERVTD_INIT_TCB_EVAL; also requires
+ * init_tee_fmspc to match the platform FMSPC). Each status is the effective SGX
+ * TCB status after the OE_POLICY_TCB_BASELINE_DATE policy is applied to that
+ * component's own TCB date. OE_CLAIM_TCB_STATUS preserves the QVL result,
+ * including launch-TCB implications from a TD-preserving update, unless it is
+ * UP_TO_DATE and the evaluated initial-platform status is not. Consumers should
+ * use these component claims for the complete status details.
  *   - curr: the current platform TCB (from supplemental data version 3.5 when
  *     available; otherwise from the QVL result)
  *   - init: the Service-TD's initial platform TCB (from init_cpu_svn /

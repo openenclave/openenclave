@@ -527,10 +527,7 @@ static oe_result_t _read_tcb_info_tcb_level_tcb_v3(
     tcb_level->pce_svn = (uint16_t)value;
 
     // Optionally, read array of tcbcomponents for TDX
-    memset(
-        tcb_level->tdx_tcb_comp_svn,
-        0,
-        sizeof(tcb_level->tdx_tcb_comp_svn));
+    memset(tcb_level->tdx_tcb_comp_svn, 0, sizeof(tcb_level->tdx_tcb_comp_svn));
     if (OE_OK == _read(',', itr, end))
     {
         OE_TRACE_VERBOSE("Reading tdxtcbcomponents");
@@ -598,8 +595,7 @@ static void _determine_platform_tcb_info_tcb_level(
             tcb_level->tdx_tcb_comp_svn[i])
             return;
     }
-    if (use_pce_svn &&
-        platform_tcb_level->pce_svn < tcb_level->pce_svn)
+    if (use_pce_svn && platform_tcb_level->pce_svn < tcb_level->pce_svn)
         return;
 
     // If all the values of the tcb level are less than corresponding values of
