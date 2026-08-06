@@ -4,9 +4,9 @@
 #ifndef _OE_COMMON_TDX_VERIFIER_H
 #define _OE_COMMON_TDX_VERIFIER_H
 
+#include <openenclave/attestation/sgx/evidence.h>
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/attestation/sgx/evidence.h>
 
 OE_EXTERNC_BEGIN
 
@@ -186,8 +186,8 @@ typedef struct _sgx_ql_qv_supplemental_t
     time_t
         qe_iden_tcb_level_date_tag; ///< The SGX TCB of the platform that
                                     ///< generated the quote is not vulnerable
-    uint32_t qe_iden_tcb_eval_ref_num; ///< Lower number of the QEIdentity
-    sgx_ql_qv_result_t qe_iden_status; /// QEIdentity status
+    uint32_t qe_iden_tcb_eval_ref_num;  ///< Lower number of the QEIdentity
+    sgx_ql_qv_result_t qe_iden_status;  /// QEIdentity status
     time_t platform_tcb_level_date_tag; ///< Date of the matched platform TCB
                                         ///< level
 
@@ -201,8 +201,7 @@ typedef struct _sgx_ql_qv_supplemental_t
 
 OE_STATIC_ASSERT(
     OE_OFFSETOF(sgx_ql_qv_supplemental_t, tcb_date_current) == 672);
-OE_STATIC_ASSERT(
-    OE_OFFSETOF(sgx_ql_qv_supplemental_t, sa_list_current) == 684);
+OE_STATIC_ASSERT(OE_OFFSETOF(sgx_ql_qv_supplemental_t, sa_list_current) == 684);
 OE_STATIC_ASSERT(sizeof(sgx_ql_qv_supplemental_t) == 1136);
 
 #ifdef _MSC_VER

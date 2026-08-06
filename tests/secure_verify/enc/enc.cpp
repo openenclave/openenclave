@@ -112,12 +112,11 @@ oe_result_t verify_plugin_evidence(
     {
         const oe_claim_t* tcb_date =
             _find_claim(claims, claims_length, OE_CLAIM_TCB_DATE);
-        const oe_claim_t* baseline = _find_claim(
-            claims, claims_length, OE_CLAIM_TCB_BASELINE_DATE);
+        const oe_claim_t* baseline =
+            _find_claim(claims, claims_length, OE_CLAIM_TCB_BASELINE_DATE);
 
         if (!tcb_date || tcb_date->value_size != sizeof(oe_datetime_t))
-            OE_RAISE_MSG(
-                OE_VERIFY_FAILED, "Missing or invalid TCB date claim");
+            OE_RAISE_MSG(OE_VERIFY_FAILED, "Missing or invalid TCB date claim");
 
         if (has_tcb_baseline_date)
         {

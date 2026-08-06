@@ -169,13 +169,11 @@ static oe_result_t _get_tdx_tcb_info(
     const uint8_t* end = NULL;
 
     if (!endorsements || !tcb_info || !tcb_info_size || !tcb_issuer_chain ||
-        !tcb_issuer_chain_size ||
-        endorsements_size < sizeof(header))
+        !tcb_issuer_chain_size || endorsements_size < sizeof(header))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     memcpy(&header, endorsements, sizeof(header));
-    if ((header.version != 0x00000003 &&
-         header.version != 0x00010003 &&
+    if ((header.version != 0x00000003 && header.version != 0x00010003 &&
          header.version != 0x00000004) ||
         header.tee_type != TDX_QUOTE_TYPE)
         OE_RAISE(OE_INVALID_ENDORSEMENT);
@@ -185,8 +183,7 @@ static oe_result_t _get_tdx_tcb_info(
 
     OE_CHECK(_advance_collateral_cursor(
         &cursor, end, header.pck_crl_issuer_chain_size));
-    OE_CHECK(
-        _advance_collateral_cursor(&cursor, end, header.root_ca_crl_size));
+    OE_CHECK(_advance_collateral_cursor(&cursor, end, header.root_ca_crl_size));
     OE_CHECK(_advance_collateral_cursor(&cursor, end, header.pck_crl_size));
     if ((size_t)(end - cursor) < header.tcb_info_issuer_chain_size)
         OE_RAISE(OE_OUT_OF_BOUNDS);
@@ -200,12 +197,10 @@ static oe_result_t _get_tdx_tcb_info(
     *tcb_info = cursor;
     *tcb_info_size = header.tcb_info_size;
 
-    OE_CHECK(
-        _advance_collateral_cursor(&cursor, end, header.tcb_info_size));
+    OE_CHECK(_advance_collateral_cursor(&cursor, end, header.tcb_info_size));
     OE_CHECK(_advance_collateral_cursor(
         &cursor, end, header.qe_identity_issuer_chain_size));
-    OE_CHECK(
-        _advance_collateral_cursor(&cursor, end, header.qe_identity_size));
+    OE_CHECK(_advance_collateral_cursor(&cursor, end, header.qe_identity_size));
     if (cursor != end)
         OE_RAISE(OE_OUT_OF_BOUNDS);
 
@@ -218,12 +213,13 @@ done:
 /* Evaluate the Service-TD's initial platform TCB.
  *
  * When the evidence is a TDX v5 type-4 (v1.5_ex) quote whose SERVTD_EXT bit is
- * set, the report body records the platform TCB (init_cpu_svn, init_tee_tcb_svn,
- * init_tee_fmspc) captured when the Service-TD was first bound. Intel QVL only
- * evaluates the current platform TCB, so this routine performs an additional,
- * OE-side TCB-info evaluation of that initial TCB and reports its status and
- * date. The evaluation is gated on the ATTRIBUTES.SERVTD_EXT bit (not the body
- * type alone); when the bit is not set the routine skips (out->valid = false).
+ * set, the report body records the platform TCB (init_cpu_svn,
+ * init_tee_tcb_svn, init_tee_fmspc) captured when the Service-TD was first
+ * bound. Intel QVL only evaluates the current platform TCB, so this routine
+ * performs an additional, OE-side TCB-info evaluation of that initial TCB and
+ * reports its status and date. The evaluation is gated on the
+ * ATTRIBUTES.SERVTD_EXT bit (not the body type alone); when the bit is not set
+ * the routine skips (out->valid = false).
  *
  * The TCB info is taken from the already-fetched endorsements, authenticated
  * by the successful QVL verification of those exact endorsements, and required
@@ -347,9 +343,9 @@ static oe_result_t _evaluate_servtd_init_tcb(
     }
 
     /* Build the platform TCB level from the Service-TD's initial TCB. The 16
-     * init_cpu_svn bytes map to the SGX TCB components and the TEE TCB SVN bytes
-     * map to the TDX TCB components. PCESVN is unavailable for the initial TCB,
-     * so it is excluded from this component-level match. */
+     * init_cpu_svn bytes map to the SGX TCB components and the TEE TCB SVN
+     * bytes map to the TDX TCB components. PCESVN is unavailable for the
+     * initial TCB, so it is excluded from this component-level match. */
     OE_STATIC_ASSERT(
         sizeof(platform_tcb_level.sgx_tcb_comp_svn) ==
         sizeof(body->init_cpu_svn));
@@ -419,8 +415,8 @@ static oe_result_t _evaluate_servtd_init_tcb(
     out->tcb_status =
         oe_tcb_level_status_to_sgx_tcb_status(platform_tcb_level.status);
     out->tcb_date = platform_tcb_level.tcb_date;
-    OE_CHECK(
-        oe_datetime_to_time_t(&platform_tcb_level.tcb_date, &out->tcb_date_time));
+    OE_CHECK(oe_datetime_to_time_t(
+        &platform_tcb_level.tcb_date, &out->tcb_date_time));
     out->valid = true;
 
     result = OE_OK;
@@ -456,8 +452,7 @@ static oe_sgx_tcb_status_t _apply_tcb_baseline_date_policy(
         tcb_status != OE_SGX_TCB_STATUS_OUT_OF_DATE_CONFIGURATION_NEEDED)
         return tcb_status;
 
-    if (!tcb_baseline_date || tcb_date == 0 ||
-        tcb_date < *tcb_baseline_date)
+    if (!tcb_baseline_date || tcb_date == 0 || tcb_date < *tcb_baseline_date)
         return tcb_status;
 
     return (tcb_status == OE_SGX_TCB_STATUS_OUT_OF_DATE)
@@ -506,8 +501,7 @@ static void _get_platform_tcb_data(
      * TCB represented by the legacy status/date. A revoked aggregate may be a
      * launch-TCB result, so still expose the independently reported current
      * TCB while preserving the revoked aggregate status. */
-    if (supplemental->major_version == 3 &&
-        supplemental->minor_version >= 5 &&
+    if (supplemental->major_version == 3 && supplemental->minor_version >= 5 &&
         verification_result != SGX_QL_QV_RESULT_INVALID_SIGNATURE &&
         verification_result != SGX_QL_QV_RESULT_UNSPECIFIED &&
         _supplemental_field_available(
@@ -631,10 +625,9 @@ static oe_result_t _fill_with_known_tdx_claims(
     char* sa_list = NULL;
     bool flag;
 
-    if (claims_length < OE_REQUIRED_CLAIMS_COUNT +
-                            OE_TDX_REQUIRED_CLAIMS_COUNT +
-                            OE_TDX_SERVTD_EXT_CLAIMS_COUNT +
-                            OE_TDX_ADDITIONAL_CLAIMS_COUNT)
+    if (claims_length <
+        OE_REQUIRED_CLAIMS_COUNT + OE_TDX_REQUIRED_CLAIMS_COUNT +
+            OE_TDX_SERVTD_EXT_CLAIMS_COUNT + OE_TDX_ADDITIONAL_CLAIMS_COUNT)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Apply the baseline separately to the QVL aggregate (which includes any
@@ -650,13 +643,9 @@ static oe_result_t _fill_with_known_tdx_claims(
         &curr_platform_tcb_date);
 
     qvl_tcb_status = _apply_tcb_baseline_date_policy(
-        qvl_tcb_status,
-        platform_tcb_date,
-        tcb_baseline_date);
+        qvl_tcb_status, platform_tcb_date, tcb_baseline_date);
     curr_platform_tcb_status = _apply_tcb_baseline_date_policy(
-        curr_platform_tcb_status,
-        curr_platform_tcb_date,
-        tcb_baseline_date);
+        curr_platform_tcb_status, curr_platform_tcb_date, tcb_baseline_date);
 
     tcb_status = qvl_tcb_status;
     if (init_tcb_required && !init_tcb_evaluated)
@@ -669,9 +658,7 @@ static oe_result_t _fill_with_known_tdx_claims(
         init_platform_tcb_status = _apply_tcb_baseline_date_policy(
             init_tcb->tcb_status, init_tcb->tcb_date_time, tcb_baseline_date);
         tcb_status = oe_tdx_get_effective_tcb_status(
-            tcb_status,
-            init_platform_tcb_status,
-            &aggregate_uses_init_tcb);
+            tcb_status, init_platform_tcb_status, &aggregate_uses_init_tcb);
     }
 
     /* TDX quote versions 4 and 5 have the same header, which contains version
@@ -697,8 +684,7 @@ static oe_result_t _fill_with_known_tdx_claims(
             tdx_report_v5 = (tdx_report_body_v5_t*)tdx_quote_v5->body;
         /* Type 4 additionally carries the Service-TD extension fields */
         if (tdx_quote_v5->type == 4)
-            tdx_report_v5_ex =
-                (tdx_report_body_v1_5_ex_t*)tdx_quote_v5->body;
+            tdx_report_v5_ex = (tdx_report_body_v1_5_ex_t*)tdx_quote_v5->body;
     }
 
     /* OE-specific claims. Not applicable to TDX so just fill with zeros */

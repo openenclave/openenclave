@@ -9,8 +9,8 @@
 #include <openenclave/internal/utils.h>
 
 #include <fstream>
-#include <string>
 #include <streambuf>
+#include <string>
 #include <vector>
 #include "../../../common/sgx/tcbinfo.h"
 #include "../../../common/tdx/verifier.h"
@@ -552,8 +552,7 @@ void TestVerifyTdxTcbInfoWithMissingComponents()
         "\"attributesMask\":\"FFFFFFFFFFFFFFFF\"},\"tcbLevels\":["
         "{\"tcb\":{\"sgxtcbcomponents\":" +
         std::string(sgx_components) +
-        ",\"pcesvn\":8,\"tdxtcbcomponents\":" +
-        std::string(tdx_components) +
+        ",\"pcesvn\":8,\"tdxtcbcomponents\":" + std::string(tdx_components) +
         "},\"tcbDate\":\"2018-01-04T01:02:03Z\","
         "\"tcbStatus\":\"UpToDate\"},"
         "{\"tcb\":{\"sgxtcbcomponents\":" +
@@ -605,8 +604,7 @@ void TestVerifyTdxTcbInfoWithoutPceSvn()
         "\"attributesMask\":\"FFFFFFFFFFFFFFFF\"},\"tcbLevels\":["
         "{\"tcb\":{\"sgxtcbcomponents\":" +
         std::string(sgx_components) +
-        ",\"pcesvn\":8,\"tdxtcbcomponents\":" +
-        std::string(tdx_components) +
+        ",\"pcesvn\":8,\"tdxtcbcomponents\":" + std::string(tdx_components) +
         "},\"tcbDate\":\"2018-01-04T01:02:03Z\","
         "\"tcbStatus\":\"UpToDate\"}]},"
         "\"signature\":\""
@@ -649,13 +647,14 @@ void TestTdxEffectiveTcbStatus()
 {
     bool uses_init = false;
 
-#define TEST_EFFECTIVE_STATUS(current, init, expected, expected_uses_init) \
-    do                                                                  \
-    {                                                                   \
-        uses_init = !(expected_uses_init);                               \
-        OE_TEST(oe_tdx_get_effective_tcb_status(                         \
-                    (current), (init), &uses_init) == (expected));       \
-        OE_TEST(uses_init == (expected_uses_init));                      \
+#define TEST_EFFECTIVE_STATUS(current, init, expected, expected_uses_init)    \
+    do                                                                        \
+    {                                                                         \
+        uses_init = !(expected_uses_init);                                    \
+        OE_TEST(                                                              \
+            oe_tdx_get_effective_tcb_status((current), (init), &uses_init) == \
+            (expected));                                                      \
+        OE_TEST(uses_init == (expected_uses_init));                           \
     } while (0)
 
     TEST_EFFECTIVE_STATUS(
