@@ -32,12 +32,69 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   is upgraded (out-of-date to up-to-date, out-of-date-configuration-needed to
   configuration-needed) when the platform's TCB level date is at or after the
   caller-supplied baseline date. The policy value is a Unix epoch timestamp
-  (seconds since 1970-01-01T00:00:00Z) stored as an `int64_t`.
+  (seconds since 1970-01-01T00:00:00Z) stored as an `int64_t`. TDX verification
+  emits the effective aggregate TCB date as `OE_CLAIM_TCB_DATE` and, when this
+  policy is supplied, the enforced date as
+  `OE_CLAIM_TCB_BASELINE_DATE`.
 
 - Added a new API `oe_get_tdx_fmspc_from_quote` to extract the FMSPC
   (Family-Model-Stepping-Platform-CustomSKU) from a TDX quote. Available in both
   host and enclave builds. The `oeutil get-fmspc` subcommand and the `oeverify
   -g` option print the FMSPC of a TDX quote.
+
+- Added support for the TDX report body type 4 (v1.5 with the Service-TD
+  extension). For a type-4 quote, `oe_verify_evidence` emits the following
+  additional claims carrying the raw report-body fields describing the bound
+  Service-TD at build time (`init_*`) and currently (`curr_*`), along with the
+  platform TCB context recorded when the Service-TD was first bound (these
+  values are only semantically meaningful when the TD `ATTRIBUTES.SERVTD_EXT`
+  bit is set):
+  - `tdx_vmid`
+  - `tdx_td_id`
+  - `tdx_devinfo`
+  - `tdx_init_server_td_hash`
+  - `tdx_init_server_td_attr`
+  - `tdx_init_cpu_svn`
+  - `tdx_init_tee_tcb_svn`
+  - `tdx_init_tee_fmspc`
+  - `tdx_curr_server_td_hash`
+  - `tdx_curr_server_td_attr`
+
+- Added OE-side evaluation of the TDX Service-TD's initial platform TCB,
+  controlled by the `TDX_ENABLE_SERVTD_INIT_TCB_EVAL` build option (default
+  `ON`). When enabled, `init_cpu_svn`/`init_tee_tcb_svn` are evaluated against
+  the already-fetched platform TCB info. The evaluation runs only when the TD
+  `ATTRIBUTES.SERVTD_EXT` bit is set (the type-4 body type alone is not treated
+  as sufficient). As a single-platform stopgap, it additionally requires
+  `init_tee_fmspc` to match the platform FMSPC and authenticates the TCB info
+  and its signing chain against Intel's root of trust. When the bit is not set,
+  evaluation is skipped. When the bit is set but evaluation is indeterminate,
+  including an FMSPC mismatch or unavailable component TCB-level match, the
+  aggregate `tcb_status` is invalid and the per-component claims below are
+  omitted. The
+  current-platform and initial-platform TCB status/date components are exposed
+  as claims:
+  - `tdx_curr_platform_tcb_status`
+  - `tdx_curr_platform_tcb_date`
+  - `tdx_init_platform_tcb_status`
+  - `tdx_init_platform_tcb_date`
+  The `OE_POLICY_TCB_BASELINE_DATE` policy is applied to each component
+  independently using its own TCB date. With DCAP supplemental data version
+  3.5, the current-platform claims use `tcb_status_current` and
+  `tcb_date_current`; earlier versions fall back to the QVL result. Because the
+  Service-TD extension does not record an initial PCE SVN, its TCB
+  info level is matched using the recorded SGX and TDX component SVNs. Its TCB
+  info and signing chain rely on QVL's validation of the same endorsements at
+  `OE_POLICY_ENDORSEMENTS_TIME`, when supplied, rather than being revalidated
+  against the current wall clock. The
+  aggregate `tcb_status` preserves terminal QVL results (`OUT_OF_DATE`,
+  `OUT_OF_DATE_CONFIGURATION_NEEDED`, `REVOKED`, and `INVALID`). Otherwise, a
+  terminal initial-platform status overrides the QVL result. When the QVL
+  result is `UP_TO_DATE`, an
+  initial-platform advisory status is also surfaced; competing non-terminal
+  advisories preserve the QVL result.
+  The initial-TCB evaluation can be disabled once Intel's verification library
+  performs it natively.
 
 [v0.19.0][v0.19.0_log]
 --------------

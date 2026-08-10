@@ -48,7 +48,7 @@ extern bool _should_skip_date_check;
 #endif
 
 // Max length of SGX DCAP QVL/QvE returned supplemental data
-#define MAX_SUPPLEMENTAL_DATA_SIZE 1000
+#define MAX_SUPPLEMENTAL_DATA_SIZE 2048
 
 OE_INLINE uint16_t ReadUint16(const uint8_t* p)
 {

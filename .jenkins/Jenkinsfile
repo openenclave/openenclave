@@ -31,21 +31,18 @@ List<String> LIST_IGNORED_DIRS = [
 String IGNORED_DIRS_REGEX = LIST_IGNORED_DIRS.join('|')
 
 List<String> APPROVED_AUTHORS = [
-    'anakrish',
-    'arlynch',
     'asvrada',
     'CyanDevs',
-    'dcarpente',
-    'justanotherminh',
     'mingweishih',
     'msftsettiy',
     'PallabPaul',
     'radhikaj',
+    'sahi82',
     'vtikoo'
 ]
 
 pipeline {
-    agent any
+    agent { label 'Jenkins-Shared-DC2' }
     options {
         timeout(time: 240, unit: 'MINUTES')
         buildDiscarder(logRotator(artifactDaysToKeepStr: '90', artifactNumToKeepStr: '180', daysToKeepStr: '90', numToKeepStr: '180'))

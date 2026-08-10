@@ -591,7 +591,7 @@ def TestIntelRCs(String label, String release_version, String oe_package = "open
 
 def windowsPrereqsVerify(String label, String pr_id = '') {
     stage("Windows ${label} Install Prereqs Verification") {
-        node(globalvars.AGENTS_LABELS[label]) {
+        node(label) {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 helpers.oeCheckoutScm(pr_id)

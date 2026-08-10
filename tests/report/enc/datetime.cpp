@@ -32,6 +32,12 @@ void TestNegative(oe_datetime_t date_time, oe_result_t result)
 
 void test_iso8601_time()
 {
+    oe_datetime_t epoch = {0};
+    const oe_datetime_t expected_epoch = {1970, 1, 1, 0, 0, 0};
+
+    OE_TEST(oe_datetime_from_time_t(0, &epoch) == OE_OK);
+    OE_TEST(memcmp(&epoch, &expected_epoch, sizeof(epoch)) == 0);
+
     // Single digit fields
     TestPositive(oe_datetime_t{2018, 8, 8, 0, 0, 0}, "2018-08-08T00:00:00Z");
 

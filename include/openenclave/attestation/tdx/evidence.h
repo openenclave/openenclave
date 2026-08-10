@@ -53,11 +53,53 @@ OE_EXTERNC_BEGIN
 #define OE_TDX_REQUIRED_CLAIMS_COUNT 29
 
 /*
+ * Service-TD extension claims from the TDX report body type 4 (v1.5_ex).
+ * Emitted for a type-4 report body (which carries these raw fields). They
+ * describe the Service-TD bound to the TD both at build time (init_*) and
+ * currently (curr_*), plus the platform TCB context recorded when the
+ * Service-TD was first bound. The values are only semantically meaningful when
+ * the TD ATTRIBUTES.SERVTD_EXT bit is set.
+ */
+#define OE_CLAIM_TDX_VMID "tdx_vmid"
+#define OE_CLAIM_TDX_TD_ID "tdx_td_id"
+#define OE_CLAIM_TDX_DEVINFO "tdx_devinfo"
+#define OE_CLAIM_TDX_INIT_SERVER_TD_HASH "tdx_init_server_td_hash"
+#define OE_CLAIM_TDX_INIT_SERVER_TD_ATTR "tdx_init_server_td_attr"
+#define OE_CLAIM_TDX_INIT_CPU_SVN "tdx_init_cpu_svn"
+#define OE_CLAIM_TDX_INIT_TEE_TCB_SVN "tdx_init_tee_tcb_svn"
+#define OE_CLAIM_TDX_INIT_TEE_FMSPC "tdx_init_tee_fmspc"
+#define OE_CLAIM_TDX_CURR_SERVER_TD_HASH "tdx_curr_server_td_hash"
+#define OE_CLAIM_TDX_CURR_SERVER_TD_ATTR "tdx_curr_server_td_attr"
+/*
+ * Per-component TCB status and TCB date that feed the aggregate
+ * OE_CLAIM_TCB_STATUS claim, emitted only for a Service-TD extension quote
+ * (type-4 body with the ATTRIBUTES.SERVTD_EXT bit set) whose initial platform
+ * TCB could be evaluated (see OE_TDX_ENABLE_SERVTD_INIT_TCB_EVAL; also requires
+ * init_tee_fmspc to match the platform FMSPC). Each status is the effective SGX
+ * TCB status after the OE_POLICY_TCB_BASELINE_DATE policy is applied to that
+ * component's own TCB date. OE_CLAIM_TCB_STATUS preserves the QVL result,
+ * including launch-TCB implications from a TD-preserving update, unless it is
+ * UP_TO_DATE and the evaluated initial-platform status is not. Consumers should
+ * use these component claims for the complete status details.
+ *   - curr: the current platform TCB (from supplemental data version 3.5 when
+ *     available; otherwise from the QVL result)
+ *   - init: the Service-TD's initial platform TCB (from init_cpu_svn /
+ *     init_tee_tcb_svn recorded when the Service-TD was first bound)
+ */
+#define OE_CLAIM_TDX_CURR_PLATFORM_TCB_STATUS "tdx_curr_platform_tcb_status"
+#define OE_CLAIM_TDX_CURR_PLATFORM_TCB_DATE "tdx_curr_platform_tcb_date"
+#define OE_CLAIM_TDX_INIT_PLATFORM_TCB_STATUS "tdx_init_platform_tcb_status"
+#define OE_CLAIM_TDX_INIT_PLATFORM_TCB_DATE "tdx_init_platform_tcb_date"
+#define OE_TDX_SERVTD_EXT_CLAIMS_COUNT 14
+
+/*
  * Additional claims from other sources (e.g., data returned by QvE/QVL)
  */
 #define OE_CLAIM_TDX_SA_LIST "tdx_sa_list"
 #define OE_CLAIM_TDX_PCE_SVN "tdx_pce_svn"
-#define OE_TDX_ADDITIONAL_CLAIMS_COUNT 3 // 2 (above) + 1 (TCB_STATUS)
+
+// 2 above + TCB_STATUS + TCB_DATE + TCB_BASELINE_DATE
+#define OE_TDX_ADDITIONAL_CLAIMS_COUNT 5
 
 /**
  * oe_tdx_verifier_initialize
