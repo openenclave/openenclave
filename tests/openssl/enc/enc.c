@@ -4,6 +4,7 @@
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openssl/engine.h>
+#include <openssl/x509v3.h>
 #include <string.h>
 #include <sys/mount.h>
 #include "openssl_t.h"
@@ -75,6 +76,10 @@ int enc_test(int argc, char** argv, char** env)
     /* Perform the test. */
     ret = main(argc, argv);
 
+#if OECRYPTO_OPENSSL_VER >= 3
+    X509_PURPOSE_cleanup();
+#endif
+
 done:
 #ifndef CODE_COVERAGE // Avoid conflicts with libgcov.
     umount("/");
@@ -98,6 +103,6 @@ OE_SET_ENCLAVE_SGX2(
     false, /* RequireKSS */
     false, /* CreateZeroBaseEnclave */
     0,     /* StartAddress */
-    10000, /* NumHeapPages */
+    20000, /* NumHeapPages */
     256,   /* NumStackPages */
     8);    /* NumTCS */

@@ -71,6 +71,9 @@
 ../../3rdparty/openssl/openssl_3/test/localetest.c
 ../../3rdparty/openssl/openssl_3/test/mdc2test.c
 ../../3rdparty/openssl/openssl_3/test/memleaktest.c
+../../3rdparty/openssl/openssl_3/test/ml_kem_evp_extra_test.c
+../../3rdparty/openssl/openssl_3/test/ml_kem_internal_test.c
+../../3rdparty/openssl/openssl_3/test/slh_dsa_test.c
 ../../3rdparty/openssl/openssl_3/test/modes_internal_test.c
 ../../3rdparty/openssl/openssl_3/test/namemap_internal_test.c
 ../../3rdparty/openssl/openssl_3/test/nodefltctxtest.c
