@@ -87,10 +87,10 @@ In addition, OpenSSL by default disables the following algorithms/features
 - Heartbeats extension
 - SCTP (Stream Control Transimission Protocol) protocol
 
-#### OpenSSL 3.1 on OE is configured with the following additional options:
+#### OpenSSL 3.5 on OE is configured with the following additional options:
 
 - --with-rand-seed=rdcpu
-  - Build with rdcpu provider. Engines in OpenSSL 3.1 are deprecated so we no longer use RDRAND engine as with OpenSSL 1.1.1.
+  - Build with rdcpu provider. Engines in OpenSSL 3.5 are deprecated so we no longer use RDRAND engine as with OpenSSL 1.1.1.
 - no-cmp
   - Disable Certificate Management Protocol (CMP) and Certificate Request Message Format (CRMF). See [Security Guidance](#security-guidance-for-using-openssl-apismacros) for more information about how we recommend managing X509 certificates in the enclave.
 - no-legacy
@@ -106,9 +106,9 @@ In addition, OpenSSL by default disables the following algorithms/features
 - no-uplink
   - Disable UPLINK interface.
 
-# OpenSSL 3.1 Support
+# OpenSSL 3.5 Support
 
-The default OpenSSL enclave build option uses version 1.1.1 of OpenSSL. There are separate libraries and headers for building OpenSSL 3.1 in an enclave.
+The default OpenSSL enclave build option uses version 1.1.1 of OpenSSL. There are separate libraries and headers for building OpenSSL 3.5 in an enclave.
 
 For users who want to continue to use OpenSSL 1.1.1, you do not need to make any changes.
 
@@ -118,7 +118,7 @@ Use target `openssl_3` instead of target `openssl`.
 
 ### GNU Make
 
-When using pkgconfig, use `openssl_3libs` or `openssl_3libslvicfg` (based on configuration) *in addition to* `libs` to get OpenSSL 3.1 specific libraries. Use `openssl_3flags` *instead of* `flags` to include OpenSSL 3.1 specific header directories.
+When using pkgconfig, use `openssl_3libs` or `openssl_3libslvicfg` (based on configuration) *in addition to* `libs` to get OpenSSL 3.5 specific libraries. Use `openssl_3flags` *instead of* `flags` to include OpenSSL 3.5 specific header directories.
 
 Example using clang:
 ```
@@ -150,7 +150,7 @@ holds only if the host is not compromised.
 *Note:* Starting from v0.13, users no longer need to manually opt into the RDRAND engine (as described in this
 section) when linking an enclave against `oecryptoopenssl`.
 
-*Note:* This information is specific to OpenSSL 1.1.1. OpenSSL 3.1 uses the rdcpu provider instead of the RDRAND engine.
+*Note:* This information is specific to OpenSSL 1.1.1. OpenSSL 3.5 uses the rdcpu provider instead of the RDRAND engine.
 
 Currently, the default RAND method used by RAND APIs is not supported by OE. More specifically,
 the default OpenSSL RAND method relies on the `rdtsc` instruction, which is not supported by SGXv1 enclaves.
@@ -375,7 +375,7 @@ x509err.h | Yes | - |
 x509v3.h | Partial | RFC3779 is disabled by OE. |
 x509v3err.h | Yes | - |
 
-### Additional headers in OpenSSL 3.1
+### Additional headers in OpenSSL 3.5
 
 Header | Supported | Comments |
 :---:|:---:|:---|

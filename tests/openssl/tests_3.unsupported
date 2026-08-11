@@ -76,3 +76,6 @@
 # Test requires OpenSSL provider to not be explicitly loaded
 ../../3rdparty/openssl/openssl_3/test/sslapitest.c
 ../../3rdparty/openssl/openssl_3/test/evp_extra_test2.c
+# This test expects ossl_ml_dsa_key_new(NULL, ...) to fail due missing default-libctx digests.
+# OE preloads providers in oe_crypto_initialize(), so the fetch succeeds and the assertion fails.
+../../3rdparty/openssl/openssl_3/test/ml_dsa_test.c

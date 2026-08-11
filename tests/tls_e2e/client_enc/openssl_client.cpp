@@ -38,6 +38,10 @@ extern "C"
 
 struct tls_control_args g_control_config;
 
+#ifndef TLS_CLIENT_HEAP_PAGE_COUNT
+#define TLS_CLIENT_HEAP_PAGE_COUNT 1024
+#endif
+
 // create a socket and connect to the server_name:server_port
 int create_socket(
     int& client_socket,
@@ -226,15 +230,15 @@ int setup_tls_server(struct tls_control_args* config, char* server_port)
 }
 
 OE_SET_ENCLAVE_SGX2(
-    1,     /* ProductID */
-    1,     /* SecurityVersion */
-    ({0}), /* ExtendedProductID */
-    ({0}), /* FamilyID */
-    true,  /* Debug */
-    true,  /* CapturePFGPExceptions */
-    false, /* RequireKSS */
-    false, /* CreateZeroBaseEnclave */
-    0,     /* StartAddress */
-    1024,  /* NumHeapPages */
-    512,   /* NumStackPages */
-    1);    /* NumTCS */
+    1,                          /* ProductID */
+    1,                          /* SecurityVersion */
+    ({0}),                      /* ExtendedProductID */
+    ({0}),                      /* FamilyID */
+    true,                       /* Debug */
+    true,                       /* CapturePFGPExceptions */
+    false,                      /* RequireKSS */
+    false,                      /* CreateZeroBaseEnclave */
+    0,                          /* StartAddress */
+    TLS_CLIENT_HEAP_PAGE_COUNT, /* NumHeapPages */
+    512,                        /* NumStackPages */
+    1);                         /* NumTCS */

@@ -245,26 +245,31 @@ done:
 static STACK_OF(X509) * _clone_chain(STACK_OF(X509) * chain)
 {
     STACK_OF(X509)* sk = NULL;
+    X509* x509 = NULL;
     int n = sk_X509_num(chain);
 
     if (!(sk = sk_X509_new(NULL)))
-        return NULL;
+        goto done;
 
     for (int i = 0; i < n; i++)
     {
-        X509* x509;
+        X509* source = sk_X509_value(chain, i);
 
-        if (!(x509 = sk_X509_value(chain, (int)i)))
-            return NULL;
-
-        if (!(x509 = _clone_x509(x509)))
-            return NULL;
+        if (!source || !(x509 = _clone_x509(source)))
+            goto done;
 
         if (!sk_X509_push(sk, x509))
-            return NULL;
+            goto done;
+
+        x509 = NULL;
     }
 
     return sk;
+
+done:
+    X509_free(x509);
+    sk_X509_pop_free(sk, X509_free);
+    return NULL;
 }
 
 static oe_result_t _verify_cert(
