@@ -79,11 +79,6 @@ if (OE_SGX)
   # (crypto/sha/asm/sha256-mb-x86_64.pl)
   list(APPEND OPENSSL_GENERATED_BYPRODUCTS crypto/sha/asm/sha256-x86_64)
 
-  # Intel SSL repo doesn't include these assembly files,
-  # we need to generate them using OpenSSL Perl scripts
-  list(APPEND OPENSSL_3_GENERATED_BYPRODUCTS crypto/bn/asm/rsaz-2k-avx512
-       crypto/bn/asm/rsaz-3k-avx512 crypto/bn/asm/rsaz-4k-avx512)
-
   list(TRANSFORM OPENSSL_GENERATED_BYPRODUCTS
        PREPEND ${OPENSSL_BUILD_GENERATED}/)
   list(TRANSFORM OPENSSL_GENERATED_BYPRODUCTS APPEND .s)
@@ -124,6 +119,11 @@ list(
   -E
   make_directory
   ${OPENSSL_3_BUILD_INCLUDES}/crypto
+  COMMAND
+  ${CMAKE_COMMAND}
+  -E
+  make_directory
+  ${OPENSSL_3_BUILD_INCLUDES}/internal
   COMMAND
   ${CMAKE_COMMAND}
   -E
@@ -174,6 +174,14 @@ foreach (header_file ${OPENSSL_CRYPTO_HEADERS})
     ${OPENSSL_3_BUILD_INCLUDES}/crypto/${header_file})
 endforeach ()
 
+set(OPENSSL_3_INTERNAL_HEADERS param_names.h)
+foreach (header_file ${OPENSSL_3_INTERNAL_HEADERS})
+  append_copy_command(
+    OPENSSL_3_CONFIGURE_COMMANDS
+    ${CMAKE_CURRENT_SOURCE_DIR}/include_3/internal/${header_file}
+    ${OPENSSL_3_BUILD_INCLUDES}/internal/${header_file})
+endforeach ()
+
 # NOTE: OpenSSL 1.0 only
 set(OPENSSL_INCLUDE_HEADERS opensslconf.h)
 foreach (header_file ${OPENSSL_INCLUDE_HEADERS})
@@ -188,6 +196,7 @@ endforeach ()
 
 set(OPENSSL_3_INCLUDE_HEADERS
     crypto.h
+    comp.h
     bio.h
     cmp.h
     cms.h
@@ -195,6 +204,7 @@ set(OPENSSL_3_INCLUDE_HEADERS
     asn1.h
     asn1t.h
     x509.h
+    x509_acert.h
     x509v3.h
     crmf.h
     err.h
@@ -211,8 +221,32 @@ set(OPENSSL_3_INCLUDE_HEADERS
     ocsp.h
     opensslv.h
     configuration.h
+    core_names.h
     safestack.h)
+
 foreach (header_file ${OPENSSL_3_INCLUDE_HEADERS})
+  if (EXISTS ${OPENSSL_3_DIR}/include/openssl/${header_file})
+    append_copy_command(
+      OPENSSL_3_CONFIGURE_COMMANDS
+      ${OPENSSL_3_DIR}/include/openssl/${header_file}
+      ${OPENSSL_3_BUILD_INCLUDES}/openssl/${header_file})
+    append_copy_command(
+      OPENSSL_3_INCLUDES_COMMANDS
+      ${OPENSSL_3_BUILD_INCLUDES}/openssl/${header_file}
+      ${OPENSSL_3_INSTALL_INCLUDES}/${header_file})
+  elseif (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/include_3/openssl/${header_file})
+    append_copy_command(
+      OPENSSL_3_CONFIGURE_COMMANDS
+      ${CMAKE_CURRENT_SOURCE_DIR}/include_3/openssl/${header_file}
+      ${OPENSSL_3_BUILD_INCLUDES}/openssl/${header_file})
+    append_copy_command(
+      OPENSSL_3_INCLUDES_COMMANDS
+      ${OPENSSL_3_BUILD_INCLUDES}/openssl/${header_file}
+      ${OPENSSL_3_INSTALL_INCLUDES}/${header_file})
+  endif ()
+endforeach ()
+
+foreach (header_file configuration.h opensslv.h)
   append_copy_command(
     OPENSSL_3_CONFIGURE_COMMANDS
     ${CMAKE_CURRENT_SOURCE_DIR}/include_3/openssl/${header_file}
@@ -228,7 +262,9 @@ set(OPENSSL_3_PROVIDERS_HEADERS
     der_dsa.h
     der_ec.h
     der_ecx.h
+    der_ml_dsa.h
     der_rsa.h
+    der_slh_dsa.h
     der_sm2.h
     der_wrap.h)
 foreach (header_file ${OPENSSL_3_PROVIDERS_HEADERS})
@@ -394,16 +430,6 @@ foreach (source_file ${OPENSSL_3_ASSEMBLY_SCRIPTS})
     OPENSSL_3_GENERATED_COMMANDS ${source_file} ${INTELSSL_3_DIR}/Linux
     ${OPENSSL_3_BUILD_GENERATED})
 endforeach ()
-
-append_generate_assembly_command(
-  OPENSSL_3_GENERATED_COMMANDS crypto/bn/asm/rsaz-2k-avx512 ${OPENSSL_3_DIR}
-  ${OPENSSL_3_BUILD_GENERATED})
-append_generate_assembly_command(
-  OPENSSL_3_GENERATED_COMMANDS crypto/bn/asm/rsaz-3k-avx512 ${OPENSSL_3_DIR}
-  ${OPENSSL_3_BUILD_GENERATED})
-append_generate_assembly_command(
-  OPENSSL_3_GENERATED_COMMANDS crypto/bn/asm/rsaz-4k-avx512 ${OPENSSL_3_DIR}
-  ${OPENSSL_3_BUILD_GENERATED})
 
 # Special case where script name doesn't match target file
 list(
@@ -1052,7 +1078,6 @@ list(
   crypto/bn/asm/x86_64-gcc.c
   crypto/bn/bn_conv.c
   crypto/bn/bn_rsa_fips186_4.c
-  crypto/bn/rsaz_exp_x2.c
   crypto/bsearch.c
   crypto/context.c
   crypto/core_algorithm.c
@@ -1090,6 +1115,7 @@ list(
   crypto/evp/dsa_ctrl.c
   crypto/evp/ec_ctrl.c
   crypto/evp/ec_support.c
+  crypto/evp/e_seed.c
   crypto/evp/evp_fetch.c
   crypto/evp/evp_rand.c
   crypto/evp/evp_utils.c
@@ -1099,9 +1125,13 @@ list(
   crypto/evp/kem.c
   crypto/evp/keymgmt_lib.c
   crypto/evp/keymgmt_meth.c
+  crypto/evp/legacy_md4.c
   crypto/evp/legacy_md5.c
   crypto/evp/legacy_md5_sha1.c
+  crypto/evp/legacy_mdc2.c
+  crypto/evp/legacy_ripemd.c
   crypto/evp/legacy_sha.c
+  crypto/evp/legacy_wp.c
   crypto/evp/mac_lib.c
   crypto/evp/mac_meth.c
   crypto/evp/p_legacy.c
@@ -1287,6 +1317,11 @@ list(
   providers/implementations/kdfs/sskdf.c
   providers/implementations/kdfs/tls1_prf.c
   providers/implementations/kdfs/x942kdf.c
+  providers/implementations/kem/ec_kem.c
+  providers/implementations/kem/ecx_kem.c
+  providers/implementations/kem/kem_util.c
+  providers/implementations/kem/ml_kem_kem.c
+  providers/implementations/kem/mlx_kem.c
   providers/implementations/kem/rsa_kem.c
   providers/implementations/keymgmt/dh_kmgmt.c
   providers/implementations/keymgmt/dsa_kmgmt.c
@@ -1299,7 +1334,7 @@ list(
   providers/implementations/macs/gmac_prov.c
   providers/implementations/macs/hmac_prov.c
   providers/implementations/macs/kmac_prov.c
-  providers/implementations/rands/crngt.c
+  providers/implementations/rands/fips_crng_test.c
   providers/implementations/rands/drbg.c
   providers/implementations/rands/drbg_ctr.c
   providers/implementations/rands/drbg_hash.c
@@ -1319,24 +1354,340 @@ list(
   providers/implementations/storemgmt/file_store_any2obj.c
   providers/legacyprov.c
   providers/nullprov.c
-  providers/prov_running.c
-  ssl/record/tls_pad.c
-  ssl/s3_cbc.c)
+  providers/prov_running.c)
+
+list(REMOVE_ITEM OPENSSL_3_CRYPTO_SOURCE crypto/dso/dso_dlfcn.c)
+
+list(
+  APPEND
+  OPENSSL_3_CRYPTO_SOURCE
+  crypto/bio/bss_dgram_pair.c
+  crypto/cmp/cmp_err.c
+  crypto/cmp/cmp_util.c
+  crypto/comp_methods.c
+  crypto/cms/cms_err.c
+  crypto/crmf/crmf_err.c
+  crypto/ct/ct_err.c
+  crypto/defaults.c
+  crypto/deterministic_nonce.c
+  crypto/indicator_core.c
+  crypto/camellia/camellia.c
+  crypto/camellia/cmll_cbc.c
+  crypto/camellia/cmll_cfb.c
+  crypto/camellia/cmll_ctr.c
+  crypto/camellia/cmll_ecb.c
+  crypto/camellia/cmll_misc.c
+  crypto/camellia/cmll_ofb.c
+  crypto/hpke/hpke_util.c
+  crypto/ml_dsa/ml_dsa_encoders.c
+  crypto/ml_dsa/ml_dsa_key_compress.c
+  crypto/ml_dsa/ml_dsa_key.c
+  crypto/ml_dsa/ml_dsa_matrix.c
+  crypto/ml_dsa/ml_dsa_ntt.c
+  crypto/ml_dsa/ml_dsa_params.c
+  crypto/ml_dsa/ml_dsa_sample.c
+  crypto/ml_dsa/ml_dsa_sign.c
+  crypto/ml_kem/ml_kem.c
+  crypto/slh_dsa/slh_adrs.c
+  crypto/slh_dsa/slh_dsa.c
+  crypto/slh_dsa/slh_dsa_hash_ctx.c
+  crypto/slh_dsa/slh_dsa_key.c
+  crypto/slh_dsa/slh_fors.c
+  crypto/slh_dsa/slh_hash.c
+  crypto/slh_dsa/slh_hypertree.c
+  crypto/slh_dsa/slh_params.c
+  crypto/slh_dsa/slh_wots.c
+  crypto/slh_dsa/slh_xmss.c
+  crypto/sm2/sm2_crypt.c
+  crypto/sm2/sm2_err.c
+  crypto/sm2/sm2_key.c
+  crypto/sm2/sm2_sign.c
+  crypto/sleep.c
+  crypto/time.c
+  crypto/aria/aria.c
+  crypto/bf/bf_cfb64.c
+  crypto/bf/bf_ecb.c
+  crypto/bf/bf_enc.c
+  crypto/bf/bf_ofb64.c
+  crypto/bf/bf_skey.c
+  crypto/cast/c_cfb64.c
+  crypto/cast/c_ecb.c
+  crypto/cast/c_enc.c
+  crypto/cast/c_ofb64.c
+  crypto/cast/c_skey.c
+  crypto/chacha/chacha_enc.c
+  crypto/idea/i_cbc.c
+  crypto/idea/i_cfb64.c
+  crypto/idea/i_ecb.c
+  crypto/idea/i_ofb64.c
+  crypto/idea/i_skey.c
+  crypto/md4/md4_dgst.c
+  crypto/mdc2/mdc2dgst.c
+  crypto/modes/xts128gb.c
+  crypto/poly1305/poly1305.c
+  crypto/rc4/rc4_enc.c
+  crypto/rc4/rc4_skey.c
+  crypto/ripemd/rmd_dgst.c
+  crypto/seed/seed.c
+  crypto/seed/seed_cbc.c
+  crypto/seed/seed_cfb.c
+  crypto/seed/seed_ecb.c
+  crypto/seed/seed_ofb.c
+  crypto/ssl_err.c
+  crypto/sm3/legacy_sm3.c
+  crypto/sm3/sm3.c
+  crypto/sm4/sm4.c
+  crypto/whrlpool/wp_block.c
+  crypto/whrlpool/wp_dgst.c
+  crypto/x509/v3_aaa.c
+  crypto/x509/v3_ac_tgt.c
+  crypto/x509/v3_attrdesc.c
+  crypto/x509/v3_attrmap.c
+  crypto/x509/v3_audit_id.c
+  crypto/x509/v3_authattid.c
+  crypto/x509/v3_battcons.c
+  crypto/x509/v3_group_ac.c
+  crypto/x509/v3_ind_iss.c
+  crypto/x509/v3_iobo.c
+  crypto/x509/v3_no_ass.c
+  crypto/x509/v3_no_rev_avail.c
+  crypto/x509/v3_rolespec.c
+  crypto/x509/v3_sda.c
+  crypto/x509/v3_single_use.c
+  crypto/x509/v3_soa_id.c
+  crypto/x509/v3_timespec.c
+  crypto/x509/v3_usernotice.c
+  ssl/record/methods/dtls_meth.c
+  ssl/record/methods/ssl3_cbc.c
+  ssl/record/methods/ssl3_meth.c
+  ssl/record/methods/tls_common.c
+  ssl/record/methods/tls13_meth.c
+  ssl/record/methods/tls1_meth.c
+  ssl/record/methods/tlsany_meth.c
+  ssl/record/methods/tls_pad.c
+  ssl/record/methods/tls_multib.c
+  providers/implementations/ciphers/cipher_aes_gcm_siv.c
+  providers/implementations/ciphers/cipher_aes_gcm_siv_hw.c
+  providers/implementations/ciphers/cipher_aes_gcm_siv_polyval.c
+  providers/implementations/ciphers/cipher_aes_siv.c
+  providers/implementations/ciphers/cipher_aes_siv_hw.c
+  providers/implementations/ciphers/cipher_aria.c
+  providers/implementations/ciphers/cipher_aria_ccm.c
+  providers/implementations/ciphers/cipher_aria_ccm_hw.c
+  providers/implementations/ciphers/cipher_aria_gcm.c
+  providers/implementations/ciphers/cipher_aria_gcm_hw.c
+  providers/implementations/ciphers/cipher_aria_hw.c
+  providers/implementations/ciphers/cipher_blowfish.c
+  providers/implementations/ciphers/cipher_blowfish_hw.c
+  providers/implementations/ciphers/cipher_camellia.c
+  providers/implementations/ciphers/cipher_camellia_hw.c
+  providers/implementations/ciphers/cipher_cast5.c
+  providers/implementations/ciphers/cipher_cast5_hw.c
+  providers/implementations/ciphers/cipher_chacha20.c
+  providers/implementations/ciphers/cipher_chacha20_hw.c
+  providers/implementations/ciphers/cipher_chacha20_poly1305.c
+  providers/implementations/ciphers/cipher_chacha20_poly1305_hw.c
+  providers/implementations/ciphers/cipher_idea.c
+  providers/implementations/ciphers/cipher_idea_hw.c
+  providers/implementations/ciphers/cipher_rc4.c
+  providers/implementations/ciphers/cipher_rc4_hw.c
+  providers/implementations/ciphers/cipher_rc4_hmac_md5.c
+  providers/implementations/ciphers/cipher_rc4_hmac_md5_hw.c
+  providers/implementations/ciphers/cipher_seed.c
+  providers/implementations/ciphers/cipher_seed_hw.c
+  providers/implementations/ciphers/cipher_sm4.c
+  providers/implementations/ciphers/cipher_sm4_ccm.c
+  providers/implementations/ciphers/cipher_sm4_ccm_hw.c
+  providers/implementations/ciphers/cipher_sm4_gcm.c
+  providers/implementations/ciphers/cipher_sm4_gcm_hw.c
+  providers/implementations/ciphers/cipher_sm4_hw.c
+  providers/implementations/ciphers/cipher_sm4_xts.c
+  providers/implementations/ciphers/cipher_sm4_xts_hw.c
+  providers/implementations/digests/blake2_prov.c
+  providers/implementations/digests/blake2b_prov.c
+  providers/implementations/digests/blake2s_prov.c
+  providers/implementations/digests/md4_prov.c
+  providers/implementations/digests/mdc2_prov.c
+  providers/implementations/digests/ripemd_prov.c
+  providers/implementations/digests/sm3_prov.c
+  providers/implementations/digests/wp_prov.c
+  providers/implementations/encode_decode/ml_common_codecs.c
+  providers/implementations/encode_decode/ml_dsa_codecs.c
+  providers/implementations/encode_decode/ml_kem_codecs.c
+  providers/implementations/kdfs/argon2.c
+  providers/implementations/kdfs/hmacdrbg_kdf.c
+  providers/implementations/kdfs/pvkkdf.c
+  providers/implementations/macs/blake2b_mac.c
+  providers/implementations/macs/blake2s_mac.c
+  providers/implementations/macs/poly1305_prov.c
+  providers/implementations/macs/siphash_prov.c
+  providers/implementations/signature/sm2_sig.c
+  providers/implementations/skeymgmt/aes_skmgmt.c
+  providers/implementations/skeymgmt/generic.c)
+
+list(
+  APPEND
+  OPENSSL_3_CRYPTO_SOURCE
+  providers/common/der/der_ml_dsa_key.c
+  providers/common/der/der_slh_dsa_key.c
+  providers/implementations/keymgmt/ml_dsa_kmgmt.c
+  providers/implementations/keymgmt/ml_kem_kmgmt.c
+  providers/implementations/keymgmt/mlx_kmgmt.c
+  providers/implementations/keymgmt/slh_dsa_kmgmt.c
+  providers/implementations/signature/ml_dsa_sig.c
+  providers/implementations/signature/slh_dsa_sig.c)
+
+list(
+  APPEND
+  OPENSSL_3_CRYPTO_SOURCE
+  crypto/err/err_mark.c
+  crypto/err/err_save.c
+  crypto/hashtable/hashfunc.c
+  crypto/hashtable/hashtable.c
+  crypto/rand/rand_uniform.c
+  crypto/thread/api.c)
+
+list(APPEND OPENSSL_3_CRYPTO_SOURCE crypto/x509/t_acert.c
+     crypto/x509/x509_acert.c)
+
+list(
+  REMOVE_ITEM
+  OPENSSL_3_CRYPTO_SOURCE
+  crypto/x509/v3_addr.c
+  crypto/x509/v3_asid.c
+  crypto/x509v3/v3_addr.c
+  crypto/x509v3/v3_asid.c
+  crypto/bf/bf_cfb64.c
+  crypto/bf/bf_ecb.c
+  crypto/bf/bf_enc.c
+  crypto/bf/bf_ofb64.c
+  crypto/bf/bf_skey.c
+  crypto/cast/c_cfb64.c
+  crypto/cast/c_ecb.c
+  crypto/cast/c_enc.c
+  crypto/cast/c_ofb64.c
+  crypto/cast/c_skey.c
+  crypto/cmp/cmp_err.c
+  crypto/cmp/cmp_util.c
+  crypto/cms/cms_err.c
+  crypto/crmf/crmf_err.c
+  crypto/evp/e_bf.c
+  crypto/evp/e_cast.c
+  crypto/evp/e_chacha20_poly1305.c
+  crypto/evp/e_idea.c
+  crypto/evp/e_rc4.c
+  crypto/evp/e_rc5.c
+  crypto/evp/e_seed.c
+  crypto/evp/legacy_md4.c
+  crypto/evp/legacy_mdc2.c
+  crypto/evp/legacy_ripemd.c
+  crypto/evp/legacy_wp.c
+  crypto/idea/i_cbc.c
+  crypto/idea/i_cfb64.c
+  crypto/idea/i_ecb.c
+  crypto/idea/i_ofb64.c
+  crypto/idea/i_skey.c
+  crypto/md4/md4_dgst.c
+  crypto/mdc2/mdc2dgst.c
+  crypto/poly1305/poly1305.c
+  crypto/rc4/rc4_enc.c
+  crypto/rc4/rc4_skey.c
+  crypto/ripemd/rmd_dgst.c
+  crypto/seed/seed.c
+  crypto/seed/seed_cbc.c
+  crypto/seed/seed_cfb.c
+  crypto/seed/seed_ecb.c
+  crypto/seed/seed_ofb.c
+  crypto/sm3/legacy_sm3.c
+  crypto/sm3/sm3.c
+  crypto/whrlpool/wp_block.c
+  crypto/whrlpool/wp_dgst.c
+  providers/legacyprov.c
+  providers/implementations/ciphers/cipher_blowfish.c
+  providers/implementations/ciphers/cipher_blowfish_hw.c
+  crypto/ct/ct_err.c
+  crypto/sm2/sm2_crypt.c
+  crypto/sm2/sm2_err.c
+  crypto/sm2/sm2_key.c
+  crypto/sm2/sm2_sign.c
+  providers/implementations/ciphers/cipher_cast5.c
+  providers/implementations/ciphers/cipher_cast5_hw.c
+  providers/implementations/ciphers/cipher_chacha20.c
+  providers/implementations/ciphers/cipher_chacha20_hw.c
+  providers/implementations/ciphers/cipher_chacha20_poly1305.c
+  providers/implementations/ciphers/cipher_chacha20_poly1305_hw.c
+  providers/implementations/ciphers/cipher_idea.c
+  providers/implementations/ciphers/cipher_idea_hw.c
+  providers/implementations/ciphers/cipher_rc4.c
+  providers/implementations/ciphers/cipher_rc4_hw.c
+  crypto/camellia/camellia.c
+  crypto/camellia/cmll_cbc.c
+  crypto/camellia/cmll_cfb.c
+  crypto/camellia/cmll_ctr.c
+  crypto/camellia/cmll_ecb.c
+  crypto/camellia/cmll_misc.c
+  crypto/camellia/cmll_ofb.c
+  crypto/aria/aria.c
+  crypto/sm4/sm4.c
+  providers/implementations/ciphers/cipher_rc4_hmac_md5.c
+  providers/implementations/ciphers/cipher_rc4_hmac_md5_hw.c
+  providers/implementations/ciphers/cipher_seed.c
+  providers/implementations/ciphers/cipher_seed_hw.c
+  providers/implementations/ciphers/cipher_aes_gcm_siv.c
+  providers/implementations/ciphers/cipher_aes_gcm_siv_hw.c
+  providers/implementations/ciphers/cipher_aes_gcm_siv_polyval.c
+  providers/implementations/ciphers/cipher_aes_siv.c
+  providers/implementations/ciphers/cipher_aes_siv_hw.c
+  providers/implementations/ciphers/cipher_aria.c
+  providers/implementations/ciphers/cipher_aria_ccm.c
+  providers/implementations/ciphers/cipher_aria_ccm_hw.c
+  providers/implementations/ciphers/cipher_aria_gcm.c
+  providers/implementations/ciphers/cipher_aria_gcm_hw.c
+  providers/implementations/ciphers/cipher_aria_hw.c
+  providers/implementations/ciphers/cipher_camellia.c
+  providers/implementations/ciphers/cipher_camellia_hw.c
+  providers/implementations/ciphers/cipher_sm4.c
+  providers/implementations/ciphers/cipher_sm4_ccm.c
+  providers/implementations/ciphers/cipher_sm4_ccm_hw.c
+  providers/implementations/ciphers/cipher_sm4_gcm.c
+  providers/implementations/ciphers/cipher_sm4_gcm_hw.c
+  providers/implementations/ciphers/cipher_sm4_hw.c
+  providers/implementations/ciphers/cipher_sm4_xts.c
+  providers/implementations/ciphers/cipher_sm4_xts_hw.c
+  providers/implementations/digests/blake2_prov.c
+  providers/implementations/digests/blake2b_prov.c
+  providers/implementations/digests/blake2s_prov.c
+  providers/implementations/digests/md4_prov.c
+  providers/implementations/digests/mdc2_prov.c
+  providers/implementations/digests/ripemd_prov.c
+  providers/implementations/digests/sm3_prov.c
+  providers/implementations/digests/wp_prov.c
+  providers/implementations/kdfs/argon2.c
+  providers/implementations/kdfs/scrypt.c
+  providers/implementations/macs/blake2b_mac.c
+  providers/implementations/macs/blake2s_mac.c
+  providers/implementations/macs/poly1305_prov.c
+  providers/implementations/macs/siphash_prov.c
+  providers/implementations/signature/sm2_sig.c)
 
 list(TRANSFORM OPENSSL_1_CRYPTO_SOURCE PREPEND "openssl/")
 list(TRANSFORM OPENSSL_3_CRYPTO_SOURCE PREPEND "openssl_3/")
 
-# Add provider source files generated by update.make
 list(
   APPEND
   OPENSSL_3_CRYPTO_SOURCE
   ${CMAKE_CURRENT_SOURCE_DIR}/providers_3/common/der/der_digests_gen.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/providers_3/crypto/params_idx.c
   ${CMAKE_CURRENT_SOURCE_DIR}/providers_3/common/der/der_dsa_gen.c
   ${CMAKE_CURRENT_SOURCE_DIR}/providers_3/common/der/der_ec_gen.c
   ${CMAKE_CURRENT_SOURCE_DIR}/providers_3/common/der/der_ecx_gen.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/providers_3/common/der/der_ml_dsa_gen.c
   ${CMAKE_CURRENT_SOURCE_DIR}/providers_3/common/der/der_rsa_gen.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/providers_3/common/der/der_slh_dsa_gen.c
   ${CMAKE_CURRENT_SOURCE_DIR}/providers_3/common/der/der_sm2_gen.c
   ${CMAKE_CURRENT_SOURCE_DIR}/providers_3/common/der/der_wrap_gen.c)
+
+list(APPEND OPENSSL_3_CRYPTO_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/shm_stubs_3.c)
 
 # The DRBG random provider used with OpenSSL3 can call openssl_get_fork_id()
 # which uses getpid that is not supported on Windows.
@@ -1353,6 +1704,12 @@ endif ()
 set_source_files_properties(
   openssl_3/crypto/threads_pthread.c PROPERTIES COMPILE_OPTIONS
                                                 ${DEFINE_GETPID_COMPILE_OPTION})
+
+set_source_files_properties(openssl_3/crypto/bn/bn_exp.c
+                            PROPERTIES COMPILE_OPTIONS "-UOPENSSL_BN_ASM_MONT")
+
+set_source_files_properties(openssl_3/crypto/evp/e_rc4_hmac_md5.c
+                            PROPERTIES COMPILE_OPTIONS "-URC4_ASM;-UMD5_ASM")
 
 # Add opensslcrypto (the libcrypto in openssl).
 # The assembly files are modified to be compatible with LVI mitigation.
@@ -1371,12 +1728,6 @@ set(OPENSSL_SHARED_SSL_SOURCE
     ssl/d1_srtp.c
     ssl/methods.c
     ssl/pqueue.c
-    ssl/record/dtls1_bitmap.c
-    ssl/record/rec_layer_d1.c
-    ssl/record/rec_layer_s3.c
-    ssl/record/ssl3_buffer.c
-    ssl/record/ssl3_record.c
-    ssl/record/ssl3_record_tls13.c
     ssl/s3_enc.c
     ssl/s3_lib.c
     ssl/s3_msg.c
@@ -1384,7 +1735,6 @@ set(OPENSSL_SHARED_SSL_SOURCE
     ssl/ssl_cert.c
     ssl/ssl_ciph.c
     ssl/ssl_conf.c
-    ssl/ssl_err.c
     ssl/ssl_init.c
     ssl/ssl_lib.c
     ssl/ssl_mcnf.c
@@ -1408,20 +1758,47 @@ set(OPENSSL_SHARED_SSL_SOURCE
     ssl/tls13_enc.c
     ssl/tls_srp.c)
 
-list(APPEND OPENSSL_1_SSL_SOURCE ${OPENSSL_SHARED_SSL_SOURCE} ssl/packet.c
-     ssl/s3_cbc.c)
+list(
+  APPEND
+  OPENSSL_1_SSL_SOURCE
+  ${OPENSSL_SHARED_SSL_SOURCE}
+  ssl/packet.c
+  ssl/ssl_err.c
+  ssl/record/dtls1_bitmap.c
+  ssl/record/rec_layer_d1.c
+  ssl/record/rec_layer_s3.c
+  ssl/record/ssl3_buffer.c
+  ssl/record/ssl3_record.c
+  ssl/record/ssl3_record_tls13.c
+  ssl/s3_cbc.c)
 
-list(APPEND OPENSSL_3_SSL_SOURCE ${OPENSSL_SHARED_SSL_SOURCE}
-     ssl/ssl_err_legacy.c ssl/ssl_rsa_legacy.c ssl/tls_depr.c)
+list(
+  APPEND
+  OPENSSL_3_SSL_SOURCE
+  ${OPENSSL_SHARED_SSL_SOURCE}
+  ssl/quic/quic_obj.c
+  ssl/record/rec_layer_d1.c
+  ssl/record/rec_layer_s3.c
+  ssl/ssl_cert_comp.c
+  ssl/ssl_err_legacy.c
+  ssl/ssl_rsa_legacy.c
+  ssl/tls_depr.c)
+
+list(REMOVE_ITEM OPENSSL_3_SSL_SOURCE ssl/quic/quic_obj.c ssl/tls_srp.c
+     ssl/ssl_cert_comp.c)
 
 list(TRANSFORM OPENSSL_1_SSL_SOURCE PREPEND "openssl/")
 list(TRANSFORM OPENSSL_3_SSL_SOURCE PREPEND "openssl_3/")
+
+list(APPEND OPENSSL_3_SSL_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/quic_stubs_3.c)
 
 # Disable optimizations for cts128.c to avoid Clang speculative load hardening flag compiler bug
 # Always dose this on Windows as we cannot know the version of clang.
 if (WIN32 OR CMAKE_C_COMPILER_ID MATCHES Clang)
   set_source_files_properties(openssl/crypto/modes/cts128.c
                               PROPERTIES COMPILE_FLAGS -O0)
+  set_source_files_properties(openssl_3/crypto/bio/bss_dgram.c
+                              PROPERTIES COMPILE_FLAGS -Wno-sign-compare)
 endif ()
 # Add opensslssl (the libssl in openssl).
 add_enclave_library(opensslssl STATIC ${OPENSSL_1_SSL_SOURCE})
@@ -1439,6 +1816,7 @@ enclave_include_directories(
   $<BUILD_INTERFACE:${OPENSSL_3_DIR}>
   $<BUILD_INTERFACE:${OPENSSL_3_DIR}/include>
   $<BUILD_INTERFACE:${OPENSSL_3_DIR}/providers/common/include>
+  $<BUILD_INTERFACE:${OPENSSL_3_DIR}/providers/fips/include>
   $<BUILD_INTERFACE:${OPENSSL_3_DIR}/providers/implementations/include>)
 
 # Only mark the directories that include headers to be published as PUBLIC.
@@ -1525,7 +1903,8 @@ list(
   openssl/crypto/ec/curve448/scalar.c)
 
 set_property(
-  SOURCE ${CURVE448_SRC} APPEND_STRING
+  SOURCE ${CURVE448_SRC}
+  APPEND_STRING
   PROPERTY
     COMPILE_FLAGS
     " -I${OPENSSL_DIR}/crypto/ec/curve448 -I${OPENSSL_DIR}/crypto/ec/curve448/arch_32"
@@ -1541,13 +1920,17 @@ list(
   openssl/crypto/evp/e_camellia.c
   openssl/crypto/evp/e_sm4.c)
 
-set_property(SOURCE ${EVP_SRC} APPEND_STRING
-             PROPERTY COMPILE_FLAGS " -I${OPENSSL_DIR}/crypto/modes")
+set_property(
+  SOURCE ${EVP_SRC}
+  APPEND_STRING
+  PROPERTY COMPILE_FLAGS " -I${OPENSSL_DIR}/crypto/modes")
 
 list(APPEND RAND_SRC openssl/crypto/rand/drbg_ctr.c)
 
-set_property(SOURCE ${RAND_SRC} APPEND_STRING
-             PROPERTY COMPILE_FLAGS " -I${OPENSSL_DIR}/crypto/modes")
+set_property(
+  SOURCE ${RAND_SRC}
+  APPEND_STRING
+  PROPERTY COMPILE_FLAGS " -I${OPENSSL_DIR}/crypto/modes")
 
 # The following options cannot be specified as part of the OpenSSL
 # Configure script. Options that can be specified with the script
@@ -1559,7 +1942,7 @@ list(
   L_ENDIAN
   OPENSSL_PIC
   # Disable SECURE_MEMORY because it requires the linux/mman.h header
-  # that musl does not provide (see mem_sec.c). This also removes the
+  # that musl does not provide (see mem_sec.c). This aso removes the
   # dependencies of madvise, mlock, and mprotect libc functions that are
   # not supported by OE.
   OPENSSL_NO_SECURE_MEMORY
@@ -1585,8 +1968,7 @@ if (OE_SGX)
     VPAES_ASM
     GHASH_ASM
     ECP_NISTZ256_ASM
-    X25519_ASM
-    POLY1305_ASM)
+    X25519_ASM)
 endif ()
 
 if (uppercase_CMAKE_BUILD_TYPE STREQUAL "RELEASE")
@@ -1600,6 +1982,54 @@ list(APPEND OPENSSL_COMPILE_DEFINES ${OPENSSL_BUILD_INFO}
 list(APPEND OPENSSL_3_COMPILE_DEFINES ${OPENSSL_BUILD_INFO}
      OPENSSLDIR="${OPENSSL_BUILD}" ENGINESDIR="${OPENSSL_BUILD}/engines-3"
      MODULESDIR="${OPENSSL_BUILD}/ossl-modules")
+
+list(
+  APPEND
+  OPENSSL_3_COMPILE_DEFINES
+  DSO_NONE
+  OPENSSL_NO_AFALGENG
+  OPENSSL_NO_ARGON2
+  OPENSSL_NO_ARIA
+  OPENSSL_NO_AUTOERRINIT
+  OPENSSL_NO_AUTOLOAD_CONFIG
+  OPENSSL_NO_BF
+  OPENSSL_NO_BLAKE2
+  OPENSSL_NO_CAMELLIA
+  OPENSSL_NO_CAPIENG
+  OPENSSL_NO_CAST
+  OPENSSL_NO_CHACHA
+  OPENSSL_NO_CMP
+  OPENSSL_NO_COMP
+  OPENSSL_NO_CMS
+  OPENSSL_NO_CRMF
+  OPENSSL_NO_CT
+  OPENSSL_NO_DEFAULT_THREAD_POOL
+  OPENSSL_NO_DSO
+  OPENSSL_NO_GOST
+  OPENSSL_NO_IDEA
+  OPENSSL_NO_MD4
+  OPENSSL_NO_MULTIBLOCK
+  OPENSSL_NO_MDC2
+  OPENSSL_NO_PADLOCKENG
+  OPENSSL_NO_POLY1305
+  OPENSSL_NO_PSK
+  OPENSSL_NO_RC4
+  OPENSSL_NO_RFC3779
+  OPENSSL_NO_RMD160
+  OPENSSL_NO_QUIC
+  OPENSSL_NO_QLOG
+  OPENSSL_NO_SCRYPT
+  OPENSSL_NO_SEED
+  OPENSSL_NO_UI_CONSOLE
+  OPENSSL_NO_THREAD_POOL
+  OPENSSL_NO_SIPHASH
+  OPENSSL_NO_SIV
+  OPENSSL_NO_SM2
+  OPENSSL_NO_SM3
+  OPENSSL_NO_SM4
+  OPENSSL_NO_SRP
+  OPENSSL_NO_SSL_TRACE
+  OPENSSL_NO_WHIRLPOOL)
 
 enclave_compile_definitions(opensslcrypto PRIVATE ${OPENSSL_COMPILE_DEFINES})
 enclave_compile_definitions(opensslssl PRIVATE ${OPENSSL_COMPILE_DEFINES})

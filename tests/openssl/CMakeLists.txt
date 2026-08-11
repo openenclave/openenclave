@@ -600,6 +600,12 @@ function (add_openssl_test_supported NAME OPENSSL3)
     return()
   endif ()
 
+  if ("${name}" STREQUAL rand_test)
+    add_openssl_test(OPENSSL3 "${name}" "${name}"
+                     ${OPENSSL_TEST_DIR}/default.cnf)
+    return()
+  endif ()
+
   if ("${name}" STREQUAL pemtest)
     add_openssl_test(OPENSSL3 "${name}" "${name}"
                      ${OPENSSL_APPS_DIR}/server.pem)
@@ -693,7 +699,7 @@ function (add_openssl_test_supported NAME OPENSSL3)
           05-sni
           06-sni-ticket
           07-dtls-protocol-version
-          08-npn
+          #08-npn                     # NOTE: requires nextprotoneg in openssl 3.5.7
           09-alpn
           10-resumption
           11-dtls_resumption

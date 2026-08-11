@@ -64,5 +64,11 @@ if (BUILD_OPENSSL)
   enclave_include_directories(openssl_3_tls_client_enc PRIVATE
                               ${CMAKE_CURRENT_BINARY_DIR})
 
+  if (WIN32)
+    enclave_compile_definitions(
+      openssl_3_tls_client_enc PRIVATE
+      $<$<CONFIG:Debug>:TLS_CLIENT_HEAP_PAGE_COUNT=4096>)
+  endif ()
+
   enclave_link_libraries(openssl_3_tls_client_enc oehostsock oehostresolver)
 endif ()

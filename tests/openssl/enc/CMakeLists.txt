@@ -3,6 +3,30 @@
 
 set(EDL_FILE ../openssl.edl)
 
+set(OPENSSL_3_PRUNED_FEATURE_DEFINES
+    DSO_NONE
+    OPENSSL_NO_ACERT
+    OPENSSL_NO_ARGON2
+    OPENSSL_NO_ARIA
+    OPENSSL_NO_BLAKE2
+    OPENSSL_NO_CAMELLIA
+    OPENSSL_NO_COMP
+    OPENSSL_NO_CMS
+    OPENSSL_NO_CT
+    OPENSSL_NO_DEFAULT_THREAD_POOL
+    OPENSSL_NO_ENGINE
+    OPENSSL_NO_DYNAMIC_ENGINE
+    OPENSSL_NO_MDC2
+    OPENSSL_NO_MULTIBLOCK
+    OPENSSL_NO_QUIC
+    OPENSSL_NO_UI_CONSOLE
+    OPENSSL_NO_THREAD_POOL
+    OPENSSL_NO_SIPHASH
+    OPENSSL_NO_SIV
+    OPENSSL_NO_SM2
+    OPENSSL_NO_SM4
+    OPENSSL_NO_SRP)
+
 add_custom_command(
   OUTPUT openssl_t.h openssl_t.c openssl_args.h
   DEPENDS ${EDL_FILE} edger8r
@@ -77,7 +101,8 @@ add_enclave_library(
   # Ensure that openssl_t.h is generated.
   openssl_t.h)
 
-enclave_compile_definitions(openssl_3-support PRIVATE __STDC_NO_ATOMICS__)
+enclave_compile_definitions(openssl_3-support PRIVATE __STDC_NO_ATOMICS__
+                            ${OPENSSL_3_PRUNED_FEATURE_DEFINES})
 
 enclave_compile_options(
   openssl_3-support PRIVATE -Wno-shorten-64-to-32 -Wno-sign-conversion
@@ -112,7 +137,8 @@ maybe_build_using_clangw(openssl-common)
 add_enclave_library(openssl_3-common OBJECT enc.c
                     ${CMAKE_CURRENT_BINARY_DIR}/openssl_t.c)
 add_enclave_dependencies(openssl_3-common openssl_3_generated)
-enclave_compile_definitions(openssl_3-common PRIVATE OECRYPTO_OPENSSL_VER=3)
+enclave_compile_definitions(openssl_3-common PRIVATE OECRYPTO_OPENSSL_VER=3
+                            ${OPENSSL_3_PRUNED_FEATURE_DEFINES})
 
 enclave_link_libraries(openssl_3-common PRIVATE oelibc oe_includes)
 enclave_include_directories(
@@ -253,12 +279,26 @@ function (add_openssl_test_enc NAME BUILDTEST CRYPTO_LIB)
     list(APPEND TEST_SRC ${TEST_OPENSSL_DIR}/test/helpers/predefined_dhparams.c)
   endif ()
 
+  if ("${NAME}" STREQUAL "shlibloadtest" OR "${NAME}" STREQUAL "moduleloadtest")
+    list(APPEND TEST_SRC ${TEST_OPENSSL_DIR}/test/simpledynamic.c)
+    set(TEST_OPENSSL_INCLUDE_DIRS
+        ${CMAKE_CURRENT_SOURCE_DIR}/openssl_compat_include
+        ${TEST_OPENSSL_INCLUDE_DIRS})
+  endif ()
+
   if ("${NAME}" STREQUAL "pkcs12_format_test")
     list(APPEND TEST_SRC ${TEST_OPENSSL_DIR}/test/helpers/pkcs12.c)
   endif ()
 
   if ("${NAME}" STREQUAL "provider_pkey_test")
     list(APPEND TEST_SRC ${TEST_OPENSSL_DIR}/test/fake_rsaprov.c)
+  endif ()
+
+  if ((CRYPTO_LIB STREQUAL "OpenSSL_3" OR CRYPTO_LIB STREQUAL
+                                          "SymCrypt_prov_FIPS")
+      AND "${NAME}" STREQUAL "evp_extra_test")
+    list(APPEND TEST_SRC ${TEST_OPENSSL_DIR}/test/fake_rsaprov.c
+         ${TEST_OPENSSL_DIR}/test/fake_pipelineprov.c)
   endif ()
 
   if ("${NAME}" STREQUAL "provider_test" OR "${NAME}" STREQUAL
@@ -325,6 +365,12 @@ function (add_openssl_test_enc NAME BUILDTEST CRYPTO_LIB)
     openssl-${TEST_NAME}_enc PRIVATE OPENSSL_NO_AFALGENG __STDC_NO_ATOMICS__
     OPENSSL_NO_RAND_DRBG)
 
+  if (CRYPTO_LIB STREQUAL "OpenSSL_3" OR CRYPTO_LIB STREQUAL
+                                         "SymCrypt_prov_FIPS")
+    enclave_compile_definitions(openssl-${TEST_NAME}_enc PRIVATE
+                                ${OPENSSL_3_PRUNED_FEATURE_DEFINES})
+  endif ()
+
   list(APPEND INCLUDE_PATHS ${CMAKE_CURRENT_BINARY_DIR}
        ${TEST_OPENSSL_DIR}/test ${TEST_OPENSSL_DIR}/test/testutil
        ${TEST_OPENSSL_DIR}/apps/include)
@@ -343,6 +389,14 @@ function (add_openssl_test_enc NAME BUILDTEST CRYPTO_LIB)
 
   if ("${NAME}" STREQUAL "rsa_sp800_56b_test")
     list(APPEND INCLUDE_PATHS ${TEST_OPENSSL_DIR}/crypto/rsa)
+  endif ()
+
+  if ((CRYPTO_LIB STREQUAL "OpenSSL_3" OR CRYPTO_LIB STREQUAL
+                                          "SymCrypt_prov_FIPS")
+      AND "${NAME}" STREQUAL "evp_extra_test")
+    list(APPEND INCLUDE_PATHS ${TEST_OPENSSL_DIR}/providers
+         ${TEST_OPENSSL_DIR}/providers/common/include
+         ${TEST_OPENSSL_DIR}/providers/implementations/include)
   endif ()
 
   enclave_include_directories(openssl-${TEST_NAME}_enc PRIVATE ${INCLUDE_PATHS})
