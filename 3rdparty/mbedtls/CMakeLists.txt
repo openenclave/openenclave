@@ -49,6 +49,9 @@ elseif (MBEDTLS_C_COMPILER MATCHES clang)
     -Wdocumentation
     -Wno-documentation-deprecated-sync
     -Wunreachable-code)
+  if (CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL 18)
+    list(APPEND MBEDTLS_COMPILE_OPTS -Wno-declaration-after-statement)
+  endif ()
 else ()
   message(FATAL_ERROR "Unsupported compiler: ${MBEDTLS_C_COMPILER}")
 endif ()
