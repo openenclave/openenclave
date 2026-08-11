@@ -64,6 +64,11 @@ set_source_files_properties(
                                "-Wno-conversion -Wno-sign-compare")
 set_source_files_properties(testpointer.cpp PROPERTIES COMPILE_FLAGS
                                                        "-Wno-unused-parameter")
+if (CMAKE_CXX_COMPILER_ID MATCHES Clang AND CMAKE_CXX_COMPILER_VERSION
+                                              VERSION_GREATER_EQUAL 12)
+  set_source_files_properties(testforeign.cpp PROPERTIES COMPILE_FLAGS
+                                                         "-Wno-vla-cxx-extension")
+endif ()
 
 enclave_include_directories(edl_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
                             ${CMAKE_CURRENT_SOURCE_DIR}/..)

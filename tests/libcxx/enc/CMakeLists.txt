@@ -23,7 +23,8 @@ enclave_compile_options(
   -Wno-error=strict-overflow
   -Wno-error=unused-local-typedefs
   -Wno-error=unused-variable
-  -Wno-sign-conversion)
+  -Wno-sign-conversion
+  -Wno-deprecated-declarations)
 
 if (ENABLE_FULL_LIBCXX_TESTS)
   enclave_compile_definitions(libcxxtest-support PRIVATE FULL_LIBCXX_TESTS)
