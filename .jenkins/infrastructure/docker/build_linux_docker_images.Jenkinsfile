@@ -29,6 +29,7 @@ pipeline {
         // Docker plugin cannot seem to use credentials from Azure Key Vault
         BASE_DOCKERFILE_DIR = ".jenkins/infrastructure/docker/dockerfiles/linux/base/"
         LINUX_DOCKERFILE = ".jenkins/infrastructure/docker/dockerfiles/linux/Dockerfile"
+        AZURELINUX3_DOCKERFILE = ".jenkins/infrastructure/docker/dockerfiles/linux/azurelinux3/Dockerfile"
     }
     stages {
         stage("Checkout") {
@@ -171,6 +172,34 @@ pipeline {
                                 common.exec_with_retry { oe2204.push() }
                                 if ( params.TAG_LATEST ) {
                                     common.exec_with_retry { oe2204.push('latest') }
+                                }
+                            }
+                        }
+                    }
+                }
+                stage("Azure Linux 3") {
+                    steps {
+                        script {
+                            def oeazl3 = common.dockerImage(
+                                "oetools-azl3:${TAG_FULL_IMAGE}",
+                                AZURELINUX3_DOCKERFILE
+                            )
+                            oeazl3.inside("--cap-add=SYS_PTRACE") {
+                                sh """
+                                    grep --quiet '^ID=azurelinux$' /etc/os-release
+                                    clang --version
+                                    cmake --version
+                                    test -f "\$(clang -print-resource-dir)/include/emmintrin.h"
+                                """
+                            }
+                            sh """
+                                az login --identity
+                                az acr login --name ${params.CONTAINER_REPO}
+                            """
+                            docker.withRegistry("https://${params.CONTAINER_REPO}") {
+                                common.exec_with_retry { oeazl3.push() }
+                                if ( params.TAG_LATEST ) {
+                                    common.exec_with_retry { oeazl3.push('latest') }
                                 }
                             }
                         }
