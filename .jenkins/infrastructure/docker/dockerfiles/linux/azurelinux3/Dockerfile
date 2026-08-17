@@ -19,14 +19,13 @@ RUN tdnf install -y \
         file \
         findutils \
         gawk \
-        gcc \
-        gcc-c++ \
         git \
         glibc-devel \
         graphviz \
         gzip \
         kernel-headers \
         libcurl-devel \
+        libstdc++-devel \
         libtool \
         make \
         ncurses-devel \
