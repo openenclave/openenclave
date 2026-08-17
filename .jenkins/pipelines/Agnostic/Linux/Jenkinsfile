@@ -22,6 +22,8 @@ def azureLinux3SimulationTest(String pr_id = '') {
                     mkdir -p build/azurelinux3-simulation
                     docker run --rm \
                         --cap-add=SYS_PTRACE \
+                        --env CC=clang \
+                        --env CXX=clang++ \
                         --env HOME=/tmp \
                         --env OE_SIMULATION=1 \
                         --user \$(id -u):\$(id -g) \
