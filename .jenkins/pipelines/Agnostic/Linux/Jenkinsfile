@@ -5,51 +5,6 @@ library "OpenEnclaveJenkinsLibrary@${params.OECI_LIB_VERSION}"
 GLOBAL_ERROR = globalvars.GLOBAL_ERROR
 SKIP_LVI_MITIGATION_TESTS=true
 
-def azureLinux3SimulationTest(String pr_id = '') {
-    stage("Simulation Azure Linux 3 RelWithDebInfo") {
-        // The AZL3 environment runs inside Docker, so this does not require a
-        // dedicated AZL3 Jenkins agent or a prepublished CI image.
-        node(globalvars.AGENTS_LABELS["ubuntu-nonsgx-22.04"]) {
-            timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
-                cleanWs()
-                helpers.oeCheckoutScm(pr_id)
-                def imageName = "openenclave-azurelinux3-simulation:${BUILD_NUMBER}"
-                sh """
-                    docker build \
-                        --file .jenkins/infrastructure/docker/dockerfiles/linux/azurelinux3/Dockerfile \
-                        --tag ${imageName} \
-                        .
-                    mkdir -p build/azurelinux3-simulation
-                    docker run --rm \
-                        --cap-add=SYS_PTRACE \
-                        --env CC=clang \
-                        --env CXX=clang++ \
-                        --env HOME=/tmp \
-                        --env OE_SIMULATION=1 \
-                        --user \$(id -u):\$(id -g) \
-                        --volume ${WORKSPACE}:/src \
-                        --workdir /src \
-                        ${imageName} \
-                        bash -c '
-                            set -o errexit
-                            set -o nounset
-                            set -o pipefail
-                            cmake -S /src -B /src/build/azurelinux3-simulation -G Ninja \
-                                -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-                                -DLVI_MITIGATION=None \
-                                -DLVI_MITIGATION_SKIP_TESTS=ON
-                            cmake --build /src/build/azurelinux3-simulation --parallel
-                            ctest --test-dir /src/build/azurelinux3-simulation \
-                                --output-on-failure \
-                                --timeout 480 \
-                                --tests-regex "^tests/crypto/"
-                        '
-                """
-            }
-        }
-    }
-}
-
 try{
     if(FULL_TEST_SUITE == "true") {
         SKIP_LVI_MITIGATION_TESTS=false
@@ -62,7 +17,7 @@ try{
         "Sim 2204 clang-11 SGX1FLC RelWithDebInfo":          { tests.simulationContainerTest('22.04', 'RelWithDebInfo', 'clang-11', 'None', SKIP_LVI_MITIGATION_TESTS, false, params.PULL_REQUEST_ID) },
         "Sim 2004 clang-11 SGX1FLC RelWithDebInfo snmalloc": { tests.simulationContainerTest('20.04', 'RelWithDebInfo', 'clang-11', 'None', SKIP_LVI_MITIGATION_TESTS, true, params.PULL_REQUEST_ID) },
         "Sim 2204 clang-11 SGX1FLC RelWithDebInfo snmalloc": { tests.simulationContainerTest('22.04', 'RelWithDebInfo', 'clang-11', 'None', SKIP_LVI_MITIGATION_TESTS, true, params.PULL_REQUEST_ID) },
-        "Sim Azure Linux 3 RelWithDebInfo":                  { azureLinux3SimulationTest(params.PULL_REQUEST_ID) }
+        "Sim Azure Linux 3 RelWithDebInfo":                  { tests.azureLinux3SimulationTest(params.PULL_REQUEST_ID) }
     ]
     if(FULL_TEST_SUITE == "true") {
         stage("Full Test Suite") {

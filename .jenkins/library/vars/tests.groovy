@@ -896,6 +896,55 @@ def windowsCrossPlatform(String label, String pr_id = '') {
 
 // Agnostic Linux
 
+/* Builds OE with Clang in simulation mode inside an Azure Linux 3 container.
+ *
+ * @param pr_id [string] Optional - to checkout a specific OE pull request merge head
+ */
+def azureLinux3SimulationTest(String pr_id = '') {
+    stage("Simulation Azure Linux 3 RelWithDebInfo") {
+        // The AZL3 environment runs inside Docker, so this does not require a
+        // dedicated AZL3 Jenkins agent or a prepublished CI image.
+        node(globalvars.AGENTS_LABELS["ubuntu-nonsgx-22.04"]) {
+            timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
+                cleanWs()
+                helpers.oeCheckoutScm(pr_id)
+                def imageName = "openenclave-azurelinux3-simulation:${BUILD_NUMBER}"
+                sh """
+                    docker build \
+                        --file .jenkins/infrastructure/docker/dockerfiles/linux/azurelinux3/Dockerfile \
+                        --tag ${imageName} \
+                        .
+                    mkdir -p build/azurelinux3-simulation
+                    docker run --rm \
+                        --cap-add=SYS_PTRACE \
+                        --env CC=clang \
+                        --env CXX=clang++ \
+                        --env HOME=/tmp \
+                        --env OE_SIMULATION=1 \
+                        --user \$(id -u):\$(id -g) \
+                        --volume ${WORKSPACE}:/src \
+                        --workdir /src \
+                        ${imageName} \
+                        bash -c '
+                            set -o errexit
+                            set -o nounset
+                            set -o pipefail
+                            cmake -S /src -B /src/build/azurelinux3-simulation -G Ninja \
+                                -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+                                -DLVI_MITIGATION=None \
+                                -DLVI_MITIGATION_SKIP_TESTS=ON
+                            cmake --build /src/build/azurelinux3-simulation --parallel
+                            ctest --test-dir /src/build/azurelinux3-simulation \
+                                --output-on-failure \
+                                --timeout 480 \
+                                --tests-regex "^tests/crypto/"
+                        '
+                """
+            }
+        }
+    }
+}
+
 /* Builds OE in Simulation mode inside a containar
  *
  * @param version                    [string]  Version of Ubuntu to use
