@@ -39,6 +39,7 @@ pipeline {
                                         docker pull ${params.CONTAINER_REPO}/oetools-20.04:${params.LINUX_TAG}
                                         docker pull ${params.CONTAINER_REPO}/openenclave-base-ubuntu-22.04:${params.LINUX_TAG}
                                         docker pull ${params.CONTAINER_REPO}/oetools-22.04:${params.LINUX_TAG}
+                                        docker pull ${params.CONTAINER_REPO}/oetools-azl3:${params.LINUX_TAG}
                                     """
                                 }
                             }
@@ -62,6 +63,9 @@ pipeline {
                                         docker tag ${params.CONTAINER_REPO}/oetools-22.04:${params.LINUX_TAG} ${params.CONTAINER_REPO}/oetools-22.04:latest
                                         docker push ${params.CONTAINER_REPO}/openenclave-base-ubuntu-22.04:latest
                                         docker push ${params.CONTAINER_REPO}/oetools-22.04:latest
+
+                                        docker tag ${params.CONTAINER_REPO}/oetools-azl3:${params.LINUX_TAG} ${params.CONTAINER_REPO}/oetools-azl3:latest
+                                        docker push ${params.CONTAINER_REPO}/oetools-azl3:latest
                                 """
                                 }
                             }
@@ -191,6 +195,7 @@ pipeline {
                                 FULL_2004_DCAP = helpers.dockerGetAptPackageVersion("${params.CONTAINER_REPO}/oetools-20.04:${params.LINUX_TAG}", "libsgx-ae-id-enclave")
 
                                 sh """
+                                    echo "| Azure Linux 3 Simulation | ${params.CONTAINER_REPO}/oetools-azl3:${params.LINUX_TAG} | ${OE_VERSION} | None | None |" >> DOCKER_IMAGES_new.md
                                     echo "| Base Ubuntu 22.04 | ${params.CONTAINER_REPO}/openenclave-base-ubuntu-22.04:${params.LINUX_TAG} | ${OE_VERSION} | ${BASE_2204_PSW} | ${BASE_2204_DCAP} |" >> DOCKER_IMAGES_new.md
                                     echo "| Full Ubuntu 22.04 | ${params.CONTAINER_REPO}/oetools-22.04:${params.LINUX_TAG} | ${OE_VERSION} | ${FULL_2204_PSW} | ${FULL_2204_DCAP} |" >> DOCKER_IMAGES_new.md
                                     echo "| Base Ubuntu 20.04 | ${params.CONTAINER_REPO}/openenclave-base-ubuntu-20.04:${params.LINUX_TAG} | ${OE_VERSION} | ${BASE_2004_PSW} | ${BASE_2004_DCAP} |" >> DOCKER_IMAGES_new.md
