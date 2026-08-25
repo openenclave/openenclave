@@ -936,44 +936,6 @@ def simulationContainerTest(String version, String build_type, String compiler, 
     }
 }
 
-/* Builds OP-TEE inside a container
- *
- * @param version  [string]  Version of Ubuntu to use (e.g. 20.04)
- * @param compiler [string]  Compiler to use
- * @param pr_id    [string] Optional - to checkout a specific oe pull request merge head
- */
-def buildCrossPlatform(String version, String compiler, String pr_id = '') {
-    stage("Ubuntu ${version} OP-TEE Build") {
-        node(globalvars.AGENTS_LABELS["ubuntu-nonsgx-${version}"]) {
-            timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
-                cleanWs()
-                helpers.oeCheckoutScm(pr_id)
-                def runArgs = "--cap-add=SYS_PTRACE"
-                def os_codename = helpers.getUbuntuCodename(version)
-                def task = """
-                           cd ${WORKSPACE}
-
-                           sdk_path=\$(pwd)
-                           export OE_SDK_PATH=\${sdk_path}
-                           export BUILD_PATH=\${sdk_path}/build
-                           export OPTEE_BUILD_PATH=\${sdk_path}/build/optee
-                           export PACK_PATH=\${sdk_path}/path
-                           export OS_CODENAME=${os_codename}
-
-                           sudo scripts/ansible/install-ansible.sh
-                           sudo ansible-playbook scripts/ansible/oe-contributors-setup-cross-arm.yml
-                           sudo apt install python python3-pyelftools p7zip-full -y
-
-                           bash devex/cross-nuget/standalone-builds/linux/build-optee.sh
-                           bash devex/cross-nuget/standalone-builds/linux/runner.sh
-                           """
-
-                common.ContainerRun("oetools-${version}:${DOCKER_TAG}", compiler, task, runArgs)
-            }
-        }
-    }
-}
-
 def checkDevFlows(String version, String compiler, String pr_id = '') {
     stage('Default compiler') {
         node(globalvars.AGENTS_LABELS["ubuntu-nonsgx-${version}"]) {
