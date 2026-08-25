@@ -40,8 +40,7 @@
                 Description="Crypto Library to link with."
                 Category="General"
                 IsRequired="true"
-                Default="mbedtls">
-    <EnumValue Name="mbedtls" DisplayName="Mbed TLS" />
+                Default="openssl">
     <EnumValue Name="openssl" DisplayName="OpenSSL" />
   </EnumProperty>
 

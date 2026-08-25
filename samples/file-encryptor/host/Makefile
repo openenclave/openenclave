@@ -21,4 +21,3 @@ build:
 
 clean:
 	rm -f file-encryptorhost fileencryptor_u.* fileencryptor_args.h *.o ../out.decrypted ../out.encrypted
-

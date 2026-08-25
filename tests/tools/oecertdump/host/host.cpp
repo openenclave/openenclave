@@ -20,7 +20,6 @@
 #define INPUT_PARAM_OUT_TYPE "--type"
 #define INPUT_PARAM_OUT_TYPE_REPORT "report"
 #define INPUT_PARAM_OUT_TYPE_EC "ec"
-#define INPUT_PARAM_OUT_TYPE_RSA "rsa"
 #define DEFAULT_OUT_TYPE INPUT_PARAM_OUT_TYPE_REPORT
 #define INPUT_PARAM_VERBOSE "--verbose"
 
@@ -104,11 +103,6 @@ oe_result_t generate_certificate(oe_enclave_t* enclave, bool verbose)
         result = get_tls_cert_signed_with_ec_key(
             enclave, &ecall_result, &certificate, &certificate_size);
     }
-    else if (strcmp(INPUT_PARAM_OUT_TYPE_RSA, _params.out_type) == 0)
-    {
-        result = get_tls_cert_signed_with_rsa_key(
-            enclave, &ecall_result, &certificate, &certificate_size);
-    }
     else
     {
         printf("Invalid out type - %s.\n", _params.out_type);
@@ -158,11 +152,10 @@ static void _display_help(const char* cmd)
     printf("Usage: %s ENCLAVE_PATH [Options]\n\n", cmd);
     printf("Options:\n");
     printf(
-        " %s <output-type>: %s (default), %s, or %s\n",
+        " %s <output-type>: %s (default) or %s\n",
         INPUT_PARAM_OUT_TYPE,
         INPUT_PARAM_OUT_TYPE_REPORT,
-        INPUT_PARAM_OUT_TYPE_EC,
-        INPUT_PARAM_OUT_TYPE_RSA);
+        INPUT_PARAM_OUT_TYPE_EC);
     printf(
         " %s <output-filename>: %s (default).\n",
         INPUT_PARAM_OUT_FILE,

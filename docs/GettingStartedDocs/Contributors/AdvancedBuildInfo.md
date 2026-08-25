@@ -102,10 +102,6 @@ huge number of nodes (targets) in the resulting graph.
 To change the ignored targets, edit the file named `CMakeGraphVizOptions.cmake`
 at the root of the repo.
 
-As of 2020-03-10, it looks like this:
-
-![CMake Dependency Graph](/docs/GettingStartedDocs/DependencyGraph.svg)
-
 ### Legend
 
 Nodes:
@@ -279,10 +275,6 @@ cmake --graphviz=graph .. -DLVI_MITIGATION=ControlFlow \
 -DLVI_MITIGATION_BINDIR=/home/yourname/openenclave/lvi_mitigation_bin
 dot graph -Tsvg -o graph-lvi-cfg.svg
 ```
-
-As of 2020-03-10, it looks like this:
-
-![CMake Dependency Graph with LVI Mitigation](/docs/GettingStartedDocs/DependencyGraphLVICFG.svg)
 
 ## 5.5 Building Enclaves with LVI Mitigation
 

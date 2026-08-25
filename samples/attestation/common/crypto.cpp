@@ -80,7 +80,7 @@ exit:
 }
 
 /**
- * mbedtls cleanup during shutdown.
+ * OpenSSL cleanup during shutdown.
  */
 void Crypto::cleanup_openssl3(void)
 {

@@ -6,7 +6,7 @@
  *
  * This file defines a minimal set of primitives for parsing ASN.1. These
  * primitives are implemented by an underlying crypto library (such as
- * mbed TLS or OpenSSL). A typical parser has the following skeleton.
+ * OpenSSL). A typical parser has the following skeleton.
  *
  *     ```
  *     oe_result_t parse(oe_asn1_t* asn1)
