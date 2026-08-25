@@ -31,6 +31,8 @@ function (maybe_build_using_clangw OE_TARGET)
     return()
   endif ()
 
+  set_property(TARGET ${OE_TARGET} PROPERTY NO_SYSTEM_FROM_IMPORTED ON)
+
   # Add compile options from compiler_settings.cmake
   if (COMMAND enclave_compile_options)
     # Currently `enclave_compile_options` is only for internal OE build.

@@ -21,20 +21,8 @@
 
 #ifdef OE_BUILD_ENCLAVE
 #include <openenclave/enclave.h>
-#include "../../enclave/crypto/mbedtls/key.h"
-#include "../../enclave/crypto/mbedtls/rsa.h"
 #else
 #include <openenclave/host.h>
-#ifdef _WIN32
-#include "../../host/crypto/bcrypt/bcrypt.h"
-#include "../../host/crypto/bcrypt/key.h"
-#include "../../host/crypto/bcrypt/rsa.h"
-#else
-#include <openssl/opensslv.h>
-#include <openssl/rsa.h>
-#include "../crypto/openssl/key.h"
-#include "../crypto/openssl/rsa.h"
-#endif
 #endif
 
 int is_eeid_base_image(const oe_sgx_enclave_properties_t* properties)
@@ -212,15 +200,6 @@ static oe_result_t _verify_signature(
     result = OE_OK;
 
 done:
-#ifdef OE_BUILD_ENCLAVE
-    // The mbedTLS flavour of oe_rsa_public_key_init copies the key,
-    // so we need both, an oe_rsa_public_key_free and an mbedtls_pk_free.
-    {
-        oe_public_key_t* pk = (oe_public_key_t*)&public_key;
-        mbedtls_pk_free(&pk->pk);
-    }
-#endif
-
     if (result == OE_OK)
         result = oe_rsa_public_key_free(&public_key);
 

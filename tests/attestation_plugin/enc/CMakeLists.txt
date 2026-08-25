@@ -10,21 +10,6 @@ add_custom_command(
     edger8r --trusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
     ${DEFINE_OE_SGX} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_enclave(
-  TARGET
-  plugin_mbedtls_enc
-  UUID
-  0ed4cfa8-3d98-4ef6-a8e6-b3120517ccac
-  CRYPTO_LIB
-  mbedtls
-  SOURCES
-  enc.c
-  ../plugin/tests.c
-  ${CMAKE_CURRENT_BINARY_DIR}/plugin_t.c)
-
-enclave_include_directories(plugin_mbedtls_enc PRIVATE
-                            ${CMAKE_CURRENT_BINARY_DIR})
-
 if (BUILD_OPENSSL)
   add_enclave(
     TARGET

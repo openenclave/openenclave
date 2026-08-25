@@ -25,31 +25,15 @@ add_custom_command(
   COMMAND ${CMAKE_COMMAND} -E sleep 1
   COMMAND ${CMAKE_COMMAND} -E remove temp.dmp)
 
-if (${OE_CRYPTO_LIB} STREQUAL "openssl"
-    OR ${OE_CRYPTO_LIB} STREQUAL "openssl_symcrypt_fips"
-    OR ${OE_CRYPTO_LIB} STREQUAL "openssl_3"
-    OR ${OE_CRYPTO_LIB} STREQUAL "openssl_3_symcrypt_prov_fips")
-  add_executable(
-    tls_server_enc
-    ecalls.cpp
-    openssl_server.cpp
-    cert_verify_config.cpp
-    ../../common/verify_callback.cpp
-    ../../common/utility.cpp
-    ../../common/openssl_utility.cpp
-    ${CMAKE_CURRENT_BINARY_DIR}/tls_server_t.c)
-elseif (${OE_CRYPTO_LIB} STREQUAL "mbedtls")
-  add_executable(
-    tls_server_enc
-    ecalls.cpp
-    mbedtls_server.cpp
-    cert_verify_config.cpp
-    ../../common/cert_verifier.cpp
-    ../../common/identity_verifier.cpp
-    ../../common/utility.cpp
-    ../../common/mbedtls_utility.cpp
-    ${CMAKE_CURRENT_BINARY_DIR}/tls_server_t.c)
-endif ()
+add_executable(
+  tls_server_enc
+  ecalls.cpp
+  openssl_server.cpp
+  cert_verify_config.cpp
+  ../../common/verify_callback.cpp
+  ../../common/utility.cpp
+  ../../common/openssl_utility.cpp
+  ${CMAKE_CURRENT_BINARY_DIR}/tls_server_t.c)
 
 if (WIN32)
   maybe_build_using_clangw(tls_server_enc)
@@ -69,10 +53,6 @@ if (${OE_CRYPTO_LIB} STREQUAL "openssl")
 elseif (${OE_CRYPTO_LIB} STREQUAL "openssl_3")
   target_link_libraries(
     tls_server_enc openenclave::oeenclave openenclave::oecryptoopenssl_3
-    openenclave::oelibcxx openenclave::oehostsock openenclave::oehostresolver)
-elseif (${OE_CRYPTO_LIB} STREQUAL "mbedtls")
-  target_link_libraries(
-    tls_server_enc openenclave::oeenclave openenclave::oecryptombedtls
     openenclave::oelibcxx openenclave::oehostsock openenclave::oehostresolver)
 elseif (${OE_CRYPTO_LIB} STREQUAL "openssl_symcrypt_fips")
   add_custom_command(

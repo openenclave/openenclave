@@ -21,4 +21,3 @@ run:
 
 simulate:
 	host/file-encryptorhost testfile ./enclave/file-encryptorenc.signed --simulate
-

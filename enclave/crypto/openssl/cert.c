@@ -3,8 +3,7 @@
 
 #include "cert.h"
 #include <ctype.h>
-#include <mbedtls/oid.h>  // For mbedtls_oid_get_numeric_string
-#include <mbedtls/x509.h> // for mbedtls_x509_buf
+#include <limits.h>
 #include <openenclave/bits/result.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/internal/cert.h>
@@ -31,7 +30,7 @@
 /*
  * Parse the name string into X509_NAME struct. The format of the string is
  * "KEY1=VALUE1,KEY2=VALUE2,KEY3=VALUE3...". The implementation is based
- * on the mbedtls_x509_string_to_names from Mbed TLS.
+ * on the X.509 name parsing used by the original crypto implementation.
  * Note that the string is expected to use commas as the separators instead
  * of slashes as OpenSSL CLI does. Also, the implementation does not
  * support multivalue-RDN names (with the "+" in the value).
@@ -117,33 +116,54 @@ done:
 }
 
 /*
- * Reuse the mbedtls_oid_get_numeric_string in Mbed TLS to decode the OID from
- * its BER format (byte-encoding) into a dot-notation string.
+ * Decode the OID from its BER format (byte-encoding) into a dot-notation
+ * string.
  */
 static char* _decode_oid_to_str(char* oid, size_t oid_size)
 {
-    mbedtls_x509_buf buf;
+    unsigned char* der = NULL;
+    unsigned char* p;
+    const unsigned char* der_end;
+    ASN1_OBJECT* obj = NULL;
     char* oid_str = NULL;
     char oid_buf[OE_OID_MAX_LENGTH];
-    int rc;
+    int der_size;
+    int oid_len;
 
-    buf.tag = 0;
-    buf.len = oid_size;
-    buf.p = (unsigned char*)oid;
-
-    rc = mbedtls_oid_get_numeric_string(oid_buf, OE_OID_MAX_LENGTH, &buf);
-    if (rc < 0)
+    if (oid == NULL || oid_size == 0 || oid_size > INT_MAX)
         goto done;
 
-    /* Copy from buffer */
-    size_t oid_len = strlen(oid_buf) + 1;
-    oid_str = (char*)oe_malloc(oid_len);
+    der_size = ASN1_object_size(0, (int)oid_size, V_ASN1_OBJECT);
+    if (der_size <= 0)
+        goto done;
+
+    der = (unsigned char*)oe_malloc((size_t)der_size);
+    if (der == NULL)
+        goto done;
+
+    p = der;
+    ASN1_put_object(&p, 0, (int)oid_size, V_ASN1_OBJECT, V_ASN1_UNIVERSAL);
+    memcpy(p, oid, oid_size);
+
+    p = der;
+    der_end = der + der_size;
+    obj = d2i_ASN1_OBJECT(NULL, (const unsigned char**)&p, der_size);
+    if (obj == NULL || p != der_end)
+        goto done;
+
+    oid_len = OBJ_obj2txt(oid_buf, OE_OID_MAX_LENGTH, obj, 1);
+    if (oid_len <= 0 || oid_len >= OE_OID_MAX_LENGTH)
+        goto done;
+
+    oid_str = (char*)oe_malloc((size_t)oid_len + 1);
     if (oid_str == NULL)
         goto done;
 
-    strncpy(oid_str, oid_buf, oid_len);
+    memcpy(oid_str, oid_buf, (size_t)oid_len + 1);
 
 done:
+    ASN1_OBJECT_free(obj);
+    oe_free(der);
     return oid_str;
 }
 
@@ -329,7 +349,7 @@ oe_result_t oe_gen_custom_x509_cert(
 
     /*
      * By default, the config->oid_ext stores the OID in the encoded form
-     * (BER-TLV) that can directly be consumed by Mbed TLS APIs. However,
+     * (BER-TLV) that can directly be consumed by certificate APIs. However,
      * OpenSSL APIs require the OID in the decoded form. Therefore, we need to
      * decode the OID first.
      */

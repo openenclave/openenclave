@@ -159,7 +159,6 @@ if (UNIX
     add_subdirectory(libcxx)
     add_subdirectory(libcxxrt)
     add_subdirectory(libunwind)
-    add_subdirectory(mbed)
     add_subdirectory(mman)
     add_subdirectory(module_loading)
     add_subdirectory(ocall-create)

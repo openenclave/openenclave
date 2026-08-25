@@ -38,7 +38,7 @@ OE_INLINE uint32_t oe_get_emulated_cpuid_leaf_index(uint32_t leaf)
 /**
  * Check if a cpuid leaf is emulated.
  * Currently 0, 1, 4, 7, 0x80000000 and 0x80000001 leaves are
- * emulated. Note: leaf 1 is used by mbedtls to determine aesni support. The
+ * emulated. Note: leaf 1 is used to determine AES-NI support. The
  * higher 8 bits of ebx for leaf 1 is the current processor id (initial APIC
  * id). Since CPUID emulation returns cached values, this higher 8 bits of ebx
  * should not be relied upon for leaf 1.

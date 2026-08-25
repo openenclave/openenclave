@@ -19,31 +19,15 @@ add_custom_command(
     ${CMAKE_SOURCE_DIR}/client/enc/enc.conf -k
     ${CMAKE_SOURCE_DIR}/client/enc/private.pem)
 
-if (${OE_CRYPTO_LIB} STREQUAL "openssl"
-    OR ${OE_CRYPTO_LIB} STREQUAL "openssl_symcrypt_fips"
-    OR ${OE_CRYPTO_LIB} STREQUAL "openssl_3"
-    OR ${OE_CRYPTO_LIB} STREQUAL "openssl_3_symcrypt_prov_fips")
-  add_executable(
-    tls_client_enc
-    ecalls.cpp
-    openssl_client.cpp
-    cert_verify_config.cpp
-    ../../common/verify_callback.cpp
-    ../../common/utility.cpp
-    ../../common/openssl_utility.cpp
-    ${CMAKE_CURRENT_BINARY_DIR}/tls_client_t.c)
-elseif (${OE_CRYPTO_LIB} STREQUAL "mbedtls")
-  add_executable(
-    tls_client_enc
-    ecalls.cpp
-    mbedtls_client.cpp
-    cert_verify_config.cpp
-    ../../common/cert_verifier.cpp
-    ../../common/identity_verifier.cpp
-    ../../common/utility.cpp
-    ../../common/mbedtls_utility.cpp
-    ${CMAKE_CURRENT_BINARY_DIR}/tls_client_t.c)
-endif ()
+add_executable(
+  tls_client_enc
+  ecalls.cpp
+  openssl_client.cpp
+  cert_verify_config.cpp
+  ../../common/verify_callback.cpp
+  ../../common/utility.cpp
+  ../../common/openssl_utility.cpp
+  ${CMAKE_CURRENT_BINARY_DIR}/tls_client_t.c)
 
 add_dependencies(tls_client_enc tls_server_sign_enc)
 
@@ -65,10 +49,6 @@ if (${OE_CRYPTO_LIB} STREQUAL "openssl")
 elseif (${OE_CRYPTO_LIB} STREQUAL "openssl_3")
   target_link_libraries(
     tls_client_enc openenclave::oeenclave openenclave::oecryptoopenssl_3
-    openenclave::oelibcxx openenclave::oehostsock openenclave::oehostresolver)
-elseif (${OE_CRYPTO_LIB} STREQUAL "mbedtls")
-  target_link_libraries(
-    tls_client_enc openenclave::oeenclave openenclave::oecryptombedtls
     openenclave::oelibcxx openenclave::oehostsock openenclave::oehostresolver)
 elseif (${OE_CRYPTO_LIB} STREQUAL "openssl_symcrypt_fips")
   add_custom_command(

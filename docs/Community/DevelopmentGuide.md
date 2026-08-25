@@ -103,7 +103,7 @@ Naming conventions we use that are not automated include:
 typedef struct _oe_private_key
 {
     uint64_t magic;
-    mbedtls_pk_context pk;
+    EVP_PKEY* pkey;
 } oe_private_key_t;
 ```
 8. Prefix Open Enclave specific names in the global namespace with `oe_` (e.g.,
@@ -129,128 +129,29 @@ For other files (`*.asm`, `*.S`, etc.) our current best guidance is consistency:
 
 ### Example File
 
-Excerpt from `enclave/key.c`:
+Excerpt from `common/crypto/openssl/key.c`:
 
 ```c
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include "key.h"
-#include <openenclave/internal/safecrt.h>
-#include <openenclave/corelibc/string.h>
-#include <openenclave/internal/crypto/hash.h>
 #include <openenclave/internal/raise.h>
-#include <openenclave/internal/utils.h>
-#include "pem.h"
-
-typedef oe_result_t (*oe_copy_key)(
-    mbedtls_pk_context* dest,
-    const mbedtls_pk_context* src,
-    bool copy_private_fields);
+#include <openssl/evp.h>
 
 bool oe_private_key_is_valid(
     const oe_private_key_t* private_key,
     uint64_t magic)
 {
-    return private_key && private_key->magic == magic;
+    return private_key && private_key->magic == magic && private_key->pkey;
 }
 
-oe_result_t oe_private_key_init(
+void oe_private_key_init(
     oe_private_key_t* private_key,
-    const mbedtls_pk_context* pk,
-    oe_copy_key copy_key,
+    EVP_PKEY* pkey,
     uint64_t magic)
 {
-    oe_result_t result = OE_UNEXPECTED;
-
-    if (!private_key || (pk && !copy_key) || (copy_key && !pk))
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    private_key->magic = 0;
-
-    if (pk && copy_key)
-        OE_CHECK(copy_key(&private_key->pk, pk, true));
-    else
-        mbedtls_pk_init(&private_key->pk);
-
     private_key->magic = magic;
-
-    result = OE_OK;
-
-done:
-    return result;
-}
-
-void oe_private_key_release(oe_private_key_t* private_key, uint64_t magic)
-{
-    if (oe_private_key_is_valid(private_key, magic))
-    {
-        mbedtls_pk_free(&private_key->pk);
-        oe_secure_zero_fill(private_key, sizeof(oe_private_key_t));
-    }
-}
-
-bool oe_public_key_is_valid(const oe_public_key_t* public_key, uint64_t magic)
-{
-    return public_key && public_key->magic == magic;
-}
-
-oe_result_t oe_public_key_init(
-    oe_public_key_t* public_key,
-    const mbedtls_pk_context* pk,
-    oe_copy_key copy_key,
-    uint64_t magic)
-{
-    oe_result_t result = OE_UNEXPECTED;
-
-    if (!public_key || (pk && !copy_key) || (copy_key && !pk))
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    public_key->magic = 0;
-
-    if (pk && copy_key)
-        OE_CHECK(copy_key(&public_key->pk, pk, false));
-    else
-        mbedtls_pk_init(&public_key->pk);
-
-    public_key->magic = magic;
-
-    result = OE_OK;
-
-done:
-    return result;
-}
-
-void oe_public_key_release(oe_public_key_t* public_key, uint64_t magics)
-{
-    if (oe_public_key_is_valid(public_key, magic))
-    {
-        mbedtls_pk_free(&public_key->pk);
-        oe_secure_zero_fill(public_key, sizeof(oe_public_key_t));
-    }
-}
-
-/*
-**==============================================================================
-**
-** _map_hash_type()
-**
-**==============================================================================
-*/
-
-static mbedtls_md_type_t _map_hash_type(oe_hash_type_t md)
-{
-    switch (md)
-    {
-        case OE_HASH_TYPE_SHA256:
-            return MBEDTLS_MD_SHA256;
-        case OE_HASH_TYPE_SHA512:
-            return MBEDTLS_MD_SHA512;
-        case __OE_HASH_TYPE_MAX:
-            return MBEDTLS_MD_NONE;
-    }
-
-    /* Unreachable */
-    return 0;
+    private_key->pkey = pkey;
 }
 ```

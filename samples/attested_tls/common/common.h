@@ -9,7 +9,7 @@
 #define CLIENT_PAYLOAD "GET / HTTP/1.0\r\n\r\n"
 #define SERVER_PAYLOAD                                   \
     "HTTP/1.0 200 OK\r\nContent-Type: text/html\r\n\r\n" \
-    "<h2>mbed TLS Test Server</h2>\r\n"                  \
+    "<h2>Open Enclave TLS Test Server</h2>\r\n"          \
     "<p>Successful connection : </p>\r\n"                \
     "A message from TLS server inside enclave\r\n"
 

@@ -8,7 +8,6 @@ ci_apt_packages:
   - "dpkg-dev"
   - "gawk"
   - "git"
-  - "libmbedtls12"
   - "sudo"
   - "libcurl4"
   - "libprotobuf17"

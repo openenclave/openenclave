@@ -236,8 +236,8 @@ foreach (i RANGE ${len})
 
   # Simulation mode is not supported on Windows currently.
   if (UNIX)
-    # The file-encryptor and helloworld are special cases which also
-    # work under simulation, so we test that additional scenario here.
+    # The file-encryptor and helloworld samples also work under simulation, so
+    # test that additional scenario here.
     if (${SAMPLE} MATCHES "(file-encryptor|helloworld)")
       # Build with the CMake package
       message(
