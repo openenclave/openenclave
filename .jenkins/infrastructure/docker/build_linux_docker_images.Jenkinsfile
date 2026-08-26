@@ -24,12 +24,14 @@ pipeline {
         string(name: "DEVKITS_URI", defaultValue: 'https://openenclavepublicstorage.blob.core.windows.net/openenclavedependencies/OE-CI-devkits-d1634ce8.tar.gz', description: "Uri for downloading the OECI Devkit")
         string(name: "AGENTS_LABEL", defaultValue: 'acc-ubuntu-20.04', description: "Label of the agent to use to run this job")
         booleanParam(name: "TAG_LATEST", defaultValue: false, description: "Update the latest tag to the currently built DOCKER_TAG")
+        booleanParam(name: "BUILD_AZL3_MHSM_PREVIEW", defaultValue: false, description: "Build and publish the Azure Linux 3 MHSM OpenSSL 3.5 preview image?")
     }
     environment {
         // Docker plugin cannot seem to use credentials from Azure Key Vault
         BASE_DOCKERFILE_DIR = ".jenkins/infrastructure/docker/dockerfiles/linux/base/"
         LINUX_DOCKERFILE = ".jenkins/infrastructure/docker/dockerfiles/linux/Dockerfile"
         AZURELINUX3_DOCKERFILE = ".jenkins/infrastructure/docker/dockerfiles/linux/azurelinux3/Dockerfile"
+        MHSM_AZURELINUX3_DOCKERFILE = ".jenkins/infrastructure/docker/dockerfiles/linux/azurelinux3/mhsm-preview.Dockerfile"
     }
     stages {
         stage("Checkout") {
@@ -201,6 +203,74 @@ pipeline {
                                 if ( params.TAG_LATEST ) {
                                     common.exec_with_retry { oeazl3.push('latest') }
                                 }
+                            }
+
+                            if (params.BUILD_AZL3_MHSM_PREVIEW) {
+                                sh "rm -rf build/mhsm-preview && mkdir -p build/mhsm-preview/staging"
+                                oeazl3.inside("--cap-add=SYS_PTRACE") {
+                                    sh """
+                                        cmake -S ${WORKSPACE} -B ${WORKSPACE}/build/mhsm-preview/oe -G Ninja \
+                                            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+                                            -DCMAKE_INSTALL_PREFIX=/opt/openenclave \
+                                            -DBUILD_TESTS=OFF \
+                                            -DLVI_MITIGATION=None \
+                                            -DLVI_MITIGATION_SKIP_TESTS=ON
+                                        cmake --build ${WORKSPACE}/build/mhsm-preview/oe --parallel
+                                        DESTDIR=${WORKSPACE}/build/mhsm-preview/staging \
+                                            cmake --install ${WORKSPACE}/build/mhsm-preview/oe
+                                        tar -C ${WORKSPACE}/build/mhsm-preview/staging/opt \
+                                            -czf ${WORKSPACE}/build/mhsm-preview/openenclave-azl3-openssl35-${TAG_FULL_IMAGE}.tar.gz \
+                                            openenclave
+                                    """
+                                }
+
+                                def mhsmBuildArgs = common.dockerBuildArgs(
+                                    "OE_IMAGE_VERSION=${TAG_FULL_IMAGE}",
+                                    "OE_INSTALL_DIR=build/mhsm-preview/staging/opt/openenclave"
+                                )
+                                def mhsmImage = common.dockerImage(
+                                    "openenclave-mhsm-azl3-openssl35:${TAG_FULL_IMAGE}",
+                                    MHSM_AZURELINUX3_DOCKERFILE,
+                                    "${mhsmBuildArgs}"
+                                )
+                                mhsmImage.inside("--entrypoint='' --user root:root") {
+                                    sh """
+                                        test -x /opt/openenclave/bin/oesign
+                                        grep --quiet '# *define OPENSSL_VERSION_TEXT "OpenSSL 3.5.7' \
+                                            /opt/openenclave/include/openenclave/3rdparty/openssl_3/openssl/opensslv.h
+                                        rpm -q libsgx-enclave-common libsgx-dcap-ql \
+                                            libsgx-dcap-quote-verify libsgx-dcap-default-qpl
+                                        test -e /usr/lib64/libdcap_quoteprov.so
+                                    """
+                                }
+
+                                def hasSgxDevices = sh(
+                                    script: "test -e /dev/sgx_enclave && test -e /dev/sgx_provision",
+                                    returnStatus: true
+                                ) == 0
+                                if (hasSgxDevices) {
+                                    mhsmImage.inside(
+                                        "--entrypoint='' \
+                                        --device /dev/sgx_provision:/dev/sgx_provision \
+                                        --device /dev/sgx_enclave:/dev/sgx_enclave \
+                                        --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket"
+                                    ) {
+                                        sh "oesgx | tee /tmp/oesgx.out && grep --quiet 'supports Software Guard Extensions:SGX1' /tmp/oesgx.out"
+                                    }
+                                } else {
+                                    echo "Skipping MHSM hardware smoke test because SGX devices are unavailable"
+                                }
+
+                                docker.withRegistry("https://${params.CONTAINER_REPO}") {
+                                    common.exec_with_retry { mhsmImage.push() }
+                                    if ( params.TAG_LATEST ) {
+                                        common.exec_with_retry { mhsmImage.push('latest') }
+                                    }
+                                }
+                                archiveArtifacts(
+                                    artifacts: "build/mhsm-preview/openenclave-azl3-openssl35-${TAG_FULL_IMAGE}.tar.gz",
+                                    fingerprint: true
+                                )
                             }
                         }
                     }
