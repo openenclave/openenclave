@@ -30,6 +30,11 @@ target_compile_definitions(oeutil PUBLIC OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
                                          OEUTIL_QUOTE_BYPASS_DATE_CHECK)
 
 if (WIN32)
+  if (MSVC)
+    target_compile_options(oeutil PRIVATE /guard:cf)
+    set_target_properties(oeutil PROPERTIES LINK_FLAGS "/Guard:CF")
+  endif ()
+
   # The X509_print_ex_fp function in OpenSSL requires to include applink.c, which
   # glues OpenSSL BIO and Win32 compiler run-time. But applink.c uses fopen() that
   # raises a W3 warning and triggers error C2220 (warning treated as error).
