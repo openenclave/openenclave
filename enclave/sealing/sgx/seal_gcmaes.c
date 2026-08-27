@@ -49,6 +49,93 @@ done:
     return result;
 }
 
+/**
+ * Validate a sealed blob's key request.
+ *
+ * The sealed blob is held by the untrusted host and supplied back to the
+ * enclave at unseal time, so its header - including the key request that
+ * selects the unsealing key - is attacker controlled. A key request that
+ * names a key some *other* principal can also derive lets that principal
+ * author sealed state this enclave will authenticate and accept, so the
+ * request must select a key that only this enclave's identity can produce.
+ *
+ * oe_get_key() only rejects reserved bits and an out-of-range key name, so
+ * the identity binding is enforced here.
+ *
+ * The same predicate is applied on both the seal and the unseal path. Seal
+ * accepts caller-supplied key request overrides (OE_SEAL_SETTING_SGX_*), and
+ * validating only on unseal would let oe_seal() mint blobs that oe_unseal()
+ * then refuses.
+ *
+ * Deliberately *not* constrained here:
+ *
+ * - isv_svn and cpu_svn. A blob sealed before an enclave or microcode upgrade
+ *   legitimately carries the older SVN, and refusing those would break
+ *   unsealing across upgrades - which is the point of sealing. Nor can the
+ *   host usefully rewrite them: a different SVN yields a different key, so
+ *   the GCM tag check fails. The residual exposure - an older, and possibly
+ *   vulnerable, revision of the same enclave can derive a lower-SVN key and
+ *   forge blobs - is inherent to the SGX sealing model and is not addressed
+ *   by this change.
+ *
+ * - attribute_mask.xfrm. OE_SEALKEY_DEFAULT_XFRMMASK is 0, so the default
+ *   request provides no XFRM binding to enforce in the first place.
+ *
+ * - misc_attribute_mask. MISCSELECT does not distinguish principals: an
+ *   enclave with a different MISCSELECT still has the same MRENCLAVE and
+ *   MRSIGNER, which the checks below already bind the key to.
+ */
+static oe_result_t _validate_key_request(
+    const sgx_key_request_t* keyrequest,
+    const char* context)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    /* Must be a seal key. Other key names either ignore key_policy entirely
+     * or are derived without the platform owner epoch, so they do not
+     * provide the expected binding. */
+    if (keyrequest->key_name != SGX_KEYSELECT_SEAL)
+    {
+        OE_TRACE_ERROR(
+            "%s key request has key_name=%u, expected SGX_KEYSELECT_SEAL",
+            context,
+            (unsigned)keyrequest->key_name);
+        OE_RAISE(OE_INVALID_PARAMETER);
+    }
+
+    /* At least one of MRENCLAVE or MRSIGNER must contribute to the key.
+     * With key_policy = 0 neither enclave identity is selected, so any
+     * enclave with a matching product ID could derive the same key. */
+    if ((keyrequest->key_policy & SGX_KEYPOLICY_ALL) == 0)
+    {
+        OE_TRACE_ERROR(
+            "%s key request has key_policy=0x%04x, which binds to neither "
+            "MRENCLAVE nor MRSIGNER",
+            context,
+            (unsigned)keyrequest->key_policy);
+        OE_RAISE(OE_INVALID_PARAMETER);
+    }
+
+    /* The DEBUG attribute must be masked into the key. Otherwise a debug
+     * instance of the same enclave - which has the same MRENCLAVE and
+     * MRSIGNER, and whose memory the host can inspect - derives the same
+     * key. */
+    if (!(keyrequest->attribute_mask.flags & SGX_FLAGS_DEBUG))
+    {
+        OE_TRACE_ERROR(
+            "%s key request has attribute_mask.flags=0x%016lx, which does "
+            "not include SGX_FLAGS_DEBUG",
+            context,
+            (unsigned long)keyrequest->attribute_mask.flags);
+        OE_RAISE(OE_INVALID_PARAMETER);
+    }
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
 static oe_result_t _seal(
     const oe_seal_setting_t* settings,
     size_t settings_count,
@@ -159,6 +246,11 @@ static oe_result_t _seal(
                 OE_RAISE(OE_UNSUPPORTED);
         }
 
+    /* Enforce the same key request invariants the unseal path requires, so
+     * that caller-supplied overrides cannot produce a blob that oe_unseal()
+     * will later reject. */
+    OE_CHECK(_validate_key_request(&header->keyrequest, "seal"));
+
     OE_CHECK(oe_get_seal_key(
         (uint8_t*)&header->keyrequest,
         sizeof(header->keyrequest),
@@ -200,40 +292,51 @@ static oe_result_t _unseal(
     size_t* plaintext_size)
 {
     oe_result_t result = OE_OK;
-    struct _sealed_blob_header* header = (struct _sealed_blob_header*)blob;
+    struct _sealed_blob_header header;
     uint8_t* key = NULL;
     size_t key_size = 0;
 
-    if (blob_size < sizeof(*header))
+    if (blob_size < sizeof(header))
         return OE_INVALID_PARAMETER;
 
-    if (header->ciphertext_size != blob_size - sizeof(*header) ||
-        header->total_size != header->ciphertext_size + additional_data_size)
+    /* The blob is not required to reside inside the enclave, so take a
+     * private copy of the header. Validating the key request in place would
+     * leave the host free to swap it out between the check and the
+     * oe_get_seal_key() call below. */
+    if (oe_memcpy_s(&header, sizeof(header), blob, sizeof(header)) != OE_OK)
+        return OE_INVALID_PARAMETER;
+
+    if (header.ciphertext_size != blob_size - sizeof(header) ||
+        header.total_size != header.ciphertext_size + additional_data_size)
         return OE_CRYPTO_ERROR;
 
-    *plaintext_size = header->ciphertext_size;
+    result = _validate_key_request(&header.keyrequest, "sealed blob");
+    if (result != OE_OK)
+        return result;
+
+    *plaintext_size = header.ciphertext_size;
     *plaintext = (uint8_t*)oe_calloc(1, *plaintext_size);
     if (*plaintext == NULL)
         return OE_OUT_OF_MEMORY;
 
     OE_CHECK(oe_get_seal_key(
-        (uint8_t*)&header->keyrequest,
-        sizeof(header->keyrequest),
+        (uint8_t*)&header.keyrequest,
+        sizeof(header.keyrequest),
         &key,
         &key_size));
 
     OE_CHECK(oe_aes_gcm_decrypt(
         key,
         key_size,
-        header->iv,
-        sizeof(header->iv),
+        header.iv,
+        sizeof(header.iv),
         additional_data,
         additional_data_size,
-        (uint8_t*)(header + 1),
-        header->ciphertext_size,
+        (uint8_t*)(blob + sizeof(header)),
+        header.ciphertext_size,
         *plaintext,
         *plaintext_size,
-        header->tag));
+        header.tag));
 
 done:
     oe_free_key(key, key_size, NULL, 0);
