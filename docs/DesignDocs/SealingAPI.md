@@ -584,6 +584,30 @@ with corresponding helper macros.
 |`OE_SEAL_SETTING_SGX_MISCMASK`           |`uint32_t`|Value of `value.d` will be assigned to `KEYREQUEST.MISCMASK`.
 |`OE_SEAL_SETTING_SGX_CONFIGSVN`          |`uint16_t`|Value of `value.w` will be assigned to `KEYREQUEST.CONFIGSVN`.
 
+##### Constraints on SGX key request settings
+
+The resulting `KEYREQUEST` must bind the derived key to the calling enclave's
+identity. Both `oe_seal()` and `oe_unseal()` reject a `KEYREQUEST` that does
+not satisfy all of the following:
+
+* `KEYNAME` is `SGX_KEYSELECT_SEAL`. Other key names either ignore `KEYPOLICY`
+  or are derived without the platform owner epoch.
+* `KEYPOLICY` selects at least one of `MRENCLAVE` or `MRSIGNER`. Otherwise any
+  enclave with a matching product ID derives the same key.
+* `FLAGSMASK` includes `SGX_FLAGS_DEBUG`. Otherwise a debug instance of the
+  same enclave - whose memory the host can inspect - derives the same key.
+
+This restricts `OE_SEAL_SETTING_SGX_KEYNAME` and
+`OE_SEAL_SETTING_SGX_FLAGSMASK`, which previously accepted any value. It is
+also a behavior change for existing blobs: a blob sealed by an earlier release
+with a non-`SEAL` key name, or with a `FLAGSMASK` that omits
+`SGX_FLAGS_DEBUG`, can no longer be unsealed. Such blobs are exactly those a
+second party can forge, so they are not safe to accept.
+
+`ISVSVN` and `CPUSVN` are not constrained: a blob sealed before an enclave or
+microcode upgrade legitimately carries the older SVN, and rejecting those
+would break unsealing across upgrades.
+
 #### oe_seal()
 
 `oe_seal()` encrypts user-supplied data into an opaque blob, using a key
