@@ -25,6 +25,93 @@ static const oe_uuid_t _epid_linkable_uuid = {OE_FORMAT_UUID_SGX_EPID_LINKABLE};
 static const oe_uuid_t _epid_unlinkable_uuid = {
     OE_FORMAT_UUID_SGX_EPID_UNLINKABLE};
 
+static const oe_uuid_t* _lifetime_formats[] = {
+    &_local_uuid,
+    &_ecdsa_uuid,
+    &_epid_linkable_uuid,
+    &_epid_unlinkable_uuid};
+static oe_attester_t* _lifetime_plugins[OE_COUNTOF(_lifetime_formats)];
+
+static oe_result_t _paused_get_report(
+    oe_attester_t* context,
+    uint32_t flags,
+    const uint8_t* report_data,
+    size_t report_data_size,
+    const void* opt_params,
+    size_t opt_params_size,
+    uint8_t** report_buffer,
+    size_t* report_buffer_size)
+{
+    OE_UNUSED(context);
+    OE_UNUSED(flags);
+    OE_UNUSED(report_data);
+    OE_UNUSED(report_data_size);
+    OE_UNUSED(opt_params);
+    OE_UNUSED(opt_params_size);
+    OE_UNUSED(report_buffer);
+    OE_UNUSED(report_buffer_size);
+    OE_TEST(pause_report_dispatch() == OE_OK);
+    return OE_FAILURE;
+}
+
+void test_report_lifetime()
+{
+    oe_attester_t* plugin = NULL;
+    uint8_t* report = NULL;
+    size_t report_size = 0;
+    OE_TEST(oe_attester_initialize() == OE_OK);
+    for (size_t i = 0; i < OE_COUNTOF(_lifetime_formats); ++i)
+    {
+        oe_result_t result = oe_find_attester_plugin(
+            _lifetime_formats[i], &_lifetime_plugins[i]);
+        OE_TEST(result == OE_OK || result == OE_NOT_FOUND);
+    }
+    OE_TEST(oe_find_attester_plugin(&_local_uuid, &plugin) == OE_OK);
+
+    // Pause the real report API inside its callback, with its reference held.
+    oe_result_t (*get_report)(
+        oe_attester_t*,
+        uint32_t,
+        const uint8_t*,
+        size_t,
+        const void*,
+        size_t,
+        uint8_t**,
+        size_t*) = plugin->get_report;
+    plugin->get_report = _paused_get_report;
+    OE_TEST(
+        oe_get_report(0, NULL, 0, NULL, 0, &report, &report_size) ==
+        OE_FAILURE);
+    plugin->get_report = get_report;
+    OE_TEST(report == NULL);
+}
+
+void test_attester_shutdown_busy()
+{
+    OE_TEST(oe_attester_shutdown() == OE_BUSY);
+    OE_TEST(oe_attester_initialize() == OE_OK);
+    for (size_t i = 0; i < OE_COUNTOF(_lifetime_formats); ++i)
+    {
+        oe_attester_t* plugin = NULL;
+        if (!_lifetime_plugins[i])
+            continue;
+        OE_TEST(
+            oe_acquire_attester_plugin(_lifetime_formats[i], &plugin) == OE_OK);
+        OE_TEST(plugin == _lifetime_plugins[i]);
+        oe_release_attester_plugin();
+        OE_TEST(oe_unregister_attester_plugin(plugin) == OE_BUSY);
+    }
+    OE_TEST(oe_verifier_initialize() == OE_OK);
+    OE_TEST(oe_verifier_shutdown() == OE_OK);
+}
+
+void test_attester_shutdown_after_release()
+{
+    OE_TEST(oe_attester_shutdown() == OE_OK);
+    OE_TEST(oe_attester_initialize() == OE_OK);
+    OE_TEST(oe_attester_shutdown() == OE_OK);
+}
+
 void run_runtime_test()
 {
     printf("====== running run_runtime_test\n");
@@ -472,4 +559,4 @@ OE_SET_ENCLAVE_SGX(
     true, /* Debug */
     1024, /* NumHeapPages */
     128,  /* NumStackPages */
-    1);   /* NumTCS */
+    2);   /* NumTCS */

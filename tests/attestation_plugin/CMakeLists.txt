@@ -7,6 +7,11 @@ if (BUILD_ENCLAVES)
   add_subdirectory(enc)
 endif ()
 
+add_enclave_test(tests/attestation_plugin_lifetime plugin_lifetime_host
+                 plugin_mbedtls_enc)
+set_enclave_tests_properties(tests/attestation_plugin_lifetime PROPERTIES
+                             TIMEOUT 120)
+
 add_enclave_test(tests/attestation_plugin_mbedtls plugin_host
                  plugin_mbedtls_enc)
 set_enclave_tests_properties(tests/attestation_plugin_mbedtls PROPERTIES

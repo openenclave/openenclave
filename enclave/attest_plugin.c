@@ -36,7 +36,7 @@ oe_result_t oe_register_attester_plugin(
 oe_result_t oe_unregister_attester_plugin(oe_attester_t* plugin)
 {
     return oe_attest_unregister_plugin(
-        &attesters, (oe_attestation_role_t*)plugin);
+        OE_ATTEST_ROLE_ATTESTER, &attesters, (oe_attestation_role_t*)plugin);
 }
 
 static oe_result_t _wrap_with_header(
@@ -80,7 +80,7 @@ oe_result_t oe_get_evidence(
     size_t* endorsements_buffer_size)
 {
     oe_result_t result = OE_UNEXPECTED;
-    oe_plugin_list_node_t* plugin_node = NULL;
+    oe_attestation_role_t* role = NULL;
     oe_attester_t* plugin = NULL;
     uint8_t* plugin_evidence = NULL;
     size_t plugin_evidence_size = 0;
@@ -97,13 +97,15 @@ oe_result_t oe_get_evidence(
         (!endorsements_buffer && endorsements_buffer_size))
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    // Find a plugin for attestation type and run its get_evidence.
-    plugin_node = oe_attest_find_plugin(attesters, format_id, NULL);
-    if (plugin_node == NULL)
-        OE_RAISE(OE_NOT_FOUND);
+    // Find a plugin for attestation type and run its get_evidence. Holding a
+    // reference over the dispatch - and over the free_evidence /
+    // free_endorsements calls below - keeps the plugin from being
+    // unregistered and freed by a concurrent oe_attester_shutdown().
+    OE_CHECK(oe_attest_acquire_plugin(
+        OE_ATTEST_ROLE_ATTESTER, &attesters, format_id, &role));
 
     // Now get the evidence and endorsements (if desired).
-    plugin = (oe_attester_t*)plugin_node->plugin;
+    plugin = (oe_attester_t*)role;
     OE_CHECK(plugin->get_evidence(
         plugin,
         custom_claims_buffer,
@@ -170,6 +172,8 @@ done:
         if (plugin_endorsements)
             plugin->free_endorsements(plugin, plugin_endorsements);
     }
+    if (role)
+        oe_attest_release_plugin(OE_ATTEST_ROLE_ATTESTER);
     if (total_evidence_buf != NULL)
         oe_free(total_evidence_buf);
     if (total_endorsements_buf != NULL)
@@ -195,9 +199,16 @@ oe_result_t oe_attester_select_format(
     oe_uuid_t* selected_format_id)
 {
     oe_result_t result = OE_NOT_FOUND;
+    bool acquired = false;
 
     if (!format_ids || !format_ids_length || !selected_format_id)
         OE_RAISE(OE_INVALID_PARAMETER);
+
+    // Hold a reference across the walk so the list nodes stay valid.
+    OE_CHECK(oe_attest_acquire_registry(OE_ATTEST_ROLE_ATTESTER));
+    acquired = true;
+
+    result = OE_NOT_FOUND;
 
     for (size_t i = 0; i < format_ids_length; i++)
     {
@@ -210,6 +221,9 @@ oe_result_t oe_attester_select_format(
     }
 
 done:
+    if (acquired)
+        oe_attest_release_plugin(OE_ATTEST_ROLE_ATTESTER);
+
     return result;
 }
 
@@ -218,19 +232,48 @@ oe_result_t oe_find_attester_plugin(
     oe_attester_t** attester_plugin)
 {
     oe_result_t result = OE_UNEXPECTED;
-    oe_plugin_list_node_t* plugin_node = NULL;
+    oe_attestation_role_t* role = NULL;
 
     if (!format_id || !attester_plugin)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    plugin_node = oe_attest_find_plugin(attesters, format_id, NULL);
-    if (!plugin_node)
-        OE_RAISE(OE_NOT_FOUND);
+    // The lookup itself is serialized against registry mutation, but no
+    // reference is retained. Callers that dispatch to the returned plugin
+    // must use oe_attest_acquire_plugin()/oe_attest_release_plugin() instead.
+    OE_CHECK(oe_attest_acquire_plugin(
+        OE_ATTEST_ROLE_ATTESTER, &attesters, format_id, &role));
+    oe_attest_release_plugin(OE_ATTEST_ROLE_ATTESTER);
 
-    *attester_plugin = (oe_attester_t*)plugin_node->plugin;
+    *attester_plugin = (oe_attester_t*)role;
 
     result = OE_OK;
 
 done:
     return result;
+}
+
+oe_result_t oe_acquire_attester_plugin(
+    const oe_uuid_t* format_id,
+    oe_attester_t** attester_plugin)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_attestation_role_t* role = NULL;
+
+    if (!format_id || !attester_plugin)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    OE_CHECK(oe_attest_acquire_plugin(
+        OE_ATTEST_ROLE_ATTESTER, &attesters, format_id, &role));
+
+    *attester_plugin = (oe_attester_t*)role;
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+void oe_release_attester_plugin(void)
+{
+    oe_attest_release_plugin(OE_ATTEST_ROLE_ATTESTER);
 }

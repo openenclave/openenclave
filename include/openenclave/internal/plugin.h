@@ -397,6 +397,44 @@ oe_result_t oe_find_attester_plugin(
     const oe_uuid_t* format_id,
     oe_attester_t** attester_plugin);
 
+/**
+ * oe_acquire_attester_plugin
+ *
+ * Find an attester plugin of the specified format ID and take a reference on
+ * the attestation plugin registry.
+ *
+ * Unlike oe_find_attester_plugin(), the returned plugin is guaranteed to stay
+ * valid until oe_release_attester_plugin() is called: while a reference is
+ * held, oe_attester_shutdown() cannot unregister and free the plugin. Callers
+ * that dispatch to the plugin must use this function.
+ *
+ * This is available in the enclave only.
+ *
+ * @experimental
+ *
+ * @param[in] format_id Pointer to the evidence format ID requested.
+ * @param[out] attester_plugin Pointer to a buffer to hold the found plugin.
+ * The caller shall not modify or reclaim the returned plugin buffer.
+ * @retval OE_OK The function succeeded. The caller must release the reference
+ * with oe_release_attester_plugin().
+ * @retval OE_INVALID_PARAMETER At least one of the parameters is invalid.
+ * @retval OE_NOT_FOUND No plugin of the given format ID can be found.
+ */
+oe_result_t oe_acquire_attester_plugin(
+    const oe_uuid_t* format_id,
+    oe_attester_t** attester_plugin);
+
+/**
+ * oe_release_attester_plugin
+ *
+ * Releases a reference taken by oe_acquire_attester_plugin().
+ *
+ * This is available in the enclave only.
+ *
+ * @experimental
+ */
+void oe_release_attester_plugin(void);
+
 #endif // OE_BUILD_ENCLAVE
 
 /**
@@ -463,6 +501,44 @@ oe_result_t oe_unregister_verifier_plugin(oe_verifier_t* plugin);
 oe_result_t oe_find_verifier_plugin(
     const oe_uuid_t* format_id,
     oe_verifier_t** verifier_plugin);
+
+/**
+ * oe_acquire_verifier_plugin
+ *
+ * Find a verifier plugin of the specified format ID and take a reference on
+ * the attestation plugin registry.
+ *
+ * Unlike oe_find_verifier_plugin(), the returned plugin is guaranteed to stay
+ * valid until oe_release_verifier_plugin() is called: while a reference is
+ * held, oe_verifier_shutdown() cannot unregister and free the plugin. Callers
+ * that dispatch to the plugin must use this function.
+ *
+ * This is available in the enclave and host.
+ *
+ * @experimental
+ *
+ * @param[in] format_id Pointer to the evidence format ID requested.
+ * @param[out] verifier_plugin Pointer to a buffer to hold the found plugin.
+ * The caller shall not modify or reclaim the returned plugin buffer.
+ * @retval OE_OK The function succeeded. The caller must release the reference
+ * with oe_release_verifier_plugin().
+ * @retval OE_INVALID_PARAMETER At least one of the parameters is invalid.
+ * @retval OE_NOT_FOUND No plugin of the given format ID can be found.
+ */
+oe_result_t oe_acquire_verifier_plugin(
+    const oe_uuid_t* format_id,
+    oe_verifier_t** verifier_plugin);
+
+/**
+ * oe_release_verifier_plugin
+ *
+ * Releases a reference taken by oe_acquire_verifier_plugin().
+ *
+ * This is available in the enclave and host.
+ *
+ * @experimental
+ */
+void oe_release_verifier_plugin(void);
 
 OE_EXTERNC_END
 

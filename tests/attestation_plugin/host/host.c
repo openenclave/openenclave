@@ -19,6 +19,11 @@
 
 #define SKIP_RETURN_CODE 2
 
+void pause_report_dispatch()
+{
+    OE_TEST(false);
+}
+
 void host_verify(
     const oe_uuid_t* format_id,
     bool wrapped_with_header,
