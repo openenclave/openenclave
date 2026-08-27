@@ -26,5 +26,4 @@ Further information, including the MSRC PGP key, can be found at the
 [Security TechCenter](https://technet.microsoft.com/en-us/security/default).
 
 You can also submit a
-[private report on the vulnerability]
-(https://docs.github.com/en/code-security/how-tos/report-and-fix-vulnerabilities/report-privately). 
+[private report on the vulnerability](https://docs.github.com/en/code-security/how-tos/report-and-fix-vulnerabilities/report-privately). 
