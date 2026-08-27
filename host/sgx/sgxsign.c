@@ -206,28 +206,24 @@ static oe_result_t _get_q1_and_q2(
     {
         size_t n = (size_t)BN_num_bytes(q1);
 
-        if (n > sizeof(q1buf))
+        if (n > q1_out_size)
             OE_RAISE(OE_FAILURE);
 
-        if (n > q1_out_size)
-            n = q1_out_size;
-
-        BN_bn2bin(q1, q1buf);
-        _mem_reverse(q1_out, q1buf, n);
+        if (BN_bn2binpad(q1, q1buf, (int)q1_out_size) != (int)q1_out_size)
+            OE_RAISE(OE_FAILURE);
+        _mem_reverse(q1_out, q1buf, q1_out_size);
     }
 
     /* Copy Q2 to Q2OUT parameter */
     {
         size_t n = (size_t)BN_num_bytes(q2);
 
-        if (n > sizeof(q2buf))
+        if (n > q2_out_size)
             OE_RAISE(OE_FAILURE);
 
-        if (n > q2_out_size)
-            n = q2_out_size;
-
-        BN_bn2bin(q2, q2buf);
-        _mem_reverse(q2_out, q2buf, n);
+        if (BN_bn2binpad(q2, q2buf, (int)q2_out_size) != (int)q2_out_size)
+            OE_RAISE(OE_FAILURE);
+        _mem_reverse(q2_out, q2buf, q2_out_size);
     }
 
     result = OE_OK;

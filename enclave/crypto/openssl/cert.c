@@ -116,13 +116,14 @@ done:
 }
 
 /*
- * Decode the OID from its BER format (byte-encoding) into a dot-notation
+ * Decode the OID from its DER content encoding into a dot-notation
  * string.
  */
-static char* _decode_oid_to_str(char* oid, size_t oid_size)
+static char* _decode_oid_to_str(const char* oid, size_t oid_size)
 {
     unsigned char* der = NULL;
     unsigned char* p;
+    const unsigned char* q;
     const unsigned char* der_end;
     ASN1_OBJECT* obj = NULL;
     char* oid_str = NULL;
@@ -145,10 +146,10 @@ static char* _decode_oid_to_str(char* oid, size_t oid_size)
     ASN1_put_object(&p, 0, (int)oid_size, V_ASN1_OBJECT, V_ASN1_UNIVERSAL);
     memcpy(p, oid, oid_size);
 
-    p = der;
+    q = der;
     der_end = der + der_size;
-    obj = d2i_ASN1_OBJECT(NULL, (const unsigned char**)&p, der_size);
-    if (obj == NULL || p != der_end)
+    obj = d2i_ASN1_OBJECT(NULL, &q, der_size);
+    if (obj == NULL || q != der_end)
         goto done;
 
     oid_len = OBJ_obj2txt(oid_buf, OE_OID_MAX_LENGTH, obj, 1);
