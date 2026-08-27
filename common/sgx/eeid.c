@@ -14,6 +14,7 @@
 #include <openenclave/internal/eeid.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/rsa.h>
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/types.h>
 
