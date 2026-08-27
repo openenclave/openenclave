@@ -32,7 +32,7 @@ oe_result_t oe_verify_report(
 
         oe_verifier_initialize();
 
-        OE_CHECK(oe_find_verifier_plugin(uuid, &verifier));
+        OE_CHECK(oe_acquire_verifier_plugin(uuid, &verifier));
 
         OE_CHECK(verifier->verify_report(
             verifier, report, report_size, parsed_report));
@@ -52,6 +52,9 @@ oe_result_t oe_verify_report(
         OE_RAISE(OE_UNSUPPORTED);
 
 done:
+    if (verifier)
+        oe_release_verifier_plugin();
+
     if (result == OE_UNSUPPORTED)
         OE_TRACE_WARNING("oe_verify_local_report_ecall is not supported. To "
                          "enable, please add\n\n"

@@ -187,7 +187,7 @@ oe_result_t oe_get_report_v2(
 
     OE_CHECK(oe_attester_initialize());
 
-    OE_CHECK(oe_find_attester_plugin(format_id, &attester));
+    OE_CHECK(oe_acquire_attester_plugin(format_id, &attester));
 
     OE_CHECK(attester->get_report(
         attester,
@@ -202,6 +202,9 @@ oe_result_t oe_get_report_v2(
     result = OE_OK;
 
 done:
+    if (attester)
+        oe_release_attester_plugin();
+
     return result;
 }
 
@@ -258,7 +261,7 @@ oe_result_t oe_verify_report(
 
     OE_CHECK(oe_verifier_initialize());
 
-    OE_CHECK(oe_find_verifier_plugin(format_id, &verifier));
+    OE_CHECK(oe_acquire_verifier_plugin(format_id, &verifier));
 
     OE_CHECK(
         verifier->verify_report(verifier, report, report_size, parsed_report));
@@ -266,6 +269,9 @@ oe_result_t oe_verify_report(
     result = OE_OK;
 
 done:
+    if (verifier)
+        oe_release_verifier_plugin();
+
     return result;
 }
 

@@ -1137,6 +1137,7 @@ done:
 oe_result_t oe_verifier_shutdown(void)
 {
     oe_result_t result = OE_UNEXPECTED;
+    bool registry_locked = false;
 
     if (oe_mutex_lock(&init_mutex))
         OE_RAISE(OE_UNEXPECTED);
@@ -1149,6 +1150,21 @@ oe_result_t oe_verifier_shutdown(void)
         result = OE_OK;
         goto done;
     }
+
+    // Check once, up front, that no verifier call is in flight, and hold the
+    // registry lock for the rest of the teardown so that none can start.
+    // Unregistering plugins one at a time and bailing out on the first
+    // OE_BUSY would leave the registry half torn down: the plugins already
+    // unregistered would stay unregistered, while verifiers stays non-NULL
+    // and so oe_verifier_initialize() would not re-register them.
+    result = oe_attest_begin_shutdown(OE_ATTEST_ROLE_VERIFIER);
+    if (result != OE_OK)
+    {
+        OE_TRACE_ERROR(
+            "cannot shut down verifier plugins: %s", oe_result_str(result));
+        goto done;
+    }
+    registry_locked = true;
 
     OE_TRACE_INFO("free verifiers_length=%d plugins", verifiers_length);
 
@@ -1168,6 +1184,9 @@ oe_result_t oe_verifier_shutdown(void)
     result = OE_OK;
 
 done:
+    if (registry_locked)
+        oe_attest_end_shutdown();
+
     oe_mutex_unlock(&init_mutex);
     return result;
 }
