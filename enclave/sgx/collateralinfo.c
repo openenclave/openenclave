@@ -420,6 +420,42 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
 
     OE_CHECK((oe_result_t)retval);
 
+    /*
+     * The host reports the number of bytes written into each collateral
+     * buffer through an output parameter that is separate from the buffer
+     * capacity supplied by the enclave. A malicious host can return OE_OK
+     * while claiming a size larger than that capacity. Because the buffers
+     * are only reallocated on the OE_BUFFER_TOO_SMALL path, such a size
+     * would be accepted while the underlying buffer stays small, and would
+     * later be used as a copy length when the endorsements are assembled,
+     * reading out of bounds from the enclave heap.
+     *
+     * `in` holds the capacity of every buffer currently referenced by `out`,
+     * so reject any reported size that exceeds it.
+     */
+#define OE_CHECK_COLLATERAL_SIZE(FIELD)                           \
+    do                                                            \
+    {                                                             \
+        if (out.FIELD > in.FIELD)                                 \
+        {                                                         \
+            OE_TRACE_ERROR(                                       \
+                "host reported oversized " #FIELD " (%lu > %lu)", \
+                (unsigned long)out.FIELD,                         \
+                (unsigned long)in.FIELD);                         \
+            OE_RAISE(OE_UNEXPECTED);                              \
+        }                                                         \
+    } while (0)
+
+    OE_CHECK_COLLATERAL_SIZE(tcb_info_size);
+    OE_CHECK_COLLATERAL_SIZE(tcb_info_issuer_chain_size);
+    OE_CHECK_COLLATERAL_SIZE(pck_crl_size);
+    OE_CHECK_COLLATERAL_SIZE(root_ca_crl_size);
+    OE_CHECK_COLLATERAL_SIZE(pck_crl_issuer_chain_size);
+    OE_CHECK_COLLATERAL_SIZE(qe_identity_size);
+    OE_CHECK_COLLATERAL_SIZE(qe_identity_issuer_chain_size);
+
+#undef OE_CHECK_COLLATERAL_SIZE
+
     oe_update_default_collateral_arg_sizes(&out, &default_arg_size);
     *args = out;
     memset(&out, 0, sizeof(out));
