@@ -22,6 +22,11 @@ endif ()
 # assemble into proper collector dir
 set_property(TARGET oeverify PROPERTY RUNTIME_OUTPUT_DIRECTORY ${OE_BINDIR})
 
+if (WIN32 AND MSVC)
+  target_compile_options(oeverify PRIVATE /guard:cf)
+  set_target_properties(oeverify PROPERTIES LINK_FLAGS "/Guard:CF")
+endif ()
+
 # install rule
 install(
   TARGETS oeverify
