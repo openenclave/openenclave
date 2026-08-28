@@ -155,10 +155,6 @@ find_package(Threads REQUIRED)
 
 if (UNIX)
   target_link_libraries(oehostmr PRIVATE openenclave::crypto Threads::Threads)
-  if (OE_TRUSTZONE)
-    target_include_directories(oehostmr PRIVATE ${OE_TZ_OPTEE_CLIENT_INC})
-    target_link_libraries(oehostmr PRIVATE teec)
-  endif ()
 elseif (WIN32)
   target_include_directories(
     oehostmr PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
