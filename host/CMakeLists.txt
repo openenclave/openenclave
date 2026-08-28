@@ -568,11 +568,6 @@ macro (add_library_oehost_wrapper)
       PUBLIC $<$<NOT:$<CONFIG:debug>>:_FORTIFY_SOURCE=2>)
     target_link_libraries(${PARA_LIB_NAME} INTERFACE -Wl,-z,noexecstack)
 
-    if (OE_TRUSTZONE)
-      target_include_directories(${PARA_LIB_NAME}
-                                 PRIVATE ${OE_TZ_OPTEE_CLIENT_INC})
-      target_link_libraries(${PARA_LIB_NAME} PRIVATE teec)
-    endif ()
   elseif (WIN32)
     target_link_libraries(${PARA_LIB_NAME} PUBLIC ws2_32 shlwapi)
     target_include_directories(

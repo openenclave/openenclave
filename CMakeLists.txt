@@ -190,11 +190,15 @@ if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
   # TODO: Right now assume it's Intel+SGX for x86_64 processors
   set(OE_SGX 1)
 elseif (CMAKE_SYSTEM_PROCESSOR MATCHES "arm.*|ARM.*|aarch64.*|AARCH64.*")
-  set(OE_TRUSTZONE 1)
+  message(FATAL_ERROR "ARM TrustZone and OP-TEE builds are no longer supported")
 else ()
   message(
     FATAL_ERROR
-      "Unknown processor. Only Intel SGX and ARM TrustZone are supported")
+      "Unknown processor. Only Intel SGX is supported")
+endif ()
+
+if (OE_TRUSTZONE)
+  message(FATAL_ERROR "OP-TEE and ARM TrustZone builds are no longer supported")
 endif ()
 
 if (OE_SGX)
@@ -399,10 +403,6 @@ option(
   WITH_EEID
   "[EXPERIMENTAL] Include support for Extended Enclave Initialization Data."
   OFF)
-
-if (WITH_EEID AND OE_TRUSTZONE)
-  message(FATAL_ERROR "WITH_EEID is not supported on ARM yet.")
-endif ()
 
 # Option to build and expose the libgcov such that enclave applications can use.
 # Note that this option is only effective when CODE_COVERAGE is not set.

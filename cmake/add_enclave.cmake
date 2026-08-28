@@ -39,8 +39,8 @@
 # NOTE: This must be a macro! To generate TA binaries, a custom linker
 #       command is necessary. The only way to control the linker command
 #       is for it to appear at the bottom of the CMakeLists.txt file that
-#       calls for the generation of the TA. Making add_enclave and/or
-#       add_enclave_optee into a function breaks their functionality.
+#       calls for the generation of the TA. Making add_enclave into a function
+#       breaks its functionality.
 #
 # TODO: (1) Replace the name guessing logic.
 # TODO: (2) Setup the dependency using `${BIN}_signed` instead of the
@@ -81,20 +81,6 @@ macro (add_enclave)
       ${ENCLAVE_CRYPTO_LIB}
       ADD_LVI_MITIGATION
       ${ENCLAVE_ADD_LVI_MITIGATION}
-      SOURCES
-      ${ENCLAVE_SOURCES})
-  elseif (OE_TRUSTZONE)
-    add_enclave_optee(
-      CXX
-      ${ENCLAVE_CXX}
-      TARGET
-      ${ENCLAVE_TARGET}
-      UUID
-      ${ENCLAVE_UUID}
-      KEY
-      ${ENCLAVE_KEY}
-      CRYPTO_LIB
-      ${ENCLAVE_CRYPTO_LIB}
       SOURCES
       ${ENCLAVE_SOURCES})
   endif ()

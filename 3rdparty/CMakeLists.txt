@@ -27,7 +27,7 @@ if (BUILD_OPENSSL)
   add_subdirectory(symcrypt_provider)
 endif ()
 
-if (OE_TRUSTZONE)
+if (FALSE)
   # EL: (ARM) Exception Level
   # GP: GlobalPlatform
   #
