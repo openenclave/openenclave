@@ -186,7 +186,7 @@ pipeline {
                             )
                             oeazl3.inside("--cap-add=SYS_PTRACE") {
                                 sh """
-                                    grep --quiet '^ID=azurelinux$' /etc/os-release
+                                    grep --quiet '^ID=azurelinux\$' /etc/os-release
                                     clang --version
                                     cmake --version
                                     test -f "\$(clang -print-resource-dir)/include/emmintrin.h"
