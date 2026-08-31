@@ -28,7 +28,7 @@ Use an agent with Docker and managed-identity access to the target ACR. SGX devi
 
 ## Use with the MHSM build container
 
-The preview image validates the Open Enclave SDK and Intel SGX/DCAP layer. It does not replace the MHSM build container, which also provides private dependencies and product-specific tools.
+The preview image validates the Open Enclave SDK and Intel SGX/DCAP layer. It also includes the standard build tools, .NET 8 SDK, pinned OCaml 4.14.2 toolchain, and Azure Linux kernel development headers required by MHSM's local build.
 
 Copy the archived `openenclave` directory into the Azure Linux 3 MHSM build-container context at `/opt/openenclave`. The resulting container satisfies the path used by the MHSM root `CMakeLists.txt`:
 
@@ -37,6 +37,16 @@ set(OpenEnclave_DIR /opt/openenclave/lib/openenclave/cmake/ CACHE PATH "Location
 ```
 
 The preview image build runs a CMake smoke project that requires the OE targets used by MHSM: `oehost`, `oeenclave`, `oelibc`, `oelibcxx`, `oecryptoopenssl_3`, `oeedger8r`, and `oesign`.
+
+The following MHSM `develop` build paths were validated in the preview image with the repository's central NuGet feed authenticated:
+
+- the complete `external/build_clean.sh` dependency build, including four Marvell kernel modules built for Azure Linux kernel `6.6.150.1-1.azl3`;
+- OCaml generation and compilation of `stubger8r`;
+- the native `cfm_native` dependency graph;
+- the root Debug build, including HSM bootstrap and HSM Node Agent outputs;
+- all tests registered by the Azure Linux 3 build: `test_hsm_bootstrap.UnitTests` and `HsmNodeAgent.UnitTests`.
+
+The external build requires the accompanying MHSM compatibility change that replaces the deprecated `AC_OUTPUT(files)` form in the Marvell 2.09 Autoconf input with `AC_CONFIG_FILES(files)` followed by `AC_OUTPUT`.
 
 After adding the SDK layer to the existing MHSM build container, use the repository's normal local build flow:
 
@@ -49,7 +59,7 @@ cmake --build build --parallel "$(nproc)"
 ctest --test-dir build --output-on-failure
 ```
 
-The MHSM repository currently disables enclave targets on Azure Linux 3. Remove that temporary gate in the corresponding MHSM change only after the commands above pass in its full build container.
+The image can compile Marvell modules from WSL against its pinned Azure Linux kernel headers, but loading modules and running SGX workloads still require a native Azure Linux host. The MHSM repository currently disables enclave targets on Azure Linux 3. Remove that temporary gate in the corresponding MHSM change only after hardware validation passes on an SGX-capable host.
 
 ## Build a derived workload image
 

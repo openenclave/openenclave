@@ -2,10 +2,36 @@
 # Licensed under the MIT License.
 
 ARG AZURELINUX_BASE_IMAGE=mcr.microsoft.com/azurelinux/base/core@sha256:4d0522bb656cfe2bc567c254bb87c2b086a002db6cba51f71870eb5c6630195c
+FROM ${AZURELINUX_BASE_IMAGE} AS ocaml-build
+
+ARG OCAML_VERSION=4.14.2
+ARG OCAML_SHA256=c2d706432f93ba85bd3383fa451d74543c32a4e84a1afaf3e8ace18f7f097b43
+
+RUN tdnf install -y \
+        binutils \
+        ca-certificates \
+        curl \
+        gcc \
+        gawk \
+        glibc-devel \
+        kernel-headers \
+        make \
+        tar \
+    && update-ca-trust \
+    && curl -fsSL "https://github.com/ocaml/ocaml/archive/refs/tags/${OCAML_VERSION}.tar.gz" -o /tmp/ocaml.tar.gz \
+    && echo "${OCAML_SHA256}  /tmp/ocaml.tar.gz" | sha256sum -c - \
+    && mkdir /tmp/ocaml \
+    && tar -xzf /tmp/ocaml.tar.gz -C /tmp/ocaml --strip-components=1 \
+    && cd /tmp/ocaml \
+    && ./configure --prefix=/opt/ocaml \
+    && make -j"$(nproc)" world.opt \
+    && make install
+
 FROM ${AZURELINUX_BASE_IMAGE}
 
 ARG OE_IMAGE_VERSION=local
 ARG OE_INSTALL_DIR=build/mhsm-preview/staging/opt/openenclave
+ARG TARGET_KERNEL_VERSION=6.6.150.1-1.azl3
 ARG INTEL_SGX_REPO_URL=https://download.01.org/intel-sgx/sgx-dcap/1.27.1/linux/distro/AzureLinux3.0/sgx_rpm_local_repo.tgz
 ARG INTEL_SGX_REPO_SHA256=69fd89120046d228d569f8d3f63474400c2a3eb086db45a95885c30436306ea1
 
@@ -16,22 +42,31 @@ LABEL com.microsoft.openenclave.openssl.version="3.5.7"
 LABEL com.microsoft.openenclave.support="integration-preview"
 
 RUN tdnf install -y \
-    binutils \
+        autoconf \
+        automake \
+        binutils \
         ca-certificates \
         clang \
         cmake \
         createrepo_c \
         curl \
+        dotnet-sdk-8.0 \
+        file \
         gcc \
         gcc-c++ \
+        gawk \
         git \
         glibc-devel \
         gzip \
         kernel-headers \
+        kernel-devel-${TARGET_KERNEL_VERSION} \
+        json-c-devel \
         libstdc++-devel \
+        libtool \
         make \
         ninja-build \
         openssl-devel \
+        patchelf \
         pkg-config \
         python3 \
         tar \
@@ -50,22 +85,27 @@ RUN tdnf install -y \
         libsgx-dcap-default-qpl \
         libsgx-quote-ex \
     && ln -sf /usr/lib64/libdcap_quoteprov.so.1 /usr/lib64/libdcap_quoteprov.so \
-    && rm -rf /tmp/sgx_rpm_local_repo.tgz /opt/intel/sgx_rpm_local_repo \
-    && tdnf remove -y createrepo_c curl \
+    && rm -rf /tmp/sgx_rpm_local_repo.tgz /opt/intel/sgx_rpm_local_repo /etc/yum.repos.d/intel-sgx-local.repo \
+    && tdnf remove -y createrepo_c \
     && tdnf clean all
 
 COPY ${OE_INSTALL_DIR}/ /opt/openenclave/
+COPY --from=ocaml-build /opt/ocaml/ /opt/ocaml/
 COPY .jenkins/infrastructure/docker/dockerfiles/linux/azurelinux3/mhsm-smoke/ /tmp/mhsm-smoke/
 
 RUN cmake \
         -S /tmp/mhsm-smoke \
         -B /tmp/mhsm-smoke-build \
         -DOpenEnclave_DIR=/opt/openenclave/lib/openenclave/cmake \
+    && test -x /opt/ocaml/bin/ocamllex \
+    && test -x /opt/ocaml/bin/ocamlyacc \
+    && test -x /opt/ocaml/bin/ocamlopt \
     && rm -rf /tmp/mhsm-smoke /tmp/mhsm-smoke-build
 
-ENV PATH=/opt/openenclave/bin:${PATH}
+ENV PATH=/opt/openenclave/bin:/opt/ocaml/bin:${PATH}
 ENV LD_LIBRARY_PATH=/opt/openenclave/lib64:/opt/openenclave/lib64/openenclave:/opt/openenclave/lib:/opt/openenclave/lib/openenclave:/usr/lib64
 ENV SGX_AESM_ADDR=1
+ENV TARGET_KERNEL_VERSION=${TARGET_KERNEL_VERSION}
 
 RUN printf '%s\n' \
     '#!/usr/bin/env bash' \
