@@ -26,7 +26,32 @@ Before merge, create a temporary Pipeline job or use Jenkins Replay so the job l
 
 Use an agent with Docker and managed-identity access to the target ACR. SGX devices are optional for building the image; the pipeline runs the hardware smoke test only when both SGX devices are present.
 
-## Consume the image
+## Use with the MHSM build container
+
+The preview image validates the Open Enclave SDK and Intel SGX/DCAP layer. It does not replace the MHSM build container, which also provides private dependencies and product-specific tools.
+
+Copy the archived `openenclave` directory into the Azure Linux 3 MHSM build-container context at `/opt/openenclave`. The resulting container satisfies the path used by the MHSM root `CMakeLists.txt`:
+
+```cmake
+set(OpenEnclave_DIR /opt/openenclave/lib/openenclave/cmake/ CACHE PATH "Location of OE CMake config")
+```
+
+The preview image build runs a CMake smoke project that requires the OE targets used by MHSM: `oehost`, `oeenclave`, `oelibc`, `oelibcxx`, `oecryptoopenssl_3`, `oeedger8r`, and `oesign`.
+
+After adding the SDK layer to the existing MHSM build container, use the repository's normal local build flow:
+
+```bash
+cd external
+./build_clean.sh
+cd ..
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+cmake --build build --parallel "$(nproc)"
+ctest --test-dir build --output-on-failure
+```
+
+The MHSM repository currently disables enclave targets on Azure Linux 3. Remove that temporary gate in the corresponding MHSM change only after the commands above pass in its full build container.
+
+## Build a derived workload image
 
 ```dockerfile
 ARG OE_MHSM_IMAGE=openenclave.azurecr.io/openenclave-mhsm-azl3-openssl35:<version>
