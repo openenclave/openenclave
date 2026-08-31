@@ -46,6 +46,8 @@ The following MHSM `develop` build paths were validated in the preview image wit
 - the root Debug build, including HSM bootstrap and HSM Node Agent outputs;
 - all tests registered by the Azure Linux 3 build: `test_hsm_bootstrap.UnitTests` and `HsmNodeAgent.UnitTests`.
 
+The image was also validated on a native Azure Linux 3 `Standard_DC2s_v3` host. With `/dev/sgx_enclave` and `/dev/sgx_provision` mounted, `oesgx` detected SGX2, Flexible Launch Control, Key Sharing and Separation, and 8 GiB of EPC.
+
 The external build requires the accompanying MHSM compatibility change that replaces the deprecated `AC_OUTPUT(files)` form in the Marvell 2.09 Autoconf input with `AC_CONFIG_FILES(files)` followed by `AC_OUTPUT`.
 
 After adding the SDK layer to the existing MHSM build container, use the repository's normal local build flow:
