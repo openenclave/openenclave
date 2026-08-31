@@ -16,14 +16,18 @@ LABEL com.microsoft.openenclave.openssl.version="3.5.7"
 LABEL com.microsoft.openenclave.support="integration-preview"
 
 RUN tdnf install -y \
+    binutils \
         ca-certificates \
         clang \
         cmake \
         createrepo_c \
         curl \
+        gcc \
+        gcc-c++ \
         git \
         glibc-devel \
         gzip \
+        kernel-headers \
         libstdc++-devel \
         make \
         ninja-build \
@@ -51,6 +55,13 @@ RUN tdnf install -y \
     && tdnf clean all
 
 COPY ${OE_INSTALL_DIR}/ /opt/openenclave/
+COPY .jenkins/infrastructure/docker/dockerfiles/linux/azurelinux3/mhsm-smoke/ /tmp/mhsm-smoke/
+
+RUN cmake \
+        -S /tmp/mhsm-smoke \
+        -B /tmp/mhsm-smoke-build \
+        -DOpenEnclave_DIR=/opt/openenclave/lib/openenclave/cmake \
+    && rm -rf /tmp/mhsm-smoke /tmp/mhsm-smoke-build
 
 ENV PATH=/opt/openenclave/bin:${PATH}
 ENV LD_LIBRARY_PATH=/opt/openenclave/lib64:/opt/openenclave/lib64/openenclave:/opt/openenclave/lib:/opt/openenclave/lib/openenclave:/usr/lib64
