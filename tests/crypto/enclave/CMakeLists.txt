@@ -7,13 +7,6 @@ endif ()
 
 add_subdirectory(host)
 
-# Disable because this test would fail with code coverage
-# Output: ***Exception: SegFault
-if (NOT CODE_COVERAGE)
-  add_enclave_test(tests/crypto/enclave_mbedtls cryptohost crypto_mbedtls_enc
-                   ${CMAKE_CURRENT_BINARY_DIR})
-endif ()
-
 set(TEST_DIR ${CMAKE_CURRENT_BINARY_DIR})
 
 if (WIN32)

@@ -5,9 +5,7 @@ set(EDL_FILE ../oesign_test.edl)
 
 string(TOLOWER "${DEFAULT_TEST_ENCLAVE_CRYPTO_LIB}"
                DEFAULT_TEST_ENCLAVE_CRYPTO_LIB_LOW)
-if (DEFAULT_TEST_ENCLAVE_CRYPTO_LIB_LOW STREQUAL "mbedtls")
-  set(oecrypto_lib oecryptombedtls)
-elseif (DEFAULT_TEST_ENCLAVE_CRYPTO_LIB_LOW STREQUAL "openssl")
+if (DEFAULT_TEST_ENCLAVE_CRYPTO_LIB_LOW STREQUAL "openssl")
   set(oecrypto_lib oecryptoopenssl)
 else ()
   message(

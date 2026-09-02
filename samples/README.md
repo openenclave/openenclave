@@ -32,8 +32,7 @@ The following samples demonstrate how to develop enclave applications using OE A
 #### [File-Encryptor](file-encryptor/README.md)
 
 - Show how to encrypt and decrypt data inside an enclave
-- Use AES Mbed TLS API to perform encryption and decryption
-  - *Note:* this sample does not support OpenSSL yet.
+- Use the OpenSSL AES API to perform encryption and decryption
 
 #### [Data-Sealing](data-sealing/README.md)
 
@@ -42,15 +41,12 @@ The following samples demonstrate how to develop enclave applications using OE A
 - Explore two supported seal polices
   - OE_SEAL_POLICY_UNIQUE
   - OE_SEAL_POLICY_PRODUCT
-- Use AES and MD Mbed TLS APIs to perform sealing and unsealing
-  - *Note:* this sample does not support OpenSSL yet.
 
 #### [Attestation](attestation/README.md)
 
 - Explain how OE attestation works
 - Demonstrate an implementation of attestation between two enclaves
-- Use SHA and PCKS1 Mbed TLS APIs to perform hashing and encryption
-  - *Note:* this sample does not support OpenSSL yet.
+- Use OpenSSL APIs to perform hashing and encryption
 
 #### [Attested TLS](attested_tls/README.md)
 
@@ -58,7 +54,7 @@ The following samples demonstrate how to develop enclave applications using OE A
 - Demonstrate an implementation for how to establish an Attested TLS channel
   - between two enclaves
   - between one non-enclave client and an enclave
-- Demonstrate how to build the sample with either Mbed TLS or OpenSSL libraries
+- Demonstrate how to build the sample with OpenSSL
 - Demonstrate how to build the sample with FIPS-enabled OpenSSL based on [SymCrypt](https://github.com/microsoft/SymCrypt) and [SymCrypt OpenSSL engine](https://github.com/microsoft/SymCrypt-OpenSSL)
 
 #### [Switchless Calls](switchless/README.md)

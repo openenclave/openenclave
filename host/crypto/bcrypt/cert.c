@@ -162,7 +162,7 @@ static PCCERT_CONTEXT _find_root_cert(PCCERT_CHAIN_CONTEXT cert_chain)
             PCERT_NAME_BLOB issuer = &root_cert->pCertInfo->Issuer;
 
             /* This assumes that the issuer & subject fields in the same cert
-             * share a canonical encoding, like the mbedTLS impl does */
+             * share a canonical encoding. */
             if (!subject || !issuer || subject->cbData != issuer->cbData ||
                 memcmp(subject->pbData, issuer->pbData, subject->cbData) != 0)
                 return NULL;

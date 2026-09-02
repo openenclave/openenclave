@@ -11,7 +11,7 @@ add_enclave(
   TARGET
   oecertdump_enc
   CRYPTO_LIB
-  mbedtls
+  openssl
   SOURCES
   enc.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/oecertdump_t.c)

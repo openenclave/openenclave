@@ -15,6 +15,7 @@ if (BUILD_ENCLAVES)
         GROUP_READ
         WORLD_EXECUTE
         WORLD_READ)
+
   install(
     DIRECTORY attested_tls
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples

@@ -3,7 +3,7 @@
 
 .PHONY: all build clean run simulate
 
-OE_CRYPTO_LIB := mbedtls
+OE_CRYPTO_LIB := openssl
 export OE_CRYPTO_LIB
 
 all: build

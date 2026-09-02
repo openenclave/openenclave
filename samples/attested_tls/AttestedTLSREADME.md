@@ -4,7 +4,7 @@
 
   We do have the attestation sample that shows how to conduct remote attestation between two enclaves and establish a `proprietary` channel based on asymmetric keys exchanged during the attestation process. It demonstrates how to conduct mutual attestation but it does not go all the way to show how to establish a fully secure channel.
 
-  Most of the real world software uses TLS-like standard protocol through popular TLS APIs (OpenSSL, WolfSSL, Mbedtls...) for establishing secure channels. Thus, instead of inventing a new communication protocol, we implemented `Attested TLS` feature to address above customer need by adding a set of new OE SDK APIs to help seamlessly integrate remote attestation into the popular TLS protocol for establishing an TLS channel with attested connecting party without modifying existing TLS APIs (such as OpenSSL, Mbedtls, and others).
+  Most real-world software uses standard TLS APIs for establishing secure channels. Thus, instead of inventing a new communication protocol, we implemented the `Attested TLS` feature to establish a TLS channel with an attested connecting party without modifying the OpenSSL TLS API.
 
 # What is an Attested TLS channel
 
@@ -24,8 +24,8 @@ There are two types of Attested TLS connections:
 
   - [Transport Layer Security (TLS)](https://en.wikipedia.org/wiki/Transport_Layer_Security) a cryptographic protocol designed to provide communications security over a computer network.
 
-  - [Open Enclave Attestation](https://github.com/openenclave/openenclave/tree/master/samples/attestation#what-is-attestation): Attestation is the concept of a HW entity or of a
-combination of HW and SW gaining the trust of a remote provider or producer.
+  - Open Enclave attestation: the process by which a hardware and software
+    entity gains the trust of a remote provider or producer.
 
 ### How it works
 
@@ -90,12 +90,6 @@ In this feature, instead of using the TLS API's default authentication routine, 
 
 ```
 For example:
-
-    Mbedtls:
-            void mbedtls_ssl_conf_verify(
-                      mbedtls_ssl_config *conf,
-                      int(*f_vrfy)(void *, mbedtls_x509_crt *, int, uint32_t *)
-                      void *p_vrfy)
 
     OpenSSL:
             void SSL_CTX_set_verify(

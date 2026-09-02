@@ -11,7 +11,7 @@ OE_INLINE const uint8_t* oe_asn1_end(const oe_asn1_t* asn1)
     return asn1->data + asn1->length;
 }
 
-/* Cast away constness for MBEDTLS ASN.1 functions */
+/* Cast away constness for ASN.1 parser functions. */
 OE_INLINE uint8_t** oe_asn1_pptr(const oe_asn1_t* asn1)
 {
     return (uint8_t**)&asn1->ptr;

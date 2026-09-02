@@ -5,7 +5,7 @@ include ../config.mk
 
 .PHONY: all build clean run
 
-OE_CRYPTO_LIB?= mbedtls
+OE_CRYPTO_LIB?= openssl
 
 # This selects seal plug-ins to be linked into an enclave
 OE_SEAL_PLUGINS?= gcmaes

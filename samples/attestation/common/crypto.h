@@ -6,9 +6,6 @@
 
 #include <openenclave/enclave.h>
 #include <openssl/evp.h>
-// Includes for mbedtls shipped with oe.
-// Also add the following libraries to your linker command line:
-// -loeenclave -lmbedcrypto -lmbedtls -lmbedx509
 #include "log.h"
 
 #define PUBLIC_KEY_SIZE 512
@@ -66,14 +63,14 @@ class Crypto
 
   private:
     /**
-     * Crypto demonstrates use of mbedtls within the enclave to generate keys
+     * Crypto demonstrates use of OpenSSL within the enclave to generate keys
      * and perform encryption. In this sample, each enclave instance generates
      * an ephemeral 2048-bit RSA key pair and shares the public key with the
      * other instance. The other enclave instance then replies with data
      * encrypted to the provided public key.
      */
 
-    /** init_mbedtls initializes the crypto module.
+    /** init_openssl3 initializes the crypto module.
      */
     bool init_openssl3(void);
     void cleanup_openssl3(void);

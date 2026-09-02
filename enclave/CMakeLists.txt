@@ -99,13 +99,6 @@ macro (add_library_oeenclave_wrapper)
   if (WITH_EEID)
     enclave_compile_definitions(${PARA_LIB_NAME} PRIVATE
                                 OE_WITH_EXPERIMENTAL_EEID)
-    # oeenclave currently does not link against the oecrypto* library by default.
-    # Consequently, it does not inherit the include paths of the crypto (e.g., mbedtls)
-    # headers, which are needed by eeid.c. Therefore, we add the paths here.
-    enclave_include_directories(
-      ${PARA_LIB_NAME} PRIVATE
-      $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include>
-      $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/3rdparty/mbedtls>)
   endif ()
 
   enclave_enable_fuzzing(${PARA_LIB_NAME})

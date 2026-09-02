@@ -18,7 +18,7 @@ endif ()
 
 project("Attested TLS sample" LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 11)
-# set OE_CRYPTO_LIB to either "mbedtls" or "openssl" based on the crypto wrapper to be used.
+# Select the OpenSSL crypto wrapper to use.
 # OE_CRYPTO_LIB is case sensitive. Use all lowercase letters.
 set(OE_CRYPTO_LIB
     openssl_3
