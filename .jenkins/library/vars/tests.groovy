@@ -906,7 +906,7 @@ def azureLinux3SimulationTest(String pr_id = '') {
             timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 helpers.oeCheckoutScm(pr_id)
-                def runArgs = "--cap-add=SYS_PTRACE"
+                def runArgs = "--cap-add=SYS_PTRACE --user root:root"
                 def cmakeArgs = helpers.CmakeArgs(
                                  builder: 'Ninja',
                                  build_type: 'RelWithDebInfo',
@@ -920,7 +920,7 @@ def azureLinux3SimulationTest(String pr_id = '') {
                            ${helpers.TestCommand('^tests/crypto/')}
                            """
                 withEnv(["OE_SIMULATION=1"]) {
-                    common.ContainerRun("oetools-azl3:${DOCKER_TAG}", 'clang', task, runArgs)
+                    common.ContainerRun("oetools-azl3:${DOCKER_TAG}", 'clang-18', task, runArgs)
                 }
             }
         }

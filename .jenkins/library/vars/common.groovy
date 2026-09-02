@@ -40,9 +40,9 @@ def ContainerRun(String imageName, String compiler, String task, String runArgs=
 def runTask(String task) {
     dir("${WORKSPACE}/build") {
         sh """#!/usr/bin/env bash
+                source /etc/profile
                 set -o errexit
                 set -o pipefail
-                source /etc/profile
                 echo \$(whoami)
                 ${task}
             """
