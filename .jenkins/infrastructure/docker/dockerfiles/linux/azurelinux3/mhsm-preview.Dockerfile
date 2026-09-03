@@ -30,7 +30,7 @@ RUN tdnf install -y \
 FROM ${AZURELINUX_BASE_IMAGE}
 
 ARG OE_IMAGE_VERSION=local
-ARG OE_INSTALL_DIR=build/mhsm-preview/staging/opt/openenclave
+ARG OE_RPM=build/mhsm-preview/open-enclave-azl3.rpm
 ARG TARGET_KERNEL_VERSION=6.6.150.1-1.azl3
 ARG INTEL_SGX_REPO_URL=https://download.01.org/intel-sgx/sgx-dcap/1.27.1/linux/distro/AzureLinux3.0/sgx_rpm_local_repo.tgz
 ARG INTEL_SGX_REPO_SHA256=69fd89120046d228d569f8d3f63474400c2a3eb086db45a95885c30436306ea1
@@ -89,14 +89,16 @@ RUN tdnf install -y \
     && tdnf remove -y createrepo_c \
     && tdnf clean all
 
-COPY ${OE_INSTALL_DIR}/ /opt/openenclave/
+COPY ${OE_RPM} /tmp/open-enclave.rpm
 COPY --from=ocaml-build /opt/ocaml/ /opt/ocaml/
 COPY .jenkins/infrastructure/docker/dockerfiles/linux/azurelinux3/mhsm-smoke/ /tmp/mhsm-smoke/
 
-RUN cmake \
+RUN rpm -Uvh /tmp/open-enclave.rpm \
+    && rm /tmp/open-enclave.rpm \
+    && cmake \
         -S /tmp/mhsm-smoke \
         -B /tmp/mhsm-smoke-build \
-        -DOpenEnclave_DIR=/opt/openenclave/lib/openenclave/cmake \
+        -DOpenEnclave_DIR=/opt/openenclave/lib64/openenclave/cmake \
     && test -x /opt/ocaml/bin/ocamllex \
     && test -x /opt/ocaml/bin/ocamlyacc \
     && test -x /opt/ocaml/bin/ocamlopt \

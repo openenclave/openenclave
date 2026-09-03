@@ -218,6 +218,18 @@ pipeline {
                                         cmake --build ${WORKSPACE}/build/mhsm-preview/oe --parallel
                                         DESTDIR=${WORKSPACE}/build/mhsm-preview/staging \
                                             cmake --install ${WORKSPACE}/build/mhsm-preview/oe
+                                        cpack --config ${WORKSPACE}/build/mhsm-preview/oe/CPackConfig.cmake \
+                                            -G RPM \
+                                            -B ${WORKSPACE}/build/mhsm-preview
+                                        rpm_path=\$(find ${WORKSPACE}/build/mhsm-preview -maxdepth 1 \
+                                            -name 'open-enclave-*.rpm' -print -quit)
+                                        test -n "\${rpm_path}"
+                                        rpm -qlp "\${rpm_path}" | grep --quiet \
+                                            '/opt/openenclave/lib64/openenclave/cmake/openenclave-config.cmake'
+                                        rpm -qlp "\${rpm_path}" | grep --quiet \
+                                            '/opt/openenclave/bin/oesign'
+                                        cp "\${rpm_path}" \
+                                            ${WORKSPACE}/build/mhsm-preview/open-enclave-azl3.rpm
                                         tar -C ${WORKSPACE}/build/mhsm-preview/staging/opt \
                                             -czf ${WORKSPACE}/build/mhsm-preview/openenclave-azl3-openssl35-${TAG_FULL_IMAGE}.tar.gz \
                                             openenclave
@@ -226,7 +238,7 @@ pipeline {
 
                                 def mhsmBuildArgs = common.dockerBuildArgs(
                                     "OE_IMAGE_VERSION=${TAG_FULL_IMAGE}",
-                                    "OE_INSTALL_DIR=build/mhsm-preview/staging/opt/openenclave"
+                                    "OE_RPM=build/mhsm-preview/open-enclave-azl3.rpm"
                                 )
                                 def mhsmImage = common.dockerImage(
                                     "openenclave-mhsm-azl3-openssl35:${TAG_FULL_IMAGE}",
@@ -268,7 +280,7 @@ pipeline {
                                     }
                                 }
                                 archiveArtifacts(
-                                    artifacts: "build/mhsm-preview/openenclave-azl3-openssl35-${TAG_FULL_IMAGE}.tar.gz",
+                                    artifacts: "build/mhsm-preview/open-enclave-azl3.rpm,build/mhsm-preview/openenclave-azl3-openssl35-${TAG_FULL_IMAGE}.tar.gz",
                                     fingerprint: true
                                 )
                             }

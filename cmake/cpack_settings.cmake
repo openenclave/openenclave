@@ -29,6 +29,15 @@ set(CPACK_DEBIAN_OEHOSTVERIFY_FILE_NAME DEB-DEFAULT)
 set(CPACK_COMPONENT_OEHOSTVERIFY_DESCRIPTION
     "Open Enclave Report Verification Host Library")
 
+# CPack variables for RPM packages.
+set(CPACK_RPM_PACKAGE_REQUIRES
+    "libsgx-enclave-common >= 2.3.100.46354, libsgx-dcap-ql >= 1.0.100.46460"
+)
+set(CPACK_RPM_PACKAGE_LICENSE "MIT")
+set(CPACK_RPM_PACKAGE_RELEASE "1.azl3")
+set(CPACK_RPM_PACKAGE_VENDOR "Open Enclave SDK contributors")
+set(CPACK_RPM_FILE_NAME RPM-DEFAULT)
+
 # CPack variables for Nuget packages
 set(CPACK_NUGET_PACKAGE_NAME "open-enclave")
 set(CPACK_NUGET_PACKAGE_AUTHORS "Open Enclave SDK Contributors")
