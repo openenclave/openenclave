@@ -107,6 +107,13 @@ if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
                       -Wno-missing-field-initializers)
   add_compile_options(-fno-strict-aliasing)
 
+  # Clang 13 and newer diagnose unused-but-set variables in vendored code and
+  # legacy tests that build without warnings on the supported Clang 10/11.
+  if (CMAKE_C_COMPILER_ID MATCHES Clang AND CMAKE_C_COMPILER_VERSION
+                                            VERSION_GREATER_EQUAL 13)
+    add_compile_options(-Wno-unused-but-set-variable)
+  endif ()
+
   # Allow checks which always evaluate to true or false due to type limits.
   # This is required as some macros operate on types of varying sizes.
   add_compile_options(-Wno-type-limits)

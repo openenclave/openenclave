@@ -896,6 +896,37 @@ def windowsCrossPlatform(String label, String pr_id = '') {
 
 // Agnostic Linux
 
+/* Builds OE with Clang in simulation mode inside an Azure Linux 3 container.
+ *
+ * @param pr_id [string] Optional - to checkout a specific OE pull request merge head
+ */
+def azureLinux3SimulationTest(String pr_id = '') {
+    stage("Simulation Azure Linux 3 RelWithDebInfo") {
+        node(globalvars.AGENTS_LABELS["ubuntu-nonsgx-22.04"]) {
+            timeout(globalvars.GLOBAL_TIMEOUT_MINUTES) {
+                cleanWs()
+                helpers.oeCheckoutScm(pr_id)
+                def runArgs = "--cap-add=SYS_PTRACE"
+                def cmakeArgs = helpers.CmakeArgs(
+                                 builder: 'Ninja',
+                                 build_type: 'RelWithDebInfo',
+                                 code_coverage: false,
+                                 debug_malloc: true,
+                                 lvi_mitigation: 'None',
+                                 lvi_mitigation_skip_tests: true,
+                                 use_snmalloc: false)
+                def task = """
+                           ${helpers.buildCommand(cmakeArgs, 'Ninja')}
+                           ${helpers.TestCommand('^tests/crypto/')}
+                           """
+                withEnv(["OE_SIMULATION=1"]) {
+                    common.ContainerRun("oetools-azl3:${DOCKER_TAG}", 'clang', task, runArgs)
+                }
+            }
+        }
+    }
+}
+
 /* Builds OE in Simulation mode inside a containar
  *
  * @param version                    [string]  Version of Ubuntu to use
