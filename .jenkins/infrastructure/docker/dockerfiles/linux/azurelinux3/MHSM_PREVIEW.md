@@ -14,7 +14,7 @@ After this change is merged, run `/Private/Infrastructure/Build-Docker-Images` w
 - `TAG_LATEST=false` for validation builds
 - `PUBLISH=false` to skip promotion and version metadata, or `PUBLISH=true` to promote the image and update `DOCKER_IMAGES.md`
 
-The parent pipeline forwards the preview flag to `/Private/Infrastructure/Linux-Docker-Container-Build`. That job builds and pushes both `oetools-azl3:<versioned-tag>` and `openenclave-mhsm-azl3-openssl35:<versioned-tag>`, then archives `openenclave-azl3-openssl35-<versioned-tag>.tar.gz`. The versioned images are pushed by the build job even when `PUBLISH=false`.
+The parent pipeline forwards the preview flag to `/Private/Infrastructure/Linux-Docker-Container-Build`. That job builds and pushes both `oetools-azl3:<versioned-tag>` and `openenclave-mhsm-azl3-openssl35:<versioned-tag>`, then archives `open-enclave-azl3.rpm` and `openenclave-azl3-openssl35-<versioned-tag>.tar.gz`. The versioned images are pushed by the build job even when `PUBLISH=false`.
 
 Before merge, create a temporary Pipeline job or use Jenkins Replay so the job loads `.jenkins/infrastructure/docker/build_linux_docker_images.Jenkinsfile` from `PallabPaul/openenclave:azurelinux3-ci-image`. Then run it with:
 
@@ -30,10 +30,18 @@ Use an agent with Docker and managed-identity access to the target ACR. SGX devi
 
 The preview image validates the Open Enclave SDK and Intel SGX/DCAP layer. It also includes the standard build tools, .NET 8 SDK, pinned OCaml 4.14.2 toolchain, and Azure Linux kernel development headers required by MHSM's local build.
 
-Copy the archived `openenclave` directory into the Azure Linux 3 MHSM build-container context at `/opt/openenclave`. The resulting container satisfies the path used by the MHSM root `CMakeLists.txt`:
+Install the archived RPM after configuring Intel's Azure Linux 3 SGX/DCAP repository. The package declares `libsgx-enclave-common` and `libsgx-dcap-ql` as runtime dependencies and installs the SDK under `/opt/openenclave`:
+
+```dockerfile
+COPY open-enclave-azl3.rpm /tmp/open-enclave.rpm
+RUN tdnf install -y /tmp/open-enclave.rpm \
+  && rm /tmp/open-enclave.rpm
+```
+
+On Azure Linux 3, point the MHSM root `CMakeLists.txt` at the RPM's `lib64` CMake package directory:
 
 ```cmake
-set(OpenEnclave_DIR /opt/openenclave/lib/openenclave/cmake/ CACHE PATH "Location of OE CMake config")
+set(OpenEnclave_DIR /opt/openenclave/lib64/openenclave/cmake/ CACHE PATH "Location of OE CMake config")
 ```
 
 The preview image build runs a CMake smoke project that requires the OE targets used by MHSM: `oehost`, `oeenclave`, `oelibc`, `oelibcxx`, `oecryptoopenssl_3`, `oeedger8r`, and `oesign`.
