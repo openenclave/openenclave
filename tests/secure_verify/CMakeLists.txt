@@ -102,6 +102,47 @@ if (BUILD_ENCLAVES)
       PASS_REGULAR_EXPRESSION
       "(secure_verify not supported in simulation mode|tcb_status: 07000000)")
 
+  # Service-TD (servtd-ext) initial platform TCB evaluation.
+  #
+  # This quote carries the TDX quote body v5 Service-TD extension, whose
+  # init_tee_fmspc encodes the CPU family/model/stepping in the CPUID leaf 1
+  # signature format rather than as a raw FMSPC. Verification must therefore
+  # match it against the platform FMSPC on family/model/stepping only, and must
+  # be able to parse TDX TCB info that carries the optional
+  # tdxModuleIdentities array. The pinned endorsements make this reproducible
+  # off the originating platform.
+  #
+  # Expected to see tdx_init_platform_tcb_status: 00000000 (UP_TO_DATE). A
+  # regression leaves the claim absent (init TCB not evaluated), so the regex
+  # fails.
+  add_test(
+    NAME tests/secure_verify_tdx_openssl_servtd_init_tcb
+    COMMAND
+      $<TARGET_FILE:secure_verify> secure_verify_enc_openssl.signed
+      ${CMAKE_CURRENT_SOURCE_DIR}/data/tdx_quote_v5_servtd -f tdx_quote -e
+      ${CMAKE_CURRENT_SOURCE_DIR}/data/tdx_quote_v5_servtd_endorsement.bin
+    WORKING_DIRECTORY $<TARGET_FILE_DIR:secure_verify>)
+  set_tests_properties(
+    tests/secure_verify_tdx_openssl_servtd_init_tcb
+    PROPERTIES
+      PASS_REGULAR_EXPRESSION
+      "(secure_verify not supported in simulation mode|tdx_init_platform_tcb_status: 00000000)"
+  )
+
+  add_test(
+    NAME tests/secure_verify_tdx_mbedtls_servtd_init_tcb
+    COMMAND
+      $<TARGET_FILE:secure_verify> secure_verify_enc_mbedtls.signed
+      ${CMAKE_CURRENT_SOURCE_DIR}/data/tdx_quote_v5_servtd -f tdx_quote -e
+      ${CMAKE_CURRENT_SOURCE_DIR}/data/tdx_quote_v5_servtd_endorsement.bin
+    WORKING_DIRECTORY $<TARGET_FILE_DIR:secure_verify>)
+  set_tests_properties(
+    tests/secure_verify_tdx_mbedtls_servtd_init_tcb
+    PROPERTIES
+      PASS_REGULAR_EXPRESSION
+      "(secure_verify not supported in simulation mode|tdx_init_platform_tcb_status: 00000000)"
+  )
+
   # TCB baseline date policy tests (OE_POLICY_TCB_BASELINE_DATE).
   #
   # These use pinned TDX endorsements (eval21 collateral, fmspc 00806f050000)
