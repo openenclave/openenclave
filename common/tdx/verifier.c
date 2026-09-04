@@ -196,6 +196,12 @@ static oe_result_t _get_tdx_tcb_info(
         OE_RAISE(OE_OUT_OF_BOUNDS);
     *tcb_info = cursor;
     *tcb_info_size = header.tcb_info_size;
+    /* The collateral stores the TCB info as a NUL-terminated string and counts
+     * the terminator in its size, but oe_parse_tcb_info_json*() requires the
+     * buffer to end exactly at the closing brace and reports
+     * OE_JSON_INFO_PARSE_ERROR otherwise. Exclude any trailing terminators. */
+    while (*tcb_info_size > 0 && (*tcb_info)[*tcb_info_size - 1] == '\0')
+        (*tcb_info_size)--;
 
     OE_CHECK(_advance_collateral_cursor(&cursor, end, header.tcb_info_size));
     OE_CHECK(_advance_collateral_cursor(
@@ -208,6 +214,101 @@ static oe_result_t _get_tdx_tcb_info(
 
 done:
     return result;
+}
+
+/* Map a Service-TD's recorded init_tee_fmspc to the platform FMSPCs that the
+ * same processor may legitimately report.
+ *
+ * init_tee_fmspc is not a raw FMSPC. It carries the Concise Evidence "Model
+ * string" environment encoding as three little-endian uint32 words, whose
+ * second word is the CPUID leaf 1 EAX signature:
+ *
+ *   [27:20] Extended Family  [19:16] Extended Model  [13:12] Processor Type
+ *   [11:8]  Family           [7:4]   Model           [3:0]   Stepping
+ *
+ * The platform FMSPC packs an overlapping but not identical set of fields, and
+ * its leading byte further distinguishes platform segments that the CPUID
+ * signature does not describe at all. The two therefore cannot be derived from
+ * one another: a single processor signature corresponds to a fixed, known set
+ * of FMSPCs. Enumerate that correspondence explicitly rather than decoding it,
+ * so that an unrecognized processor skips the evaluation instead of silently
+ * matching an unintended platform.
+ */
+#define OE_TDX_INIT_TEE_FMSPC_SIZE 12
+
+/* Largest number of platform FMSPCs mapped by a single entry below. */
+#define OE_TDX_MAX_MAPPED_FMSPC 2
+
+typedef struct _oe_tdx_init_fmspc_mapping
+{
+    /* Recorded init_tee_fmspc, compared under mask. */
+    uint8_t init_tee_fmspc[OE_TDX_INIT_TEE_FMSPC_SIZE];
+
+    /* Bits of init_tee_fmspc that participate in the comparison. Fields that
+     * do not select a distinct FMSPC, such as stepping, are masked out. */
+    uint8_t mask[OE_TDX_INIT_TEE_FMSPC_SIZE];
+
+    /* Platform FMSPCs the mapped processor may report. */
+    uint8_t fmspc[OE_TDX_MAX_MAPPED_FMSPC][OE_TDX_FMSPC_SIZE];
+    size_t fmspc_count;
+} oe_tdx_init_fmspc_mapping_t;
+
+OE_STATIC_ASSERT(
+    sizeof(((tdx_report_body_v1_5_ex_t*)0)->init_tee_fmspc) ==
+    OE_TDX_INIT_TEE_FMSPC_SIZE);
+
+static const oe_tdx_init_fmspc_mapping_t _oe_tdx_init_fmspc_mappings[] = {
+    /* Emerald Rapids, CPUID signature 06_CFH: the second word is 0x000c06f0,
+     * stored little-endian as f0 06 0c 00. The stepping occupies the low
+     * nibble of byte 4 and is masked out because both mapped FMSPCs cover the
+     * signature regardless of it. */
+    {{0x00, 0x00, 0x00, 0x00, 0xf0, 0x06, 0x0c, 0x00, 0x00, 0x00, 0x00, 0x80},
+     {0xff, 0xff, 0xff, 0xff, 0xf0, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff},
+     {{0x90, 0xc0, 0x6f, 0x00, 0x00, 0x00},
+      {0xb0, 0xc0, 0x6f, 0x00, 0x00, 0x00}},
+     2},
+};
+
+/* Look up the mapping whose masked init_tee_fmspc equals the recorded one.
+ * Returns NULL when the processor is not enumerated above. */
+static const oe_tdx_init_fmspc_mapping_t* _find_init_fmspc_mapping(
+    const uint8_t* init_tee_fmspc)
+{
+    for (size_t i = 0; i < OE_COUNTOF(_oe_tdx_init_fmspc_mappings); i++)
+    {
+        const oe_tdx_init_fmspc_mapping_t* mapping =
+            &_oe_tdx_init_fmspc_mappings[i];
+        bool matched = true;
+
+        for (size_t j = 0; j < OE_TDX_INIT_TEE_FMSPC_SIZE; j++)
+        {
+            if ((init_tee_fmspc[j] & mapping->mask[j]) !=
+                (mapping->init_tee_fmspc[j] & mapping->mask[j]))
+            {
+                matched = false;
+                break;
+            }
+        }
+
+        if (matched)
+            return mapping;
+    }
+
+    return NULL;
+}
+
+/* Return true when the mapping covers the given platform FMSPC. */
+static bool _mapping_covers_fmspc(
+    const oe_tdx_init_fmspc_mapping_t* mapping,
+    const uint8_t* fmspc)
+{
+    for (size_t i = 0; i < mapping->fmspc_count; i++)
+    {
+        if (memcmp(mapping->fmspc[i], fmspc, OE_TDX_FMSPC_SIZE) == 0)
+            return true;
+    }
+
+    return false;
 }
 
 /* Evaluate the Service-TD's initial platform TCB.
@@ -223,7 +324,8 @@ done:
  *
  * The TCB info is taken from the already-fetched endorsements, authenticated
  * by the successful QVL verification of those exact endorsements, and required
- * to match the platform FMSPC. Cross-platform initial TCB evaluation is not
+ * to describe a platform FMSPC that the processor recorded in init_tee_fmspc
+ * is known to report. Cross-platform initial TCB evaluation is not
  * supported by this stopgap.
  * PCESVN is not carried by the Service-TD extension, so the evaluation matches
  * only the recorded SGX and TDX component SVNs. The caller treats a required
@@ -247,6 +349,7 @@ static oe_result_t _evaluate_servtd_init_tcb(
     const uint8_t* tcb_issuer_chain_data = NULL;
     size_t tcb_issuer_chain_size = 0;
     uint8_t platform_fmspc[OE_TDX_FMSPC_SIZE] = {0};
+    const oe_tdx_init_fmspc_mapping_t* mapping = NULL;
 
     if (!out)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -325,19 +428,31 @@ static oe_result_t _evaluate_servtd_init_tcb(
      * revalidate the certificate against the current wall clock here. The
      * signature check below still binds the parsed TCB info to that chain. */
 
-    /* Reuse the already-fetched (platform) TCB info only when the Service-TD's
-     * recorded FMSPC matches the platform FMSPC. Production targets a single
-     * platform, so this always holds; a mismatch (e.g. a cross-platform
-     * migration this stopgap does not support) skips the init-TCB evaluation
-     * rather than reporting a status/date matched against the wrong platform's
-     * TCB-level table. */
+    /* Reuse the already-fetched (platform) TCB info only when the Service-TD
+     * was first bound on this processor. init_tee_fmspc records that processor
+     * through a Concise Evidence "Model string" encoding rather than a raw
+     * FMSPC, so the two are related by the explicit table above rather than by
+     * a byte comparison. Production targets a single platform, so this holds;
+     * an unmapped processor, or a platform FMSPC the mapping does not cover
+     * (e.g. a cross-platform migration this stopgap does not support), skips
+     * the init-TCB evaluation rather than reporting a status/date matched
+     * against the wrong platform's TCB-level table. */
     OE_CHECK(oe_get_tdx_fmspc_from_quote(
         quote, (uint32_t)quote_size, platform_fmspc, sizeof(platform_fmspc)));
-    if (memcmp(body->init_tee_fmspc, platform_fmspc, OE_TDX_FMSPC_SIZE) != 0)
+    mapping = _find_init_fmspc_mapping(body->init_tee_fmspc);
+    if (mapping == NULL)
     {
         OE_TRACE_WARNING(
-            "Service-TD init TCB not evaluated: init_tee_fmspc differs from "
-            "platform FMSPC");
+            "Service-TD init TCB not evaluated: init_tee_fmspc does not map to "
+            "a known processor");
+        result = OE_OK;
+        goto done;
+    }
+    if (!_mapping_covers_fmspc(mapping, platform_fmspc))
+    {
+        OE_TRACE_WARNING(
+            "Service-TD init TCB not evaluated: platform FMSPC is not one that "
+            "the processor recorded in init_tee_fmspc reports");
         result = OE_OK;
         goto done;
     }

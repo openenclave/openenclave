@@ -22,4 +22,11 @@ configure_file(
 configure_file(../data/tdx_endorsement.bin
                ${CMAKE_CURRENT_BINARY_DIR}/tdx_endorsement.bin COPYONLY)
 
+# Copy Service-TD extension quote and its pinned endorsement
+configure_file(../data/tdx_quote_v5_servtd.bin
+               ${CMAKE_CURRENT_BINARY_DIR}/tdx_quote_v5_servtd.bin COPYONLY)
+configure_file(
+  ../data/tdx_quote_v5_servtd_endorsement.bin
+  ${CMAKE_CURRENT_BINARY_DIR}/tdx_quote_v5_servtd_endorsement.bin COPYONLY)
+
 target_link_libraries(test_host_verify oehostverify)
