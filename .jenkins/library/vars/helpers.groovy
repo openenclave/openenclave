@@ -120,7 +120,7 @@ def WaitForAptLock() {
  */
 def TestCommand(String regex='', int test_fail_limit = 10, boolean debug = false) {
     if (regex != '') {
-        regex = '--tests-regex \'${regex}\''
+        regex = "--tests-regex '${regex}'"
     }
     if (debug) {
         regex += '-VV --debug'
