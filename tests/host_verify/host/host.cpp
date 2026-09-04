@@ -46,6 +46,12 @@
 #define TDX_QUOTE_RELAUNCH_FILENAME "tdx_quote-moduleupdate-seamldr5.dat"
 #define TDX_QUOTE_RELAUNCH_ENDORSEMENTS_FILENAME "tdx_endorsement.bin"
 
+// A TDX v5 type-4 (v1.5_ex) quote whose TD ATTRIBUTES.SERVTD_EXT bit is set,
+// together with the pinned collateral for its platform (fmspc 90c06f000000).
+#define TDX_QUOTE_SERVTD_FILENAME "tdx_quote_v5_servtd.bin"
+#define TDX_QUOTE_SERVTD_ENDORSEMENTS_FILENAME \
+    "tdx_quote_v5_servtd_endorsement.bin"
+
 static const oe_uuid_t _sgx_ecdsa_uuid = {OE_FORMAT_UUID_SGX_ECDSA};
 static const oe_uuid_t _tdx_quote_uuid = {OE_FORMAT_UUID_TDX_QUOTE_ECDSA};
 
@@ -368,6 +374,117 @@ static int _verify_evidence(
     return 0;
 }
 
+// Locate a claim by name. Returns NULL when the claim is absent.
+static const oe_claim_t* _find_claim(
+    const oe_claim_t* claims,
+    size_t claims_length,
+    const char* name)
+{
+    for (size_t i = 0; i < claims_length; i++)
+        if (strcmp(claims[i].name, name) == 0)
+            return &claims[i];
+    return NULL;
+}
+
+static void _test_claim_uint32(
+    const oe_claim_t* claims,
+    size_t claims_length,
+    const char* name,
+    uint32_t expected)
+{
+    const oe_claim_t* claim = _find_claim(claims, claims_length, name);
+
+    OE_TEST(claim != NULL);
+    OE_TEST(claim->value_size == sizeof(uint32_t));
+    OE_TEST(*(const uint32_t*)claim->value == expected);
+}
+
+// Verify a TDX v5 type-4 (v1.5_ex) quote whose ATTRIBUTES.SERVTD_EXT bit is
+// set, and assert that the Service-TD initial platform TCB was evaluated.
+//
+// The evaluation only runs when the Service-TD's recorded init_tee_fmspc
+// describes the same processor as the platform FMSPC, and when the TCB info
+// in the endorsements parses. If either check regresses, the init platform
+// TCB claims disappear and tcb_status degrades to OE_SGX_TCB_STATUS_INVALID,
+// which the assertions below catch.
+static void _verify_servtd_init_tcb(
+    const char* evidence_filename,
+    const char* endorsements_filename)
+{
+    size_t evidence_size = 0;
+    size_t endorsements_size = 0;
+    uint8_t* evidence = NULL;
+    uint8_t* endorsements = NULL;
+    oe_claim_t* claims = NULL;
+    size_t claims_length = 0;
+    const oe_claim_t* claim = NULL;
+    // The matched TCB level of the pinned collateral.
+    const char expected_tcb_date[] = "2023-08-09T00:00:00Z";
+
+    _read_binary_file(evidence_filename, &evidence, &evidence_size);
+    _read_binary_file(endorsements_filename, &endorsements, &endorsements_size);
+
+    OE_TEST(oe_verifier_initialize() == OE_OK);
+    OE_TEST(oe_tdx_verifier_initialize() == OE_OK);
+
+    OE_TEST(
+        oe_verify_evidence(
+            &_tdx_quote_uuid,
+            evidence,
+            evidence_size,
+            endorsements,
+            endorsements_size,
+            NULL,
+            0,
+            &claims,
+            &claims_length) == OE_OK);
+
+    // The quote must actually exercise the Service-TD extension, otherwise
+    // the assertions below would vacuously hold.
+    claim = _find_claim(
+        claims, claims_length, OE_CLAIM_TDX_TD_ATTRIBUTES_SERVTD_EXT);
+    OE_TEST(claim != NULL);
+    OE_TEST(claim->value_size == sizeof(uint8_t));
+    OE_TEST(claim->value[0] == 1);
+
+    // Both the current and the initial platform TCB must have been evaluated
+    // against the pinned collateral, and neither may be INVALID.
+    _test_claim_uint32(
+        claims,
+        claims_length,
+        OE_CLAIM_TDX_CURR_PLATFORM_TCB_STATUS,
+        OE_SGX_TCB_STATUS_UP_TO_DATE);
+    _test_claim_uint32(
+        claims,
+        claims_length,
+        OE_CLAIM_TDX_INIT_PLATFORM_TCB_STATUS,
+        OE_SGX_TCB_STATUS_UP_TO_DATE);
+    _test_claim_uint32(
+        claims,
+        claims_length,
+        OE_CLAIM_TCB_STATUS,
+        OE_SGX_TCB_STATUS_UP_TO_DATE);
+
+    claim =
+        _find_claim(claims, claims_length, OE_CLAIM_TDX_INIT_PLATFORM_TCB_DATE);
+    OE_TEST(claim != NULL);
+    OE_TEST(claim->value_size == sizeof(expected_tcb_date));
+    OE_TEST(
+        memcmp(claim->value, expected_tcb_date, sizeof(expected_tcb_date)) ==
+        0);
+
+    OE_TEST(oe_free_claims(claims, claims_length) == OE_OK);
+    OE_TEST(oe_verifier_shutdown() == OE_OK);
+    OE_TEST(oe_tdx_verifier_shutdown() == OE_OK);
+
+    free(evidence);
+    free(endorsements);
+
+    OE_TRACE_INFO(
+        "evidence %s: Service-TD initial platform TCB evaluated\n\n",
+        evidence_filename);
+}
+
 int main()
 {
     //
@@ -451,6 +568,18 @@ int main()
             NULL,
             false);
     }
+
+    // Service-TD initial platform TCB evaluation test
+    if (_validate_file(TDX_QUOTE_SERVTD_FILENAME, true) &&
+        _validate_file(TDX_QUOTE_SERVTD_ENDORSEMENTS_FILENAME, true))
+    {
+        _verify_servtd_init_tcb(
+            TDX_QUOTE_SERVTD_FILENAME, TDX_QUOTE_SERVTD_ENDORSEMENTS_FILENAME);
+    }
+
+    // Marker required by the test's PASS_REGULAR_EXPRESSION. It is only
+    // reached when no OE_TEST above aborted the process.
+    printf("host_verify: all tests passed\n");
 
     return 0;
 }

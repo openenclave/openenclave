@@ -196,6 +196,12 @@ static oe_result_t _get_tdx_tcb_info(
         OE_RAISE(OE_OUT_OF_BOUNDS);
     *tcb_info = cursor;
     *tcb_info_size = header.tcb_info_size;
+    /* The collateral stores the TCB info as a NUL-terminated string and counts
+     * the terminator in its size, but oe_parse_tcb_info_json*() requires the
+     * buffer to end exactly at the closing brace and reports
+     * OE_JSON_INFO_PARSE_ERROR otherwise. Exclude any trailing terminators. */
+    while (*tcb_info_size > 0 && (*tcb_info)[*tcb_info_size - 1] == '\0')
+        (*tcb_info_size)--;
 
     OE_CHECK(_advance_collateral_cursor(&cursor, end, header.tcb_info_size));
     OE_CHECK(_advance_collateral_cursor(
@@ -208,6 +214,53 @@ static oe_result_t _get_tdx_tcb_info(
 
 done:
     return result;
+}
+
+/* Processor identity (family, model, stepping) packed as
+ * (family << 8) | (model << 4) | stepping. */
+#define OE_TDX_FMS_MASK 0x00000fffu
+
+/* _fms_from_init_tee_fmspc() reads the second little-endian uint32 word and
+ * _fms_from_fmspc() reads FMSPC bytes 2 and 3. */
+OE_STATIC_ASSERT(sizeof(((tdx_report_body_v1_5_ex_t*)0)->init_tee_fmspc) >= 8);
+OE_STATIC_ASSERT(OE_TDX_FMSPC_SIZE >= 4);
+
+/* Extract the processor identity recorded in init_tee_fmspc.
+ *
+ * init_tee_fmspc is not a raw FMSPC. It carries the Concise Evidence
+ * "Model string" environment encoding as three little-endian uint32 words,
+ * whose second word is the CPUID leaf 1 EAX signature:
+ *
+ *   [27:20] Extended Family  [19:16] Extended Model  [13:12] Processor Type
+ *   [11:8]  Family           [7:4]   Model           [3:0]   Stepping
+ */
+static uint32_t _fms_from_init_tee_fmspc(const uint8_t* init_tee_fmspc)
+{
+    uint32_t cpuid_eax = (uint32_t)init_tee_fmspc[4] |
+                         ((uint32_t)init_tee_fmspc[5] << 8) |
+                         ((uint32_t)init_tee_fmspc[6] << 16) |
+                         ((uint32_t)init_tee_fmspc[7] << 24);
+
+    return cpuid_eax & OE_TDX_FMS_MASK;
+}
+
+/* Extract the processor identity packed into the platform FMSPC.
+ *
+ * The six FMSPC bytes are laid out as
+ *
+ *   [0]     Extended Family (8 bits)
+ *   [1] hi  Extended Model (4 bits)   [1] lo  zero (4 bits)
+ *   [2] hi  Family (4 bits)           [2] lo  Model (4 bits)
+ *   [3] hi  Stepping (4 bits)         [3] lo  Processor ID (4 bits)
+ *   [4:5]   Customer SKU (16 bits)
+ */
+static uint32_t _fms_from_fmspc(const uint8_t* fmspc)
+{
+    uint32_t family = (uint32_t)(fmspc[2] >> 4);
+    uint32_t model = (uint32_t)(fmspc[2] & 0x0f);
+    uint32_t stepping = (uint32_t)(fmspc[3] >> 4);
+
+    return ((family << 8) | (model << 4) | stepping) & OE_TDX_FMS_MASK;
 }
 
 /* Evaluate the Service-TD's initial platform TCB.
@@ -223,7 +276,8 @@ done:
  *
  * The TCB info is taken from the already-fetched endorsements, authenticated
  * by the successful QVL verification of those exact endorsements, and required
- * to match the platform FMSPC. Cross-platform initial TCB evaluation is not
+ * to describe the same processor (family, model and stepping) as the one
+ * recorded in init_tee_fmspc. Cross-platform initial TCB evaluation is not
  * supported by this stopgap.
  * PCESVN is not carried by the Service-TD extension, so the evaluation matches
  * only the recorded SGX and TDX component SVNs. The caller treats a required
@@ -325,19 +379,25 @@ static oe_result_t _evaluate_servtd_init_tcb(
      * revalidate the certificate against the current wall clock here. The
      * signature check below still binds the parsed TCB info to that chain. */
 
-    /* Reuse the already-fetched (platform) TCB info only when the Service-TD's
-     * recorded FMSPC matches the platform FMSPC. Production targets a single
-     * platform, so this always holds; a mismatch (e.g. a cross-platform
+    /* Reuse the already-fetched (platform) TCB info only when the Service-TD
+     * was first bound on the same processor. init_tee_fmspc records that
+     * platform through a Concise Evidence "Model string" encoding rather than
+     * a raw FMSPC, so the two cannot be compared byte for byte. Compare the
+     * family, model and stepping carried by each instead. Production targets a
+     * single platform, so this holds; a mismatch (e.g. a cross-platform
      * migration this stopgap does not support) skips the init-TCB evaluation
      * rather than reporting a status/date matched against the wrong platform's
      * TCB-level table. */
     OE_CHECK(oe_get_tdx_fmspc_from_quote(
         quote, (uint32_t)quote_size, platform_fmspc, sizeof(platform_fmspc)));
-    if (memcmp(body->init_tee_fmspc, platform_fmspc, OE_TDX_FMSPC_SIZE) != 0)
+    if (_fms_from_init_tee_fmspc(body->init_tee_fmspc) !=
+        _fms_from_fmspc(platform_fmspc))
     {
         OE_TRACE_WARNING(
-            "Service-TD init TCB not evaluated: init_tee_fmspc differs from "
-            "platform FMSPC");
+            "Service-TD init TCB not evaluated: init_tee_fmspc processor "
+            "identity (0x%03x) differs from platform FMSPC (0x%03x)",
+            _fms_from_init_tee_fmspc(body->init_tee_fmspc),
+            _fms_from_fmspc(platform_fmspc));
         result = OE_OK;
         goto done;
     }
