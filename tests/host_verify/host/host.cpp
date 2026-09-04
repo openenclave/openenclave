@@ -452,5 +452,9 @@ int main()
             false);
     }
 
+    // Marker required by the test's PASS_REGULAR_EXPRESSION. It is only
+    // reached when no OE_TEST above aborted the process.
+    printf("host_verify: all tests passed\n");
+
     return 0;
 }
