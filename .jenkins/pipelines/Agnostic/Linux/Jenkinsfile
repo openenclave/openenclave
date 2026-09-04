@@ -16,7 +16,8 @@ try{
         "Sim 2004 clang-11 SGX1FLC RelWithDebInfo":          { tests.simulationContainerTest('20.04', 'RelWithDebInfo', 'clang-11', 'None', SKIP_LVI_MITIGATION_TESTS, false, params.PULL_REQUEST_ID) },
         "Sim 2204 clang-11 SGX1FLC RelWithDebInfo":          { tests.simulationContainerTest('22.04', 'RelWithDebInfo', 'clang-11', 'None', SKIP_LVI_MITIGATION_TESTS, false, params.PULL_REQUEST_ID) },
         "Sim 2004 clang-11 SGX1FLC RelWithDebInfo snmalloc": { tests.simulationContainerTest('20.04', 'RelWithDebInfo', 'clang-11', 'None', SKIP_LVI_MITIGATION_TESTS, true, params.PULL_REQUEST_ID) },
-        "Sim 2204 clang-11 SGX1FLC RelWithDebInfo snmalloc": { tests.simulationContainerTest('22.04', 'RelWithDebInfo', 'clang-11', 'None', SKIP_LVI_MITIGATION_TESTS, true, params.PULL_REQUEST_ID) }
+        "Sim 2204 clang-11 SGX1FLC RelWithDebInfo snmalloc": { tests.simulationContainerTest('22.04', 'RelWithDebInfo', 'clang-11', 'None', SKIP_LVI_MITIGATION_TESTS, true, params.PULL_REQUEST_ID) },
+        "Sim Azure Linux 3 RelWithDebInfo":                  { tests.azureLinux3SimulationTest(params.PULL_REQUEST_ID) }
     ]
     if(FULL_TEST_SUITE == "true") {
         stage("Full Test Suite") {

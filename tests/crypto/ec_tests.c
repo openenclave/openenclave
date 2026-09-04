@@ -867,13 +867,14 @@ static void _test_cert_with_extensions()
 
 static void _test_cert_without_extensions()
 {
-    /* Test a certificate without extensions */
+    /* OpenSSL 3.3+ automatically adds standard certificate extensions. Test
+     * lookup of a custom OID that is known to be absent instead. */
     _test_cert_extensions(
         _CERT_WITHOUT_EXTENSIONS,
         strlen(_CERT_WITHOUT_EXTENSIONS) + 1,
         NULL,
         0,
-        "2.5.29.35");
+        "1.2.3.4.5.6");
 }
 
 static const char _URL[] =

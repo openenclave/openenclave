@@ -25,7 +25,7 @@ void configure_type(const char* type_name, type_enum_t t)
         g_enabled[t] ? "enabled" : "disabled");
 }
 
-void configure(uint8_t enabled[3])
+void configure(uint8_t enabled[4])
 {
     configure_type("wchar_t", TYPE_WCHAR_T);
     configure_type("long", TYPE_LONG);
