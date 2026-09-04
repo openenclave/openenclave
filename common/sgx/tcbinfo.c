@@ -203,6 +203,61 @@ done:
     return result;
 }
 
+/**
+ * Skip over a JSON array or object value that the parser does not consume,
+ * leaving *itr positioned just after the matching closing bracket. Nesting is
+ * tracked with a depth counter and characters inside strings are ignored so
+ * that brackets appearing in string values do not unbalance the count.
+ */
+static oe_result_t _skip_json_array_or_object(
+    const uint8_t** itr,
+    const uint8_t* end)
+{
+    oe_result_t result = OE_JSON_INFO_PARSE_ERROR;
+    const uint8_t* p = _skip_ws(*itr, end);
+    size_t depth = 0;
+    bool in_string = false;
+
+    if (p == end || (*p != '[' && *p != '{'))
+        OE_RAISE(OE_JSON_INFO_PARSE_ERROR);
+
+    for (; p < end; ++p)
+    {
+        if (in_string)
+        {
+            if (*p == '\\')
+            {
+                /* Skip the escaped character so that an escaped quote does
+                 * not terminate the string. */
+                if (++p == end)
+                    break;
+            }
+            else if (*p == '"')
+                in_string = false;
+            continue;
+        }
+
+        if (*p == '"')
+            in_string = true;
+        else if (*p == '[' || *p == '{')
+            depth++;
+        else if (*p == ']' || *p == '}')
+        {
+            if (--depth == 0)
+            {
+                *itr = _skip_ws(p + 1, end);
+                result = OE_OK;
+                goto done;
+            }
+        }
+    }
+
+    OE_RAISE(OE_JSON_INFO_PARSE_ERROR);
+
+done:
+    return result;
+}
+
 static bool _json_str_equal(
     const uint8_t* str1,
     size_t str1_length,
@@ -1053,6 +1108,15 @@ static oe_result_t _read_tcb_info_v3(
     {
         OE_CHECK(_read_tcb_info_tdx_module(
             tcb_info_json, itr, end, &parsed_info->tcb_info_v3.tdx_module));
+        OE_CHECK(_read(',', itr, end));
+    }
+
+    /* tdxModuleIdentities is optional and is not consumed by this parser, but
+     * it must still be skipped so that the cursor reaches tcbLevels. */
+    if (OE_OK == _read_property_name_and_colon("tdxModuleIdentities", itr, end))
+    {
+        OE_TRACE_VERBOSE("Skipping tdxModuleIdentities");
+        OE_CHECK(_skip_json_array_or_object(itr, end));
         OE_CHECK(_read(',', itr, end));
     }
 
