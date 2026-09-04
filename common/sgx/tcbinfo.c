@@ -22,6 +22,8 @@
     "TDRelaunchAdvisedAndConfigurationNeeded"
 #define SGX_TCB_STATUS_INVALID "Invalid"
 
+#define TCB_INFO_ID_TDX "TDX"
+
 #ifdef OEUTIL_TCB_ALLOW_ANY_ROOT_KEY // allow overrode by oeutil
 // Defined by tools/oeutil/host/generate_evidence.cpp
 extern const char* _trusted_root_key_pem;
@@ -622,10 +624,18 @@ done:
 // 3. The status of the platform's tcb level is the status of the chosen tcb
 // level.
 // 4. If no tcb level was chosen, then the status of the platform is unknown.
+//
+// tdx_comp_start_index is the first TDX component compared. It is 2 for a
+// platform running a TD Preserving TDX module, whose TEE TCB SVN bytes 0 and 1
+// carry the module's ISVSVN and version instead of platform TCB components;
+// those two bytes are evaluated against tdxModuleIdentities instead. It is 0
+// otherwise. See EvaluateTcb.cpp in Intel's QVL, which derives the same
+// start index.
 static void _determine_platform_tcb_info_tcb_level(
     oe_tcb_info_tcb_level_t* platform_tcb_level,
     oe_tcb_info_tcb_level_t* tcb_level,
-    bool use_pce_svn)
+    bool use_pce_svn,
+    uint32_t tdx_comp_start_index)
 {
     // If the platform's status has already been determined, return.
     if (platform_tcb_level->status.AsUINT32 != OE_TCB_LEVEL_STATUS_UNKNOWN)
@@ -643,7 +653,8 @@ static void _determine_platform_tcb_info_tcb_level(
     // Compare all of the platform's TDX comp svn values (populated only for TDX
     // TCB info; zero for the SGX path, in which case the comparison is a no-op)
     // with the corresponding values in the current tcb level.
-    for (uint32_t i = 0; i < OE_COUNTOF(platform_tcb_level->tdx_tcb_comp_svn);
+    for (uint32_t i = tdx_comp_start_index;
+         i < OE_COUNTOF(platform_tcb_level->tdx_tcb_comp_svn);
          ++i)
     {
         if (platform_tcb_level->tdx_tcb_comp_svn[i] <
@@ -719,7 +730,7 @@ static oe_result_t _read_tcb_info_tcb_level_v1(
         if (tcb_level->status.AsUINT32 != OE_TCB_LEVEL_STATUS_UNKNOWN)
         {
             _determine_platform_tcb_info_tcb_level(
-                platform_tcb_level, tcb_level, use_pce_svn);
+                platform_tcb_level, tcb_level, use_pce_svn, 0);
         }
         // Read end of array or comma separator.
         if (*itr < end && **itr == ']')
@@ -774,7 +785,8 @@ static oe_result_t _read_tcb_info_tcb_level_v2_or_v3(
     const uint8_t* end,
     oe_tcb_info_tcb_level_t* platform_tcb_level,
     oe_tcb_info_tcb_level_t* tcb_level,
-    bool use_pce_svn)
+    bool use_pce_svn,
+    uint32_t tdx_comp_start_index)
 {
     oe_result_t result = OE_JSON_INFO_PARSE_ERROR;
     const uint8_t* status = NULL;
@@ -839,7 +851,10 @@ static oe_result_t _read_tcb_info_tcb_level_v2_or_v3(
         if (tcb_level->status.AsUINT32 != OE_TCB_LEVEL_STATUS_UNKNOWN)
         {
             _determine_platform_tcb_info_tcb_level(
-                platform_tcb_level, tcb_level, use_pce_svn);
+                platform_tcb_level,
+                tcb_level,
+                use_pce_svn,
+                tdx_comp_start_index);
         }
 
         // Optimization
@@ -1022,6 +1037,262 @@ done:
     return result;
 }
 
+#define OE_TDX_MODULE_ID_LENGTH 6 /* "TDX_" plus two hex digits */
+
+/**
+ * Compare a tdxModuleIdentities "id" against the id implied by the platform's
+ * TDX module version, i.e. "TDX_" followed by that version byte in hex. The
+ * comparison is case-insensitive, matching Intel's QVL.
+ */
+static bool _tdx_module_id_matches(
+    const uint8_t* id,
+    size_t id_length,
+    uint8_t tdx_module_version)
+{
+    static const char hex_digits[] = "0123456789abcdef";
+    char expected[OE_TDX_MODULE_ID_LENGTH] = {
+        't',
+        'd',
+        'x',
+        '_',
+        hex_digits[(tdx_module_version >> 4) & 0xf],
+        hex_digits[tdx_module_version & 0xf]};
+
+    if (id_length != OE_TDX_MODULE_ID_LENGTH)
+        return false;
+
+    for (size_t i = 0; i < OE_TDX_MODULE_ID_LENGTH; ++i)
+    {
+        uint8_t c = id[i];
+
+        if (c >= 'A' && c <= 'Z')
+            c = (uint8_t)(c - 'A' + 'a');
+        if (c != (uint8_t)expected[i])
+            return false;
+    }
+    return true;
+}
+
+/**
+ * Read one element of tcbInfo.tdxModuleIdentities.
+ *
+ * Schema:
+ * {
+ *     "id": string,                                e.g. "TDX_01"
+ *     "mrsigner": hex string (96 nibbles),
+ *     "attributes": hex string (16 nibbles),
+ *     "attributesMask": hex string (16 nibbles),
+ *     "tcbLevels": [
+ *         {
+ *             "tcb": { "isvsvn": integer },
+ *             "tcbDate": string,
+ *             "tcbStatus": "UpToDate" | "OutOfDate" | "Revoked",
+ *             "advisoryIDs": array of string (optional)
+ *         }
+ *     ]
+ * }
+ *
+ * Every element is parsed so that the cursor advances correctly, but only the
+ * one selected by tdx_module_version contributes to tdx_module_tcb. Its
+ * tcbLevels are sorted in descending ISVSVN order, so the first level the
+ * platform meets or exceeds is the platform's level.
+ *
+ * MRSIGNER and ATTRIBUTES are parsed for schema conformance but not compared.
+ * Intel's QVL binds them against the MRSIGNERSEAM and SEAMATTRIBUTES reported
+ * in the quote, but this parser serves the Service-TD initial platform TCB,
+ * which records only the initial TEE TCB SVN - there is no initial
+ * MRSIGNERSEAM to bind against. The current TDX module is bound by QVL during
+ * quote verification.
+ */
+static oe_result_t _read_tdx_module_identity(
+    const uint8_t** itr,
+    const uint8_t* end,
+    uint8_t tdx_module_version,
+    uint16_t tdx_module_isvsvn,
+    oe_tdx_module_tcb_level_t* tdx_module_tcb)
+{
+    oe_result_t result = OE_JSON_INFO_PARSE_ERROR;
+    oe_tcb_info_tdx_module_t tdx_module;
+    const uint8_t* id = NULL;
+    size_t id_length = 0;
+    bool selected = false;
+
+    OE_CHECK(_read('{', itr, end));
+
+    OE_TRACE_VERBOSE("Reading tdxModuleIdentities.id");
+    OE_CHECK(_read_property_name_and_colon("id", itr, end));
+    OE_CHECK(_read_string(itr, end, &id, &id_length));
+    OE_CHECK(_read(',', itr, end));
+
+    selected = _tdx_module_id_matches(id, id_length, tdx_module_version);
+
+    OE_TRACE_VERBOSE("Reading tdxModuleIdentities.mrsigner");
+    OE_CHECK(_read_property_name_and_colon("mrsigner", itr, end));
+    OE_CHECK(_read_hex_string(
+        itr, end, tdx_module.mrsigner, sizeof(tdx_module.mrsigner)));
+    OE_CHECK(_read(',', itr, end));
+
+    OE_TRACE_VERBOSE("Reading tdxModuleIdentities.attributes");
+    OE_CHECK(_read_property_name_and_colon("attributes", itr, end));
+    OE_CHECK(_read_hex_string(
+        itr, end, tdx_module.attributes, sizeof(tdx_module.attributes)));
+    OE_CHECK(_read(',', itr, end));
+
+    OE_TRACE_VERBOSE("Reading tdxModuleIdentities.attributesMask");
+    OE_CHECK(_read_property_name_and_colon("attributesMask", itr, end));
+    OE_CHECK(_read_hex_string(
+        itr,
+        end,
+        tdx_module.attributes_mask,
+        sizeof(tdx_module.attributes_mask)));
+    OE_CHECK(_read(',', itr, end));
+
+    OE_TRACE_VERBOSE("Reading tdxModuleIdentities.tcbLevels");
+    OE_CHECK(_read_property_name_and_colon("tcbLevels", itr, end));
+    OE_CHECK(_read('[', itr, end));
+
+    while (*itr < end)
+    {
+        const uint8_t* status = NULL;
+        size_t status_length = 0;
+        const uint8_t* date_str = NULL;
+        size_t date_size = 0;
+        oe_datetime_t tcb_date = {0};
+        uint64_t isvsvn = 0;
+
+        OE_CHECK(_read('{', itr, end));
+
+        OE_CHECK(_read_property_name_and_colon("tcb", itr, end));
+        OE_CHECK(_read('{', itr, end));
+        OE_CHECK(_read_property_name_and_colon("isvsvn", itr, end));
+        OE_CHECK(_read_integer(itr, end, &isvsvn));
+        if (isvsvn > OE_UINT16_MAX)
+            OE_RAISE(OE_JSON_INFO_PARSE_ERROR);
+        OE_CHECK(_read('}', itr, end));
+        OE_CHECK(_read(',', itr, end));
+
+        OE_CHECK(_read_property_name_and_colon("tcbDate", itr, end));
+        OE_CHECK(_read_string(itr, end, &date_str, &date_size));
+        if (oe_datetime_from_string(
+                (const char*)date_str, date_size, &tcb_date) != OE_OK)
+            OE_RAISE(OE_JSON_INFO_PARSE_ERROR);
+        OE_CHECK(_read(',', itr, end));
+
+        OE_CHECK(_read_property_name_and_colon("tcbStatus", itr, end));
+        OE_CHECK(_read_string(itr, end, &status, &status_length));
+        OE_CHECK(_trace_json_string(status, status_length));
+
+        // Optional advisoryIDs field
+        if (OE_JSON_INFO_PARSE_ERROR != _read(',', itr, end))
+        {
+            OE_CHECK(_read_property_name_and_colon("advisoryIDs", itr, end));
+            OE_CHECK(_skip_json_array_or_object(itr, end));
+        }
+
+        OE_CHECK(_read('}', itr, end));
+
+        if (selected && !tdx_module_tcb->evaluated &&
+            tdx_module_isvsvn >= (uint16_t)isvsvn)
+        {
+            oe_tcb_level_status_t parsed =
+                _parse_tcb_status(status, status_length);
+
+            if (parsed.AsUINT32 != OE_TCB_LEVEL_STATUS_UNKNOWN)
+            {
+                tdx_module_tcb->evaluated = true;
+                tdx_module_tcb->isvsvn = (uint16_t)isvsvn;
+                tdx_module_tcb->status = parsed;
+                tdx_module_tcb->tcb_date = tcb_date;
+                OE_CHECK(oe_memcpy_s(
+                    tdx_module_tcb->id,
+                    sizeof(tdx_module_tcb->id) - 1,
+                    id,
+                    id_length));
+                tdx_module_tcb->id[id_length] = '\0';
+            }
+        }
+
+        // Read end of array or comma separator.
+        if (*itr < end && **itr == ']')
+            break;
+        OE_CHECK(_read(',', itr, end));
+    }
+
+    OE_CHECK(_read(']', itr, end));
+    OE_CHECK(_read('}', itr, end));
+
+    result = OE_OK;
+done:
+    return result;
+}
+
+/**
+ * Read tcbInfo.tdxModuleIdentities, evaluating the identity selected by the
+ * platform's TDX module version.
+ */
+static oe_result_t _read_tdx_module_identities(
+    const uint8_t** itr,
+    const uint8_t* end,
+    uint8_t tdx_module_version,
+    uint16_t tdx_module_isvsvn,
+    oe_tdx_module_tcb_level_t* tdx_module_tcb)
+{
+    oe_result_t result = OE_JSON_INFO_PARSE_ERROR;
+
+    OE_CHECK(_read('[', itr, end));
+
+    while (*itr < end)
+    {
+        OE_CHECK(_read_tdx_module_identity(
+            itr, end, tdx_module_version, tdx_module_isvsvn, tdx_module_tcb));
+
+        // Read end of array or comma separator.
+        if (*itr < end && **itr == ']')
+            break;
+        OE_CHECK(_read(',', itr, end));
+    }
+
+    OE_CHECK(_read(']', itr, end));
+
+    result = OE_OK;
+done:
+    return result;
+}
+
+/**
+ * Fold the TDX module's TCB status into the platform's, following the
+ * convergence Intel's QVL performs in convergeTcbStatuses(): a revoked module
+ * revokes the platform, and an out-of-date module downgrades an otherwise
+ * up-to-date platform. A platform that already needs configuration becomes
+ * OutOfDateConfigurationNeeded, which this bitfield represents as outofdate
+ * together with configuration_needed.
+ */
+static void _converge_tdx_module_tcb_status(
+    oe_tcb_info_tcb_level_t* platform_tcb_level,
+    const oe_tdx_module_tcb_level_t* tdx_module_tcb)
+{
+    if (!tdx_module_tcb->evaluated ||
+        platform_tcb_level->status.AsUINT32 == OE_TCB_LEVEL_STATUS_UNKNOWN)
+        return;
+
+    if (tdx_module_tcb->status.fields.revoked)
+    {
+        platform_tcb_level->status.AsUINT32 = OE_TCB_LEVEL_STATUS_UNKNOWN;
+        platform_tcb_level->status.fields.revoked = 1;
+    }
+    else if (tdx_module_tcb->status.fields.outofdate)
+    {
+        platform_tcb_level->status.fields.up_to_date = 0;
+        platform_tcb_level->status.fields.sw_hardening_needed = 0;
+        platform_tcb_level->status.fields.outofdate = 1;
+    }
+
+    // Report the more conservative of the two certification dates.
+    if (oe_datetime_compare(
+            &tdx_module_tcb->tcb_date, &platform_tcb_level->tcb_date) < 0)
+        platform_tcb_level->tcb_date = tdx_module_tcb->tcb_date;
+}
+
 static oe_result_t _read_tcb_info_v1_or_v2(
     const uint8_t* tcb_info_json,
     const uint8_t** itr,
@@ -1054,7 +1325,8 @@ static oe_result_t _read_tcb_info_v1_or_v2(
             end,
             platform_tcb_level,
             &parsed_info->tcb_info_v2.tcb_level,
-            use_pce_svn));
+            use_pce_svn,
+            0));
     else
     {
         OE_RAISE_MSG(
@@ -1086,6 +1358,10 @@ static oe_result_t _read_tcb_info_v3(
     oe_result_t result = OE_JSON_INFO_PARSE_ERROR;
     const uint8_t* str = NULL;
     size_t size = 0;
+    uint32_t tdx_comp_start_index = 0;
+    uint8_t tdx_module_version = 0;
+    uint16_t tdx_module_isvsvn = 0;
+    bool is_tdx = false;
 
     parsed_info->tcb_info_start = *itr;
     OE_CHECK(_read('{', itr, end));
@@ -1111,12 +1387,32 @@ static oe_result_t _read_tcb_info_v3(
         OE_CHECK(_read(',', itr, end));
     }
 
-    /* tdxModuleIdentities is optional and is not consumed by this parser, but
-     * it must still be skipped so that the cursor reaches tcbLevels. */
+    /* Byte 1 of the TEE TCB SVN is the TDX module version and byte 0 is its
+     * ISVSVN. When the version is non-zero the platform runs a TD Preserving
+     * TDX module: those two bytes identify the module rather than platform TCB
+     * components, so they are excluded from the tcbLevels comparison and are
+     * evaluated against tdxModuleIdentities instead. This mirrors
+     * tdxEvaluateTCB() in Intel's QVL. The id check keeps the SGX TCB info
+     * path, which never carries tdxModuleIdentities, on the legacy behavior. */
+    is_tdx = _json_str_equal(
+        parsed_info->tcb_info_v3.id, OE_TCB_ID_SIZE - 1, TCB_INFO_ID_TDX);
+    if (is_tdx)
+    {
+        tdx_module_version = platform_tcb_level->tdx_tcb_comp_svn[1];
+        tdx_module_isvsvn = platform_tcb_level->tdx_tcb_comp_svn[0];
+        if (tdx_module_version > 0)
+            tdx_comp_start_index = 2;
+    }
+
     if (OE_OK == _read_property_name_and_colon("tdxModuleIdentities", itr, end))
     {
-        OE_TRACE_VERBOSE("Skipping tdxModuleIdentities");
-        OE_CHECK(_skip_json_array_or_object(itr, end));
+        OE_TRACE_VERBOSE("Reading tdxModuleIdentities");
+        OE_CHECK(_read_tdx_module_identities(
+            itr,
+            end,
+            tdx_module_version,
+            tdx_module_isvsvn,
+            &parsed_info->tcb_info_v3.tdx_module_tcb));
         OE_CHECK(_read(',', itr, end));
     }
 
@@ -1129,7 +1425,8 @@ static oe_result_t _read_tcb_info_v3(
             end,
             platform_tcb_level,
             &parsed_info->tcb_info_v3.tcb_level,
-            use_pce_svn));
+            use_pce_svn,
+            tdx_comp_start_index));
     else
     {
         OE_RAISE_MSG(
@@ -1137,6 +1434,24 @@ static oe_result_t _read_tcb_info_v3(
             "Unsupported TCB level info version %d",
             parsed_info->version);
     }
+
+    /* A TD Preserving platform's TDX module must be covered by
+     * tdxModuleIdentities. Without it the module's ISVSVN would go unchecked,
+     * since bytes 0 and 1 were excluded from the platform comparison above. */
+    if (tdx_comp_start_index != 0 &&
+        !parsed_info->tcb_info_v3.tdx_module_tcb.evaluated)
+    {
+        OE_TRACE_ERROR(
+            "No tdxModuleIdentities entry matches TDX module version 0x%02x "
+            "with ISVSVN %u",
+            tdx_module_version,
+            tdx_module_isvsvn);
+        platform_tcb_level->status.AsUINT32 = OE_TCB_LEVEL_STATUS_UNKNOWN;
+    }
+
+    _converge_tdx_module_tcb_status(
+        platform_tcb_level, &parsed_info->tcb_info_v3.tdx_module_tcb);
+
     // itr is expected to point to the '}' that denotes the end of the tcb
     // object. The signature is generated over the entire object including the
     // '}'.
@@ -1186,7 +1501,8 @@ done:
  *     "tcbType": integer,
  *     "tcbEvaluationDataNumber": integer,
  *     "tdxModule": object,
- *     "tdxModuleIdentities": array,
+ *     "tdxModuleIdentities": array (optional; present for TD Preserving
+ *                            capable platforms),
  *     "tcbLevels": array,
  *     "signature": string
  * }

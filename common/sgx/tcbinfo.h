@@ -62,6 +62,36 @@ typedef struct _oe_tcb_info_tdx_module
     uint8_t attributes_mask[OE_TDX_ATTR_SIZE];
 } oe_tcb_info_tdx_module_t;
 
+#define OE_TDX_MODULE_ID_SIZE 8
+
+/*! \struct oe_tdx_module_tcb_level_t
+ *  \brief Result of evaluating a platform's TDX module against the
+ *  tdxModuleIdentities array of a TDX TCB Info V3.
+ *
+ *  TDX modules that support TD Preserving are enumerated individually in
+ *  tdxModuleIdentities rather than by the singular tdxModule object. Byte 1 of
+ *  the platform's TEE TCB SVN selects the identity (its "id" is
+ *  "TDX_" followed by that byte in hex) and byte 0 is the module's ISVSVN,
+ *  which is matched against the identity's own tcbLevels.
+ */
+typedef struct _oe_tdx_module_tcb_level
+{
+    //! True when an identity was selected and a matching TCB level was found.
+    bool evaluated;
+
+    //! Identity that was matched, e.g. "TDX_01".
+    char id[OE_TDX_MODULE_ID_SIZE];
+
+    //! ISVSVN of the matched TCB level.
+    uint16_t isvsvn;
+
+    //! Status of the matched TCB level.
+    oe_tcb_level_status_t status;
+
+    //! Date at which the matched TCB level was certified.
+    oe_datetime_t tcb_date;
+} oe_tdx_module_tcb_level_t;
+
 #define OE_TCB_COMPONENT_SIZE 16
 
 /*! \struct oe_tcb_info_tcb_level_t
@@ -128,6 +158,7 @@ typedef struct _oe_parsed_tcb_info_v3
     uint32_t tcb_type;
     uint32_t tcb_evaluation_data_number;
     oe_tcb_info_tdx_module_t tdx_module;
+    oe_tdx_module_tcb_level_t tdx_module_tcb;
     oe_tcb_info_tcb_level_t tcb_level;
 } oe_parsed_tcb_info_v3_t;
 
@@ -201,6 +232,14 @@ oe_result_t oe_parse_tcb_info_json(
 /**
  * Parse TCB info while matching only SGX and TDX component SVNs. This is for
  * platform state records that do not carry a PCE SVN.
+ *
+ * The platform_tcb_level's tdx_tcb_comp_svn is interpreted as a TEE TCB SVN
+ * array. For a TDX TCB info whose platform TDX module version (byte 1) is
+ * non-zero, bytes 0 and 1 identify the TDX module rather than platform TCB
+ * components: they are excluded from the tcbLevels component comparison and
+ * are instead evaluated against tdxModuleIdentities, exactly as Intel's QVL
+ * does. The module's status is folded into the returned platform status and
+ * the detail is reported in parsed_info->tcb_info_v3.tdx_module_tcb.
  */
 oe_result_t oe_parse_tcb_info_json_without_pce_svn(
     const uint8_t* tcb_info_json,
