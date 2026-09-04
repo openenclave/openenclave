@@ -8,10 +8,10 @@ add_custom_command(
   COMMAND
     openenclave::oeedger8r --trusted ${CMAKE_SOURCE_DIR}/fileencryptor.edl
     --search-path ${OE_INCLUDEDIR} --search-path
-    ${OE_INCLUDEDIR}/openenclave/edl/sgx)
+    ${OE_INCLUDEDIR}/openenclave/edl/sgx ${EDL_USE_HOST_ENTROPY})
 
 set(CRYPTO_SRC ${OE_CRYPTO_LIB}_src)
-if (OE_CRYPTO_LIB STREQUAL "openssl_3")
+if (OE_CRYPTO_LIB STREQUAL "openssl_3" OR OE_CRYPTO_LIB STREQUAL "openssl_symcrypt_fips")
   set(CRYPTO_SRC openssl_src)
 endif ()
 
@@ -29,6 +29,23 @@ target_include_directories(
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} # Needed for #include "../shared.h"
           ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_SOURCE_DIR})
 
-target_link_libraries(
-  enclave openenclave::oeenclave openenclave::oecrypto${OE_CRYPTO_LIB}
-  openenclave::oelibcxx)
+if (${OE_CRYPTO_LIB} STREQUAL "openssl_symcrypt_fips")
+  add_custom_command(
+    TARGET enclave
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/libsymcrypt.so.103
+            ${CMAKE_CURRENT_BINARY_DIR}/libsymcrypt.so.103)
+
+  target_link_libraries(
+    enclave
+    openenclave::oeenclave
+    openenclave::oesymcryptengine
+    openenclave::oecryptoopenssl
+    # Workaround: refer to the root of the build location so that we don't rely on the
+    # order of copy
+    ${CMAKE_BINARY_DIR}/libsymcrypt.so.103
+    openenclave::oelibcxx)
+else()
+  target_link_libraries(
+    enclave openenclave::oeenclave openenclave::oecrypto${OE_CRYPTO_LIB}
+    openenclave::oelibcxx)
+endif()
