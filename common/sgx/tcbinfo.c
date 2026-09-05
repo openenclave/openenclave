@@ -281,6 +281,7 @@ static oe_tcb_level_status_t _parse_tcb_status(
                  length,
                  SGX_TCB_STATUS_CONFIGURATION_AND_SW_HARDENING_NEEDED))
     {
+        status.fields.up_to_date = 1;
         status.fields.configuration_needed = 1;
         status.fields.sw_hardening_needed = 1;
     }
