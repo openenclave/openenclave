@@ -40,7 +40,7 @@ ExternalProject_Add(
   BUILD_ALWAYS off
   # Since tests in tests/oeedger8r are run on actual hardware,
   # there is no benefit to running edger8r's "virtual environment"
-  # tests as part of OE SDK build. Additionallt, while ninja ensures
+  # tests as part of OE SDK build. Additionally, while ninja ensures
   # that these tests would run only once, make runs them every time it
   # is invoked. Hence TEST_BEFORE_INSTALL is off.
   TEST_BEFORE_INSTALL off
