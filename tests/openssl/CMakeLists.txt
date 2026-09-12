@@ -922,3 +922,7 @@ foreach (testcase ${openssltests_3})
   get_testcase_name(${testcase} name "../../3rdparty/openssl/openssl_3/test/")
   add_openssl_test_supported(name TRUE)
 endforeach (testcase)
+
+add_enclave_test(
+  tests/openssl/3-pqc_tls_test openssl_host openssl-3-pqc_tls_test_enc
+  pqc_tls_test ${OPENSSL_3_DIR}/test/certs)
