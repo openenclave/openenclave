@@ -16,6 +16,7 @@ if (UNIX)
       linux/time.c)
 elseif (WIN32)
   set(PLATFORM_HOST_MR_SRC
+      sgx/bignum.c
       crypto/bcrypt/key.c
       crypto/bcrypt/rsa.c
       crypto/bcrypt/sha.c
@@ -36,6 +37,10 @@ elseif (WIN32)
       windows/hostthread.c
       windows/syscall.c
       windows/time.c)
+  if (CMAKE_C_COMPILER_ID MATCHES "Clang")
+    set_source_files_properties(sgx/bignum.c PROPERTIES COMPILE_OPTIONS
+                                                        "-Wno-sign-conversion")
+  endif ()
 else ()
   message(
     FATAL_ERROR "Unknown OS. The only supported OSes are Linux and Windows")
@@ -143,8 +148,6 @@ find_package(Threads REQUIRED)
 
 if (UNIX)
   target_link_libraries(oehostmr PRIVATE openenclave::crypto Threads::Threads)
-elseif (WIN32)
-  target_link_libraries(oehostmr PRIVATE OpenSSL::Crypto)
 endif ()
 
 # For including edge routines.

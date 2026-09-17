@@ -143,9 +143,6 @@ if (UNIX)
   set_source_files_properties(linux/syscall.c PROPERTIES COMPILE_FLAGS
                                                          "-Wno-conversion")
 elseif (WIN32)
-  list(APPEND CMAKE_PREFIX_PATH "${NUGET_PACKAGE_PATH}/OpenSSL/x64/release")
-  find_package(OpenSSL REQUIRED)
-
   list(
     APPEND
     PLATFORM_HOST_ONLY_SRC
@@ -164,6 +161,7 @@ elseif (WIN32)
   list(
     APPEND
     PLATFORM_SDK_ONLY_SRC
+    sgx/bignum.c
     ${PROJECT_SOURCE_DIR}/common/asn1.c
     ${PROJECT_SOURCE_DIR}/common/cert.c
     crypto/bcrypt/cert.c
@@ -177,6 +175,10 @@ elseif (WIN32)
     crypto/bcrypt/sha.c
     windows/hostthread.c
     windows/syscall.c)
+  if (CMAKE_C_COMPILER_ID MATCHES "Clang")
+    set_source_files_properties(sgx/bignum.c PROPERTIES COMPILE_OPTIONS
+                                                        "-Wno-sign-conversion")
+  endif ()
 else ()
   message(
     FATAL_ERROR "Unknown OS. The only supported OSes are Linux and Windows")
@@ -387,7 +389,7 @@ if (UNIX)
     PUBLIC $<$<NOT:$<CONFIG:debug>>:_FORTIFY_SOURCE=2>)
   target_link_libraries(oehostverify INTERFACE -Wl,-z,noexecstack -rdynamic)
 elseif (WIN32)
-  target_link_libraries(oehostverify PRIVATE bcrypt Crypt32 OpenSSL::Crypto)
+  target_link_libraries(oehostverify PRIVATE bcrypt Crypt32)
 endif ()
 
 if (WITH_EEID)
@@ -435,8 +437,7 @@ if (UNIX)
   target_link_libraries(oehostverify_prerelease INTERFACE -Wl,-z,noexecstack
                                                           -rdynamic)
 elseif (WIN32)
-  target_link_libraries(oehostverify_prerelease PRIVATE bcrypt Crypt32
-                                                        OpenSSL::Crypto)
+  target_link_libraries(oehostverify_prerelease PRIVATE bcrypt Crypt32)
 endif ()
 
 if (WITH_EEID)
@@ -559,8 +560,8 @@ macro (add_library_oehost_wrapper)
     target_link_libraries(${PARA_LIB_NAME} PUBLIC ws2_32 shlwapi)
     # Synchronization library is needed for WaitOnAddress/WakeByAddress functions
     # used by switchless ocalls worker threads.
-    target_link_libraries(
-      ${PARA_LIB_NAME} PRIVATE bcrypt Crypt32 Synchronization OpenSSL::Crypto)
+    target_link_libraries(${PARA_LIB_NAME} PRIVATE bcrypt Crypt32
+                                                   Synchronization)
     # TODO: Handle TrustZone on Windows.
   endif ()
 
