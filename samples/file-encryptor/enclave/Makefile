@@ -14,16 +14,11 @@ LDFLAGS=$(shell pkg-config oeenclave-$(CXX_COMPILER) --libs)
 INCDIR=$(shell pkg-config oeenclave-$(C_COMPILER) --variable=includedir)
 CRYPTO_LDFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --variable=${OE_CRYPTO_LIB}libs)
 
-CRYPTO_SRC = $(OE_CRYPTO_LIB)_src
+CRYPTO_SRC = openssl_src
 CXXINCDIR = -I. -I../ -I../..
 CXXSRCS = common/ecalls.cpp \
 		$(CRYPTO_SRC)/encryptor.cpp \
 		$(CRYPTO_SRC)/keys.cpp
-
-# Cover openssl, openssl_symcrypt_fips, and openssl_3
-ifneq (,$(findstring openssl,$(OE_CRYPTO_LIB)))
-	CRYPTO_SRC = openssl_src
-endif
 
 all:
 	$(MAKE) build
@@ -49,5 +44,3 @@ clean:
 keys:
 	openssl genrsa -out private.pem -3 3072
 	openssl rsa -in private.pem -pubout -out public.pem
-
-

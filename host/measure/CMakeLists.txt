@@ -16,24 +16,13 @@ if (UNIX)
       linux/time.c)
 elseif (WIN32)
   set(PLATFORM_HOST_MR_SRC
+      sgx/bignum.c
       crypto/bcrypt/key.c
       crypto/bcrypt/rsa.c
       crypto/bcrypt/sha.c
       crypto/bcrypt/pem.c
       crypto/bcrypt/util.c
       windows/hostthread.c
-      ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/bignum.c
-      # The following files are the dependencies of bignum.c with the default configuration
-      # in mbedTLS 2.28. The OE's configuration is incompatible with Windows complier, but
-      # it is fine as this is the host library.
-      ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/constant_time.c
-      ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/md.c
-      ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/md5.c
-      ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/ripemd160.c
-      ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/sha1.c
-      ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/sha256.c
-      ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/sha512.c
-      ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/platform_util.c
       ${PROJECT_SOURCE_DIR}/common/asn1.c
       ${PROJECT_SOURCE_DIR}/common/cert.c
       crypto/bcrypt/cert.c
@@ -48,6 +37,10 @@ elseif (WIN32)
       windows/hostthread.c
       windows/syscall.c
       windows/time.c)
+  if (CMAKE_C_COMPILER_ID MATCHES "Clang")
+    set_source_files_properties(sgx/bignum.c PROPERTIES COMPILE_OPTIONS
+                                                        "-Wno-sign-conversion")
+  endif ()
 else ()
   message(
     FATAL_ERROR "Unknown OS. The only supported OSes are Linux and Windows")
@@ -155,9 +148,6 @@ find_package(Threads REQUIRED)
 
 if (UNIX)
   target_link_libraries(oehostmr PRIVATE openenclave::crypto Threads::Threads)
-elseif (WIN32)
-  target_include_directories(
-    oehostmr PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
 endif ()
 
 # For including edge routines.

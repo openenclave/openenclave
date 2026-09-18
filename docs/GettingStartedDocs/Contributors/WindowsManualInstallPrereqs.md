@@ -80,7 +80,7 @@ C:\Program Files\LLVM\bin\ld.lld.exe
 Install [Python 3 for Windows](https://www.python.org/downloads/windows/) and ensure that python.exe is available in your PATH.
 Make sure the checkbox for PIP is checked when installing.
 
-Python 3 is used as part of the mbedtls tests and for cmake-format.
+Python 3 is used for cmake-format and test tooling.
 
 ## ShellCheck
 

@@ -50,7 +50,6 @@ $ clang++-11 ${cxxflags} -o enc enc.cpp ${libs}
 ```
 
 To build an enclave application with a specific crypto library, additional commands are needed to incorporate additional source files and headers. In this example, `OE_CRYPTO_LIB` is set to `openssl`. The values that `OE_CRYPTO_LIB` supports are:
-- `mbedtls`
 - `openssl`
 - `openssl_symcrypt_fips`
 - `openssl_3`

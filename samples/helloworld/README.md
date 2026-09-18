@@ -217,22 +217,18 @@ Only the signed version of the enclave `helloworldenc.signed` is loadable on Lin
 The enclave in this samples links against the Open Enclave SDK libraries (in the following order):
 
 - oeenclave
-- oecryptombedtls**
+- oecryptoopenssl
 - oelibc
 - oesyscall
 - oecore
 
-** Developer can link against `oecryptoopenssl` library by changing `OE_CRYPTO_LIB` variable in Makefile.
-
 When compiling with LVI mitigation, it links against the LVI-mitigated versions of those libraries instead:
 
 - oeenclave-lvi-cfg
-- oecryptombedtls-lvi-cfg**
+- oecryptoopenssl-lvi-cfg
 - oelibc-lvi-cfg
 - oesyscall-lvi-cfg
 - oecore-lvi-cfg
-
-** Developer can link against `oecryptoopenssl-lvi-cfg` library by changing `OE_CRYPTO_LIB` variable in Makefile.
 
 `helloworldenc` is the resulting enclave executable (unsigned).
 

@@ -6,7 +6,7 @@ It has the following properties:
 
 - Written in C++
 - Demonstrates an implementation of attestation
-- Use of mbedTLS within the enclave
+- Use of OpenSSL 3 within the enclave
 - Use Asymmetric / Public-Key Encryption to establish secure communications between two attesting enclaves
 - Enclave APIs used:
   - `oe_verifier_initialize()`
@@ -246,14 +246,12 @@ As shown in the sample, the set of validations performed on these properties is 
 
 ## Using Cryptography in an Enclave
 
-The `attestation/common/crypto.cpp` file from the sample illustrates how to use mbedTLS inside the enclave for cryptographic operations such as:
+The `attestation/common/crypto.cpp` file from the sample illustrates how to use OpenSSL 3 inside the enclave for cryptographic operations such as:
 
 - RSA key generation, encryption and decryption
 - SHA256 hashing
 
-In general, the Open Enclave SDK provides default support for mbedTLS layered on top of the Open Enclave core runtime with a small integration surface so that it can be switched out by open source developers in the future for your choice of crypto libraries.
-
-See [here](https://github.com/openenclave/openenclave/tree/master/docs/MbedtlsSupport.md) for supported mbedTLS functions
+The sample uses the OpenSSL EVP interface provided by the Open Enclave SDK.
 
 ## Build and run
 

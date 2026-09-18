@@ -3,9 +3,7 @@
 
 .PHONY: all symcrypt build clean run
 
-# set OE_CRYPTO_LIB to either "mbedtls" or "openssl" based on the crypto wrapper to be used.
-# OE_CRYPTO_LIB is case sensitive. Use all lowercase letters.
-OE_CRYPTO_LIB := mbedtls
+OE_CRYPTO_LIB ?= openssl_3
 export OE_CRYPTO_LIB
 
 TARGETS =
@@ -15,7 +13,6 @@ SYMCRYPT_URL = https://github.com/microsoft/SymCrypt/releases/download/v103.8.0/
 SYMCRYPT_SHA256 = 0D5F279A00A15953A9D6DB8B78BBD07AAD169EA93BBEA729ECDA134889943A03
 SYMCRYPT_DIR = SymCrypt
 SYMCRYPT_SO = libsymcrypt.so.103.8.0
-# The linker can only resolve up to single number after .so
 SYMCRYPT_LINK_SO = libsymcrypt.so.103
 
 ifneq (,$(findstring symcrypt,$(OE_CRYPTO_LIB)))
@@ -36,7 +33,6 @@ symcrypt:
 	cp ${SYMCRYPT_DIR}/lib/${SYMCRYPT_SO} client/enc/${SYMCRYPT_LINK_SO}
 
 build:
-	make symcrypt
 	echo ${OE_CRYPTO_LIB}
 	$(MAKE) -C server
 	$(MAKE) -C client

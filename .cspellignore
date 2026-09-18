@@ -141,8 +141,6 @@ LSB
 marius
 Marsaglia
 maxfp
-MBEDTLS
-MEBEDTLS
 metadata
 mgmt
 millert
@@ -323,9 +321,6 @@ IntelSGXPCKProcessor
 ISVM
 libsgx
 libssl
-lmbedcrypto
-lmbedtls
-lmbedx
 loeenclave
 mbed
 NGSA

@@ -81,3 +81,4 @@ See [Using the Open Enclave SDK](Linux_using_oe_sdk.md) for verifying and using 
 In the attestation sample, you can either take the in-process call path or out-of-process call path to generate evidence of format `OE_FORMAT_UUID_SGX_ECDSA`. Please refer to the following README file for more information:
 
  - [The Attestation Sample](/samples/attestation/README.md#determining-call-path-for-sgx-quote-generation)
+
