@@ -373,7 +373,8 @@ For development of this extension, or running from source code directly
 To run the extension from this repository, following these instructions:
 
 1. Clone this repository
-   `git clone --recursive https://github.com/openenclave/openenclave --branch feature.new_platforms`.
+   `git clone https://github.com/openenclave/openenclave --branch feature.new_platforms`,
+   then run `git -C openenclave submodule update --init`.
 1. Navigate to `new_platforms\vscode-extension` in the cloned folder.
 1. Run npm to install the dependencies: `npm install` (see the
    [requirements section](#Requirements) for npm installation link).

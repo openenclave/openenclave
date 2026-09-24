@@ -9,7 +9,8 @@ EMU_PATH=emu
 
 # Clone the SDK
 if [ ! -d sdk ]; then
-    git clone --recursive --depth=1 https://github.com/openenclave/openenclave sdk
+    git clone --depth=1 https://github.com/openenclave/openenclave sdk
+    git -C sdk submodule update --init
 fi
 
 # Delete all previous output
