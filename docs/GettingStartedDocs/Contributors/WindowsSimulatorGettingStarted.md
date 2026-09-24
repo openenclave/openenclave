@@ -19,7 +19,8 @@ A version of Windows OS :
 
 ```powershell
 cd C:/Users/test/
-git clone --recursive https://github.com/openenclave/openenclave.git
+git clone https://github.com/openenclave/openenclave.git
+git -C openenclave submodule update --init
 ```
 
 This creates a source tree under the directory called `openenclave`.

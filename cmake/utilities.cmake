@@ -9,8 +9,7 @@ function (check_submodule_not_empty path)
     message(
       FATAL_ERROR
         "Submodule ${path} is empty. You can initialize the submodule now with \
-         'git submodule update --recursive --init',\
-         or during 'git clone' by passing '--recursive'.")
+         'git submodule update --init'.")
   endif ()
 endfunction ()
 

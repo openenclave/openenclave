@@ -11,7 +11,8 @@ but not for development and building.
 ## Clone the Open Enclave SDK
 
 ```bash
-git clone --recursive https://github.com/openenclave/openenclave.git
+git clone https://github.com/openenclave/openenclave.git
+git -C openenclave submodule update --init
 ```
 
 ## Install Build Requirements

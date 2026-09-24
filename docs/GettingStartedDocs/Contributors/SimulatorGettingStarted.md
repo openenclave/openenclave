@@ -10,7 +10,8 @@
 Use the following command to download the source code and set the current directory to it.
 
 ```bash
-git clone --recursive https://github.com/openenclave/openenclave.git
+git clone https://github.com/openenclave/openenclave.git
+git -C openenclave submodule update --init
 cd openenclave
 ```
 

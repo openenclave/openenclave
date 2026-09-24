@@ -143,7 +143,8 @@ enclaves. Then, you must copy your enclaves into it.
 ```bash
 # [ TERM 2 ]
 
-git clone --recursive https://github.com/openenclave/openenclave.git sdk
+git clone https://github.com/openenclave/openenclave.git sdk
+git -C sdk submodule update --init
 
 cd sdk
 

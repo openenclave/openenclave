@@ -335,7 +335,8 @@ care to replace the path indicated for `OE_TA_DEV_KIT_DIR` to point to the
 output of the LSDK build as generated in the previous steps:
 
 ```bash
-git clone --recursive https://github.com/openenclave/openenclave.git sdk
+git clone https://github.com/openenclave/openenclave.git sdk
+git -C sdk submodule update --init
 
 cd sdk
 

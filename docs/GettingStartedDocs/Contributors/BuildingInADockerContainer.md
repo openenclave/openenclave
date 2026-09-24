@@ -31,7 +31,8 @@ sudo docker run --device /dev/sgx_enclave:/dev/sgx_enclave --device /dev/sgx_pro
 5. Clone the Open Enclave repository from within this container and run the build and tests. For example, if your system has the SGX DCAP driver installed and it has been made available to the container:
 ```bash
 cd ~
-git clone --recursive https://github.com/openenclave/openenclave.git
+git clone https://github.com/openenclave/openenclave.git
+git -C openenclave submodule update --init
 cd openenclave
 mkdir build
 cd build

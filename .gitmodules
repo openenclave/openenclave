@@ -1,3 +1,5 @@
+# Initialize these direct dependencies with `git submodule update --init`.
+# Do not use `--recursive`; OpenSSL's nested test submodules are not required.
 [submodule "3rdparty/snmalloc"]
 	path = 3rdparty/snmalloc/snmalloc
 	url = https://github.com/Microsoft/snmalloc.git

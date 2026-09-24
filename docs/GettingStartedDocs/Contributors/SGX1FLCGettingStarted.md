@@ -10,7 +10,8 @@
 Use the following command to download the source code.
 
 ```bash
-git clone --recursive https://github.com/openenclave/openenclave.git
+git clone https://github.com/openenclave/openenclave.git
+git -C openenclave submodule update --init
 ```
 
 This creates a source tree under the directory called openenclave.
