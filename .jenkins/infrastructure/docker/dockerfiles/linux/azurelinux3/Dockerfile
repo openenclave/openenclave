@@ -35,6 +35,7 @@ RUN tdnf install -y \
         perl \
         pkg-config \
         python3 \
+        rpm-build \
         sqlite-devel \
         tar \
         unzip \

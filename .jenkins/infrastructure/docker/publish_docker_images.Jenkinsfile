@@ -19,6 +19,7 @@ pipeline {
         booleanParam(name: "PUBLISH_WINDOWS", defaultValue: true, description: "Publish Windows Docker images?")
         booleanParam(name: "TAG_LATEST", defaultValue: true, description: "Update the latest tag to the currently built DOCKER_TAG")
         booleanParam(name: "PUBLISH_VERSION_FILE", defaultValue: true, description: "Publish versioning information?")
+        booleanParam(name: "PUBLISH_AZL3_MHSM_PREVIEW", defaultValue: false, description: "Publish the Azure Linux 3 MHSM OpenSSL 3.5 preview image?")
     }
     environment {
         OECITEAM_BRANCH = "oeciteam/publish-docker"
@@ -41,6 +42,9 @@ pipeline {
                                         docker pull ${params.CONTAINER_REPO}/oetools-22.04:${params.LINUX_TAG}
                                         docker pull ${params.CONTAINER_REPO}/oetools-azl3:${params.LINUX_TAG}
                                     """
+                                    if (params.PUBLISH_AZL3_MHSM_PREVIEW) {
+                                        sh "docker pull ${params.CONTAINER_REPO}/openenclave-mhsm-azl3-openssl35:${params.LINUX_TAG}"
+                                    }
                                 }
                             }
                         }
@@ -67,6 +71,12 @@ pipeline {
                                         docker tag ${params.CONTAINER_REPO}/oetools-azl3:${params.LINUX_TAG} ${params.CONTAINER_REPO}/oetools-azl3:latest
                                         docker push ${params.CONTAINER_REPO}/oetools-azl3:latest
                                 """
+                                    if (params.PUBLISH_AZL3_MHSM_PREVIEW) {
+                                        sh """
+                                            docker tag ${params.CONTAINER_REPO}/openenclave-mhsm-azl3-openssl35:${params.LINUX_TAG} ${params.CONTAINER_REPO}/openenclave-mhsm-azl3-openssl35:latest
+                                            docker push ${params.CONTAINER_REPO}/openenclave-mhsm-azl3-openssl35:latest
+                                        """
+                                    }
                                 }
                             }
                             post {
@@ -201,6 +211,11 @@ pipeline {
                                     echo "| Base Ubuntu 20.04 | ${params.CONTAINER_REPO}/openenclave-base-ubuntu-20.04:${params.LINUX_TAG} | ${OE_VERSION} | ${BASE_2004_PSW} | ${BASE_2004_DCAP} |" >> DOCKER_IMAGES_new.md
                                     echo "| Full Ubuntu 20.04 | ${params.CONTAINER_REPO}/oetools-20.04:${params.LINUX_TAG} | ${OE_VERSION} | ${FULL_2004_PSW} | ${FULL_2004_DCAP} |" >> DOCKER_IMAGES_new.md
                                 """
+                                if (params.PUBLISH_AZL3_MHSM_PREVIEW) {
+                                    sh """
+                                        echo "| MHSM Azure Linux 3 OpenSSL 3.5 Preview | ${params.CONTAINER_REPO}/openenclave-mhsm-azl3-openssl35:${params.LINUX_TAG} | ${OE_VERSION} | Intel AZL3 Preview | Intel DCAP Preview |" >> DOCKER_IMAGES_new.md
+                                    """
+                                }
                             }
                         }
                         // Add "Previous versions" header, current images, and previous images

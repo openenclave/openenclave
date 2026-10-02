@@ -21,12 +21,16 @@ pipeline {
         booleanParam(name: "TAG_LATEST", defaultValue: true, description: "Update the latest tag to the currently built DOCKER_TAG")
         booleanParam(name: "BUILD_WINDOWS", defaultValue: true, description: "Publish Windows Docker images?")
         booleanParam(name: "BUILD_LINUX", defaultValue: true, description: "Publish Linux Docker images?")
+        booleanParam(name: "BUILD_AZL3_MHSM_PREVIEW", defaultValue: false, description: "Build and publish the Azure Linux 3 MHSM OpenSSL 3.5 preview image?")
         booleanParam(name: "PUBLISH", defaultValue: false, description: "Publish Docker images?")
     }
     stages {
         stage('Set dynamic default parameters') {
             steps {
                 script {
+                    if (params.BUILD_AZL3_MHSM_PREVIEW && !params.BUILD_LINUX) {
+                        error("BUILD_AZL3_MHSM_PREVIEW requires BUILD_LINUX")
+                    }
                     if ( ! params.DOCKER_TAG ) {
                         DOCKER_TAG = helpers.get_date(".") + "${BUILD_NUMBER}"
                     }
@@ -73,6 +77,7 @@ pipeline {
                                 string(name: 'SGX_VERSION', value: params.SGX_VERSION),
                                 string(name: 'BASE_DOCKER_TAG', value: BASE_DOCKER_TAG),
                                 booleanParam(name: 'TAG_LATEST', value: params.TAG_LATEST),
+                                booleanParam(name: 'BUILD_AZL3_MHSM_PREVIEW', value: params.BUILD_AZL3_MHSM_PREVIEW),
                             ]
                     }
                 }
@@ -93,6 +98,7 @@ pipeline {
                         string(name: 'OECI_LIB_VERSION', value: params.OECI_LIB_VERSION),
                         booleanParam(name: 'PUBLISH_LINUX', value: params.BUILD_LINUX),
                         booleanParam(name: 'PUBLISH_WINDOWS', value: params.BUILD_WINDOWS),
+                        booleanParam(name: 'PUBLISH_AZL3_MHSM_PREVIEW', value: params.BUILD_AZL3_MHSM_PREVIEW),
                         booleanParam(name: 'TAG_LATEST', value: params.TAG_LATEST),
                         booleanParam(name: 'PUBLISH_VERSION_FILE', value: true)
                     ]
