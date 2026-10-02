@@ -7,8 +7,18 @@ add_custom_command(
   COMMAND edger8r --untrusted ${CMAKE_CURRENT_SOURCE_DIR}/../oeseal.edl
           --search-path ${PROJECT_SOURCE_DIR}/include -DOE_SGX)
 
-add_executable(oeseal host.c ${CMAKE_CURRENT_BINARY_DIR}/oeseal_u.c)
+list(APPEND SOURCES host.c ${CMAKE_CURRENT_BINARY_DIR}/oeseal_u.c)
+
+if (WIN32)
+  list(APPEND SOURCES getopt_long.c)
+endif ()
+
+add_executable(oeseal ${SOURCES})
 
 target_include_directories(oeseal PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+
+if (WIN32)
+  target_include_directories(oeseal PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+endif ()
 
 target_link_libraries(oeseal oehost)

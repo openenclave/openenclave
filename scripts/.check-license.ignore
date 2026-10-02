@@ -104,6 +104,8 @@ tests/str/test1\.txt
 tools/oesign/getopt\.h
 tools/oesign/getopt_long\.c
 tests/host_verify/data/.*
+tests/tools/oeseal/host/getopt\.h
+tests/tools/oeseal/host/getopt_long\.c
 tests/secure_verify/data/.*
 tests/intel_qve_thread_test/data/.*
 
