@@ -86,7 +86,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   info level is matched using the recorded SGX and TDX component SVNs. Its TCB
   info and signing chain rely on QVL's validation of the same endorsements at
   `OE_POLICY_ENDORSEMENTS_TIME`, when supplied, rather than being revalidated
-  against the current wall clock. The
+  against the current wall clock. When the caller does not provide
+  endorsements, the verifier fetches them once and reuses the same collateral
+  for QVL verification and initial-platform TCB evaluation. The
   aggregate `tcb_status` preserves terminal QVL results (`OUT_OF_DATE`,
   `OUT_OF_DATE_CONFIGURATION_NEEDED`, `REVOKED`, and `INVALID`). Otherwise, a
   terminal initial-platform status overrides the QVL result. When the QVL
