@@ -105,6 +105,9 @@ waiting_for_connection_request:
         goto exit;
     }
 
+    if (!verify_tls_security(ssl_session))
+        goto exit;
+
     printf(TLS_SERVER "<---- Read from client:\n");
     if (read_from_session_peer(
             ssl_session, CLIENT_PAYLOAD, CLIENT_PAYLOAD_SIZE) != 0)

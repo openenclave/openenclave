@@ -136,7 +136,13 @@ oe_result_t initalize_ssl_context(SSL_CONF_CTX*& ssl_conf_ctx, SSL_CTX*& ctx)
         "ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA384";
     const char* cipher_list_tlsv13 =
         "TLS13-AES-256-GCM-SHA384:TLS13-AES-128-GCM-SHA256";
+#ifdef OE_TLS_PQ_HYBRID
+    const char* min_protocol = "TLSv1.3";
+    const char* supported_curves = "X25519MLKEM768";
+#else
+    const char* min_protocol = "TLSv1.2";
     const char* supported_curves = "P-521:P-384:P-256";
+#endif
 
     SSL_CONF_CTX_set_ssl_ctx(ssl_conf_ctx, ctx);
     SSL_CONF_CTX_set_flags(
@@ -144,7 +150,7 @@ oe_result_t initalize_ssl_context(SSL_CONF_CTX*& ssl_conf_ctx, SSL_CTX*& ctx)
         SSL_CONF_FLAG_FILE | SSL_CONF_FLAG_SERVER | SSL_CONF_FLAG_CLIENT);
     int ssl_conf_return_value = -1;
     if ((ssl_conf_return_value =
-             SSL_CONF_cmd(ssl_conf_ctx, "MinProtocol", "TLSv1.2")) < 0)
+             SSL_CONF_cmd(ssl_conf_ctx, "MinProtocol", min_protocol)) < 0)
     {
         printf(
             "Setting MinProtocol for ssl context configuration failed with "
@@ -196,6 +202,32 @@ oe_result_t initalize_ssl_context(SSL_CONF_CTX*& ssl_conf_ctx, SSL_CTX*& ctx)
     ret = OE_OK;
 exit:
     return ret;
+}
+
+bool verify_tls_security(SSL* ssl_session)
+{
+#ifdef OE_TLS_PQ_HYBRID
+    const char* negotiated_group = SSL_get0_group_name(ssl_session);
+
+    if (SSL_version(ssl_session) != TLS1_3_VERSION ||
+        negotiated_group == nullptr ||
+        strcmp(negotiated_group, "X25519MLKEM768") != 0)
+    {
+        printf(
+            "Expected TLSv1.3 with X25519MLKEM768, negotiated %s with %s\n",
+            SSL_get_version(ssl_session),
+            negotiated_group ? negotiated_group : "no group");
+        return false;
+    }
+
+    printf(
+        "Negotiated %s with hybrid group %s\n",
+        SSL_get_version(ssl_session),
+        negotiated_group);
+#else
+    (void)ssl_session;
+#endif
+    return true;
 }
 
 int read_from_session_peer(
