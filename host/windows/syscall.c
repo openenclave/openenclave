@@ -2548,7 +2548,7 @@ int oe_syscall_fcntl_ocall(
         {
             case F_GETFL:
                 // TODO: There is no way to get file access modes on winsock
-                // sockets. Currently this only exists to because mbedtls uses
+                // sockets. Currently this only exists because TLS libraries use
                 // this syscall to check if the socket is blocking. If we want
                 // this syscall to actually work properly for other cases, this
                 // should be revisited.

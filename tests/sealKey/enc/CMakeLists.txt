@@ -10,25 +10,6 @@ add_custom_command(
     edger8r --trusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
     ${DEFINE_OE_SGX} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_enclave(
-  TARGET
-  sealKey_mbedtls_enc
-  UUID
-  ab200889-df37-440e-9c5c-e78a9ce6579e
-  CXX
-  CRYPTO_LIB
-  mbedtls
-  SOURCES
-  enc.cpp
-  ${CMAKE_CURRENT_BINARY_DIR}/sealKey_t.c)
-
-enclave_include_directories(
-  sealKey_mbedtls_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
-  ${CMAKE_CURRENT_SOURCE_DIR})
-
-enclave_compile_features(sealKey_mbedtls_enc PRIVATE
-                         cxx_generalized_initializers)
-
 if (BUILD_OPENSSL)
   add_enclave(
     TARGET

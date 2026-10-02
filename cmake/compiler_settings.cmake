@@ -78,7 +78,7 @@ if (NOT CODE_COVERAGE)
       # empty otherwise.
       set(OE_SPECTRE_MITIGATION_FLAGS ${SPECTRE_MITIGATION_FLAGS})
       # TODO: We really should specify this only on the `oecore` target;
-      # however, the third-party Mbed TLS build needs it too, so we have
+      # however, third-party builds need it too, so we have
       # to keep this here for now.
       add_compile_options(${OE_SPECTRE_MITIGATION_FLAGS})
     else ()

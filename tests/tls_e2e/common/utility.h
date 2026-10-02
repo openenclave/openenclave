@@ -29,7 +29,7 @@ oe_result_t load_oe_modules();
 
 #define SERVER_HTTP_RESPONSE                             \
     "HTTP/1.0 200 OK\r\nContent-Type: text/html\r\n\r\n" \
-    "<h2>mbed TLS Test Server</h2>\r\n"                  \
+    "<h2>Open Enclave TLS Test Server</h2>\r\n"          \
     "<p>Successful connection using: %s</p>\r\n"         \
     "A message from TLS server inside enclave\r\n"
 

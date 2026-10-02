@@ -8,7 +8,7 @@
 #include "common.h"
 
 /* oe_get_crl_distribution_points is shared between host OpenSSL and
- * enclave mbedTLS implementations. Windows host uses a different BCrypt
+ * enclave crypto implementations. Windows host uses a different BCrypt
  * implementation in host/crypto/bcrypt/cert.c. */
 #if defined(__linux__)
 #include <openenclave/internal/asn1.h>

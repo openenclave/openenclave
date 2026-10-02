@@ -1,27 +1,19 @@
 # The File-Encryptor Sample
 
-OE SDK comes with a default crypto support library that supports a [subset of the open sources mbedTLS](https://github.com/openenclave/openenclave/blob/master/docs/MbedtlsSupport.md) library.
-This sample demonstrates how to perform simple file cryptographic operations inside an enclave using mbedTLS library.
+This sample demonstrates how to perform simple file cryptographic operations inside an enclave using OpenSSL 3.
 
 It has the following properties:
 
 - Written in C++
 - Show how to encrypt and decrypt data inside an enclave
 - Show how to derive a key from a password string using [PBKDF2](https://en.wikipedia.org/wiki/PBKDF2)
-- Use AES mbedTLS API to perform encryption and decryption
-- Use the following OE APIs
-  - mbedtls_aes_setkey_*
-  - mbedtls_aes_crypt_cbc
-  - mbedtls_pkcs5_pbkdf2_hmac
-  - mbedtls_ctr_drbg_random
-  - mbedtls_entropy_*
-  - mbedtls_ctr_drbg_*
-  - mbedtls_sha256_*
+- Use the OpenSSL EVP API to perform AES-256-CBC encryption and decryption
+- Use OpenSSL APIs for PBKDF2 key derivation, random generation, and SHA-256 hashing
 - Also runs in OE simulation mode
 
 ## Host application
 
-This sample is relatively straightforward, It's all about the use of the mbedTLS library.
+This sample is relatively straightforward. It demonstrates using OpenSSL inside an enclave.
 
 ![Sample components diagram](diagram.png)
 
@@ -62,7 +54,7 @@ int initialize_encryptor(
     encryption_header_t* header)
 ```
 
-The bulk of the operations done in this enclave call involve allocating resources and setting up mbedTLS for encryption and decryption operations.
+The bulk of the operations done in this enclave call involve allocating resources and setting up OpenSSL for encryption and decryption operations.
 
 #### For encryption operation
 
@@ -90,7 +82,7 @@ int ecall_dispatcher::prepare_encryption_header(
     string password)
 ```
 
-#### For decryption operation 
+#### For decryption operation
 
 In decryption, instead of generating `encryption_header_t` information, initialize_encryptor uses the host provided `encryption_header_t`
 information to validate the input password and extract encryption key for later decryption operations.

@@ -38,8 +38,6 @@ tests/tools/oeapkman/zlib/enc/zpipe.c
 3rdparty/libgcov/compiler-rt/.*
 3rdparty/libgcov/patches/.*
 3rdparty/libunwind/libunwind/.*
-3rdparty/mbedtls/mbedtls/.*
-3rdparty/mbedtls/patches/.*
 3rdparty/musl/libc-test/.*
 3rdparty/musl/musl/.*
 3rdparty/optee/patches/.*
@@ -60,8 +58,6 @@ docs/*
 3rdparty/LICENSES
 3rdparty/libgcov/compiler-rt
 3rdparty/libunwind/setcontext\.S
-3rdparty/mbedtls/config\.h
-3rdparty/mbedtls/mbedtls
 3rdparty/musl/COPYRIGHT
 3rdparty/musl/libc-test
 3rdparty/musl/musl

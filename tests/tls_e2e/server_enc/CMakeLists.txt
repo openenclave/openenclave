@@ -10,24 +10,8 @@ add_custom_command(
     edger8r --trusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
     ${DEFINE_OE_SGX} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_enclave(
-  TARGET
-  mbedtls_tls_server_enc
-  CRYPTO_LIB
-  mbedtls
-  SOURCES
-  mbedtls_server.cpp
-  ../common/mbedtls_utility.cpp
-  ../common/utility.cpp
-  ${CMAKE_CURRENT_BINARY_DIR}/tls_e2e_t.c)
-
 set_source_files_properties(tls_e2e_t.c PROPERTIES COMPILE_FLAGS
                                                    "-Wno-conversion")
-
-enclave_include_directories(mbedtls_tls_server_enc PRIVATE
-                            ${CMAKE_CURRENT_BINARY_DIR})
-
-enclave_link_libraries(mbedtls_tls_server_enc oehostsock oehostresolver)
 
 if (BUILD_OPENSSL)
 

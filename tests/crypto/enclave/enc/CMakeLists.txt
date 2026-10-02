@@ -30,27 +30,6 @@ if (OE_SGX)
        ../../cpu_entropy_test.c)
 endif ()
 
-add_enclave(
-  TARGET
-  crypto_mbedtls_enc
-  UUID
-  f0be7db0-ce7c-4dc4-b8c8-b161f4216225
-  CRYPTO_LIB
-  mbedtls
-  SOURCES
-  enc.c
-  crypto_t.c
-  ${SRCS})
-
-if (CODE_COVERAGE)
-  enclave_compile_definitions(crypto_mbedtls_enc PRIVATE CODE_COVERAGE)
-endif ()
-
-enclave_include_directories(crypto_mbedtls_enc PRIVATE
-                            ${CMAKE_CURRENT_BINARY_DIR})
-
-enclave_link_libraries(crypto_mbedtls_enc)
-
 if (BUILD_OPENSSL)
   add_enclave(
     TARGET

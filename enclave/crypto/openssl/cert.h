@@ -6,8 +6,7 @@
 
 #include <openssl/x509.h>
 
-/* The value is based on the implementation of Mbed TLS
- * (MBEDTLS_X509_MAX_DN_NAME_SIZE). */
+/* Maximum supported X.509 distinguished-name size. */
 #define OE_X509_MAX_NAME_SIZE 256
 
 X509_NAME* X509_parse_name(const char* name_string);

@@ -1,15 +1,9 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#ifdef OE_USE_OPENSSL
 #include <openssl/evp.h>
 #define OE_KEY_TYPE_EC EVP_PKEY_EC
 #define OE_KEY_TYPE_RSA EVP_PKEY_RSA
-#else
-#include <mbedtls/pk.h>
-#define OE_KEY_TYPE_EC MBEDTLS_PK_ECKEY
-#define OE_KEY_TYPE_RSA MBEDTLS_PK_RSA
-#endif
 
 #include <openenclave/attestation/verifier.h>
 #include <openenclave/edger8r/enclave.h>
@@ -130,8 +124,7 @@ oe_result_t generate_key_pair(
 
     if (key_type == OE_KEY_TYPE_EC)
     {
-        params.type =
-            OE_ASYMMETRIC_KEY_EC_SECP256P1; // MBEDTLS_ECP_DP_SECP256R1
+        params.type = OE_ASYMMETRIC_KEY_EC_SECP256P1;
         params.format = OE_ASYMMETRIC_KEY_PEM;
         params.user_data = user_data;
         params.user_data_size = user_data_size;

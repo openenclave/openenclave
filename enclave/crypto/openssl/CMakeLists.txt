@@ -2,7 +2,6 @@
 # Licensed under the MIT License.
 
 set(OECRYPTO_OPENSSL_SOURCE
-    ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/oid.c
     ${PROJECT_SOURCE_DIR}/common/asn1.c
     ${PROJECT_SOURCE_DIR}/common/cert.c
     ${PROJECT_SOURCE_DIR}/common/kdf.c
@@ -44,15 +43,10 @@ maybe_build_using_clangw(oecryptoopenssl_3)
 enclave_enable_code_coverage(oecryptoopenssl)
 enclave_enable_code_coverage(oecryptoopenssl_3)
 
-enclave_include_directories(
-  oecryptoopenssl PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
-  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include>
-  $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/3rdparty/mbedtls>)
+enclave_include_directories(oecryptoopenssl PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-enclave_include_directories(
-  oecryptoopenssl_3 PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
-  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include>
-  $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/3rdparty/mbedtls>)
+enclave_include_directories(oecryptoopenssl_3 PRIVATE
+                            ${CMAKE_CURRENT_BINARY_DIR})
 
 enclave_link_libraries(oecryptoopenssl PUBLIC openssl)
 enclave_link_libraries(oecryptoopenssl_3 PUBLIC openssl_3)

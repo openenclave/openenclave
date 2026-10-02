@@ -9,7 +9,7 @@ Usage: oecertdump ENCLAVE_PATH Options
 
 where Options are:
     --out FILENAME        : specify output filename.
-    --type TYPE           : report (default), ec, or rsa (generate a cerfiticate signed with ec or rsa key)
+    --type TYPE           : report (default) or ec (generate a certificate signed with an EC key)
     --verbose             : print every field in a report or a certificate
 
 Example: host/oecertdump enc/oecertdump_enc --out myoutput.log --type report --verbose

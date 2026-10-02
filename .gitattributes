@@ -25,7 +25,6 @@
 /3rdparty/libcxx/libcxx/**      -text -eol
 /3rdparty/libcxxrt/libcxxrt/**  -text -eol
 /3rdparty/libunwind/libunwind** -text -eol
-/3rdparty/mbedtls/mbedtls/**    -text -eol
 /3rdparty/musl/musl/**          -text -eol
 
 # The result of printf on host side is based on the OS. Thus it is better to
