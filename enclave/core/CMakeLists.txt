@@ -330,7 +330,11 @@ if (OE_SGX)
     # user. There are valid reasons for an end user to use built-ins.
     $<BUILD_INTERFACE:-fno-builtin-malloc
     -fno-builtin-calloc
-    -fno-builtin>)
+    -fno-builtin>
+    # Treat warnings as errors by default. Application based on OE SDK
+    # will inhere this flag, which is consistent to the behavior of the
+    # clangw script.
+    -Werror)
 elseif (OE_TRUSTZONE)
   enclave_compile_options(oecore PUBLIC -fvisibility=hidden ${OE_TZ_TA_C_FLAGS})
 endif ()
