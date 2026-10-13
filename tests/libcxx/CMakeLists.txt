@@ -73,3 +73,6 @@ add_enclave_test(tests/libcxxtest-is_convertible_regression libcxx_host
 
 add_enclave_test(tests/libcxxtest-gcc13_release_regression libcxx_host
                  libcxxtest-gcc13_release_regression_enc)
+
+add_enclave_test(tests/libcxxtest-unordered_regression libcxx_host
+                 libcxxtest-unordered_regression_enc)

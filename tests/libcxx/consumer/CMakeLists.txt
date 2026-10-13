@@ -43,7 +43,8 @@ target_link_libraries(consumer_host PRIVATE openenclave::oehost)
 add_custom_command(OUTPUT test-key.pem COMMAND ${OPENSSL_EXECUTABLE} genrsa
                                                -out test-key.pem -3 3072)
 
-foreach (regression is_convertible_regression gcc13_release_regression)
+foreach (regression is_convertible_regression gcc13_release_regression
+                    unordered_regression)
   add_executable(${regression}
                  enclave.cpp ${CMAKE_CURRENT_BINARY_DIR}/trusted/helloworld_t.c)
   target_include_directories(${regression}
@@ -55,6 +56,10 @@ foreach (regression is_convertible_regression gcc13_release_regression)
       REGRESSION_SOURCE="${CMAKE_CURRENT_SOURCE_DIR}/../enc/${regression}.cpp")
   target_compile_options(
     ${regression} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-Wall;-Wextra;-Werror>)
+  if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(
+      ${regression} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-Wmaybe-uninitialized>)
+  endif ()
   target_link_libraries(
     ${regression} PRIVATE openenclave::oeenclave openenclave::oecryptombedtls
                           openenclave::oelibcxx openenclave::oelibc)
