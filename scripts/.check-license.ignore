@@ -79,6 +79,9 @@ devex/vscode-extension/assets/edgeSolutionTemplateFolder/modules/\[\[project-nam
 devex/vscode-extension/assets/edgeSolutionTemplateFolder/modules/\[\[project-name\]\]/Dockerfile.ls1012
 devex/vscode-extension/src/typings/azure-account.api.d.ts
 docs/CODEOWNERS
+host/sgx/bignum\.c
+host/sgx/bignum\.h
+host/sgx/bn_mul\.h
 LICENSE
 THIRD_PARTY_NOTICES
 VERSION
