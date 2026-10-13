@@ -1,6 +1,6 @@
 # Getting Started with Open Enclave for the Scalys TrustBox
 
-The [TrustBox](https://scalys.com/trustbox-industrial) is an industrial router
+The [TrustBox](https://scalys.com/solutions/networking-ecosystem/trustbox-edge/) is an industrial router
 manufactured by Scalys and serves as Open Enclave's reference hardware
 implementation for ARM TrustZone. The TrustBox incorporates a
 [Grapeboard](https://www.grapeboard.com), also produced by Scalys, which is in
