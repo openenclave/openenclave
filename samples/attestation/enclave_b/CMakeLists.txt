@@ -11,8 +11,8 @@ add_custom_command(
   OUTPUT enclave_a_pubkey.h
   DEPENDS public_key_a ${CMAKE_SOURCE_DIR}/gen_pubkey_header.sh
           ${CMAKE_BINARY_DIR}/enclave_a/public_a.pem
-  COMMAND ${WIN_BASH} ${CMAKE_SOURCE_DIR}/gen_pubkey_header.sh enclave_a_pubkey.h
-          ${CMAKE_BINARY_DIR}/enclave_a/public_a.pem)
+  COMMAND ${WIN_BASH} ${CMAKE_SOURCE_DIR}/gen_pubkey_header.sh
+          enclave_a_pubkey.h ${CMAKE_BINARY_DIR}/enclave_a/public_a.pem)
 
 add_executable(enclave_b ecalls.cpp
                          ${CMAKE_CURRENT_BINARY_DIR}/enclave_a_pubkey.h)

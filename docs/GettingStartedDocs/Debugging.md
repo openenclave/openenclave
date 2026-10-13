@@ -43,9 +43,3 @@ For example, to debug the helloworld sample from the sample build folder:
 Once GDB is started, you can use standard GDB commands to debug through the enclave,
 include setting breakpoints, dumping memory addresses and back tracing the execution stack.
 
-## Known issues:
-
-- The debugger will inevitably catch a SIGILL (Illegal instruction) signal during
-  enclave initialization in the mbedtls_aesni_has_support method. This signal can
-  be continued without issue as it is handled by Open Enclave as part of the CPUID
-  emulation it provides to mbedtls.

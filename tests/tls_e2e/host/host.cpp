@@ -27,11 +27,7 @@
 #define SKIP_RETURN_CODE 2
 
 // A fatal error occured, eg the chain is too long or the vrfy callback failed
-#ifdef OE_USE_OPENSSL
 #define FATAL_TLS_HANDSHAKE_ERROR -0x1 // for openssl server handshake error
-#else
-#define FATAL_TLS_HANDSHAKE_ERROR -0x3000 // for mbedtls handshake error
-#endif
 
 typedef struct _tls_thread_context_config
 {

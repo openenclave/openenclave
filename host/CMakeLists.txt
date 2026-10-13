@@ -161,18 +161,7 @@ elseif (WIN32)
   list(
     APPEND
     PLATFORM_SDK_ONLY_SRC
-    ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/bignum.c
-    # The following files are the dependencies of bignum.c with the default configuration
-    # in mbedTLS 2.28. The OE's configuration is incompatible with Windows complier, but
-    # it is fine as this is the host library.
-    ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/constant_time.c
-    ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/md.c
-    ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/md5.c
-    ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/ripemd160.c
-    ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/sha1.c
-    ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/sha256.c
-    ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/sha512.c
-    ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/platform_util.c
+    sgx/bignum.c
     ${PROJECT_SOURCE_DIR}/common/asn1.c
     ${PROJECT_SOURCE_DIR}/common/cert.c
     crypto/bcrypt/cert.c
@@ -186,6 +175,10 @@ elseif (WIN32)
     crypto/bcrypt/sha.c
     windows/hostthread.c
     windows/syscall.c)
+  if (CMAKE_C_COMPILER_ID MATCHES "Clang")
+    set_source_files_properties(sgx/bignum.c PROPERTIES COMPILE_OPTIONS
+                                                        "-Wno-sign-conversion")
+  endif ()
 else ()
   message(
     FATAL_ERROR "Unknown OS. The only supported OSes are Linux and Windows")
@@ -396,8 +389,6 @@ if (UNIX)
     PUBLIC $<$<NOT:$<CONFIG:debug>>:_FORTIFY_SOURCE=2>)
   target_link_libraries(oehostverify INTERFACE -Wl,-z,noexecstack -rdynamic)
 elseif (WIN32)
-  target_include_directories(
-    oehostverify PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
   target_link_libraries(oehostverify PRIVATE bcrypt Crypt32)
 endif ()
 
@@ -446,9 +437,6 @@ if (UNIX)
   target_link_libraries(oehostverify_prerelease INTERFACE -Wl,-z,noexecstack
                                                           -rdynamic)
 elseif (WIN32)
-  target_include_directories(
-    oehostverify_prerelease
-    PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
   target_link_libraries(oehostverify_prerelease PRIVATE bcrypt Crypt32)
 endif ()
 
@@ -570,9 +558,6 @@ macro (add_library_oehost_wrapper)
 
   elseif (WIN32)
     target_link_libraries(${PARA_LIB_NAME} PUBLIC ws2_32 shlwapi)
-    target_include_directories(
-      ${PARA_LIB_NAME}
-      PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
     # Synchronization library is needed for WaitOnAddress/WakeByAddress functions
     # used by switchless ocalls worker threads.
     target_link_libraries(${PARA_LIB_NAME} PRIVATE bcrypt Crypt32

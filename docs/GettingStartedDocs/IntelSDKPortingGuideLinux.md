@@ -350,10 +350,8 @@ incompatibilities still exist in:
   Linux defines EINITTOKEN as `token_t` with all MAC'ed fields captured in a
   child structure `launch_body_t`; while in the Open Enclave SDK it is defined
   as a flat `einittoken_t` structure.
-- Crypto lib - Intel SGX SDK for Linux supports 2 crypto libs - IPP and
-  OpenSSL, and provides a wrapper layer to unify crypto APIs. The Open Enclave
-  SDK only supports enclave applications calling
-  [MbedTLS](/docs/MbedtlsSupport.md) directly and not through an SDK wrapper.
+- Crypto lib - Intel SGX SDK for Linux supports IPP and OpenSSL and provides a
+  wrapper layer to unify crypto APIs. Open Enclave uses OpenSSL.
 
 ## Authors
 

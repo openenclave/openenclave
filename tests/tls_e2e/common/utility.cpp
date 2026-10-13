@@ -31,7 +31,7 @@ oe_result_t generate_key_pair(
     // tied to enclave instance, it can generate its own key pair using any
     // chosen crypto API
 
-    params.type = OE_ASYMMETRIC_KEY_EC_SECP256P1; // MBEDTLS_ECP_DP_SECP256R1
+    params.type = OE_ASYMMETRIC_KEY_EC_SECP256P1;
     params.format = OE_ASYMMETRIC_KEY_PEM;
     params.user_data = user_data;
     params.user_data_size = user_data_size;

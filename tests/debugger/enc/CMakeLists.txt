@@ -19,7 +19,7 @@ add_enclave(
   # because the invocations of cpuid is not handled properly
   # (i.e., the SIGILL signal).
   CRYPTO_LIB
-  mbedtls
+  openssl
   SOURCES
   enc.c
   contract.c

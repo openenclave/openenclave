@@ -10,13 +10,8 @@ add_custom_command(
     --search-path ${OE_INCLUDEDIR} --search-path
     ${OE_INCLUDEDIR}/openenclave/edl/sgx)
 
-set(CRYPTO_SRC ${OE_CRYPTO_LIB}_src)
-if (OE_CRYPTO_LIB STREQUAL "openssl_3")
-  set(CRYPTO_SRC openssl_src)
-endif ()
-
 add_executable(
-  enclave common/ecalls.cpp ${CRYPTO_SRC}/encryptor.cpp ${CRYPTO_SRC}/keys.cpp
+  enclave common/ecalls.cpp openssl_src/encryptor.cpp openssl_src/keys.cpp
           ${CMAKE_CURRENT_BINARY_DIR}/fileencryptor_t.c)
 if (WIN32)
   maybe_build_using_clangw(enclave)

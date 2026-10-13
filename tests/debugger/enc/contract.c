@@ -2,12 +2,15 @@
 // Licensed under the MIT License.
 
 #include <openenclave/bits/sgx/sgxtypes.h>
+#include <openenclave/enclave.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/globals.h>
+#include <openenclave/internal/sgx/td.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <string.h>
-#include "../../../../enclave/core/sgx/td.h"
+
+void* td_to_tcs(const oe_sgx_td_t* td);
 
 // The following variables are initialized so that the assertions below will
 // fail by default. The test expects the debugger to update the values

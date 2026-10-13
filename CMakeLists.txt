@@ -245,27 +245,20 @@ else () # NOT OE_SGX
   endif ()
 endif ()
 
-if (OE_SGX)
-  # Currently we only support OpenSSL on SGX.
-  set(BUILD_OPENSSL ON)
+set(BUILD_OPENSSL ON CACHE BOOL "Build OpenSSL support.")
+if (NOT BUILD_OPENSSL)
+  message(FATAL_ERROR "BUILD_OPENSSL must be ON because OpenSSL is the only supported crypto library.")
 endif ()
 
 set(DEFAULT_TEST_ENCLAVE_CRYPTO_LIB
-    "mbedtls"
+    "openssl"
     CACHE STRING "Default crypto library used by the enclaves.")
 string(TOLOWER "${DEFAULT_TEST_ENCLAVE_CRYPTO_LIB}"
                DEFAULT_TEST_ENCLAVE_CRYPTO_LIB_LOWER)
-if ((NOT DEFAULT_TEST_ENCLAVE_CRYPTO_LIB_LOWER STREQUAL "mbedtls")
-    AND (NOT DEFAULT_TEST_ENCLAVE_CRYPTO_LIB_LOWER STREQUAL "openssl"))
+if (NOT DEFAULT_TEST_ENCLAVE_CRYPTO_LIB_LOWER STREQUAL "openssl"
+    AND NOT DEFAULT_TEST_ENCLAVE_CRYPTO_LIB_LOWER STREQUAL "openssl_3")
   message(
-    FATAL_ERROR "Unsupported crypto library: ${DEFAULT_ENCLAVE_CRYPTO_LIB}")
-endif ()
-if ((DEFAULT_TEST_ENCLAVE_CRYPTO_LIB_LOWER STREQUAL "openssl")
-    AND (NOT BUILD_OPENSSL))
-  message(
-    FATAL_ERROR
-      "Cannot set OpenSSL as the default crypto library when BUILD_OPENSSL is OFF"
-  )
+    FATAL_ERROR "Unsupported crypto library: ${DEFAULT_TEST_ENCLAVE_CRYPTO_LIB}")
 endif ()
 
 if (WIN32)

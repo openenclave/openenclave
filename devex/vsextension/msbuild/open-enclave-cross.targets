@@ -89,12 +89,6 @@
                 <CryptoDependencies>oecryptoopenssl;opensslssl;opensslcrypto</CryptoDependencies>
             </PropertyGroup>
         </When>
-        <Otherwise>
-            <PropertyGroup>
-                <CryptoLibs>-loecryptombedtls -lmbedtls -lmbedx509 -lmbedcrypto</CryptoLibs>
-                <CryptoDependencies>oecryptombedtls;mbedtls;mbedx509;mbedcrypto</CryptoDependencies>
-            </PropertyGroup>
-        </Otherwise>
     </Choose>
 
     <!-- TEE Shorthands -->

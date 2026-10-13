@@ -38,8 +38,6 @@ tests/tools/oeapkman/zlib/enc/zpipe.c
 3rdparty/libgcov/compiler-rt/.*
 3rdparty/libgcov/patches/.*
 3rdparty/libunwind/libunwind/.*
-3rdparty/mbedtls/mbedtls/.*
-3rdparty/mbedtls/patches/.*
 3rdparty/musl/libc-test/.*
 3rdparty/musl/musl/.*
 3rdparty/optee/patches/.*
@@ -60,8 +58,6 @@ docs/*
 3rdparty/LICENSES
 3rdparty/libgcov/compiler-rt
 3rdparty/libunwind/setcontext\.S
-3rdparty/mbedtls/config\.h
-3rdparty/mbedtls/mbedtls
 3rdparty/musl/COPYRIGHT
 3rdparty/musl/libc-test
 3rdparty/musl/musl
@@ -83,6 +79,9 @@ devex/vscode-extension/assets/edgeSolutionTemplateFolder/modules/\[\[project-nam
 devex/vscode-extension/assets/edgeSolutionTemplateFolder/modules/\[\[project-name\]\]/Dockerfile.ls1012
 devex/vscode-extension/src/typings/azure-account.api.d.ts
 docs/CODEOWNERS
+host/sgx/bignum\.c
+host/sgx/bignum\.h
+host/sgx/bn_mul\.h
 LICENSE
 THIRD_PARTY_NOTICES
 VERSION

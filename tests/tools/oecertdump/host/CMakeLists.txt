@@ -2,8 +2,7 @@
 # Licensed under the MIT License.
 
 if (WIN32)
-  set(CMAKE_PREFIX_PATH
-      "${CMAKE_PREFIX_PATH};C:\\oe_prereqs\\OpenSSL\\x64\\release")
+  list(APPEND CMAKE_PREFIX_PATH "${NUGET_PACKAGE_PATH}/OpenSSL/x64/release")
   find_package(OpenSSL REQUIRED)
 else ()
   find_package(OpenSSL REQUIRED)
@@ -18,8 +17,7 @@ add_custom_command(
 add_executable(oecertdump host.cpp sgx_quote.cpp
                           ${CMAKE_CURRENT_BINARY_DIR}/oecertdump_u.c)
 
-target_include_directories(oecertdump PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
-                                              -I/usr/include/openssl)
+target_include_directories(oecertdump PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 target_link_libraries(oecertdump oehost OpenSSL::SSL)
 
