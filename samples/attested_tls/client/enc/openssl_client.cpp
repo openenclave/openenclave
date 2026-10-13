@@ -247,6 +247,9 @@ int launch_tls_client(char* server_name, char* server_port)
         TLS_CLIENT "successfully established TLS channel:%s\n",
         SSL_get_version(ssl_session));
 
+    if (!verify_tls_security(ssl_session))
+        goto done;
+
     // start the client server communication
     if ((error = communicate_with_server(ssl_session)) != 0)
     {
