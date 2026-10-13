@@ -21,6 +21,7 @@ if (NOT CODE_COVERAGE)
 endif ()
 
 if (UNIX)
+  add_subdirectory(consolefs)
   add_subdirectory(datagram)
   add_subdirectory(epoll)
   add_subdirectory(ids)

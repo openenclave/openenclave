@@ -597,6 +597,7 @@ static int _epoll_fcntl(oe_fd_t* desc, int cmd, uint64_t arg)
 {
     int ret = -1;
     epoll_t* epoll = _cast_epoll(desc);
+    uint64_t argin = 0;
     void* argout = NULL;
     uint64_t argsize = 0;
 
@@ -605,37 +606,27 @@ static int _epoll_fcntl(oe_fd_t* desc, int cmd, uint64_t arg)
 
     switch (cmd)
     {
+        // arg: void
         case OE_F_GETFD:
-        case OE_F_SETFD:
         case OE_F_GETFL:
-        case OE_F_SETFL:
             break;
 
-        case OE_F_GETLK64:
+        // arg: int
+        case OE_F_SETFD:
+        case OE_F_SETFL:
+            argin = arg;
+            break;
+
+        // arg: struct flock*
+        case OE_F_GETLK:
         case OE_F_OFD_GETLK:
+        case OE_F_SETLKW:
+        case OE_F_SETLK:
+        case OE_F_OFD_SETLK:
+        case OE_F_OFD_SETLKW:
             argsize = sizeof(struct oe_flock);
             argout = (void*)arg;
             break;
-
-        case OE_F_SETLKW64:
-        case OE_F_SETLK64:
-        {
-            void* srcp = (void*)arg;
-            argsize = sizeof(struct oe_flock64);
-            argout = (void*)arg;
-            memcpy(argout, srcp, argsize);
-            break;
-        }
-
-        case OE_F_OFD_SETLK:
-        case OE_F_OFD_SETLKW:
-        {
-            void* srcp = (void*)arg;
-            argsize = sizeof(struct oe_flock64);
-            argout = (void*)arg;
-            memcpy(argout, srcp, argsize);
-            break;
-        }
 
         // for sockets
         default:
@@ -651,7 +642,7 @@ static int _epoll_fcntl(oe_fd_t* desc, int cmd, uint64_t arg)
     }
 
     if (oe_syscall_fcntl_ocall(
-            &ret, epoll->host_fd, cmd, arg, argsize, argout) != OE_OK)
+            &ret, epoll->host_fd, cmd, argin, argsize, argout) != OE_OK)
         OE_RAISE_ERRNO(OE_EINVAL);
 
 done:
