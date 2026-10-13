@@ -1631,6 +1631,7 @@ oe_result_t oe_tdx_verify_quote(
     result = OE_OK;
 
 done:
+    free(endorsements_unserialized);
     return result;
 }
 

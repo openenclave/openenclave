@@ -344,6 +344,7 @@ static oe_result_t _evaluate_servtd_init_tcb(
     oe_tcb_info_tcb_level_t platform_tcb_level = {0};
     oe_parsed_tcb_info_t parsed_info = {0};
     oe_cert_chain_t tcb_issuer_chain = {0};
+    bool tcb_issuer_chain_initialized = false;
     const uint8_t* tcb_info = NULL;
     size_t tcb_info_size = 0;
     const uint8_t* tcb_issuer_chain_data = NULL;
@@ -423,6 +424,7 @@ static oe_result_t _evaluate_servtd_init_tcb(
         result = OE_OK;
         goto done;
     }
+    tcb_issuer_chain_initialized = true;
     /* QVL has already authenticated this exact collateral, including its TCB
      * signing chain, using OE_POLICY_ENDORSEMENTS_TIME when supplied. Do not
      * revalidate the certificate against the current wall clock here. The
@@ -537,7 +539,8 @@ static oe_result_t _evaluate_servtd_init_tcb(
     result = OE_OK;
 
 done:
-    oe_cert_chain_free(&tcb_issuer_chain);
+    if (tcb_issuer_chain_initialized)
+        oe_cert_chain_free(&tcb_issuer_chain);
     return result;
 }
 #endif /* OE_TDX_ENABLE_SERVTD_INIT_TCB_EVAL */
@@ -1460,6 +1463,10 @@ static oe_result_t _verify_evidence(
     oe_datetime_t* time = NULL;
     time_t tcb_baseline_date = 0;
     bool has_tcb_baseline_date = false;
+    uint8_t* local_endorsements_buffer = NULL;
+#ifndef OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
+    uint32_t local_endorsements_buffer_size = 0;
+#endif
 
     if (!context || !evidence_buffer || !evidence_buffer_size ||
         (!endorsements_buffer != !endorsements_buffer_size) ||
@@ -1496,6 +1503,26 @@ static oe_result_t _verify_evidence(
     }
     else
         OE_RAISE(OE_INVALID_PARAMETER);
+
+#ifndef OEUTIL_TCB_ALLOW_ANY_ROOT_KEY
+    /* QVL fetches collateral internally when none is supplied, but that
+     * collateral is not returned to OE. Fetch it explicitly so QVL and the
+     * Service-TD initial-TCB evaluation consume the same authenticated data. */
+    if (!endorsements_buffer)
+    {
+        if (evidence_buffer_size > OE_UINT32_MAX)
+            OE_RAISE(OE_INVALID_PARAMETER);
+
+        OE_CHECK(oe_get_tdx_quote_verification_collateral(
+            evidence_buffer,
+            (uint32_t)evidence_buffer_size,
+            &local_endorsements_buffer,
+            &local_endorsements_buffer_size));
+
+        endorsements_buffer = local_endorsements_buffer;
+        endorsements_buffer_size = local_endorsements_buffer_size;
+    }
+#endif
 
     OE_CHECK(oe_verify_quote_with_tdx_endorsements(
         evidence_buffer,
@@ -1541,6 +1568,8 @@ static oe_result_t _verify_evidence(
 
 done:
     oe_free(supplemental_data);
+    if (local_endorsements_buffer)
+        oe_free_tdx_quote_verification_collateral(local_endorsements_buffer);
 
     return result;
 }
