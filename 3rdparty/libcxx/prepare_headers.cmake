@@ -30,7 +30,11 @@ foreach (patch IN LISTS PATCH_FILES)
   # use LF. Normalize patch transport only, never alter the hunk contents.
   file(READ "${patch}" contents)
   string(REPLACE "\r\n" "\n" contents "${contents}")
-  file(WRITE "${staging}/patches/${name}" "${contents}")
+  # Native Windows CMake may write CRLF with file(WRITE), even after the
+  # in-memory normalization above. Substitute once through a template so
+  # literal @variables@ and ${variables} inside patches remain untouched.
+  configure_file("${CMAKE_CURRENT_LIST_DIR}/patch_contents.in"
+                 "${staging}/patches/${name}" @ONLY NEWLINE_STYLE UNIX)
   list(APPEND patches "${staging}/patches/${name}")
 endforeach ()
 
@@ -44,7 +48,8 @@ if (patches)
       COMMAND
         "${CMAKE_COMMAND}" -E env --unset=GIT_DIR --unset=GIT_WORK_TREE
         --unset=GIT_INDEX_FILE "GIT_CEILING_DIRECTORIES=${staging}"
-        "${GIT_EXECUTABLE}" apply ${options} ${patches}
+        "${GIT_EXECUTABLE}" -c core.autocrlf=false -c core.eol=lf apply
+        ${options} ${patches}
       WORKING_DIRECTORY "${staging}/include"
       RESULT_VARIABLE result
       ERROR_VARIABLE diagnostic)

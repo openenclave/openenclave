@@ -42,6 +42,7 @@ ExternalProject_Add_StepDependencies(
   ${LIBCXX_HEADER_PATCHES}
   ${CMAKE_CURRENT_LIST_DIR}/patches/series.cmake
   ${CMAKE_CURRENT_LIST_DIR}/prepare_headers.cmake
+  ${CMAKE_CURRENT_LIST_DIR}/patch_contents.in
   ${CMAKE_CURRENT_LIST_DIR}/__config)
 
 set_property(DIRECTORY PROPERTY ADDITIONAL_MAKE_CLEAN_FILES ${LIBCXX_INCLUDES})
