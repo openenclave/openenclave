@@ -25,6 +25,31 @@ set(OE_CRYPTO_LIB
     openssl_3
     CACHE STRING "Crypto library used by enclaves.")
 
+if (OE_CRYPTO_LIB STREQUAL "openssl_symcrypt_fips")
+  # Download the SymCrypt release package at config-time
+  include(FetchContent)
+  FetchContent_Declare(
+    symcrypt_pkg
+    SOURCE_DIR ${CMAKE_BINARY_DIR}/SymCrypt
+    URL https://github.com/microsoft/SymCrypt/releases/download/v103.0.1/symcrypt-linux-oe_full-AMD64-103.0.1-69dbff3.tar.gz
+    URL_HASH
+      SHA256=27C8C1C309B217E74D6055734D305AA86D8CE9E05D6D75AFD12C885F13CEA710)
+
+  # Make the downloaded package globally available
+  FetchContent_GetProperties(symcrypt_pkg)
+  if (NOT symcrypt_pkg_POPULATED)
+    FetchContent_Populate(symcrypt_pkg)
+  endif ()
+
+  # The linker can only resolve up to single number after .so
+  configure_file(${CMAKE_BINARY_DIR}/SymCrypt/lib/libsymcrypt.so.103.0.1
+                 ${CMAKE_BINARY_DIR}/libsymcrypt.so.103 COPYONLY)
+
+  # Option passed in oeedger8r to include entropy.edl (required by
+  # SymCrypt FIPS module)
+  set(EDL_USE_HOST_ENTROPY "-DEDL_USE_HOST_ENTROPY")
+endif ()
+
 add_subdirectory(enclave)
 add_subdirectory(host)
 
