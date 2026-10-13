@@ -8,7 +8,7 @@ target_include_directories(oesgx PRIVATE ${PROJECT_SOURCE_DIR}/include)
 # assemble into proper collector dir
 set_property(TARGET oesgx PROPERTY RUNTIME_OUTPUT_DIRECTORY ${OE_BINDIR})
 
-if (WIN32)
+if (WIN32 AND MSVC)
   set_target_properties(oesgx PROPERTIES LINK_FLAGS "/Guard:CF")
 endif ()
 
