@@ -24,14 +24,14 @@ pipeline {
         string(name: "DEVKITS_URI", defaultValue: 'https://openenclavepublicstorage.blob.core.windows.net/openenclavedependencies/OE-CI-devkits-d1634ce8.tar.gz', description: "Uri for downloading the OECI Devkit")
         string(name: "AGENTS_LABEL", defaultValue: 'acc-ubuntu-20.04', description: "Label of the agent to use to run this job")
         booleanParam(name: "TAG_LATEST", defaultValue: false, description: "Update the latest tag to the currently built DOCKER_TAG")
-        booleanParam(name: "BUILD_AZL3_MHSM_PREVIEW", defaultValue: false, description: "Build and publish the Azure Linux 3 MHSM OpenSSL 3.5 preview image?")
+        booleanParam(name: "BUILD_AZL3_SDK_PREVIEW", defaultValue: false, description: "Build and publish the Azure Linux 3 SDK integration preview image with OpenSSL 3.5?")
     }
     environment {
         // Docker plugin cannot seem to use credentials from Azure Key Vault
         BASE_DOCKERFILE_DIR = ".jenkins/infrastructure/docker/dockerfiles/linux/base/"
         LINUX_DOCKERFILE = ".jenkins/infrastructure/docker/dockerfiles/linux/Dockerfile"
         AZURELINUX3_DOCKERFILE = ".jenkins/infrastructure/docker/dockerfiles/linux/azurelinux3/Dockerfile"
-        MHSM_AZURELINUX3_DOCKERFILE = ".jenkins/infrastructure/docker/dockerfiles/linux/azurelinux3/mhsm-preview.Dockerfile"
+        SDK_AZURELINUX3_DOCKERFILE = ".jenkins/infrastructure/docker/dockerfiles/linux/azurelinux3/sdk-preview.Dockerfile"
     }
     stages {
         stage("Checkout") {
@@ -205,23 +205,23 @@ pipeline {
                                 }
                             }
 
-                            if (params.BUILD_AZL3_MHSM_PREVIEW) {
-                                sh "rm -rf build/mhsm-preview && mkdir -p build/mhsm-preview/staging"
+                            if (params.BUILD_AZL3_SDK_PREVIEW) {
+                                sh "rm -rf build/azl3-sdk-preview && mkdir -p build/azl3-sdk-preview/staging"
                                 oeazl3.inside("--cap-add=SYS_PTRACE") {
                                     sh """
-                                        cmake -S ${WORKSPACE} -B ${WORKSPACE}/build/mhsm-preview/oe -G Ninja \
+                                        cmake -S ${WORKSPACE} -B ${WORKSPACE}/build/azl3-sdk-preview/oe -G Ninja \
                                             -DCMAKE_BUILD_TYPE=RelWithDebInfo \
                                             -DCMAKE_INSTALL_PREFIX=/opt/openenclave \
                                             -DBUILD_TESTS=OFF \
                                             -DLVI_MITIGATION=None \
                                             -DLVI_MITIGATION_SKIP_TESTS=ON
-                                        cmake --build ${WORKSPACE}/build/mhsm-preview/oe --parallel
-                                        DESTDIR=${WORKSPACE}/build/mhsm-preview/staging \
-                                            cmake --install ${WORKSPACE}/build/mhsm-preview/oe
-                                        cpack --config ${WORKSPACE}/build/mhsm-preview/oe/CPackConfig.cmake \
+                                        cmake --build ${WORKSPACE}/build/azl3-sdk-preview/oe --parallel
+                                        DESTDIR=${WORKSPACE}/build/azl3-sdk-preview/staging \
+                                            cmake --install ${WORKSPACE}/build/azl3-sdk-preview/oe
+                                        cpack --config ${WORKSPACE}/build/azl3-sdk-preview/oe/CPackConfig.cmake \
                                             -G RPM \
-                                            -B ${WORKSPACE}/build/mhsm-preview
-                                        rpm_path=\$(find ${WORKSPACE}/build/mhsm-preview -maxdepth 1 \
+                                            -B ${WORKSPACE}/build/azl3-sdk-preview
+                                        rpm_path=\$(find ${WORKSPACE}/build/azl3-sdk-preview -maxdepth 1 \
                                             -name 'open-enclave-*.rpm' -print -quit)
                                         test -n "\${rpm_path}"
                                         rpm -qlp "\${rpm_path}" | grep --quiet \
@@ -229,23 +229,23 @@ pipeline {
                                         rpm -qlp "\${rpm_path}" | grep --quiet \
                                             '/opt/openenclave/bin/oesign'
                                         cp "\${rpm_path}" \
-                                            ${WORKSPACE}/build/mhsm-preview/open-enclave-azl3.rpm
-                                        tar -C ${WORKSPACE}/build/mhsm-preview/staging/opt \
-                                            -czf ${WORKSPACE}/build/mhsm-preview/openenclave-azl3-openssl35-${TAG_FULL_IMAGE}.tar.gz \
+                                            ${WORKSPACE}/build/azl3-sdk-preview/open-enclave-azl3.rpm
+                                        tar -C ${WORKSPACE}/build/azl3-sdk-preview/staging/opt \
+                                            -czf ${WORKSPACE}/build/azl3-sdk-preview/openenclave-azl3-openssl35-${TAG_FULL_IMAGE}.tar.gz \
                                             openenclave
                                     """
                                 }
 
-                                def mhsmBuildArgs = common.dockerBuildArgs(
+                                def sdkBuildArgs = common.dockerBuildArgs(
                                     "OE_IMAGE_VERSION=${TAG_FULL_IMAGE}",
-                                    "OE_RPM=build/mhsm-preview/open-enclave-azl3.rpm"
+                                    "OE_RPM=build/azl3-sdk-preview/open-enclave-azl3.rpm"
                                 )
-                                def mhsmImage = common.dockerImage(
-                                    "openenclave-mhsm-azl3-openssl35:${TAG_FULL_IMAGE}",
-                                    MHSM_AZURELINUX3_DOCKERFILE,
-                                    "${mhsmBuildArgs}"
+                                def sdkImage = common.dockerImage(
+                                    "openenclave-azl3-openssl35:${TAG_FULL_IMAGE}",
+                                    SDK_AZURELINUX3_DOCKERFILE,
+                                    "${sdkBuildArgs}"
                                 )
-                                mhsmImage.inside("--entrypoint='' --user root:root") {
+                                sdkImage.inside("--entrypoint='' --user root:root") {
                                     sh """
                                         test -x /opt/openenclave/bin/oesign
                                         grep --quiet '# *define OPENSSL_VERSION_TEXT "OpenSSL 3.5.7' \
@@ -261,7 +261,7 @@ pipeline {
                                     returnStatus: true
                                 ) == 0
                                 if (hasSgxDevices) {
-                                    mhsmImage.inside(
+                                    sdkImage.inside(
                                         "--entrypoint='' \
                                         --device /dev/sgx_provision:/dev/sgx_provision \
                                         --device /dev/sgx_enclave:/dev/sgx_enclave \
@@ -270,17 +270,17 @@ pipeline {
                                         sh "oesgx | tee /tmp/oesgx.out && grep --quiet 'supports Software Guard Extensions:SGX1' /tmp/oesgx.out"
                                     }
                                 } else {
-                                    echo "Skipping MHSM hardware smoke test because SGX devices are unavailable"
+                                    echo "Skipping Azure Linux 3 SDK integration preview hardware smoke test because SGX devices are unavailable"
                                 }
 
                                 docker.withRegistry("https://${params.CONTAINER_REPO}") {
-                                    common.exec_with_retry { mhsmImage.push() }
+                                    common.exec_with_retry { sdkImage.push() }
                                     if ( params.TAG_LATEST ) {
-                                        common.exec_with_retry { mhsmImage.push('latest') }
+                                        common.exec_with_retry { sdkImage.push('latest') }
                                     }
                                 }
                                 archiveArtifacts(
-                                    artifacts: "build/mhsm-preview/open-enclave-azl3.rpm,build/mhsm-preview/openenclave-azl3-openssl35-${TAG_FULL_IMAGE}.tar.gz",
+                                    artifacts: "build/azl3-sdk-preview/open-enclave-azl3.rpm,build/azl3-sdk-preview/openenclave-azl3-openssl35-${TAG_FULL_IMAGE}.tar.gz",
                                     fingerprint: true
                                 )
                             }
