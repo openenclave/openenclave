@@ -64,7 +64,11 @@ if (BUILD_OPENSSL)
   enclave_include_directories(openssl_3_tls_client_enc PRIVATE
                               ${CMAKE_CURRENT_BINARY_DIR})
 
-  if (WIN32)
+  if (USE_SNMALLOC)
+    # Match the allocator minimum documented by tests/snmalloc/enc/enc.c.
+    enclave_compile_definitions(openssl_3_tls_client_enc PRIVATE
+                                TLS_CLIENT_HEAP_PAGE_COUNT=4096)
+  elseif (WIN32)
     enclave_compile_definitions(
       openssl_3_tls_client_enc PRIVATE
       $<$<CONFIG:Debug>:TLS_CLIENT_HEAP_PAGE_COUNT=4096>)

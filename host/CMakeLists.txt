@@ -267,12 +267,11 @@ if (OE_SGX)
   # OS specific as well.
   if (UNIX)
     # Download the sgx.h from Linux github repository. Currently use v5.13 tag.
-    file(
-      DOWNLOAD
+    include(${PROJECT_SOURCE_DIR}/cmake/download_verified.cmake)
+    oe_download_verified(
       https://raw.githubusercontent.com/torvalds/linux/v5.13/arch/x86/include/uapi/asm/sgx.h
       ${CMAKE_CURRENT_BINARY_DIR}/sgx.h
-      EXPECTED_HASH
-        SHA256=4764b8ce858579d99f1b66bb1e5f04ba149a38aea15649fff19f65f8d9113fd0)
+      4764b8ce858579d99f1b66bb1e5f04ba149a38aea15649fff19f65f8d9113fd0)
 
     list(APPEND PLATFORM_SDK_ONLY_SRC sgx/linux/vdso.c)
 
