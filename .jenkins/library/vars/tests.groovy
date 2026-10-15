@@ -918,6 +918,9 @@ def azureLinux3SimulationTest(String pr_id = '') {
                 def task = """
                            ${helpers.buildCommand(cmakeArgs, 'Ninja')}
                            ${helpers.TestCommand('^tests/crypto/')}
+                           ctest --tests-regex '^tests/libcxx-header-patches\$|^tests/libcxxtest-(is_convertible_regression|gcc13_release_regression|unordered_regression)\$' --output-on-failure --no-tests=error
+                           cmake --install . --prefix "\$PWD/libcxx-consumer-sdk"
+                           bash "${WORKSPACE}/tests/libcxx/consumer/run.sh" "\$PWD/libcxx-consumer-sdk" "\$PWD/libcxx-consumer-build"
                            """
                 withEnv(["OE_SIMULATION=1"]) {
                     common.ContainerRun("oetools-azl3:${DOCKER_TAG}", 'clang-18', task, runArgs)

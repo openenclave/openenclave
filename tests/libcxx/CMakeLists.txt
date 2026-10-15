@@ -1,6 +1,16 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
+if (BUILD_ENCLAVES)
+  add_test(
+    NAME tests/libcxx-header-patches
+    COMMAND
+      ${CMAKE_COMMAND} "-DLIBCXX_DIR=${PROJECT_SOURCE_DIR}/3rdparty/libcxx"
+      "-DTEST_DIR=${CMAKE_CURRENT_BINARY_DIR}/header-patch-test"
+      "-DGIT_EXECUTABLE=${GIT_EXECUTABLE}" -P
+      ${CMAKE_CURRENT_SOURCE_DIR}/header_patches.cmake)
+endif ()
+
 # Read tests.supported, sanitize the cpp-file, and create the test-case.
 if (ENABLE_FULL_LIBCXX_TESTS)
   file(STRINGS "tests.supported" alltests)
@@ -57,3 +67,12 @@ foreach (testcase ${alltests})
 
   add_enclave_test(tests/libcxxtest-${name} libcxx_host libcxxtest-${name}_enc)
 endforeach (testcase)
+
+add_enclave_test(tests/libcxxtest-is_convertible_regression libcxx_host
+                 libcxxtest-is_convertible_regression_enc)
+
+add_enclave_test(tests/libcxxtest-gcc13_release_regression libcxx_host
+                 libcxxtest-gcc13_release_regression_enc)
+
+add_enclave_test(tests/libcxxtest-unordered_regression libcxx_host
+                 libcxxtest-unordered_regression_enc)

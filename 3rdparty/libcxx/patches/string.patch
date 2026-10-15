@@ -1,0 +1,23 @@
+Subject: Initialize the forward-iterator string representation
+
+Local GCC 13.2 compatibility change for libc++ 10.0.1; not an upstream backport.
+Optimized regex_traits construction triggers maybe-uninitialized when max_size()
+is called on a partially constructed string. Initialize the representation as
+the input-iterator overload already does. __zero() is noexcept and clears only
+representation words, not the allocator, which constructors initialize first.
+This is not evidence that max_size() reads an uninitialized string length.
+
+Tests cover empty/short/long ranges, stateful allocators and allocation failure
+at O2/O3 with warnings as errors. This adds initialization work; performance in
+downstream workloads still requires qualification. Reassess on libc++ upgrades.
+
+--- a/string
++++ b/string
+@@ -2048,6 +2048,7 @@
+ >::type
+ basic_string<_CharT, _Traits, _Allocator>::__init(_ForwardIterator __first, _ForwardIterator __last)
+ {
++    __zero();
+     size_type __sz = static_cast<size_type>(_VSTD::distance(__first, __last));
+     if (__sz > max_size())
+         this->__throw_length_error();
