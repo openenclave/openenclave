@@ -861,10 +861,24 @@ def getDockerSGXDevices(String os_type, String os_version) {
  * Returns the Ubuntu release version (E.g. "18.04")
  */
 def getUbuntuReleaseVer() {
-    sh(
-        returnStdout: true,
-        script: 'lsb_release -rs'
-    ).trim()
+    // Read the agent's OS metadata without launching a durable shell task.
+    // Do not infer the host version from the Docker image version.
+    def release = readFile(file: '/etc/os-release').readLines().find {
+        it.startsWith('VERSION_ID=')
+    }
+    if (release == null) {
+        error('VERSION_ID is missing from /etc/os-release')
+    }
+    def version = release.substring('VERSION_ID='.length()).trim()
+    if (version.length() >= 2 &&
+        ((version.startsWith('"') && version.endsWith('"')) ||
+         (version.startsWith("'") && version.endsWith("'")))) {
+        version = version.substring(1, version.length() - 1)
+    }
+    if (!(version ==~ /[0-9]+\.[0-9]+/)) {
+        error('Invalid Ubuntu VERSION_ID in /etc/os-release')
+    }
+    return version
 }
 
 /**
