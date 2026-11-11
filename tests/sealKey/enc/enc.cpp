@@ -533,8 +533,12 @@ bool TestAsymKey()
     return true;
 }
 
+void TestSealPolicy();
+
 int test_seal_key(int in)
 {
+    TestSealPolicy();
+
     if (TestOEGetPrivilegeKeys() && TestOEGetRegularKeys() &&
         TestOEGetSealKey() && TestAsymKey())
     {
