@@ -23,6 +23,8 @@ struct SealedBlobHeader
 
 static const uint8_t _plaintext[] = "authenticated sealing policy regression";
 static const uint8_t _aad[] = "sealing policy additional data";
+static const oe_seal_setting_t _default_setting =
+    OE_SEAL_SET_SGX_KEYNAME(SGX_KEYSELECT_SEAL);
 
 static uint8_t* _seal(
     const oe_seal_setting_t* settings,
@@ -32,7 +34,7 @@ static uint8_t* _seal(
     size_t* blob_size)
 {
     uint8_t* blob = NULL;
-    OE_TEST(
+    OE_TEST_CODE(
         oe_seal(
             NULL,
             settings,
@@ -42,7 +44,8 @@ static uint8_t* _seal(
             aad,
             aad_size,
             &blob,
-            blob_size) == OE_OK);
+            blob_size),
+        OE_OK);
     OE_TEST(*blob_size == sizeof(SealedBlobHeader) + sizeof(_plaintext));
     return blob;
 }
@@ -105,7 +108,7 @@ static void _test_forged_key_request(
     oe_result_t expected)
 {
     size_t blob_size = 0;
-    uint8_t* blob = _seal(NULL, 0, _aad, sizeof(_aad), &blob_size);
+    uint8_t* blob = _seal(&_default_setting, 1, _aad, sizeof(_aad), &blob_size);
     SealedBlobHeader header;
     memcpy(&header, blob, sizeof(header));
     header.keyrequest.key_name = key_name;
@@ -114,13 +117,14 @@ static void _test_forged_key_request(
 
     uint8_t* key = NULL;
     size_t key_size = 0;
-    OE_TEST(
+    OE_TEST_CODE(
         oe_get_seal_key(
             (const uint8_t*)&header.keyrequest,
             sizeof(header.keyrequest),
             &key,
-            &key_size) == OE_OK);
-    OE_TEST(
+            &key_size),
+        OE_OK);
+    OE_TEST_CODE(
         oe_aes_gcm_encrypt(
             key,
             key_size,
@@ -132,12 +136,13 @@ static void _test_forged_key_request(
             sizeof(_plaintext),
             blob + sizeof(header),
             sizeof(_plaintext),
-            header.tag) == OE_OK);
+            header.tag),
+        OE_OK);
 
     // Prove this is authenticated ciphertext, not a header mutation that the
     // old unseal implementation would already reject during GCM verification.
     uint8_t decrypted[sizeof(_plaintext)];
-    OE_TEST(
+    OE_TEST_CODE(
         oe_aes_gcm_decrypt(
             key,
             key_size,
@@ -149,7 +154,8 @@ static void _test_forged_key_request(
             sizeof(_plaintext),
             decrypted,
             sizeof(decrypted),
-            header.tag) == OE_OK);
+            header.tag),
+        OE_OK);
     OE_TEST(memcmp(decrypted, _plaintext, sizeof(_plaintext)) == 0);
     oe_free_seal_key(key, NULL);
     memcpy(blob, &header, sizeof(header));
@@ -167,7 +173,7 @@ static void _test_rejected_setting(const oe_seal_setting_t* setting)
 {
     uint8_t* blob = NULL;
     size_t blob_size = 0;
-    OE_TEST(
+    OE_TEST_CODE(
         oe_seal(
             NULL,
             setting,
@@ -177,7 +183,8 @@ static void _test_rejected_setting(const oe_seal_setting_t* setting)
             NULL,
             0,
             &blob,
-            &blob_size) == OE_INVALID_PARAMETER);
+            &blob_size),
+        OE_INVALID_PARAMETER);
     OE_TEST(blob == NULL);
 }
 
@@ -216,7 +223,7 @@ void TestSealPolicy()
     _test_rejected_setting(&unsafe_mask);
 
     size_t blob_size = 0;
-    uint8_t* blob = _seal(NULL, 0, NULL, 0, &blob_size);
+    uint8_t* blob = _seal(&_default_setting, 1, NULL, 0, &blob_size);
     _unseal(blob, blob_size, NULL, 0, OE_OK);
     free(blob);
 
