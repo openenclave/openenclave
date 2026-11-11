@@ -15,14 +15,22 @@ INCDIR=$(shell pkg-config oeenclave-$(C_COMPILER) --variable=includedir)
 CRYPTO_LDFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --variable=${OE_CRYPTO_LIB}libs)
 
 CRYPTO_SRC = $(OE_CRYPTO_LIB)_src
+# Cover openssl, openssl_symcrypt_fips, and openssl_3
+ifneq (,$(findstring openssl,$(OE_CRYPTO_LIB)))
+	CRYPTO_SRC = openssl_src
+endif
+
 CXXINCDIR = -I. -I../ -I../..
 CXXSRCS = common/ecalls.cpp \
 		$(CRYPTO_SRC)/encryptor.cpp \
 		$(CRYPTO_SRC)/keys.cpp
 
-# Cover openssl, openssl_symcrypt_fips, and openssl_3
-ifneq (,$(findstring openssl,$(OE_CRYPTO_LIB)))
-	CRYPTO_SRC = openssl_src
+EDL_USE_HOST_ENTROPY =
+SYMCRYPT_OBJ_FILES =
+
+ifeq (${OE_CRYPTO_LIB}, openssl_symcrypt_fips)
+	SYMCRYPT_OBJ_FILES = libsymcrypt.so.103
+	EDL_USE_HOST_ENTROPY = -DEDL_USE_HOST_ENTROPY
 endif
 
 all:
@@ -34,11 +42,12 @@ build:
 	@ echo "Compilers used: $(CC), $(CXX)"
 	oeedger8r ../fileencryptor.edl --trusted \
 		--search-path $(INCDIR) \
-		--search-path $(INCDIR)/openenclave/edl/sgx
+		--search-path $(INCDIR)/openenclave/edl/sgx \
+		$(EDL_USE_HOST_ENTROPY)
 	$(CXX) -g -c $(CXXFLAGS) -DOE_API_VERSION=2 -std=c++11 $(CXXINCDIR) \
 		$(CXXSRCS)
 	$(CC) -g -c $(CFLAGS) -DOE_API_VERSION=2 fileencryptor_t.c -o fileencryptor_t.o
-	$(CXX) -o file-encryptorenc ecalls.o encryptor.o keys.o fileencryptor_t.o $(LDFLAGS) $(CRYPTO_LDFLAGS)
+	$(CXX) -o file-encryptorenc ecalls.o encryptor.o keys.o fileencryptor_t.o $(SYMCRYPT_OBJ_FILES) $(LDFLAGS) $(CRYPTO_LDFLAGS)
 
 sign:
 	oesign sign -e file-encryptorenc -c common/file-encryptor.conf -k private.pem
