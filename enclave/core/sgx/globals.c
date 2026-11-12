@@ -7,8 +7,24 @@
 
 /* Note: The variables below are initialized during enclave loading */
 
-OE_EXPORT extern volatile const oe_sgx_enclave_properties_t
-    oe_enclave_properties_sgx;
+//
+// Declare an invalid oeinfo to ensure .oeinfo section exists
+// - This object is defined weak. Since it is defined in this compilation unit
+//   and -fPIE is used, compiler will emit code to access it without use of
+//   GOT. Thus, oe_enclave_properties_sgx can be used prior to relocation like
+//   _enclave_rva, _reloc_rva etc.
+// - If the enclave has the macro defined, then that definition would be
+//   picked up.
+// - If enclave doesn't have the macro defined, it must go through
+//   oesign to update the stucture, which would override the value.
+//
+OE_WEAK OE_SET_ENCLAVE_SGX(
+    OE_UINT16_MAX,
+    OE_UINT16_MAX,
+    false,
+    OE_UINT16_MAX,
+    OE_UINT16_MAX,
+    OE_UINT16_MAX);
 
 /**
  *****************************************************************************
