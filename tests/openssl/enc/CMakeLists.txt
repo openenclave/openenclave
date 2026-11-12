@@ -188,6 +188,7 @@ set(SSL_TEST_LIST
     "recordlentest"
     "servername_test"
     "sslapitest"
+    "pqc_tls_test"
     "sslbuffertest"
     "sslcorrupttest"
     "tls13ccstest")
@@ -247,7 +248,9 @@ function (add_openssl_test_enc NAME BUILDTEST CRYPTO_LIB)
     message(FATAL_ERROR "${CRYPTO_LIB} is unsupported for OpenSSL tests")
   endif ()
 
-  if (BUILDTEST)
+  if ("${NAME}" STREQUAL "pqc_tls_test")
+    list(APPEND TEST_SRC ${CMAKE_CURRENT_SOURCE_DIR}/pqc_tls_test.c)
+  elseif (BUILDTEST)
     if (CRYPTO_LIB STREQUAL "OpenSSL_3" OR CRYPTO_LIB STREQUAL
                                            "SymCrypt_prov_FIPS")
       list(APPEND TEST_SRC 3-${NAME}.c)
@@ -504,3 +507,5 @@ foreach (testcase ${alltests})
     add_openssl_test_enc(${name} FALSE "SymCrypt_prov_FIPS")
   endif ()
 endforeach (testcase)
+
+add_openssl_test_enc(pqc_tls_test FALSE "OpenSSL_3")
