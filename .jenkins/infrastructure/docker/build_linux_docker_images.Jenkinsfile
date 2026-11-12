@@ -39,7 +39,11 @@ pipeline {
                 cleanWs()
                 checkout([$class: 'GitSCM',
                     branches: [[name: BRANCH_NAME]],
-                    extensions: [],
+                    extensions: [[$class: 'SubmoduleOption',
+                        disableSubmodules: false,
+                        recursiveSubmodules: true,
+                        trackingSubmodules: false,
+                        timeout: 30]],
                     userRemoteConfigs: [[url: "https://github.com/${params.REPOSITORY_NAME}"]]])
             }
         }
@@ -187,6 +191,7 @@ pipeline {
                                 AZURELINUX3_DOCKERFILE
                             )
                             oeazl3.inside("--cap-add=SYS_PTRACE") {
+                                // Tools-only checks: OE is built from the checkout below.
                                 sh """
                                     grep --quiet '^ID=azurelinux\$' /etc/os-release
                                     clang --version
@@ -206,10 +211,20 @@ pipeline {
                             }
 
                             if (params.BUILD_AZL3_SDK_PREVIEW) {
+                                // inside() mounts the checkout; the tools image does not contain OE.
+                                sh '''
+                                    git submodule status --recursive > submodule-status.txt
+                                    if grep -Eq '^[-+U]' submodule-status.txt; then
+                                        echo "Submodules must be initialized at the pinned commits"
+                                        exit 1
+                                    fi
+                                '''
                                 sh "rm -rf build/azl3-sdk-preview && mkdir -p build/azl3-sdk-preview/staging"
                                 oeazl3.inside("--cap-add=SYS_PTRACE") {
                                     sh """
                                         cmake -S ${WORKSPACE} -B ${WORKSPACE}/build/azl3-sdk-preview/oe -G Ninja \
+                                            -DCMAKE_C_COMPILER=clang \
+                                            -DCMAKE_CXX_COMPILER=clang++ \
                                             -DCMAKE_BUILD_TYPE=RelWithDebInfo \
                                             -DCMAKE_INSTALL_PREFIX=/opt/openenclave \
                                             -DBUILD_TESTS=OFF \

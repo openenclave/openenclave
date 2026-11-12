@@ -271,7 +271,9 @@ if (OE_SGX)
     oe_download_verified(
       https://raw.githubusercontent.com/torvalds/linux/v5.13/arch/x86/include/uapi/asm/sgx.h
       ${CMAKE_CURRENT_BINARY_DIR}/sgx.h
-      4764b8ce858579d99f1b66bb1e5f04ba149a38aea15649fff19f65f8d9113fd0)
+      4764b8ce858579d99f1b66bb1e5f04ba149a38aea15649fff19f65f8d9113fd0
+      "https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/plain/arch/x86/include/uapi/asm/sgx.h?h=v5.13"
+    )
 
     list(APPEND PLATFORM_SDK_ONLY_SRC sgx/linux/vdso.c)
 
