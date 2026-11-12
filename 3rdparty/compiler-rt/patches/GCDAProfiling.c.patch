@@ -14,7 +14,7 @@ index 124be3c13..ecca1b16e 100644
  typedef unsigned long long uint64_t;
  #endif
 
-+/* Beginning of the OE modfication */
++/* Beginning of the OE modification */
 +#include "openenclave/bits/module.h"
 +#include "openenclave/bits/fs.h"
 +/* End of the OE modification */
@@ -96,7 +96,7 @@ index 124be3c13..ecca1b16e 100644
    if (atexit_ran == 0) {
      atexit_ran = 1;
 
-+    /* Beginning of the OE modfication */
++    /* Beginning of the OE modification */
 +    if (oe_load_module_host_file_system() != OE_OK) {
 +      fprintf(stderr, "oe_load_module_host_file_system() failed\n");
 +      exit(1);
