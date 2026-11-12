@@ -13,6 +13,7 @@ enclave {
 
     trusted {
         public void run_runtime_test();
+        public void test_collateral_sizes();
         public void register_sgx();
         public void unregister_sgx();
         public void test_sgx();

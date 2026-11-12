@@ -129,6 +129,7 @@ int main(int argc, const char* argv[])
      * to use the latest sgx pccs lib.
      */
 
+    OE_TEST_CODE(test_collateral_sizes(enclave), OE_OK);
     OE_TEST_CODE(run_runtime_test(enclave), OE_OK);
     OE_TEST_CODE(register_sgx(enclave), OE_OK);
     OE_TEST_CODE(test_sgx(enclave), OE_OK);

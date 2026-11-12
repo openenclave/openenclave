@@ -19,11 +19,15 @@ add_enclave(
   mbedtls
   SOURCES
   enc.c
+  collateral_size.c
   ../plugin/tests.c
   ${CMAKE_CURRENT_BINARY_DIR}/plugin_t.c)
 
 enclave_include_directories(plugin_mbedtls_enc PRIVATE
                             ${CMAKE_CURRENT_BINARY_DIR})
+enclave_link_libraries(
+  plugin_mbedtls_enc
+  -Wl,--wrap,oe_get_quote_verification_collateral_with_baseline_ocall)
 
 if (BUILD_OPENSSL)
   add_enclave(
@@ -35,11 +39,15 @@ if (BUILD_OPENSSL)
     openssl
     SOURCES
     enc.c
+    collateral_size.c
     ../plugin/tests.c
     ${CMAKE_CURRENT_BINARY_DIR}/plugin_t.c)
 
   enclave_include_directories(plugin_openssl_enc PRIVATE
                               ${CMAKE_CURRENT_BINARY_DIR})
+  enclave_link_libraries(
+    plugin_openssl_enc
+    -Wl,--wrap,oe_get_quote_verification_collateral_with_baseline_ocall)
 
   add_enclave(
     TARGET
@@ -50,9 +58,13 @@ if (BUILD_OPENSSL)
     openssl_3
     SOURCES
     enc.c
+    collateral_size.c
     ../plugin/tests.c
     ${CMAKE_CURRENT_BINARY_DIR}/plugin_t.c)
 
   enclave_include_directories(plugin_openssl_3_enc PRIVATE
                               ${CMAKE_CURRENT_BINARY_DIR})
+  enclave_link_libraries(
+    plugin_openssl_3_enc
+    -Wl,--wrap,oe_get_quote_verification_collateral_with_baseline_ocall)
 endif ()
