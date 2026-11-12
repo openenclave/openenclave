@@ -10,6 +10,14 @@ add_custom_command(
     edger8r --trusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
     ${DEFINE_OE_SGX} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
+# Keep the generated forwarding stub available behind the test replacement.
+set_source_files_properties(
+  ${CMAKE_CURRENT_BINARY_DIR}/plugin_t.c
+  PROPERTIES
+    COMPILE_DEFINITIONS
+    oe_get_quote_verification_collateral_with_baseline_ocall=oe_test_get_quote_verification_collateral_with_baseline_ocall
+)
+
 add_enclave(
   TARGET
   plugin_mbedtls_enc
@@ -25,9 +33,6 @@ add_enclave(
 
 enclave_include_directories(plugin_mbedtls_enc PRIVATE
                             ${CMAKE_CURRENT_BINARY_DIR})
-enclave_link_libraries(
-  plugin_mbedtls_enc
-  -Wl,--wrap,oe_get_quote_verification_collateral_with_baseline_ocall)
 
 if (BUILD_OPENSSL)
   add_enclave(
@@ -45,9 +50,6 @@ if (BUILD_OPENSSL)
 
   enclave_include_directories(plugin_openssl_enc PRIVATE
                               ${CMAKE_CURRENT_BINARY_DIR})
-  enclave_link_libraries(
-    plugin_openssl_enc
-    -Wl,--wrap,oe_get_quote_verification_collateral_with_baseline_ocall)
 
   add_enclave(
     TARGET
@@ -64,7 +66,4 @@ if (BUILD_OPENSSL)
 
   enclave_include_directories(plugin_openssl_3_enc PRIVATE
                               ${CMAKE_CURRENT_BINARY_DIR})
-  enclave_link_libraries(
-    plugin_openssl_3_enc
-    -Wl,--wrap,oe_get_quote_verification_collateral_with_baseline_ocall)
 endif ()
