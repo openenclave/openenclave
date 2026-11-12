@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/internal/tests.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "../../../common/sgx/collateral.h"
