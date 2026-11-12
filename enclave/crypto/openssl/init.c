@@ -31,7 +31,8 @@ static int _initialize_symcrypt_engine()
     int result;
 
     result = SCOSSL_ENGINE_Initialize();
-    if (result != OE_SYMCRYPT_ENGINE_SUCCESS)
+    if (result != OE_SYMCRYPT_ENGINE_SUCCESS &&
+        result != OE_SYMCRYPT_ENGINE_NOT_LINKED)
         OE_TRACE_ERROR("SymCrypt engine initialization failed");
 
     return (result == OE_SYMCRYPT_ENGINE_SUCCESS) ? 1 : 0;
@@ -63,32 +64,42 @@ static int _initialize_symcrypt_provider()
     // fall back on it when operations not supported by SymCrypt are called
     if (atexit(_finalize_prov) != 0)
     {
+        OE_TRACE_ERROR(
+            "initializing SymCrypt provider: registering atexit handler "
+            "failed");
         result = 0;
         goto done;
     }
 
     _default_prov = OSSL_PROVIDER_load(NULL, "default");
-
     if (_default_prov == NULL)
     {
+        OE_TRACE_ERROR(
+            "initializing SymCrypt provider: loading default provider failed");
         result = 0;
         goto done;
     }
 
     result = OSSL_PROVIDER_add_builtin(
         NULL, "symcrypt_provider", OSSL_provider_init);
-    _scossl_prov = OSSL_PROVIDER_load(NULL, "symcrypt_provider");
+    if (!result)
+    {
+        OE_TRACE_ERROR(
+            "initializing SymCrypt provider: adding SymCrypt provider failed");
+        goto done;
+    }
 
+    _scossl_prov = OSSL_PROVIDER_load(NULL, "symcrypt_provider");
     if (_scossl_prov == NULL)
     {
+        OE_TRACE_WARNING(
+            "initializing SymCrypt provider: loading SymCrypt provider failed "
+            "(maybe not linked)");
         result = 0;
         goto done;
     }
 
 done:
-    if (result == 0)
-        OE_TRACE_ERROR("OpenSSL provider initialization failed");
-
     return result;
 }
 #else
