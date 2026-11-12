@@ -23,7 +23,8 @@ add_enclave(
   seal_policy.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/sealKey_t.c)
 
-enclave_link_libraries(sealKey_mbedtls_enc oeseal_gcmaes)
+enclave_link_libraries(sealKey_mbedtls_enc oeseal_gcmaes
+                       -Wl,--wrap,oe_aes_gcm_decrypt)
 
 enclave_include_directories(
   sealKey_mbedtls_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
@@ -46,7 +47,8 @@ if (BUILD_OPENSSL)
     seal_policy.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/sealKey_t.c)
 
-  enclave_link_libraries(sealKey_openssl_enc oeseal_gcmaes)
+  enclave_link_libraries(sealKey_openssl_enc oeseal_gcmaes
+                         -Wl,--wrap,oe_aes_gcm_decrypt)
 
   enclave_include_directories(
     sealKey_openssl_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
@@ -68,7 +70,8 @@ if (BUILD_OPENSSL)
     seal_policy.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/sealKey_t.c)
 
-  enclave_link_libraries(sealKey_openssl_3_enc oeseal_gcmaes)
+  enclave_link_libraries(sealKey_openssl_3_enc oeseal_gcmaes
+                         -Wl,--wrap,oe_aes_gcm_decrypt)
 
   enclave_include_directories(
     sealKey_openssl_3_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}

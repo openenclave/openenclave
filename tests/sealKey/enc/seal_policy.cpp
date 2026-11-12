@@ -26,6 +26,58 @@ static const uint8_t _aad[] = "sealing policy additional data";
 static const oe_seal_setting_t _default_setting =
     OE_SEAL_SET_SGX_KEYNAME(SGX_KEYSELECT_SEAL);
 
+static uint8_t* _host_blob_to_mutate = NULL;
+static bool _mutated_host_blob = false;
+
+extern "C" oe_result_t __real_oe_aes_gcm_decrypt(
+    const uint8_t* key,
+    size_t key_size,
+    const uint8_t* iv,
+    size_t iv_size,
+    const uint8_t* aad,
+    size_t aad_size,
+    const uint8_t* input,
+    size_t input_size,
+    uint8_t* output,
+    size_t output_size,
+    const uint8_t* tag);
+
+extern "C" oe_result_t __wrap_oe_aes_gcm_decrypt(
+    const uint8_t* key,
+    size_t key_size,
+    const uint8_t* iv,
+    size_t iv_size,
+    const uint8_t* aad,
+    size_t aad_size,
+    const uint8_t* input,
+    size_t input_size,
+    uint8_t* output,
+    size_t output_size,
+    const uint8_t* tag)
+{
+    if (_host_blob_to_mutate != NULL)
+    {
+        // Change host memory at the crypto boundary without a timing race.
+        // Authentication and decryption must instead use a private snapshot.
+        OE_TEST(oe_is_within_enclave(input, input_size));
+        _host_blob_to_mutate[sizeof(SealedBlobHeader)] ^= 1;
+        _mutated_host_blob = true;
+    }
+
+    return __real_oe_aes_gcm_decrypt(
+        key,
+        key_size,
+        iv,
+        iv_size,
+        aad,
+        aad_size,
+        input,
+        input_size,
+        output,
+        output_size,
+        tag);
+}
+
 static uint8_t* _seal(
     const oe_seal_setting_t* settings,
     size_t settings_count,
@@ -188,9 +240,36 @@ static void _test_rejected_setting(const oe_seal_setting_t* setting)
     OE_TEST(blob == NULL);
 }
 
+static void _test_host_ciphertext_snapshot()
+{
+    size_t blob_size = 0;
+    uint8_t* blob = _seal(&_default_setting, 1, _aad, sizeof(_aad), &blob_size);
+    uint8_t* host_blob = (uint8_t*)oe_host_malloc(blob_size);
+    OE_TEST(host_blob != NULL);
+    memcpy(host_blob, blob, blob_size);
+
+    _host_blob_to_mutate = host_blob;
+    _mutated_host_blob = false;
+    uint8_t* plaintext = NULL;
+    size_t plaintext_size = 0;
+    oe_result_t result = oe_unseal(
+        host_blob, blob_size, _aad, sizeof(_aad), &plaintext, &plaintext_size);
+    _host_blob_to_mutate = NULL;
+
+    OE_TEST_CODE(result, OE_OK);
+    OE_TEST(_mutated_host_blob);
+    OE_TEST(
+        host_blob[sizeof(SealedBlobHeader)] != blob[sizeof(SealedBlobHeader)]);
+    _check_plaintext(result, plaintext, plaintext_size);
+    free(plaintext);
+    oe_host_free(host_blob);
+    free(blob);
+}
+
 void TestSealPolicy()
 {
     printf("=== Testing SGX sealing key policy validation\n");
+    _test_host_ciphertext_snapshot();
     _test_forged_key_request(
         SGX_KEYSELECT_SEAL,
         0,
