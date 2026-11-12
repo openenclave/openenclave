@@ -1,6 +1,8 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <openenclave/attestation/attester.h>
+#include <openenclave/attestation/sgx/evidence.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <string.h>
@@ -199,6 +201,28 @@ void test_collateral_sizes()
             {
                 OE_TEST(result == OE_UNEXPECTED);
                 OE_TEST(memcmp(&args, &before, sizeof(args)) == 0);
+
+                const oe_uuid_t format = {OE_FORMAT_UUID_SGX_ECDSA};
+                uint8_t* evidence = NULL;
+                size_t evidence_size = 0;
+                uint8_t* endorsements = NULL;
+                size_t endorsements_size = 0;
+                _calls = 0;
+                OE_TEST(
+                    oe_get_evidence(
+                        &format,
+                        0,
+                        NULL,
+                        0,
+                        NULL,
+                        0,
+                        &evidence,
+                        &evidence_size,
+                        &endorsements,
+                        &endorsements_size) == OE_UNEXPECTED);
+                OE_TEST(_calls == (_retry ? 2 : 1));
+                OE_TEST(evidence == NULL && evidence_size == 0);
+                OE_TEST(endorsements == NULL && endorsements_size == 0);
             }
             else
             {
@@ -215,5 +239,6 @@ void test_collateral_sizes()
         }
     }
     _active = false;
-    printf("====== collateral sizes: 14 rejections and 2 controls passed\n");
+    printf("====== collateral sizes: 14 direct and 14 evidence rejections "
+           "and 2 controls passed\n");
 }
