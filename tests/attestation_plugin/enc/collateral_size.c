@@ -19,7 +19,7 @@ static size_t _calls;
 static size_t _initial_capacities[COLLATERAL_FIELDS];
 static size_t _capacities[COLLATERAL_FIELDS];
 
-oe_result_t __real_oe_get_quote_verification_collateral_with_baseline_ocall(
+oe_result_t oe_test_get_quote_verification_collateral_with_baseline_ocall(
     oe_result_t* retval,
     uint8_t fmspc[6],
     uint8_t collateral_provider,
@@ -47,35 +47,7 @@ oe_result_t __real_oe_get_quote_verification_collateral_with_baseline_ocall(
     size_t qe_identity_issuer_chain_size,
     size_t* qe_identity_issuer_chain_size_out);
 
-oe_result_t __wrap_oe_get_quote_verification_collateral_with_baseline_ocall(
-    oe_result_t* retval,
-    uint8_t fmspc[6],
-    uint8_t collateral_provider,
-    void* baseline,
-    size_t baseline_size,
-    void* tcb_info,
-    size_t tcb_info_size,
-    size_t* tcb_info_size_out,
-    void* tcb_info_issuer_chain,
-    size_t tcb_info_issuer_chain_size,
-    size_t* tcb_info_issuer_chain_size_out,
-    void* pck_crl,
-    size_t pck_crl_size,
-    size_t* pck_crl_size_out,
-    void* root_ca_crl,
-    size_t root_ca_crl_size,
-    size_t* root_ca_crl_size_out,
-    void* pck_crl_issuer_chain,
-    size_t pck_crl_issuer_chain_size,
-    size_t* pck_crl_issuer_chain_size_out,
-    void* qe_identity,
-    size_t qe_identity_size,
-    size_t* qe_identity_size_out,
-    void* qe_identity_issuer_chain,
-    size_t qe_identity_issuer_chain_size,
-    size_t* qe_identity_issuer_chain_size_out);
-
-oe_result_t __wrap_oe_get_quote_verification_collateral_with_baseline_ocall(
+oe_result_t oe_get_quote_verification_collateral_with_baseline_ocall(
     oe_result_t* retval,
     uint8_t fmspc[6],
     uint8_t collateral_provider,
@@ -104,7 +76,7 @@ oe_result_t __wrap_oe_get_quote_verification_collateral_with_baseline_ocall(
     size_t* qe_identity_issuer_chain_size_out)
 {
     if (!_active)
-        return __real_oe_get_quote_verification_collateral_with_baseline_ocall(
+        return oe_test_get_quote_verification_collateral_with_baseline_ocall(
             retval,
             fmspc,
             collateral_provider,
