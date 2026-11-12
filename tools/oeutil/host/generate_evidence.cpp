@@ -14,9 +14,11 @@
 #include <openenclave/internal/sgx/tests.h>
 #include <openenclave/internal/sgxcertextensions.h>
 #include <openenclave/internal/tests.h>
+#if !defined(_WIN32)
 #include <openssl/bio.h>
 #include <openssl/pem.h>
 #include <openssl/x509.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -27,21 +29,12 @@
 #if defined(__linux__)
 #include <unistd.h>
 #elif defined(_WIN32)
-#include <windows.h>
+#include "../../../host/crypto/bcrypt/bcrypt.h"
 #endif
 #include "oeutil_u.h"
 
 #if defined(__linux__)
 #include <dlfcn.h>
-#else
-#if defined(_MSC_VER)
-#pragma warning(push)
-#pragma warning(disable : 4996)
-#endif
-#include <openssl/applink.c>
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#endif
 #endif
 
 #include "../../../common/attest_plugin.h"
@@ -221,22 +214,113 @@ done:
 
 static void decode_crl_der(const uint8_t* data, size_t data_size)
 {
+#if defined(_WIN32)
+    if (!data || data_size == 0 || data_size > MAXDWORD)
+        return;
+
+    PCCRL_CONTEXT crl = CertCreateCRLContext(
+        X509_ASN_ENCODING, data, static_cast<DWORD>(data_size));
+    if (!crl)
+        return;
+
+    char issuer[512];
+    if (!CertNameToStrA(
+            X509_ASN_ENCODING,
+            &crl->pCrlInfo->Issuer,
+            CERT_X500_NAME_STR,
+            issuer,
+            OE_COUNTOF(issuer)))
+        issuer[0] = '\0';
+
+    char this_update[32] = "unavailable";
+    char next_update[32] = "unavailable";
+    SYSTEMTIME system_time = {};
+    if (FileTimeToSystemTime(&crl->pCrlInfo->ThisUpdate, &system_time))
+        snprintf(
+            this_update,
+            sizeof(this_update),
+            "%04u-%02u-%02u %02u:%02u:%02u UTC",
+            system_time.wYear,
+            system_time.wMonth,
+            system_time.wDay,
+            system_time.wHour,
+            system_time.wMinute,
+            system_time.wSecond);
+    if (FileTimeToSystemTime(&crl->pCrlInfo->NextUpdate, &system_time))
+        snprintf(
+            next_update,
+            sizeof(next_update),
+            "%04u-%02u-%02u %02u:%02u:%02u UTC",
+            system_time.wYear,
+            system_time.wMonth,
+            system_time.wDay,
+            system_time.wHour,
+            system_time.wMinute,
+            system_time.wSecond);
+
+    FILE* output = log_file ? log_file : stdout;
+    fprintf(
+        output,
+        "Certificate Revocation List (CRL):\n"
+        "    Version: %lu\n"
+        "    Issuer: %s\n"
+        "    Last Update: %s\n"
+        "    Next Update: %s\n"
+        "    Revoked Certificates: %lu\n",
+        crl->pCrlInfo->dwVersion + 1,
+        issuer,
+        this_update,
+        next_update,
+        crl->pCrlInfo->cCRLEntry);
+    CertFreeCRLContext(crl);
+#else
     X509_CRL* x509;
     BIO* input = BIO_new_mem_buf(data, (int)data_size);
     x509 = d2i_X509_CRL_bio(input, NULL);
     if (x509)
         X509_CRL_print_fp(log_file, x509);
     BIO_free_all(input);
+#endif
 }
 
 static void decode_crl_pem(const uint8_t* data, size_t data_size)
 {
+#if defined(_WIN32)
+    if (!data || data_size == 0 || data_size > MAXDWORD)
+        return;
+
+    DWORD der_size = 0;
+    if (!CryptStringToBinaryA(
+            reinterpret_cast<const char*>(data),
+            static_cast<DWORD>(data_size),
+            CRYPT_STRING_BASE64HEADER,
+            NULL,
+            &der_size,
+            NULL,
+            NULL))
+        return;
+
+    if (der_size == 0)
+        return;
+
+    std::vector<uint8_t> der(der_size);
+    if (CryptStringToBinaryA(
+            reinterpret_cast<const char*>(data),
+            static_cast<DWORD>(data_size),
+            CRYPT_STRING_BASE64HEADER,
+            der.data(),
+            &der_size,
+            NULL,
+            NULL))
+        decode_crl_der(der.data(), der_size);
+#else
     X509_CRL* x509;
     BIO* input = BIO_new_mem_buf(data, (int)data_size);
     x509 = PEM_read_bio_X509_CRL(input, NULL, NULL, NULL);
     if (x509)
         X509_CRL_print_fp(log_file, x509);
     BIO_free_all(input);
+#endif
 }
 
 // DCAP client (libdcap_quoteprov) log callback to this function.
@@ -351,22 +435,143 @@ static void _display_help(const char* command)
     printf("\t   oeutil gen --format legacy_report_remote --out report.bin\n");
 }
 
-void dump_certificate(const uint8_t* data, size_t data_len)
+static void _dump_certificate(FILE* file, const uint8_t* data, size_t data_len)
 {
+#if defined(_WIN32)
+    if (!data || data_len == 0 || data_len > MAXDWORD)
+        return;
+
+    if (!file)
+        file = stdout;
+
+    PCCERT_CONTEXT cert = CertCreateCertificateContext(
+        X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
+        data,
+        static_cast<DWORD>(data_len));
+    if (!cert)
+        return;
+
+    char subject[512];
+    char issuer[512];
+    if (!CertNameToStrA(
+            X509_ASN_ENCODING,
+            &cert->pCertInfo->Subject,
+            CERT_X500_NAME_STR,
+            subject,
+            OE_COUNTOF(subject)))
+        subject[0] = '\0';
+    if (!CertNameToStrA(
+            X509_ASN_ENCODING,
+            &cert->pCertInfo->Issuer,
+            CERT_X500_NAME_STR,
+            issuer,
+            OE_COUNTOF(issuer)))
+        issuer[0] = '\0';
+
+    char not_before[32] = "unavailable";
+    char not_after[32] = "unavailable";
+    SYSTEMTIME system_time = {};
+    if (FileTimeToSystemTime(&cert->pCertInfo->NotBefore, &system_time))
+        snprintf(
+            not_before,
+            sizeof(not_before),
+            "%04u-%02u-%02u %02u:%02u:%02u UTC",
+            system_time.wYear,
+            system_time.wMonth,
+            system_time.wDay,
+            system_time.wHour,
+            system_time.wMinute,
+            system_time.wSecond);
+    if (FileTimeToSystemTime(&cert->pCertInfo->NotAfter, &system_time))
+        snprintf(
+            not_after,
+            sizeof(not_after),
+            "%04u-%02u-%02u %02u:%02u:%02u UTC",
+            system_time.wYear,
+            system_time.wMonth,
+            system_time.wDay,
+            system_time.wHour,
+            system_time.wMinute,
+            system_time.wSecond);
+
+    const char* signature_algorithm =
+        cert->pCertInfo->SignatureAlgorithm.pszObjId
+            ? cert->pCertInfo->SignatureAlgorithm.pszObjId
+            : "unknown";
+    const char* public_key_algorithm =
+        cert->pCertInfo->SubjectPublicKeyInfo.Algorithm.pszObjId
+            ? cert->pCertInfo->SubjectPublicKeyInfo.Algorithm.pszObjId
+            : "unknown";
+    fprintf(
+        file,
+        "Certificate:\n"
+        "    Version: %lu\n"
+        "    Subject: %s\n"
+        "    Issuer: %s\n"
+        "    Not Before: %s\n"
+        "    Not After: %s\n"
+        "    Signature Algorithm: %s\n"
+        "    Public Key Algorithm: %s\n",
+        cert->pCertInfo->dwVersion + 1,
+        subject,
+        issuer,
+        not_before,
+        not_after,
+        signature_algorithm,
+        public_key_algorithm);
+    CertFreeCertificateContext(cert);
+#else
     X509* x509;
     BIO* input = BIO_new_mem_buf(data, (int)data_len);
     x509 = d2i_X509_bio(input, nullptr);
     if (x509)
         X509_print_ex_fp(
-            stdout,
+            file,
             x509,
             XN_FLAG_COMPAT,
             XN_FLAG_SEP_CPLUS_SPC | XN_FLAG_DUMP_UNKNOWN_FIELDS);
     BIO_free_all(input);
+#endif
+}
+
+void dump_certificate(const uint8_t* data, size_t data_len)
+{
+    _dump_certificate(stdout, data, data_len);
 }
 
 void decode_certificate_pem(FILE* file, const uint8_t* data, size_t data_len)
 {
+#if defined(_WIN32)
+    if (!data || data_len == 0 || data_len > MAXDWORD)
+        return;
+
+    DWORD der_size = 0;
+    if (!CryptStringToBinaryA(
+            reinterpret_cast<const char*>(data),
+            static_cast<DWORD>(data_len),
+            CRYPT_STRING_BASE64HEADER,
+            NULL,
+            &der_size,
+            NULL,
+            NULL))
+        return;
+
+    if (der_size == 0)
+        return;
+
+    std::vector<uint8_t> der(der_size);
+    if (!CryptStringToBinaryA(
+            reinterpret_cast<const char*>(data),
+            static_cast<DWORD>(data_len),
+            CRYPT_STRING_BASE64HEADER,
+            der.data(),
+            &der_size,
+            NULL,
+            NULL))
+        return;
+
+    _dump_certificate(file, der.data(), der_size);
+#else
     X509* x509;
     BIO* input = BIO_new_mem_buf(data, (int)data_len);
     x509 = PEM_read_bio_X509(input, NULL, 0, NULL);
@@ -377,6 +582,7 @@ void decode_certificate_pem(FILE* file, const uint8_t* data, size_t data_len)
             XN_FLAG_COMPAT,
             XN_FLAG_SEP_CPLUS_SPC | XN_FLAG_DUMP_UNKNOWN_FIELDS);
     BIO_free_all(input);
+#endif
 }
 
 void parse_certificate_extension(const uint8_t* data, size_t data_len)
