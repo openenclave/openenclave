@@ -19,6 +19,8 @@ RUN tdnf install -y \
         file \
         findutils \
         gawk \
+        gcc \
+        gcc-c++ \
         git \
         glibc-devel \
         graphviz \
@@ -35,6 +37,7 @@ RUN tdnf install -y \
         perl \
         pkg-config \
         python3 \
+        rpm-build \
         sqlite-devel \
         tar \
         unzip \

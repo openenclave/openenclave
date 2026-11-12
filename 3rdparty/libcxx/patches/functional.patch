@@ -1,0 +1,23 @@
+Subject: Check an empty function wrapper before storage dispatch
+
+Local compatibility guard for libc++ 10.0.1; not an upstream backport.
+Responds to a downstream GCC 13 nonnull diagnostic. That exact diagnostic has
+NOT been independently reproduced. The null-first form preserves cleanup for
+empty, inline and heap storage; callable lifetime tests pass under GCC/Clang.
+Keep separate from the reproduced fixes so maintainers can evaluate or drop it
+independently. No warning suppression is introduced.
+
+--- a/functional
++++ b/functional
+@@ -1822,8 +1822,10 @@
+     _LIBCPP_INLINE_VISIBILITY
+     ~__value_func()
+     {
++        if (!__f_)
++            return;
+         if ((void*)__f_ == &__buf_)
+             __f_->destroy();
+-        else if (__f_)
++        else
+             __f_->destroy_deallocate();
+     }
