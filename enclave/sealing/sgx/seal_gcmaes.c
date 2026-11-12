@@ -294,6 +294,7 @@ static oe_result_t _unseal(
     oe_result_t result = OE_OK;
     struct _sealed_blob_header header;
     uint8_t* key = NULL;
+    uint8_t* ciphertext = NULL;
     size_t key_size = 0;
 
     if (blob_size < sizeof(header))
@@ -319,6 +320,17 @@ static oe_result_t _unseal(
     if (*plaintext == NULL)
         return OE_OUT_OF_MEMORY;
 
+    /* A crypto backend may read ciphertext separately for authentication and
+     * decryption. Both must consume the same enclave-private snapshot. */
+    ciphertext = (uint8_t*)oe_calloc(1, header.ciphertext_size);
+    if (ciphertext == NULL)
+        OE_RAISE(OE_OUT_OF_MEMORY);
+    OE_CHECK(oe_memcpy_s(
+        ciphertext,
+        header.ciphertext_size,
+        blob + sizeof(header),
+        header.ciphertext_size));
+
     OE_CHECK(oe_get_seal_key(
         (uint8_t*)&header.keyrequest,
         sizeof(header.keyrequest),
@@ -332,7 +344,7 @@ static oe_result_t _unseal(
         sizeof(header.iv),
         additional_data,
         additional_data_size,
-        (uint8_t*)(blob + sizeof(header)),
+        ciphertext,
         header.ciphertext_size,
         *plaintext,
         *plaintext_size,
@@ -340,6 +352,7 @@ static oe_result_t _unseal(
 
 done:
     oe_free_key(key, key_size, NULL, 0);
+    oe_free(ciphertext);
 
     if (result != OE_OK)
     {

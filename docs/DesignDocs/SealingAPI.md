@@ -608,6 +608,11 @@ second party can forge, so they are not safe to accept.
 microcode upgrade legitimately carries the older SVN, and rejecting those
 would break unsealing across upgrades.
 
+When unsealing a host-backed blob, the SGX GCM-AES plugin copies both its header
+and ciphertext into enclave-private memory. Key-request validation, authentication,
+and decryption use these snapshots so host mutations cannot change the validated
+request or cause authentication and decryption to consume different ciphertext.
+
 #### oe_seal()
 
 `oe_seal()` encrypts user-supplied data into an opaque blob, using a key
