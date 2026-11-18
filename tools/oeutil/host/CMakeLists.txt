@@ -59,3 +59,10 @@ install(
   TARGETS oeutil
   EXPORT openenclave-targets
   DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+if (WIN32 AND MSVC)
+  install(
+    FILES $<TARGET_PDB_FILE:oeutil>
+    DESTINATION ${CMAKE_INSTALL_BINDIR}
+    CONFIGURATIONS Debug RelWithDebInfo)
+endif ()

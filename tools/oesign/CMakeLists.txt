@@ -45,6 +45,13 @@ install(
   EXPORT openenclave-targets
   DESTINATION ${CMAKE_INSTALL_BINDIR})
 
+if (WIN32 AND MSVC)
+  install(
+    FILES $<TARGET_PDB_FILE:oesign>
+    DESTINATION ${CMAKE_INSTALL_BINDIR}
+    CONFIGURATIONS Debug RelWithDebInfo)
+endif ()
+
 if (WITH_EEID)
   target_compile_definitions(oesign PRIVATE OE_WITH_EXPERIMENTAL_EEID)
 endif ()

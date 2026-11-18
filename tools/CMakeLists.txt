@@ -61,6 +61,13 @@ install(
   RENAME oeedger8r${CMAKE_EXECUTABLE_SUFFIX}
   DESTINATION ${CMAKE_INSTALL_BINDIR})
 
+if (WIN32 AND MSVC)
+  install(
+    FILES ${CMAKE_CURRENT_BINARY_DIR}/oeedger8r-cpp/src/oeedger8r.pdb
+    DESTINATION ${CMAKE_INSTALL_BINDIR}
+    CONFIGURATIONS Debug RelWithDebInfo)
+endif ()
+
 add_subdirectory(oeapkman)
 
 if (OE_SGX)
