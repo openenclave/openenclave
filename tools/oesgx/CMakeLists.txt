@@ -14,3 +14,10 @@ endif ()
 
 # install rule
 install(TARGETS oesgx DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+if (WIN32 AND MSVC)
+  install(
+    FILES $<TARGET_PDB_FILE:oesgx>
+    DESTINATION ${CMAKE_INSTALL_BINDIR}
+    CONFIGURATIONS Debug RelWithDebInfo)
+endif ()
