@@ -945,6 +945,18 @@ static int _hostsock_ioctl(oe_fd_t* sock_, unsigned long request, uint64_t arg)
     if (!sock)
         OE_RAISE_ERRNO(OE_EINVAL);
 
+    /*
+     * MUSL uses the TIOCGWINSZ ioctl request to determine whether the file
+     * descriptor refers to a terminal device. This request cannot be handled
+     * by Windows hosts, so the error is handled on the enclave side. This is
+     * the correct behavior since sockets are not terminal devices.
+     */
+    switch (request)
+    {
+        default:
+            OE_RAISE_ERRNO(OE_ENOTTY);
+    }
+
     if (oe_syscall_ioctl_ocall(&ret, sock->host_fd, request, arg, 0, NULL) !=
         OE_OK)
         OE_RAISE_ERRNO(OE_EINVAL);
