@@ -53,6 +53,10 @@ endif ()
 
 target_compile_definitions(tls_client_enc PUBLIC OE_API_VERSION=2)
 
+if (${OE_CRYPTO_LIB} STREQUAL "openssl_3")
+  target_compile_definitions(tls_client_enc PRIVATE OE_TLS_PQ_HYBRID=1)
+endif ()
+
 target_include_directories(
   tls_client_enc
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}

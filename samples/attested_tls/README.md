@@ -11,6 +11,7 @@ It has the following properties:
   - between an enclave application and a non enclave application
 - Use of OpenSSL crypto libraries within enclaves for TLS
 - If the `OE_CRYPTO_LIB` not set, OpenSSL 3 will be used by default (see [Makefile](Makefile#L8) and [CMakeLists.txt](CMakeLists.txt#L10)).
+- The default OpenSSL 3 build requires TLS 1.3 with the `X25519MLKEM768` post-quantum hybrid key exchange group for enclave-to-enclave connections and verifies the negotiated protocol and group.
 - To use FIPS-enabled OpenSSL based on SymCrypt engine, set the `OE_CRYPTO_LIB` to `openssl_symcrypt_fips`
 - To use FIPS-enabled OpenSSL 3 based on SymCrypt provider, set the `OE_CRYPTO_LIB` to `openssl_3_symcrypt_prov_fips`
 - Configure both the server and the client with recommended cipher suites and elliptic curves (refer to the [section](#recommended-tls-configurations-when-using-openssl) for more details).
@@ -196,6 +197,17 @@ On Windows after building the sample as described in the [README file](../README
 ### Recommended TLS configurations when using OpenSSL
 
   It is strongly recommended that developers configure OpenSSL to restrict the TLS versions, cipher suites and elliptic curves to be used for TLS connections to enclave:
+
+  OpenSSL 3 uses this fail-closed configuration for enclave-to-enclave connections in the sample:
+
+  - TLS protocol version
+    - TLS 1.3
+  - Key exchange group
+    - X25519MLKEM768 (hybrid X25519 and ML-KEM-768)
+
+  This protects the TLS key exchange against a future cryptographically relevant quantum computer while retaining X25519's classical security. The attestation certificate is still authenticated with a classical signature, so this sample does not provide post-quantum certificate authentication.
+
+  The legacy OpenSSL and SymCrypt configurations continue to use:
 
   - TLS protocol versions
     - TLS 1.2

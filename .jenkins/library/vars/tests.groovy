@@ -917,7 +917,7 @@ def azureLinux3SimulationTest(String pr_id = '') {
                                  use_snmalloc: false)
                 def task = """
                            ${helpers.buildCommand(cmakeArgs, 'Ninja')}
-                           ${helpers.TestCommand('^tests/crypto/')}
+                           ${helpers.TestCommand('^(tests/crypto/|tests/openssl/3-pqc_tls_test\$)')}
                            """
                 withEnv(["OE_SIMULATION=1"]) {
                     common.ContainerRun("oetools-azl3:${DOCKER_TAG}", 'clang-18', task, runArgs)
