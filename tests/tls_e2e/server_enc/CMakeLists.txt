@@ -61,5 +61,11 @@ if (BUILD_OPENSSL)
   enclave_include_directories(openssl_3_tls_server_enc PRIVATE
                               ${CMAKE_CURRENT_BINARY_DIR})
 
+  if (USE_SNMALLOC)
+    # Match the allocator minimum documented by tests/snmalloc/enc/enc.c.
+    enclave_compile_definitions(openssl_3_tls_server_enc PRIVATE
+                                TLS_SERVER_HEAP_PAGE_COUNT=4096)
+  endif ()
+
   enclave_link_libraries(openssl_3_tls_server_enc oehostsock oehostresolver)
 endif ()

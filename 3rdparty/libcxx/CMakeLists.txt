@@ -15,18 +15,35 @@ if (NOT libcxx_sources_POPULATED)
 endif ()
 
 include(ExternalProject)
+find_package(Git REQUIRED)
+
+# Local patches for the pinned libc++ release. Each patch carries its rationale
+# and provenance; reassess the complete list when updating the source archive.
+include(patches/series.cmake)
+
 ExternalProject_Add(
   libcxx_includes
   DOWNLOAD_COMMAND ""
   CONFIGURE_COMMAND ""
-  BUILD_COMMAND ${CMAKE_COMMAND} -E copy_directory
-                ${CMAKE_CURRENT_LIST_DIR}/libcxx/include ${LIBCXX_INCLUDES}
-  COMMAND
-    ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_LIST_DIR}/libcxx/include/__config
-    ${LIBCXX_INCLUDES}/__config_original
-  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_LIST_DIR}/__config
-          ${LIBCXX_INCLUDES}/__config
+  BUILD_COMMAND
+    ${CMAKE_COMMAND} "-DSOURCE_DIR=${CMAKE_CURRENT_LIST_DIR}/libcxx/include"
+    "-DOUTPUT_DIR=${LIBCXX_INCLUDES}"
+    "-DCONFIG_HEADER=${CMAKE_CURRENT_LIST_DIR}/__config"
+    "-DGIT_EXECUTABLE=${GIT_EXECUTABLE}"
+    "-DPATCH_DIR=${CMAKE_CURRENT_LIST_DIR}/patches" -P
+    ${CMAKE_CURRENT_LIST_DIR}/prepare_headers.cmake
   INSTALL_COMMAND "")
+
+# Editing a patch or the config wrapper must invalidate the build step, even
+# when the downloaded archive and ExternalProject configure step are unchanged.
+ExternalProject_Add_StepDependencies(
+  libcxx_includes
+  build
+  ${LIBCXX_HEADER_PATCHES}
+  ${CMAKE_CURRENT_LIST_DIR}/patches/series.cmake
+  ${CMAKE_CURRENT_LIST_DIR}/prepare_headers.cmake
+  ${CMAKE_CURRENT_LIST_DIR}/patch_contents.in
+  ${CMAKE_CURRENT_LIST_DIR}/__config)
 
 set_property(DIRECTORY PROPERTY ADDITIONAL_MAKE_CLEAN_FILES ${LIBCXX_INCLUDES})
 

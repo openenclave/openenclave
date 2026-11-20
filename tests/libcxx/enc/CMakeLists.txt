@@ -188,3 +188,22 @@ foreach (testcase ${alltests})
 
   add_libcxx_test_enc("${name}" "${testcase}")
 endforeach (testcase)
+
+add_libcxx_test_enc("is_convertible_regression"
+                    "${CMAKE_CURRENT_SOURCE_DIR}/is_convertible_regression.cpp")
+
+add_libcxx_test_enc("gcc13_release_regression"
+                    "${CMAKE_CURRENT_SOURCE_DIR}/gcc13_release_regression.cpp")
+add_libcxx_test_enc("unordered_regression"
+                    "${CMAKE_CURRENT_SOURCE_DIR}/unordered_regression.cpp")
+# These diagnostics require optimization, even in an otherwise Debug build.
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  enclave_compile_options(libcxxtest-gcc13_release_regression_enc PRIVATE -O2
+                          -Wall -Wextra -Werror)
+  enclave_compile_options(libcxxtest-unordered_regression_enc PRIVATE -O2 -Wall
+                          -Wextra -Werror)
+  if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    enclave_compile_options(libcxxtest-unordered_regression_enc PRIVATE
+                            -Wmaybe-uninitialized)
+  endif ()
+endif ()

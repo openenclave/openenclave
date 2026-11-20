@@ -27,3 +27,7 @@ fi
 if ! ./scripts/check-linters; then
     exit_ "CI failed: please run ./scripts/check-linters"
 fi
+
+if ! python3 ./scripts/tests/test_ci_regressions.py; then
+    exit_ "CI failed: download or test-runner regression"
+fi

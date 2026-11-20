@@ -1,0 +1,3 @@
+# Unified diffs use a single space to represent an empty context line.
+# Preserve LF patch transport without flagging that required context marker.
+*.patch text eol=lf whitespace=-blank-at-eol

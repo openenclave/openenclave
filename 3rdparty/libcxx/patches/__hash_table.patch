@@ -1,0 +1,37 @@
+Subject: Scope bucket hashes to lookup and insertion
+
+Local compatibility patch for libc++ 10.0.1; not an upstream backport.
+GCC 13.2 at O2/O3 reports maybe-uninitialized for __chash in unique-key
+emplacement when its initialization is split across lookup and rehash paths.
+Use an initialized lookup-local hash, then compute an insertion-local hash
+after any required rehash. Neither calculation uses a zero bucket count on
+the normal insertion path, and the insertion always uses the current count.
+No dummy hash value, warning suppression or changes to hash_function() calls.
+The extra constrained-hash computation on a non-rehashing insertion is a
+deliberate tradeoff for explicit control flow; workload performance is unqualified.
+
+--- a/__hash_table
++++ b/__hash_table
+@@ -2106,10 +2106,9 @@
+     size_type __bc = bucket_count();
+     bool __inserted = false;
+     __next_pointer __nd;
+-    size_t __chash;
+     if (__bc != 0)
+     {
+-        __chash = __constrain_hash(__hash, __bc);
++        const size_t __chash = __constrain_hash(__hash, __bc);
+         __nd = __bucket_list_[__chash];
+         if (__nd != nullptr)
+         {
+@@ -2133,9 +2132,9 @@
+             rehash(_VSTD::max<size_type>(2 * __bc + !__is_hash_power2(__bc),
+                            size_type(ceil(float(size() + 1) / max_load_factor()))));
+             __bc = bucket_count();
+-            __chash = __constrain_hash(__hash, __bc);
+         }
+         // insert_after __bucket_list_[__chash], or __first_node if bucket is null
++        const size_t __chash = __constrain_hash(__hash, __bc);
+         __next_pointer __pn = __bucket_list_[__chash];
+         if (__pn == nullptr)
+         {

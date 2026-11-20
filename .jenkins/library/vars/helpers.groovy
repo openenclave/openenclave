@@ -123,25 +123,33 @@ def TestCommand(String regex='', int test_fail_limit = 10, boolean debug = false
         regex = "--tests-regex '${regex}'"
     }
     if (debug) {
-        regex += '-VV --debug'
+        regex += ' -VV --debug'
     }
     return """
         try=0
         max_tries=3
+        test_status=0
         echo "Running Test Command"
-        if ! ctest ${regex} --output-on-failure --timeout ${globalvars.CTEST_TIMEOUT_SECONDS}; then
+        ctest ${regex} --output-on-failure --timeout ${globalvars.CTEST_TIMEOUT_SECONDS} || test_status=\$?
+        if [ \$test_status -ne 0 ]; then
             while [ \$try -lt \$max_tries ]; do
-                if [[ \$(wc -l < Testing/Temporary/LastTestsFailed.log) -le ${test_fail_limit} ]]; then
+                if [[ -f Testing/Temporary/LastTestsFailed.log ]] &&
+                   [[ \$(wc -l < Testing/Temporary/LastTestsFailed.log) -le ${test_fail_limit} ]]; then
                     echo "Retrying failed tests..."
                     try=\$((\$try+1))
-                    if ctest ${regex} ${debug} --rerun-failed --output-on-failure --timeout ${globalvars.CTEST_TIMEOUT_SECONDS}; then
+                    test_status=0
+                    ctest ${regex} --rerun-failed --output-on-failure --timeout ${globalvars.CTEST_TIMEOUT_SECONDS} || test_status=\$?
+                    if [ \$test_status -eq 0 ]; then
                         break
                     fi
                 else
-                    echo "More than 10 tests failed and is likely not a flaky test issue. Not retrying."
-                    exit 8
+                    echo "Missing failure log or more than ${test_fail_limit} failures. Not retrying."
+                    break
                 fi
             done
+        fi
+        if [ \$test_status -ne 0 ]; then
+            exit \$test_status
         fi
     """
 }
@@ -853,10 +861,24 @@ def getDockerSGXDevices(String os_type, String os_version) {
  * Returns the Ubuntu release version (E.g. "18.04")
  */
 def getUbuntuReleaseVer() {
-    sh(
-        returnStdout: true,
-        script: 'lsb_release -rs'
-    ).trim()
+    // Read the agent's OS metadata without launching a durable shell task.
+    // Do not infer the host version from the Docker image version.
+    def release = readFile(file: '/etc/os-release').readLines().find {
+        it.startsWith('VERSION_ID=')
+    }
+    if (release == null) {
+        error('VERSION_ID is missing from /etc/os-release')
+    }
+    def version = release.substring('VERSION_ID='.length()).trim()
+    if (version.length() >= 2 &&
+        ((version.startsWith('"') && version.endsWith('"')) ||
+         (version.startsWith("'") && version.endsWith("'")))) {
+        version = version.substring(1, version.length() - 1)
+    }
+    if (!(version ==~ /[0-9]+\.[0-9]+/)) {
+        error('Invalid Ubuntu VERSION_ID in /etc/os-release')
+    }
+    return version
 }
 
 /**
