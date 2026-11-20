@@ -42,6 +42,15 @@ oe_result_t oe_initialize_cpuid(void)
     _cpuid_table[oe_get_emulated_cpuid_leaf_index(0x80000000)][OE_CPUID_RAX] =
         OE_CPUID_MAX_EXTENDED;
 
+    // To discover all subleaves of leaf 4, applications should start
+    // with subleaf=0 and increment subleaf whenever RAX[0:4] != 0. As
+    // oe_emulate_cpuid does not support emulation of leaf 4 for any
+    // subleaf greater than 0, we must clear the lowest 4 bits to
+    // signal the absence of subleaves above 0. This prevents
+    // applications from invoking the CPU emulation with illegal
+    // values and avoids panics in oe_emulate_cpuid.
+    _cpuid_table[oe_get_emulated_cpuid_leaf_index(4)][OE_CPUID_RAX] &= ~(unsigned int) 0xf;
+
     result = OE_OK;
 
 done:
