@@ -103,27 +103,19 @@ OE_EXTERNC_BEGIN
  */
 
 #if defined(_MSC_VER)
-// For MSVC: add NULL if missing
-#define OE_RAISE_MSG(RESULT, fmt, ...)                                     \
-    do                                                                     \
-    {                                                                      \
-        result = (RESULT);                                                 \
-        if (result != OE_OK)                                               \
-        {                                                                  \
-            if (!_strcmp(#__VA_ARGS__, ""))                                \
-            {                                                              \
-                OE_TRACE_ERROR(                                            \
-                    fmt " (oe_result_t=%s)", NULL, oe_result_str(result)); \
-            }                                                              \
-            else                                                           \
-            {                                                              \
-                OE_TRACE_ERROR(                                            \
-                    fmt " (oe_result_t=%s)",                               \
-                    ##__VA_ARGS__,                                         \
-                    oe_result_str(result));                                \
-            }                                                              \
-        }                                                                  \
-        goto done;                                                         \
+// For MSVC: callers must pass NULL when no format arguments are needed.
+#define OE_RAISE_MSG(RESULT, fmt, ...)           \
+    do                                           \
+    {                                            \
+        result = (RESULT);                       \
+        if (result != OE_OK)                     \
+        {                                        \
+            OE_TRACE_ERROR(                      \
+                fmt " (oe_result_t=%s)",         \
+                __VA_ARGS__,                     \
+                oe_result_str(result));          \
+        }                                        \
+        goto done;                               \
     } while (0)
 
 #else
