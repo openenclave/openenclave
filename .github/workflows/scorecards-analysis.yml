@@ -1,0 +1,67 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+#
+# For documentation on the syntax of this file, see
+# https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
+
+name: Scorecards
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+concurrency:
+  # Cancel any Scorecards workflow currently in progress for the same PR.
+  # Allow running concurrently with any other commits.
+  group: scorecards-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+# Declare default permissions as read only.
+permissions: read-all
+
+jobs:
+  analysis:
+    name: Scorecards analysis
+    runs-on: ubuntu-latest
+    permissions:
+      # Needed to upload the results to code-scanning dashboard.
+      security-events: write
+      actions: read
+      contents: read
+
+    steps:
+      - name: "Checkout code"
+        uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579
+        with:
+          persist-credentials: false
+
+      - name: "Run analysis"
+        uses: ossf/scorecard-action@b614d455ee90608b5e36e3299cd50d457eb37d5f # Don't update this until they fix PR support
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          # Read-only PAT token. To create it,
+          # follow the steps in https://github.com/ossf/scorecard-action#pat-token-creation.
+          repo_token: ${{ secrets.SCORECARD_READ_TOKEN }}
+          # Publish the results to enable scorecard badges. For more details, see
+          # https://github.com/ossf/scorecard-action#publishing-results.
+          # For private repositories, `publish_results` will automatically be set to `false`,
+          # regardless of the value entered here.
+          publish_results: ${{ github.event_name != 'pull_request' }}
+
+      # Upload the results as artifacts (optional).
+      - name: "Upload artifact"
+        uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8
+        with:
+          name: SARIF file
+          path: results.sarif
+          retention-days: 5
+
+      # Upload the results to GitHub's code scanning dashboard so it will be visible
+      # at https://github.com/l3af-project/l3afd/security/code-scanning.
+      - name: "Upload to code-scanning"
+        uses: github/codeql-action/upload-sarif@27ea8f8fe5977c00f5b37e076ab846c5bd783b96
+        with:
+          sarif_file: results.sarif
